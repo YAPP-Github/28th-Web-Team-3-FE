@@ -1,0 +1,22 @@
+{
+  "$schema": "https://biomejs.dev/schemas/2.1.0/schema.json",
+  "extends": ["@repo/config/biome"],
+  "vcs": {
+    "enabled": true,
+    "clientKind": "git",
+    "useIgnoreFile": true
+  },
+  "files": {
+    "ignoreUnknown": true,
+    "includes": [
+      "**",
+      "!**/.next",
+      "!**/dist",
+      "!**/storybook-static",
+      "!**/node_modules",
+      "!**/.expo",
+      "!**/*.gen.ts",
+      "!**/drizzle"
+    ]
+  }
+}

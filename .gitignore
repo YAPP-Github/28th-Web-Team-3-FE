@@ -1,0 +1,63 @@
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# Build outputs
+dist/
+.next/
+out/
+storybook-static/
+*.tsbuildinfo
+
+# Turbo
+.turbo/
+
+# Expo / React Native
+.expo/
+.expo-shared/
+*.orig.*
+web-build/
+
+# Test / coverage
+coverage/
+playwright-report/
+test-results/
+
+# Drizzle / local db
+*.sqlite
+*.sqlite3
+*.db
+/packages/auth/drizzle/
+
+# Env
+.env
+.env.*
+!.env.example
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Cache
+.cache/
+.eslintcache
+.stylelintcache
+
+# Next.js PWA
+public/sw.js
+public/sw.js.map
+public/workbox-*.js
+public/workbox-*.js.map
+
+# Certificates / keys
+*.pem
+
+# Editor / OS
+.DS_Store
+Thumbs.db
+.vscode/*
+!.vscode/extensions.json
+.idea/

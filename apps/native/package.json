@@ -1,0 +1,35 @@
+{
+  "name": "native",
+  "version": "0.0.0",
+  "private": true,
+  "main": "index.ts",
+  "scripts": {
+    "start": "expo start",
+    "android": "expo start --android",
+    "ios": "expo start --ios",
+    "lint": "biome check .",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@react-native-cookies/cookies": "^6.2.1",
+    "@repo/bridge": "workspace:*",
+    "@repo/schema": "workspace:*",
+    "@webview-bridge/react-native": "catalog:",
+    "expo": "~52.0.0",
+    "expo-constants": "~17.0.3",
+    "expo-local-authentication": "~15.0.1",
+    "expo-notifications": "~0.29.11",
+    "expo-secure-store": "~14.0.0",
+    "expo-sharing": "~13.0.0",
+    "expo-status-bar": "~2.0.0",
+    "react": "18.3.1",
+    "react-native": "0.76.5",
+    "react-native-webview": "13.12.5"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.25.0",
+    "@repo/config": "workspace:*",
+    "@types/react": "catalog:",
+    "typescript": "catalog:"
+  }
+}

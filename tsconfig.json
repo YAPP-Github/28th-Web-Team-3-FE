@@ -1,0 +1,10 @@
+{
+  "//": "Root config for editor convenience. Each workspace package is typechecked independently via its own tsconfig (run by `turbo run typecheck`). No project references — packages share TS source directly through the internal-package pattern.",
+  "extends": "@repo/config/tsconfig/base",
+  "compilerOptions": {
+    "noEmit": true
+  },
+  "files": [],
+  "include": [],
+  "exclude": ["node_modules", "**/dist", "**/.next", "**/.expo"]
+}

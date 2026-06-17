@@ -1,0 +1,8 @@
+{
+  "extends": "@repo/config/tsconfig/react-library",
+  "compilerOptions": {
+    "noEmit": true,
+    "types": ["node"]
+  },
+  "include": ["src/**/*.ts", "src/**/*.tsx", ".storybook/**/*.ts"]
+}

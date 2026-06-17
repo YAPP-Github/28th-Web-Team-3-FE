@@ -1,0 +1,59 @@
+packages:
+  - "apps/*"
+  - "packages/*"
+
+# Single source of truth for dependency versions across the workspace.
+# Packages reference these with "catalog:".
+catalog:
+  # Toolchain
+  typescript: ^5.7.3
+  "@types/node": ^22.10.0
+  turbo: ^2.5.0
+  "@biomejs/biome": ^2.1.0
+  lefthook: ^1.10.0
+
+  # React / Next
+  react: ^19.0.0
+  react-dom: ^19.0.0
+  "@types/react": ^19.0.0
+  "@types/react-dom": ^19.0.0
+  next: ^15.4.0
+
+  # Schema / forms — zod v4 (better-auth requires it; one copy across the workspace).
+  zod: ^4.0.0
+  react-hook-form: ^7.54.2
+  "@hookform/resolvers": ^5.0.0
+
+  # Data / http
+  ky: ^1.7.4
+  "@tanstack/react-query": ^5.62.0
+
+  # Auth + DB
+  better-auth: ^1.2.0
+  drizzle-orm: ^0.45.2
+  drizzle-kit: ^0.31.4
+  better-sqlite3: ^12.0.0
+  "@types/better-sqlite3": ^7.6.12
+  postgres: ^3.4.5
+
+  # UI / Tailwind v4
+  tailwindcss: ^4.0.0
+  "@tailwindcss/postcss": ^4.0.0
+  "@tailwindcss/vite": ^4.0.0
+  clsx: ^2.1.1
+  tailwind-merge: ^2.6.0
+  class-variance-authority: ^0.7.1
+  lucide-react: ^0.469.0
+
+  # Bridge
+  "@webview-bridge/web": ^1.7.0
+  "@webview-bridge/react-native": ^1.7.0
+  "@webview-bridge/react": ^1.7.0
+
+  # State
+  zustand: ^5.0.3
+
+  # Test
+  vitest: ^3.0.0
+  "@playwright/test": ^1.49.0
+  jsdom: ^25.0.1

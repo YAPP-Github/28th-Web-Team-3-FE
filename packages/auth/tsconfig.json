@@ -1,0 +1,9 @@
+{
+  "extends": "@repo/config/tsconfig/base",
+  "compilerOptions": {
+    "noEmit": true,
+    "lib": ["ES2023", "DOM"],
+    "types": ["node"]
+  },
+  "include": ["src/**/*.ts", "drizzle.config.ts"]
+}

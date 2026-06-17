@@ -1,0 +1,7 @@
+/* Theme tokens are OWNED by @repo/ui. The app only imports them + tells Tailwind
+   where to scan for class names (its own app/ + the shared ui package source). */
+@import "@repo/ui/globals.css";
+
+/* v4 content detection across the workspace boundary (node_modules-resolved path). */
+@source "../../../packages/ui/src/**/*.{ts,tsx}";
+@source "./**/*.{ts,tsx}";

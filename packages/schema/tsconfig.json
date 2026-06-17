@@ -1,0 +1,7 @@
+{
+  "extends": "@repo/config/tsconfig/base",
+  "compilerOptions": {
+    "noEmit": true
+  },
+  "include": ["src/**/*.ts"]
+}
