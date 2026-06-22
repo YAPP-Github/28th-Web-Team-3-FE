@@ -6,6 +6,19 @@ pre-commit:
       glob: "*.{js,jsx,ts,tsx,json,jsonc,css}"
       run: pnpm biome check --write --no-errors-on-unmatched --files-ignore-unknown=true {staged_files}
       stage_fixed: true
+    branch-name:
+      run: |
+        b=$(git branch --show-current)
+        echo "$b" | grep -qE '^(main|develop)$|^(feat|fix|chore|docs|refactor|perf|test|build|ci)(\([a-z-]+\))?/.+' \
+          || { echo "❌ 브랜치 형식: type(scope)/내용  예) feat(native)/login"; exit 1; }
+
+# 커밋 메시지 컨벤션: type(scope): 내용  (전체 변경은 scope 생략 → type: 내용)
+commit-msg:
+  commands:
+    conventional:
+      run: |
+        head -1 {1} | grep -qE '^(feat|fix|chore|docs|style|refactor|perf|test|build|ci|revert)(\([a-z-]+\))?: .+' \
+          || { echo "❌ 형식: type(scope): 내용  (전체는 scope 생략)"; exit 1; }
 
 pre-push:
   parallel: false
