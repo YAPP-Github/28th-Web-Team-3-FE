@@ -1,4 +1,4 @@
-import CookieManager from "@react-native-cookies/cookies";
+import CookieManager from "@preeternal/react-native-cookie-manager";
 import { COOKIE_DOMAIN, WEB_URL } from "../config";
 import { loadSessionCookie, saveSessionCookie } from "./secureStore";
 

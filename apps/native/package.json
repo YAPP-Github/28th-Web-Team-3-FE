@@ -11,20 +11,20 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@react-native-cookies/cookies": "^6.2.1",
+    "@preeternal/react-native-cookie-manager": "^6.3.3",
     "@repo/bridge": "workspace:*",
     "@repo/schema": "workspace:*",
     "@webview-bridge/react-native": "catalog:",
-    "expo": "~52.0.0",
-    "expo-constants": "~17.0.3",
-    "expo-local-authentication": "~15.0.1",
-    "expo-notifications": "~0.29.11",
-    "expo-secure-store": "~14.0.0",
-    "expo-sharing": "~13.0.0",
-    "expo-status-bar": "~2.0.0",
-    "react": "18.3.1",
-    "react-native": "0.76.5",
-    "react-native-webview": "13.12.5"
+    "expo": "~56.0.12",
+    "expo-constants": "~56.0.18",
+    "expo-local-authentication": "~56.0.4",
+    "expo-notifications": "~56.0.18",
+    "expo-secure-store": "~56.0.4",
+    "expo-sharing": "~56.0.18",
+    "expo-status-bar": "~56.0.4",
+    "react": "19.2.7",
+    "react-native": "0.85.3",
+    "react-native-webview": "13.16.1"
   },
   "devDependencies": {
     "@babel/core": "^7.25.0",
