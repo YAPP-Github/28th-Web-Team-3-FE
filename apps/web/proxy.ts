@@ -4,10 +4,13 @@ import { type NextRequest, NextResponse } from "next/server";
  * Lightweight session gate. Better Auth sets a session cookie (prefix "better-auth").
  * We only check presence here — full validation happens in the route handlers /
  * server components. This same cookie is what the native shell injects into the WebView.
+ *
+ * Next.js 16 renamed the `middleware` convention to `proxy` (file + export). It runs
+ * on the nodejs runtime; cookie-presence checks like this work fine without edge.
  */
 const PROTECTED_PREFIXES = ["/app", "/dashboard"];
 
-export function middleware(request: NextRequest) {
+export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const isProtected = PROTECTED_PREFIXES.some((p) => pathname.startsWith(p));
   if (!isProtected) return NextResponse.next();

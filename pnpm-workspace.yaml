@@ -6,54 +6,54 @@ packages:
 # Packages reference these with "catalog:".
 catalog:
   # Toolchain
-  typescript: ^5.7.3
+  typescript: ^6.0.3
   "@types/node": ^22.10.0
-  turbo: ^2.5.0
-  "@biomejs/biome": ^2.1.0
-  lefthook: ^1.10.0
+  turbo: ^2.9.18
+  "@biomejs/biome": ^2.5.0
+  lefthook: ^2.1.9
 
   # React / Next
-  react: ^19.0.0
-  react-dom: ^19.0.0
-  "@types/react": ^19.0.0
-  "@types/react-dom": ^19.0.0
-  next: ^15.4.0
+  react: ^19.2.7
+  react-dom: ^19.2.7
+  "@types/react": ^19.2.17
+  "@types/react-dom": ^19.2.3
+  next: ^16.2.9
 
   # Schema / forms — zod v4 (better-auth requires it; one copy across the workspace).
-  zod: ^4.0.0
-  react-hook-form: ^7.54.2
-  "@hookform/resolvers": ^5.0.0
+  zod: ^4.4.3
+  react-hook-form: ^7.80.0
+  "@hookform/resolvers": ^5.4.0
 
   # Data / http
-  ky: ^1.7.4
-  "@tanstack/react-query": ^5.62.0
+  ky: ^2.0.2
+  "@tanstack/react-query": ^5.101.0
 
   # Auth + DB
-  better-auth: ^1.2.0
+  better-auth: ^1.6.20
   drizzle-orm: ^0.45.2
-  drizzle-kit: ^0.31.4
-  better-sqlite3: ^12.0.0
-  "@types/better-sqlite3": ^7.6.12
-  postgres: ^3.4.5
+  drizzle-kit: ^0.31.10
+  better-sqlite3: ^12.11.1
+  "@types/better-sqlite3": ^7.6.13
+  postgres: ^3.4.9
 
   # UI / Tailwind v4
-  tailwindcss: ^4.0.0
-  "@tailwindcss/postcss": ^4.0.0
-  "@tailwindcss/vite": ^4.0.0
+  tailwindcss: ^4.3.1
+  "@tailwindcss/postcss": ^4.3.1
+  "@tailwindcss/vite": ^4.3.1
   clsx: ^2.1.1
-  tailwind-merge: ^2.6.0
+  tailwind-merge: ^3.6.0
   class-variance-authority: ^0.7.1
-  lucide-react: ^0.469.0
+  lucide-react: ^1.21.0
 
   # Bridge
-  "@webview-bridge/web": ^1.7.0
-  "@webview-bridge/react-native": ^1.7.0
-  "@webview-bridge/react": ^1.7.0
+  "@webview-bridge/web": ^1.7.9
+  "@webview-bridge/react-native": ^1.7.9
+  "@webview-bridge/react": ^1.7.9
 
   # State
-  zustand: ^5.0.3
+  zustand: ^5.0.14
 
   # Test
-  vitest: ^3.0.0
-  "@playwright/test": ^1.49.0
-  jsdom: ^25.0.1
+  vitest: ^4.1.9
+  "@playwright/test": ^1.61.0
+  jsdom: ^29.1.1
