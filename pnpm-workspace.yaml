@@ -57,3 +57,10 @@ catalog:
   vitest: ^4.1.9
   "@playwright/test": ^1.61.0
   jsdom: ^29.1.1
+
+# Packages allowed to run install/build lifecycle scripts (pnpm 11+).
+allowBuilds:
+  better-sqlite3: true
+  esbuild: true
+  lefthook: true
+  sharp: true

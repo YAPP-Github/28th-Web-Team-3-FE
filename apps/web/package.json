@@ -20,6 +20,7 @@
     "@repo/schema": "workspace:*",
     "@repo/ui": "workspace:*",
     "@tanstack/react-query": "catalog:",
+    "better-auth": "catalog:",
     "next": "catalog:",
     "react": "catalog:",
     "react-dom": "catalog:",
