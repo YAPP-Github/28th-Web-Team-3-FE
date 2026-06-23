@@ -13,7 +13,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@webview-bridge/types": "^1.7.9",
+    "@webview-bridge/types": "catalog:",
     "@webview-bridge/web": "catalog:"
   },
   "devDependencies": {
