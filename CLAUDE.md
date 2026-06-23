@@ -95,7 +95,7 @@ pnpm format      # biome format --write .
 | 영역 | 패키지 | 버전 |
 |---|---|---|
 | 런타임 | Node | >=20 |
-| 패키지매니저 | pnpm | 10.30.0 |
+| 패키지매니저 | pnpm | 11.8.0 |
 | 빌드 | Turbo | ^2.9.18 |
 | 언어 | TypeScript | ^6.0.3 |
 | 린트/포맷 | Biome | ^2.5.0 |

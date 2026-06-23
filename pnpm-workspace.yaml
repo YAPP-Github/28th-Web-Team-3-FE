@@ -49,6 +49,7 @@ catalog:
   "@webview-bridge/web": ^1.7.9
   "@webview-bridge/react-native": ^1.7.9
   "@webview-bridge/react": ^1.7.9
+  "@webview-bridge/types": ^1.7.9
 
   # State
   zustand: ^5.0.14
@@ -57,6 +58,13 @@ catalog:
   vitest: ^4.1.9
   "@playwright/test": ^1.61.0
   jsdom: ^29.1.1
+
+  # Storybook / Vite tooling (@repo/ui)
+  storybook: ^10.4.6
+  "@storybook/react": ^10.4.6
+  "@storybook/react-vite": ^10.4.6
+  vite: ^8.0.16
+  "@vitejs/plugin-react": ^6.0.2
 
 # Packages allowed to run install/build lifecycle scripts (pnpm 11+).
 allowBuilds:

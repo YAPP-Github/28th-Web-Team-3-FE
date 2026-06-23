@@ -27,18 +27,18 @@
   },
   "devDependencies": {
     "@repo/config": "workspace:*",
-    "@storybook/react": "^10.4.6",
-    "@storybook/react-vite": "^10.4.6",
+    "@storybook/react": "catalog:",
+    "@storybook/react-vite": "catalog:",
     "@types/node": "catalog:",
     "@tailwindcss/vite": "catalog:",
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",
-    "@vitejs/plugin-react": "^6.0.2",
+    "@vitejs/plugin-react": "catalog:",
     "react": "catalog:",
     "react-dom": "catalog:",
-    "storybook": "^10.4.6",
+    "storybook": "catalog:",
     "tailwindcss": "catalog:",
     "typescript": "catalog:",
-    "vite": "^8.0.16"
+    "vite": "catalog:"
   }
 }
