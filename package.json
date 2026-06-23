@@ -2,7 +2,7 @@
   "name": "web-team-3-fe",
   "version": "0.0.0",
   "private": true,
-  "packageManager": "pnpm@10.30.0",
+  "packageManager": "pnpm@11.8.0",
   "engines": {
     "node": ">=20"
   },
@@ -22,14 +22,5 @@
     "lefthook": "catalog:",
     "turbo": "catalog:",
     "typescript": "catalog:"
-  },
-  "pnpm": {
-    "onlyBuiltDependencies": [
-      "@biomejs/biome",
-      "better-sqlite3",
-      "esbuild",
-      "lefthook",
-      "sharp"
-    ]
   }
 }
