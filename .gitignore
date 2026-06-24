@@ -17,6 +17,9 @@ storybook-static/
 .expo-shared/
 *.orig.*
 web-build/
+# Prebuild native output (regenerate with `expo prebuild`)
+apps/native/ios/
+apps/native/android/
 
 # Test / coverage
 coverage/

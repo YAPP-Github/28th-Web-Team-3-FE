@@ -11,24 +11,31 @@ import * as pgSchema from "./schema.pg";
  * Schema columns are mirrored between dialects, so app code stays dialect-agnostic.
  * Exports `provider` for the Better Auth drizzleAdapter ("sqlite" | "pg").
  */
-function createDb() {
-  if (authEnv.dialect === "postgres") {
-    const client = postgres(authEnv.databaseUrl, { prepare: false });
-    return {
-      db: drizzlePg(client, { schema: pgSchema.schema }),
-      schema: pgSchema.schema,
-      provider: "pg" as const,
-    };
-  }
+const isPostgres = authEnv.dialect === "postgres";
 
+// `provider`/`schema` are pure config — safe to resolve eagerly without a connection.
+export const provider = isPostgres ? ("pg" as const) : ("sqlite" as const);
+export const schema = isPostgres ? pgSchema.schema : sqliteSchema.schema;
+
+function connect() {
+  if (isPostgres) {
+    const client = postgres(authEnv.databaseUrl, { prepare: false });
+    return drizzlePg(client, { schema: pgSchema.schema });
+  }
   const sqlite = new Database(authEnv.databaseUrl);
   sqlite.pragma("journal_mode = WAL");
-  return {
-    db: drizzleSqlite(sqlite, { schema: sqliteSchema.schema }),
-    schema: sqliteSchema.schema,
-    provider: "sqlite" as const,
-  };
+  return drizzleSqlite(sqlite, { schema: sqliteSchema.schema });
 }
 
-export const { db, schema, provider } = createDb();
-export type AppDatabase = typeof db;
+export type AppDatabase = ReturnType<typeof connect>;
+
+// Connect lazily on first use so `next build` (which imports the auth route) never
+// opens a DB connection at module load — only the actual request does.
+let connection: AppDatabase | undefined;
+export const db: AppDatabase = new Proxy({} as AppDatabase, {
+  get(_target, prop) {
+    connection ??= connect();
+    const value = Reflect.get(connection as object, prop);
+    return typeof value === "function" ? value.bind(connection) : value;
+  },
+});
