@@ -1,3 +1,6 @@
+# Flat node_modules so Expo/Metro can resolve hoisted deps (pnpm 11 reads this here, not .npmrc).
+nodeLinker: hoisted
+
 packages:
   - "apps/*"
   - "packages/*"
