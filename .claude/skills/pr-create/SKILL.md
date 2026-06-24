@@ -92,11 +92,15 @@ git diff --stat --merge-base origin/<base> HEAD -- ':!pnpm-lock.yaml' ':!package
 
 ### Step 7: 리뷰어 검색 (assignee 자동, 본인 제외)
 
-1. `$1`(리뷰어 이름)을 실제 GitHub 로그인으로 매칭. 순서대로, 첫 매칭 채택:
-   - 협업자: `gh api repos/<owner>/<repo>/collaborators --jq '.[].login'` → `$1`과 대소문자 무시 매칭.
-   - 사용자 검색: `gh api "search/users?q=$1" --jq '.items[].login'`.
-2. 여러 명 매칭 → 사용자에게 선택하게 할 것.
-3. 매칭 없음 → 협업자 전체 목록(login) 보여주고 선택하게 할 것.
+1. `$1`(리뷰어 이름/핸들)을 실제 GitHub 로그인으로 매칭. 순서대로, 첫 매칭 채택:
+   - **핸들 직접 확인**: `gh api users/$1 --jq '.login'` 성공하면 그대로 사용($1이 이미 GitHub username인 경우).
+   - **협업자 login 매칭**: `gh api repos/<owner>/<repo>/collaborators --jq '.[].login' --paginate` → `$1`과 대소문자 무시 매칭.
+   - **이름 전역 검색** — 한글 이름은 URL(`?q=`)에 넣지 말 것(인코딩 깨짐). **반드시 `-f`로 전달**:
+     `gh api -X GET search/users -f q="$1 in:name" --jq '.items[].login'`
+     (org 멤버가 팀 경유로 접근하면 `/collaborators`엔 안 떠도 이 검색에서 잡힘.)
+   - 후보가 여럿이면 프로필로 확인: `gh api users/<login> --jq '.login+" | "+(.name//"")+" | "+(.company//"")'`.
+2. 여러 명 매칭 → 프로필(name/company) 보여주고 사용자에게 선택하게 할 것.
+3. 매칭 없음 → 사용자에게 정확한 GitHub username을 물을 것.
 4. **assignee = `ME`(현재 로그인, Step 0).** 매칭된 리뷰어가 `ME`와 같으면 → 경고하고 리뷰어에서 **제외**(본인에게 리뷰 요청 불가).
 5. 리뷰어 없는 PR은 생성하지 않을 것.
 
