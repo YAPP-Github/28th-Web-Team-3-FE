@@ -22,7 +22,7 @@ catalog:
   "@types/react-dom": ^19.2.3
   next: ^16.2.9
 
-  # Schema / forms — zod v4 (better-auth requires it; one copy across the workspace).
+  # Schema / forms — zod v4 (one copy across the workspace).
   zod: ^4.4.3
   react-hook-form: ^7.80.0
   "@hookform/resolvers": ^5.4.0
@@ -30,14 +30,6 @@ catalog:
   # Data / http
   ky: ^2.0.2
   "@tanstack/react-query": ^5.101.0
-
-  # Auth + DB
-  better-auth: ^1.6.20
-  drizzle-orm: ^0.45.2
-  drizzle-kit: ^0.31.10
-  better-sqlite3: ^12.11.1
-  "@types/better-sqlite3": ^7.6.13
-  postgres: ^3.4.9
 
   # UI / Tailwind v4
   tailwindcss: ^4.3.1
@@ -71,7 +63,6 @@ catalog:
 
 # Packages allowed to run install/build lifecycle scripts (pnpm 11+).
 allowBuilds:
-  better-sqlite3: true
   esbuild: true
   lefthook: true
   sharp: true
