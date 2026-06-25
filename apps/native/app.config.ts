@@ -33,8 +33,9 @@ const config: ExpoConfig = {
   ],
   extra: {
     // dev: Metro host serving the Next.js app; prod: the deployed web origin.
-    webUrl: process.env.EXPO_PUBLIC_WEB_URL ?? "http://localhost:3000",
-    cookieDomain: process.env.EXPO_PUBLIC_COOKIE_DOMAIN ?? "localhost",
+    // Intentionally no fallback — config.ts provides platform-aware defaults.
+    webUrl: process.env.EXPO_PUBLIC_WEB_URL,
+    cookieDomain: process.env.EXPO_PUBLIC_COOKIE_DOMAIN,
   },
 };
 
