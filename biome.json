@@ -16,7 +16,8 @@
       "!**/node_modules",
       "!**/.expo",
       "!**/*.gen.ts",
-      "!**/drizzle"
+      "!**/drizzle",
+      "!**/.agents"
     ]
   }
 }
