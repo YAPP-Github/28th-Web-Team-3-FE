@@ -49,6 +49,9 @@ catalog:
   # State
   zustand: ^5.0.14
 
+  # Monitoring
+  "@sentry/nextjs": ^10.61.0
+
   # Test
   vitest: ^4.1.9
   "@playwright/test": ^1.61.0
@@ -63,6 +66,22 @@ catalog:
 
 # Packages allowed to run install/build lifecycle scripts (pnpm 11+).
 allowBuilds:
+  "@sentry/cli": true
   esbuild: true
   lefthook: true
   sharp: true
+
+minimumReleaseAgeExclude:
+  - '@sentry/browser-utils@10.61.0'
+  - '@sentry/browser@10.61.0'
+  - '@sentry/core@10.61.0'
+  - '@sentry/feedback@10.61.0'
+  - '@sentry/nextjs@10.61.0'
+  - '@sentry/node-core@10.61.0'
+  - '@sentry/node@10.61.0'
+  - '@sentry/opentelemetry@10.61.0'
+  - '@sentry/react@10.61.0'
+  - '@sentry/replay-canvas@10.61.0'
+  - '@sentry/replay@10.61.0'
+  - '@sentry/server-utils@10.61.0'
+  - '@sentry/vercel-edge@10.61.0'
