@@ -107,7 +107,6 @@ pnpm format      # biome format --write .
 | 데이터 | @tanstack/react-query | ^5.101.0 |
 | HTTP | ky | ^2.0.2 |
 | 인증 | 백엔드(Spring) 세션 — 클라 측 auth 라이브러리 없음 | — |
-| DB | drizzle-orm / drizzle-kit | ^0.45.2 / ^0.31.10 |
 | 상태 | zustand | ^5.0.14 |
 | 스타일 | Tailwind | ^4.3.1 |
 | 브릿지 | @webview-bridge/* | ^1.7.9 |
