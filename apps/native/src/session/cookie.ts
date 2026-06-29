@@ -15,8 +15,12 @@ import { loadSessionCookie, saveSessionCookie } from "./secureStore";
  *
  * SESSION_COOKIE_NAME must match the Spring backend's session cookie — default is
  * Spring's HttpSession cookie (JSESSIONID); change it if the server uses a custom
- * or JWT cookie name. NOTE: if the backend domain differs from WEB_URL, the
- * inject/capture target may need to point at the cookie's actual domain.
+ * or JWT cookie name.
+ *
+ * NOTE: this bridge assumes the session cookie lives on WEB_URL (web and backend
+ * same-origin, or a shared parent domain). If the Spring backend is on a different
+ * domain, the cookie won't ride along — this inject/capture approach must be
+ * redesigned, not merely retargeted.
  */
 const SESSION_COOKIE_NAME = "JSESSIONID";
 const isProd = process.env.NODE_ENV === "production";
