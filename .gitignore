@@ -26,12 +26,6 @@ coverage/
 playwright-report/
 test-results/
 
-# Drizzle / local db
-*.sqlite
-*.sqlite3
-*.db
-/packages/auth/drizzle/
-
 # Env
 .env
 .env.*

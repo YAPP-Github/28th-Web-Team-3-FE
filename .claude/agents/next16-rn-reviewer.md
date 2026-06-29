@@ -18,7 +18,7 @@ model: opus
 - `apps/native` — **React Native 0.85.3**, **Expo SDK 56**, React 19.2.7,
   `react-native-webview`, `@webview-bridge/react-native`.
 - 공유 `packages/*` — `@repo/api`, `@repo/bridge`, `@repo/schema`(zod v4),
-  `@repo/ui`, `@repo/config`. (`@repo/auth`(better-auth)는 **예정** — 아직 패키지 없음.)
+  `@repo/ui`, `@repo/config`. (인증은 백엔드(Spring)가 소유 — 클라 측 auth 패키지 없음.)
 
 ## 리뷰 전에
 
@@ -27,6 +27,10 @@ model: opus
 2. 여기 버전들은 당신 학습 데이터보다 최신이다. 프레임워크 API를 건드리는 변경이면
    **flag 전에 context7로 최신 문서를 확인**(`resolve-library-id` → `query-docs`).
    없는 deprecation을 지어내지 말 것.
+3. **성능 룰 참조** — diff가 건드린 앱에 맞춰 Vercel 성능 스킬을 읽고 그 룰 기준으로 본다:
+   - `apps/web` 또는 `packages/*`(React/Next) 변경 → `.agents/skills/vercel-react-best-practices/SKILL.md`
+   - `apps/native` 변경 → `.agents/skills/vercel-react-native-skills/SKILL.md`
+   양쪽 다 건드리면 둘 다 읽는다. 세부가 필요하면 각 스킬의 `rules/<룰명>.md`를 읽는다.
 
 ## 점검 항목
 
@@ -50,9 +54,10 @@ model: opus
 
 **공통**
 - zod 스키마는 `@repo/schema`로 공유, 중복 금지.
-- 인증 흐름(`@repo/auth`, **예정 — 아직 패키지 없음**) — 도입 후엔 토큰 누출 없음, 웹 ↔ 네이티브 쿠키/세션 처리 정확.
+- 인증 흐름 — 인증은 백엔드(Spring)가 소유. 세션 쿠키 누출 없음, 웹 ↔ 네이티브 쿠키/세션 처리 정확.
 - TypeScript: `any` 밀반입 금지, 이유 없는 `@ts-ignore` 금지. Biome 클린.
 - 접근성, error/loading 경계, 처리 안 된 promise rejection 금지.
+- 성능 — 번들 크기·데이터 페칭 워터폴·불필요한 리렌더는 "리뷰 전에"에서 읽은 Vercel 성능 스킬 룰 기준으로 판단.
 
 ## 출력 형식
 

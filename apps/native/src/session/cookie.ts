@@ -3,17 +3,26 @@ import { COOKIE_DOMAIN, WEB_URL } from "../config";
 import { loadSessionCookie, saveSessionCookie } from "./secureStore";
 
 /**
- * WebView <-> web session bridge (decision: web-owned + cookie injection).
+ * WebView <-> web session bridge (decision: server-owned session + cookie injection).
+ *
+ * Auth is owned by the Spring backend; it sets the session cookie on login.
  *
  * Two directions:
- *  1. INJECT  (boot): restore the persisted Better Auth session cookie into the
- *     native cookie store BEFORE the WebView navigates, so the web loads logged-in.
- *  2. CAPTURE (after web login): read the cookie the web app set inside the WebView
+ *  1. INJECT  (boot): restore the persisted session cookie into the native cookie
+ *     store BEFORE the WebView navigates, so the web loads logged-in.
+ *  2. CAPTURE (after web login): read the session cookie set inside the WebView
  *     (visible to native because sharedCookiesEnabled), then persist it.
  *
- * Better Auth's session cookie name is prefixed "better-auth.session_token".
+ * SESSION_COOKIE_NAME must match the Spring backend's session cookie — default is
+ * Spring's HttpSession cookie (JSESSIONID); change it if the server uses a custom
+ * or JWT cookie name.
+ *
+ * NOTE: this bridge assumes the session cookie lives on WEB_URL (web and backend
+ * same-origin, or a shared parent domain). If the Spring backend is on a different
+ * domain, the cookie won't ride along — this inject/capture approach must be
+ * redesigned, not merely retargeted.
  */
-const SESSION_COOKIE_NAME = "better-auth.session_token";
+const SESSION_COOKIE_NAME = "JSESSIONID";
 const isProd = process.env.NODE_ENV === "production";
 
 /** Inject the stored session cookie into the WebView before first navigation. */
