@@ -103,10 +103,10 @@ pnpm format      # biome format --write .
 | 웹 | Next.js | ^16.2.9 |
 | React | react / react-dom | ^19.2.7 |
 | 폼 | react-hook-form | ^7.80.0 |
-| 스키마 | zod | ^4.4.3 (better-auth가 v4 요구, 워크스페이스 1카피) |
+| 스키마 | zod | ^4.4.3 (워크스페이스 1카피) |
 | 데이터 | @tanstack/react-query | ^5.101.0 |
 | HTTP | ky | ^2.0.2 |
-| 인증 | better-auth | ^1.6.20 |
+| 인증 | 백엔드(Spring) 세션 — 클라 측 auth 라이브러리 없음 | — |
 | DB | drizzle-orm / drizzle-kit | ^0.45.2 / ^0.31.10 |
 | 상태 | zustand | ^5.0.14 |
 | 스타일 | Tailwind | ^4.3.1 |

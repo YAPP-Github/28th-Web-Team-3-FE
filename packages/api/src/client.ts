@@ -1,7 +1,7 @@
 import ky, { type KyInstance } from "ky";
 
 /**
- * Shared HTTP client. `credentials: "include"` is required so the Better Auth
+ * Shared HTTP client. `credentials: "include"` is required so the backend (Spring)
  * session cookie rides along — both in the browser and inside the native WebView
  * (where the cookie was injected before navigation).
  */
