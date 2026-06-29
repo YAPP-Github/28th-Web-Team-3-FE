@@ -5,8 +5,9 @@
   "main": "index.ts",
   "scripts": {
     "start": "expo start",
-    "android": "expo start --android",
-    "ios": "expo start --ios",
+    "android": "expo run:android",
+    "ios": "expo run:ios",
+    "prebuild": "expo prebuild --clean",
     "lint": "biome check .",
     "typecheck": "tsc --noEmit"
   },
@@ -16,6 +17,7 @@
     "@repo/schema": "workspace:*",
     "@webview-bridge/react-native": "catalog:",
     "expo": "~56.0.12",
+    "expo-dev-client": "~56.0.20",
     "expo-constants": "~56.0.18",
     "expo-local-authentication": "~56.0.4",
     "expo-notifications": "~56.0.18",
@@ -30,6 +32,7 @@
     "@babel/core": "^7.25.0",
     "@repo/config": "workspace:*",
     "@types/react": "catalog:",
+    "eas-cli": "^20.4.0",
     "typescript": "catalog:"
   }
 }

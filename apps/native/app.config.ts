@@ -24,6 +24,7 @@ const config: ExpoConfig = {
     package: "com.webteam3.app",
   },
   plugins: [
+    "expo-dev-client",
     "expo-secure-store",
     [
       "expo-local-authentication",
