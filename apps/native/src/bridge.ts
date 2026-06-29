@@ -1,5 +1,6 @@
 import type { AppBridgeMethods, NativeInfo } from "@repo/bridge/types";
 import { bridge } from "@webview-bridge/react-native";
+import Constants from "expo-constants";
 import { Platform } from "react-native";
 import * as biometric from "./native/biometric";
 import * as push from "./native/push";
@@ -8,7 +9,8 @@ import * as share from "./native/share";
 async function getNativeInfo(): Promise<NativeInfo> {
   return {
     platform: Platform.OS === "ios" ? "ios" : "android",
-    appVersion: "1.0.0",
+    // Source of truth is app.config.ts (expo.version), surfaced via Constants.
+    appVersion: Constants.expoConfig?.version ?? "unknown",
     biometricAvailable: await biometric.isBiometricAvailable(),
   };
 }
