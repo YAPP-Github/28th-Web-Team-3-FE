@@ -106,28 +106,29 @@ git diff --stat --merge-base origin/<base> HEAD -- ':!pnpm-lock.yaml' ':!package
 
 ### Step 8: PR 생성 (승인 게이트)
 
-1. `.github/PULL_REQUEST_TEMPLATE.md`를 읽어 플레이스홀더를 실제 내용으로 채운 본문 작성:
+1. `.github/PULL_REQUEST_TEMPLATE.md`를 읽어 **그 섹션 구조 그대로** 플레이스홀더만 채운다.
+   템플릿에 없는 섹션은 본문에 추가하지 말 것. (현재 템플릿 = 요약·체크리스트·AI 리뷰·기타 4섹션)
 
 ```
-## 1️⃣ 작업 내용 Summary
+## 📝 작업 내용 요약
 
 <diff 요약 2–5 bullet(무엇이 왜 바뀌었는지), 한국어>
 - resolved #<브랜치명/커밋에서 찾은 이슈 번호, 없으면 이 줄 삭제>
 
-## 2️⃣ 추후 작업할 내용
-
-<AI 리뷰가 지적한 후속 작업, 없으면 "- 없음">
-
-## 3️⃣ 체크리스트
+## ✅ 체크리스트
 
 - [x] `develop` 브랜치의 최신 코드를 `pull` 받았나요?
-- [x] 빌드 통과
-- [x] vitest 통과
-- [x] Playwright e2e 통과
+- [x] 빌드가 통과했나요?
+- [x] vitest 테스트가 통과했나요?
+- [x] Playwright e2e가 통과했나요?
 
-## 🤖 AI 리뷰 (next16-rn-reviewer)
+## 🤖 AI 리뷰
 
-<Step 5 서브에이전트의 판정 + 발견 사항 전체 붙여넣기>
+<Step 5 서브에이전트(next16-rn-reviewer)의 판정 + 발견 사항 전체 붙여넣기>
+
+## 💬 기타 코멘트
+
+<후속 작업·리뷰어에게 남길 메모, 없으면 비움>
 ```
 
 2. **PR 생성 전 사용자 승인을 받을 것.** 본문을 임시 파일에 쓰고 `--body-file`로 전달:
