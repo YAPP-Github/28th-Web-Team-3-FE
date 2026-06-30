@@ -1,0 +1,42 @@
+{
+  "$schema": "https://unpkg.com/knip@6/schema.json",
+  "workspaces": {
+    ".": {
+      "entry": []
+    },
+    "apps/web": {
+      "project": ["**/*.{ts,tsx}"],
+      "ignoreDependencies": ["server-only", "postcss-load-config", "tailwindcss"]
+    },
+    "apps/native": {
+      "entry": ["app/**/{_layout,index,+not-found}.{ts,tsx}"],
+      "project": ["**/*.{ts,tsx}"],
+      "ignoreDependencies": [
+        "babel-preset-expo",
+        "@babel/core",
+        "eas-cli",
+        "expo-updates",
+        "expo-system-ui"
+      ]
+    },
+    "packages/api": {
+      "project": ["src/**/*.ts"]
+    },
+    "packages/bridge": {
+      "project": ["src/**/*.ts"]
+    },
+    "packages/schema": {
+      "project": ["src/**/*.ts"]
+    },
+    "packages/ui": {
+      "entry": [".storybook/**/*.{ts,tsx}", "src/**/*.stories.{ts,tsx}"],
+      "project": ["src/**/*.{ts,tsx}"]
+    },
+    "packages/config": {
+      "entry": [],
+      "project": [],
+      "ignoreDependencies": ["next"]
+    }
+  },
+  "ignore": [".agents/**", ".claude/**"]
+}
