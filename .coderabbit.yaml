@@ -1,0 +1,42 @@
+reviews:
+  review_status: true
+  request_changes_workflow: false
+  high_level_summary: true
+  poem: false
+  collapse_walkthrough: false
+  auto_review:
+    enabled: true
+    drafts: false
+    base_branches:
+      - main
+      - develop
+    ignore_title_keywords:
+      - "WIP"
+      - "chore"
+  path_filters:
+    - "!pnpm-lock.yaml"
+    - "!.agents/**"
+    - "!.claude/**"
+  path_instructions:
+    - path: "apps/web/**"
+      instructions: |
+        Next.js 16 App Router 프로젝트. React 19, Tailwind v4 사용.
+        - 페이지/레이아웃은 app/ 디렉터리 기반 파일 시스템 라우팅
+        - 서버 컴포넌트 기본, 클라이언트 컴포넌트는 'use client' 명시
+        - 데이터 패칭: Server Component fetch 또는 TanStack Query (클라이언트)
+        - 폼: react-hook-form + zod
+        - 구버전 패턴 주의: getServerSideProps/getStaticProps 없음, pages/ 없음
+    - path: "apps/native/**"
+      instructions: |
+        Expo 56 / React Native 0.85 프로젝트. React 19, Expo managed workflow.
+        - 네이티브 브릿지: @webview-bridge/react-native
+        - 빌드: expo prebuild (ios/android 폴더는 gitignore)
+        - 스타일: StyleSheet (Tailwind 없음)
+        - 구버전 패턴 주의: expo-router 미사용, 클래스형 컴포넌트 없음
+    - path: "packages/ui/**"
+      instructions: |
+        공유 UI 컴포넌트 라이브러리. Storybook 10, Tailwind v4, CVA 사용.
+        - 컴포넌트는 stories 파일과 함께 관리
+        - Chromatic 비주얼 테스트 연동
+
+language: ko
