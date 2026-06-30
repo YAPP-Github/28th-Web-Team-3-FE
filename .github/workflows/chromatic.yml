@@ -1,0 +1,53 @@
+name: Chromatic
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+# 같은 브랜치에 연속 push 시 이전 빌드를 취소해 스냅샷 쿼터 절약
+concurrency:
+  group: chromatic-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  chromatic:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          # 전체 git 히스토리 필요 — TurboSnap이 변경된 스토리만 추적하기 위해 사용
+          fetch-depth: 0
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 11.8.0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Publish to Chromatic
+        uses: chromaui/action@v17
+        with:
+          projectToken: ${{ secrets.CHROMATIC_PROJECT_TOKEN }}
+          # packages/ui 에 Storybook이 있으므로 작업 디렉터리 지정
+          workingDir: packages/ui
+          # TurboSnap — 변경된 스토리만 스냅샷 (쿼터 절약)
+          onlyChanged: true
+          # main 머지 시 변경을 자동 승인 → 새 베이스라인으로 확정
+          autoAcceptChanges: main
+          # 비주얼 변경이 있어도 CI를 블록하지 않고 Chromatic에서 리뷰
+          exitZeroOnChanges: true
+          # 드래프트 PR은 건너뜀
+          skip: ${{ github.event.pull_request.draft == true }}

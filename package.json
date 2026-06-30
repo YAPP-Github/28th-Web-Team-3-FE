@@ -14,7 +14,8 @@
     "typecheck": "turbo run typecheck",
     "format": "biome format --write .",
     "check": "biome check --write .",
-    "prepare": "lefthook install"
+    "prepare": "lefthook install",
+    "chromatic": "pnpm --filter @repo/ui chromatic"
   },
   "devDependencies": {
     "@biomejs/biome": "catalog:",
