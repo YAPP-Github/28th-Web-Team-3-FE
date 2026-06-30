@@ -63,6 +63,7 @@ catalog:
   "@storybook/react-vite": ^10.4.6
   vite: ^8.0.16
   "@vitejs/plugin-react": ^6.0.2
+  chromatic: ^17.8.0
 
 # Packages allowed to run install/build lifecycle scripts (pnpm 11+).
 allowBuilds:
@@ -86,3 +87,4 @@ minimumReleaseAgeExclude:
   - '@sentry/replay@10.61.0'
   - '@sentry/server-utils@10.61.0'
   - '@sentry/vercel-edge@10.61.0'
+  - chromatic@17.8.0
