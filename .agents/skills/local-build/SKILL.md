@@ -38,21 +38,9 @@ Reference these guidelines when:
 
 ### Script Selection (CRITICAL)
 - `scripts-shortcuts` — Use root-level shortcuts instead of long `--filter` flags
-- `scripts-scope` — Single app → shortcut; all apps → `pnpm dev` (turbo)
 
 ### Expo Prebuild (HIGH)
-- `prebuild-when` — Run prebuild before first `ios`/`android` when native folder is missing
-- `prebuild-clean` — Use `--clean` flag after adding/removing native modules
+- `prebuild-when` — Run prebuild before first `ios`/`android` when native folder is missing (always runs `--clean` internally)
 
 ### Port Management (HIGH)
-- `port-web` — Next.js runs on :3000; kill with `lsof -ti:3000 | xargs kill`
-- `port-metro` — Metro runs on :8081; kill with `lsof -ti:8081 | xargs kill`
-
-### Error Resolution (MEDIUM)
-- `error-modules` — Package errors → `pnpm install` then retry
-- `error-types` — TypeScript errors → `pnpm typecheck` to see full list
-
-### Environment (MEDIUM)
-- `env-node` — Requires Node ≥ 20 and pnpm 11
-- `env-ios` — Requires Xcode + Command Line Tools for iOS builds
-- `env-android` — Requires Android Studio + `ANDROID_HOME` env var
+- `port-conflicts` — Kill stale process on :3000/:8081 before retrying dev server

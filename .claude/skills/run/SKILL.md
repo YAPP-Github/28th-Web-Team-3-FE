@@ -3,7 +3,7 @@ name: run
 description: >
   이 프로젝트의 웹·네이티브 앱을 로컬에서 실행하거나 빌드한다.
   "실행해줘", "앱 켜줘", "dev 서버", "ios 빌드", "android 빌드" 등의 요청에 사용.
-argument-hint: [web|native|ios|android|build]
+argument-hint: [web|native|ios|android|dev|build]
 ---
 
 # 로컬 실행 스킬

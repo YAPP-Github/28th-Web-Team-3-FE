@@ -85,13 +85,14 @@ ls apps/native/ios apps/native/android
 
 ---
 
-### 2.2 Prebuild Clean After Native Module Changes
+### 2.2 Re-run Prebuild After Native Module Changes
 
-**Rule:** Run `pnpm --filter native prebuild --clean` after adding or removing
-any package that includes native code (e.g., `expo-*`, `react-native-*`).
+**Rule:** Run `pnpm --filter native prebuild` after adding or removing any
+package that includes native code (e.g., `expo-*`, `react-native-*`).
 
-**Why:** Stale native folders cause linker errors that are not obvious from
-Metro or Xcode error messages.
+**Why:** The `prebuild` script always runs `expo prebuild --clean` internally,
+so a plain re-run is enough to regenerate stale native folders. Stale folders
+cause linker errors that are not obvious from Metro or Xcode output.
 
 ---
 

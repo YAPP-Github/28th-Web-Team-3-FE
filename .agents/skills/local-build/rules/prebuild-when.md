@@ -26,8 +26,8 @@ pnpm ios    # or pnpm android
 
 ## Note
 
-After adding native modules (e.g., `expo install expo-camera`), use `--clean` to regenerate:
+After adding native modules (e.g., `expo install expo-camera`), just re-run prebuild — the `prebuild` script is already `expo prebuild --clean`, so a plain re-run regenerates native folders cleanly.
 
 ```bash
-pnpm --filter native prebuild --clean
+pnpm --filter native prebuild
 ```
