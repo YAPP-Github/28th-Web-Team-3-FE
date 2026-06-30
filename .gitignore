@@ -49,14 +49,6 @@ public/sw.js.map
 public/workbox-*.js
 public/workbox-*.js.map
 
-# SQLite (local dev DBs)
-*.sqlite
-*.sqlite-wal
-*.sqlite-shm
-
-# Dropped packages — build artifacts only, no source
-packages/auth/drizzle/
-
 # Certificates / keys
 *.pem
 
