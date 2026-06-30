@@ -67,6 +67,7 @@ catalog:
 # Packages allowed to run install/build lifecycle scripts (pnpm 11+).
 allowBuilds:
   "@sentry/cli": true
+  dtrace-provider: false
   esbuild: true
   lefthook: true
   sharp: true
