@@ -15,6 +15,10 @@
     "format": "biome format --write .",
     "check": "biome check --write .",
     "prepare": "lefthook install",
+    "web": "pnpm --filter web dev",
+    "native": "pnpm --filter native start",
+    "ios": "pnpm --filter native ios",
+    "android": "pnpm --filter native android",
     "chromatic": "pnpm --filter @repo/ui chromatic"
   },
   "devDependencies": {
