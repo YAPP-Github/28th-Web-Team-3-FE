@@ -13,6 +13,7 @@ metadata:
 # 로컬 빌드 스킬
 
 이 Turborepo 모노레포의 로컬 개발·빌드 워크플로에 대한 규칙과 가이드.
+규칙 전문은 [AGENTS.md](./AGENTS.md)를 단일 소스로 한다.
 
 ## 적용 시점
 
@@ -26,21 +27,12 @@ metadata:
 
 ## 규칙 카테고리
 
-| 우선순위 | 카테고리 | 영향도 | 접두사 |
-|---|---|---|---|
-| 1 | 스크립트 선택 | CRITICAL | `scripts-` |
-| 2 | Expo Prebuild | HIGH | `prebuild-` |
-| 3 | 포트 관리 | HIGH | `port-` |
-| 4 | 에러 해결 | MEDIUM | `error-` |
-| 5 | 환경 | MEDIUM | `env-` |
+규칙·예제·명령 전문은 [AGENTS.md](./AGENTS.md)의 해당 섹션에 있다.
 
-## 빠른 참조
-
-### 스크립트 선택 (CRITICAL)
-- `scripts-shortcuts` — 긴 `--filter` 플래그 대신 루트 단축 스크립트 사용
-
-### Expo Prebuild (HIGH)
-- `prebuild-when` — 네이티브 폴더가 없으면 첫 `ios`/`android` 전에 prebuild 실행 (내부적으로 항상 `--clean` 수행)
-
-### 포트 관리 (HIGH)
-- `port-conflicts` — dev 서버 재시도 전에 :3000/:8081의 잔여 프로세스 종료
+| 우선순위 | 카테고리 | 영향도 |
+|---|---|---|
+| 1 | 스크립트 선택 | CRITICAL |
+| 2 | Expo Prebuild | HIGH |
+| 3 | 포트 관리 | HIGH |
+| 4 | 에러 해결 | MEDIUM |
+| 5 | 환경 | MEDIUM |
