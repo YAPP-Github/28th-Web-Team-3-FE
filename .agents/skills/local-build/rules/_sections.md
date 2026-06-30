@@ -1,35 +1,35 @@
-# Sections
+# 섹션
 
-Defines all rule sections, their ordering, impact levels, and filename prefixes.
+모든 규칙 섹션의 순서, 영향도, 파일명 접두사를 정의한다.
 
 ---
 
-## 1. Script Selection (scripts)
+## 1. 스크립트 선택 (scripts)
 
-**Impact:** CRITICAL
-**Description:** Which pnpm command to use for each scenario. Using shortcuts
-avoids --filter typos and is the canonical entry point for this repo.
+**영향도:** CRITICAL
+**설명:** 각 상황에서 어떤 pnpm 명령을 쓸지. 단축 스크립트를 쓰면 --filter
+오타를 피할 수 있고, 이 레포의 표준 진입점이다.
 
 ## 2. Expo Prebuild (prebuild)
 
-**Impact:** HIGH
-**Description:** When and how to run `expo prebuild` before native builds.
-Skipping this step is the #1 cause of native build failures on a fresh clone.
+**영향도:** HIGH
+**설명:** 네이티브 빌드 전에 `expo prebuild`를 언제·어떻게 실행할지. 이 단계를
+건너뛰는 것이 새 클론에서 네이티브 빌드가 실패하는 1순위 원인이다.
 
-## 3. Port Management (port)
+## 3. 포트 관리 (port)
 
-**Impact:** HIGH
-**Description:** Detecting and resolving port conflicts for Next.js (:3000)
-and Metro (:8081) before retrying dev server commands.
+**영향도:** HIGH
+**설명:** dev 서버 명령을 재시도하기 전에 Next.js(:3000)와 Metro(:8081)의
+포트 충돌을 감지·해소한다.
 
-## 4. Error Resolution (error)
+## 4. 에러 해결 (error)
 
-**Impact:** MEDIUM
-**Description:** Triage patterns for the most common local build failures:
-missing modules, TypeScript errors, and Metro cache corruption.
+**영향도:** MEDIUM
+**설명:** 가장 흔한 로컬 빌드 실패의 분류 패턴: 모듈 누락, TypeScript 에러,
+Metro 캐시 손상.
 
-## 5. Environment (env)
+## 5. 환경 (env)
 
-**Impact:** MEDIUM
-**Description:** Node / pnpm version checks and platform tool requirements
-(Xcode for iOS, Android Studio for Android).
+**영향도:** MEDIUM
+**설명:** Node / pnpm 버전 확인과 플랫폼 도구 요구사항(iOS는 Xcode,
+Android는 Android Studio).

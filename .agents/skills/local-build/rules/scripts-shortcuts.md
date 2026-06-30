@@ -1,26 +1,28 @@
 # scripts-shortcuts
 
-**Section:** Script Selection
-**Impact:** CRITICAL
+**섹션:** 스크립트 선택
+**영향도:** CRITICAL
 
-## Rule
+## 규칙
 
-Always use the root-level shortcut scripts instead of `pnpm --filter <app> <script>` when targeting a single app.
+단일 앱을 대상으로 할 때는 `pnpm --filter <app> <script>` 대신 항상 루트 단축
+스크립트를 사용한다.
 
-## Why
+## 이유
 
-`pnpm --filter` is error-prone (filter name must match `package.json` `name` exactly) and verbose. The root shortcuts are the canonical entry point agreed on by the team.
+`pnpm --filter`는 오류가 나기 쉽고(filter 이름이 `package.json`의 `name`과
+정확히 일치해야 함) 장황하다. 루트 단축 스크립트는 팀이 합의한 표준 진입점이다.
 
-## Correct
+## 올바른 예
 
 ```bash
 pnpm web      # Next.js dev
 pnpm native   # Expo dev-client
-pnpm ios      # iOS simulator
-pnpm android  # Android emulator
+pnpm ios      # iOS 시뮬레이터
+pnpm android  # Android 에뮬레이터
 ```
 
-## Incorrect
+## 잘못된 예
 
 ```bash
 pnpm --filter web dev

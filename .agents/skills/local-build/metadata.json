@@ -1,8 +1,8 @@
 {
   "version": "1.0.0",
   "organization": "28th-Web-Team-3",
-  "date": "June 2026",
-  "abstract": "Local development and build workflow guide for the web-team-3-fe monorepo (Next.js 16 + Expo 56). Covers pnpm shortcut scripts, Expo dev-client setup, port management, prebuild flow, and common error resolution. Designed for AI agents assisting with dev environment setup and build troubleshooting.",
+  "date": "2026년 6월",
+  "abstract": "web-team-3-fe 모노레포(Next.js 16 + Expo 56)의 로컬 개발·빌드 워크플로 가이드. pnpm 단축 스크립트, Expo dev-client 셋업, 포트 관리, prebuild 흐름, 자주 나오는 에러 해결을 다룬다. 개발 환경 셋업과 빌드 문제 해결을 돕는 AI 에이전트를 위해 설계됐다.",
   "references": [
     "https://pnpm.io/filtering",
     "https://docs.expo.dev/develop/development-builds/introduction/",

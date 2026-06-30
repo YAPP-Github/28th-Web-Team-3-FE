@@ -1,192 +1,190 @@
-# Local Build Skills
+# 로컬 빌드 스킬
 
-**Version 1.0.0**
+**버전 1.0.0**
 28th-Web-Team-3
-June 2026
+2026년 6월
 
-> This document guides AI agents assisting with local development and build
-> tasks in the web-team-3-fe monorepo. Rules are designed for consistency
-> across onboarding, debugging, and automation workflows.
-
----
-
-## Abstract
-
-Local development and build workflow guide for the web-team-3-fe monorepo
-(Next.js 16 + Expo 56). Covers pnpm shortcut scripts, Expo dev-client setup,
-port management, prebuild flow, and common error resolution.
+> 이 문서는 web-team-3-fe 모노레포에서 로컬 개발·빌드 작업을 돕는 AI 에이전트를
+> 위한 가이드다. 온보딩·디버깅·자동화 워크플로 전반에서 일관성을 유지하도록
+> 규칙을 정리했다.
 
 ---
 
-## Table of Contents
+## 개요
 
-1. [Script Selection](#1-script-selection) — **CRITICAL**
+web-team-3-fe 모노레포(Next.js 16 + Expo 56)의 로컬 개발·빌드 워크플로 가이드.
+pnpm 단축 스크립트, Expo dev-client 셋업, 포트 관리, prebuild 흐름, 자주 나오는
+에러 해결을 다룬다.
+
+---
+
+## 목차
+
+1. [스크립트 선택](#1-스크립트-선택) — **CRITICAL**
 2. [Expo Prebuild](#2-expo-prebuild) — **HIGH**
-3. [Port Management](#3-port-management) — **HIGH**
-4. [Error Resolution](#4-error-resolution) — **MEDIUM**
-5. [Environment Requirements](#5-environment-requirements) — **MEDIUM**
+3. [포트 관리](#3-포트-관리) — **HIGH**
+4. [에러 해결](#4-에러-해결) — **MEDIUM**
+5. [환경 요구사항](#5-환경-요구사항) — **MEDIUM**
 
 ---
 
-## 1. Script Selection — CRITICAL
+## 1. 스크립트 선택 — CRITICAL
 
-### 1.1 Use Root Shortcut Scripts
+### 1.1 루트 단축 스크립트 사용
 
-**Rule:** Use `pnpm web`, `pnpm native`, `pnpm ios`, `pnpm android` instead of
-`pnpm --filter <app> <script>` when running a single app.
+**규칙:** 단일 앱을 실행할 때는 `pnpm --filter <app> <script>` 대신
+`pnpm web`, `pnpm native`, `pnpm ios`, `pnpm android`를 쓴다.
 
-**Why:** Root-level shortcuts reduce cognitive overhead and prevent typos in
-filter names. They are the canonical entry point in this repo.
+**이유:** 루트 단축 스크립트는 인지 부담을 줄이고 filter 이름 오타를 막는다.
+이 레포의 표준 진입점이다.
 
-| Shortcut | Equivalent | Purpose |
+| 단축 | 동등 명령 | 용도 |
 |---|---|---|
-| `pnpm web` | `pnpm --filter web dev` | Next.js dev server |
+| `pnpm web` | `pnpm --filter web dev` | Next.js dev 서버 |
 | `pnpm native` | `pnpm --filter native start` | Expo dev-client |
-| `pnpm ios` | `pnpm --filter native ios` | iOS simulator build |
-| `pnpm android` | `pnpm --filter native android` | Android emulator build |
+| `pnpm ios` | `pnpm --filter native ios` | iOS 시뮬레이터 빌드 |
+| `pnpm android` | `pnpm --filter native android` | Android 에뮬레이터 빌드 |
 
-**Incorrect:**
+**잘못된 예:**
 ```bash
 pnpm --filter native ios
 ```
 
-**Correct:**
+**올바른 예:**
 ```bash
 pnpm ios
 ```
 
 ---
 
-### 1.2 Use Turbo for Multi-App Dev
+### 1.2 멀티 앱 개발은 Turbo로
 
-**Rule:** Use `pnpm dev` (turbo) when running web and native concurrently.
-Do not open two terminals with separate shortcut scripts.
+**규칙:** 웹과 네이티브를 동시에 실행할 때는 `pnpm dev`(turbo)를 쓴다.
+단축 스크립트를 터미널 두 개로 따로 띄우지 않는다.
 
-**Why:** Turbo parallelizes tasks with correct dependency ordering and shared
-cache. Separate terminals can race on shared package builds.
+**이유:** Turbo는 의존성 순서를 맞춰 작업을 병렬화하고 캐시를 공유한다.
+터미널을 따로 띄우면 공유 패키지 빌드에서 레이스가 날 수 있다.
 
 ---
 
 ## 2. Expo Prebuild — HIGH
 
-### 2.1 Prebuild Before First Native Build
+### 2.1 첫 네이티브 빌드 전 prebuild
 
-**Rule:** Run `pnpm --filter native prebuild` before the first `pnpm ios` or
-`pnpm android` if `apps/native/ios` or `apps/native/android` folders are
-absent.
+**규칙:** `apps/native/ios` 또는 `apps/native/android` 폴더가 없으면, 첫
+`pnpm ios` / `pnpm android` 전에 `pnpm --filter native prebuild`를 실행한다.
 
-**Why:** Expo managed workflow does not include native folders in the repo.
-`expo run:ios` requires them to exist.
+**이유:** Expo managed 워크플로는 네이티브 폴더를 레포에 포함하지 않는다.
+`expo run:ios`는 이 폴더가 있어야 동작한다.
 
-**Check:**
+**확인:**
 ```bash
 ls apps/native/ios apps/native/android
 ```
 
 ---
 
-### 2.2 Re-run Prebuild After Native Module Changes
+### 2.2 네이티브 모듈 변경 후 prebuild 재실행
 
-**Rule:** Run `pnpm --filter native prebuild` after adding or removing any
-package that includes native code (e.g., `expo-*`, `react-native-*`).
+**규칙:** 네이티브 코드를 포함하는 패키지(예: `expo-*`, `react-native-*`)를
+추가·제거한 뒤에는 `pnpm --filter native prebuild`를 다시 실행한다.
 
-**Why:** The `prebuild` script always runs `expo prebuild --clean` internally,
-so a plain re-run is enough to regenerate stale native folders. Stale folders
-cause linker errors that are not obvious from Metro or Xcode output.
+**이유:** `prebuild` 스크립트는 내부적으로 항상 `expo prebuild --clean`을
+실행하므로, 그냥 재실행만 하면 오래된 네이티브 폴더가 깨끗하게 재생성된다.
+오래된 폴더는 Metro나 Xcode 출력만 봐서는 알기 어려운 링커 에러를 일으킨다.
 
 ---
 
-## 3. Port Management — HIGH
+## 3. 포트 관리 — HIGH
 
-### 3.1 Resolve Port Conflicts Before Retry
+### 3.1 재시도 전 포트 충돌 해소
 
-**Rule:** Before retrying a failed start command, check and kill any process
-occupying the required port.
+**규칙:** 실패한 start 명령을 다시 돌리기 전에, 해당 포트를 점유한 프로세스를
+확인하고 종료한다.
 
-| App | Port | Kill command |
+| 앱 | 포트 | 종료 명령 |
 |---|---|---|
 | Next.js | 3000 | `lsof -ti:3000 \| xargs kill` |
 | Metro | 8081 | `lsof -ti:8081 \| xargs kill` |
 
-**Why:** Stale dev server processes are the most common cause of
-"address already in use" errors. Retrying without clearing the port loops.
+**이유:** 남아있는 dev 서버 프로세스가 "address already in use" 에러의 가장
+흔한 원인이다. 포트를 비우지 않고 재시도하면 같은 에러가 반복된다.
 
 ---
 
-## 4. Error Resolution — MEDIUM
+## 4. 에러 해결 — MEDIUM
 
 ### 4.1 Module Not Found
 
-**Symptom:** `Cannot find module '@repo/...'` or similar workspace package.
+**증상:** `Cannot find module '@repo/...'` 또는 유사한 워크스페이스 패키지 에러.
 
-**Resolution:**
+**해결:**
 ```bash
 pnpm install
 ```
-Then retry the original command. If the error persists, check
-`pnpm-workspace.yaml` to confirm the package is listed.
+그 뒤 원래 명령을 다시 실행한다. 에러가 계속되면 `pnpm-workspace.yaml`에서
+해당 패키지가 등록돼 있는지 확인한다.
 
 ---
 
-### 4.2 TypeScript Errors Blocking Build
+### 4.2 빌드를 막는 TypeScript 에러
 
-**Symptom:** Build fails with type errors in terminal.
+**증상:** 터미널에서 타입 에러로 빌드 실패.
 
-**Resolution:**
+**해결:**
 ```bash
 pnpm typecheck
 ```
-Show the full list of errors before attempting fixes. Do not suppress errors
-with `// @ts-ignore` — resolve the root type mismatch.
+고치기 전에 에러 전체 목록을 먼저 확인한다. `// @ts-ignore`로 에러를 덮지 말고,
+근본 타입 불일치를 해결한다.
 
 ---
 
-### 4.3 Metro Cache Corruption
+### 4.3 Metro 캐시 손상
 
-**Symptom:** Unexpected JS errors in simulator despite correct source code;
-cache-related warnings in Metro output.
+**증상:** 소스 코드는 멀쩡한데 시뮬레이터에서 예상치 못한 JS 에러 발생,
+Metro 출력에 캐시 관련 경고.
 
-**Resolution:**
+**해결:**
 ```bash
 pnpm --filter native start --clear
 ```
 
 ---
 
-## 5. Environment Requirements — MEDIUM
+## 5. 환경 요구사항 — MEDIUM
 
-### 5.1 Node and pnpm Versions
+### 5.1 Node·pnpm 버전
 
-**Rule:** Confirm runtime matches the repo's requirements before debugging
-build failures.
+**규칙:** 빌드 실패를 디버깅하기 전에 런타임이 레포 요구사항에 맞는지 확인한다.
 
 ```bash
-node --version   # must be >= 20
-pnpm --version   # must be 11.x
+node --version   # >= 20 이어야 함
+pnpm --version   # 11.x 이어야 함
 ```
 
-**Why:** Node < 20 causes subtle crypto and ESM resolution failures that
-surface as misleading errors inside packages.
+**이유:** Node 20 미만은 crypto·ESM 해석에서 미묘한 실패를 일으키고, 이게
+패키지 내부의 엉뚱한 에러처럼 보인다.
 
 ---
 
-### 5.2 iOS Build Requirements
+### 5.2 iOS 빌드 요구사항
 
-**Rule:** Confirm Xcode tools are present before running `pnpm ios`.
+**규칙:** `pnpm ios` 실행 전에 Xcode 도구가 있는지 확인한다.
 
 ```bash
-xcode-select -p          # should print a path
-xcrun simctl list        # lists available simulators
+xcode-select -p          # 경로가 출력돼야 함
+xcrun simctl list        # 사용 가능한 시뮬레이터 목록
 ```
 
 ---
 
-### 5.3 Android Build Requirements
+### 5.3 Android 빌드 요구사항
 
-**Rule:** Confirm `ANDROID_HOME` is set and an emulator is running before
-`pnpm android`.
+**규칙:** `pnpm android` 전에 `ANDROID_HOME`이 설정돼 있고 에뮬레이터가
+실행 중인지 확인한다.
 
 ```bash
-echo $ANDROID_HOME       # should be non-empty
-adb devices              # at least one device/emulator listed
+echo $ANDROID_HOME       # 비어 있지 않아야 함
+adb devices              # 최소 1개 기기/에뮬레이터가 보여야 함
 ```
