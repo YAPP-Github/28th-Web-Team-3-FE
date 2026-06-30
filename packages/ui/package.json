@@ -13,7 +13,7 @@
     "lint": "biome check .",
     "typecheck": "tsc --noEmit",
     "storybook": "storybook dev -p 6006",
-    "build-storybook": "storybook build",
+    "build-storybook": "storybook build --stats-json",
     "chromatic": "chromatic --build-script-name build-storybook"
   },
   "dependencies": {
