@@ -9,7 +9,7 @@
       "ignoreDependencies": ["server-only", "postcss-load-config", "tailwindcss"]
     },
     "apps/native": {
-      "entry": ["App.tsx"],
+      "entry": ["index.ts", "App.tsx"],
       "project": ["**/*.{ts,tsx}"],
       "ignoreDependencies": [
         "babel-preset-expo",
