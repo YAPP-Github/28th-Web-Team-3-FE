@@ -1,0 +1,12 @@
+{
+  "version": "1.0.0",
+  "organization": "28th-Web-Team-3",
+  "date": "June 2026",
+  "abstract": "Local development and build workflow guide for the web-team-3-fe monorepo (Next.js 16 + Expo 56). Covers pnpm shortcut scripts, Expo dev-client setup, port management, prebuild flow, and common error resolution. Designed for AI agents assisting with dev environment setup and build troubleshooting.",
+  "references": [
+    "https://pnpm.io/filtering",
+    "https://docs.expo.dev/develop/development-builds/introduction/",
+    "https://docs.expo.dev/build/introduction/",
+    "https://turbo.build/repo/docs/crafting-your-repository/running-tasks"
+  ]
+}
