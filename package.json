@@ -19,11 +19,13 @@
     "native": "pnpm --filter native start",
     "ios": "pnpm --filter native ios",
     "android": "pnpm --filter native android",
-    "chromatic": "pnpm --filter @repo/ui chromatic"
+    "chromatic": "pnpm --filter @repo/ui chromatic",
+    "knip": "knip"
   },
   "devDependencies": {
     "@biomejs/biome": "catalog:",
     "@repo/config": "workspace:*",
+    "knip": "catalog:",
     "lefthook": "catalog:",
     "turbo": "catalog:",
     "typescript": "catalog:"
