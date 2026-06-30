@@ -26,11 +26,6 @@ coverage/
 playwright-report/
 test-results/
 
-# SQLite (로컬 DB 파일 — 실수로 커밋 방지)
-*.sqlite
-*.sqlite-wal
-*.sqlite-shm
-
 # Env
 .env
 .env.*

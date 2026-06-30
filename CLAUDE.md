@@ -116,6 +116,7 @@ pnpm format      # biome format --write .
 ### 규칙
 
 - **버전은 catalog에서만**. 패키지엔 `catalog:`로 참조 — 개별 버전 박지 마라.
+  - 예외: Expo SDK가 버전을 관리하는 패키지(`expo`·`expo-*`, `react-native`, `react-native-webview`)는 `apps/native`에 직접 핀. `expo install`/`expo-doctor`가 SDK 정합성을 검사하므로 catalog로 빼지 않는다.
 - **린트/포맷은 Biome 단일**. ESLint·Prettier 도입 금지.
 - 커밋 전 lefthook 훅 통과 필수 (`pnpm prepare`로 설치).
 - 워크스페이스 내부 의존성은 `workspace:*`.
