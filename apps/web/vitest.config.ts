@@ -1,16 +1,20 @@
-import { fileURLToPath } from "node:url";
+import { createRequire } from "node:module";
+import { dirname } from "node:path";
 import react from "@vitejs/plugin-react";
 import { defineConfig } from "vitest/config";
 
-// 워크스페이스 루트의 단일 react/react-dom을 절대경로로 못박아 인스턴스 중복 방지
-const rootModules = fileURLToPath(new URL("../../node_modules", import.meta.url));
+// react/react-dom을 실제 설치 위치로 동적 해석해 단일 인스턴스로 고정.
+// 경로를 하드코딩하지 않고 require.resolve로 찾으므로 설치 레이아웃(hoisted/isolated)에 무관.
+const require = createRequire(import.meta.url);
+const reactPath = dirname(require.resolve("react/package.json"));
+const reactDomPath = dirname(require.resolve("react-dom/package.json"));
 
 export default defineConfig({
   plugins: [react()],
   resolve: {
     alias: {
-      react: `${rootModules}/react`,
-      "react-dom": `${rootModules}/react-dom`,
+      react: reactPath,
+      "react-dom": reactDomPath,
     },
   },
   test: {
