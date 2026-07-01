@@ -15,6 +15,7 @@
   "dependencies": {
     "@hookform/resolvers": "catalog:",
     "@repo/api": "workspace:*",
+    "ky": "catalog:",
     "@repo/bridge": "workspace:*",
     "@repo/schema": "workspace:*",
     "@repo/ui": "workspace:*",
