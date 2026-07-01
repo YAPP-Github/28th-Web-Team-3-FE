@@ -94,7 +94,7 @@ pnpm format      # biome format --write .
 
 | 영역 | 패키지 | 버전 |
 |---|---|---|
-| 런타임 | Node | >=20 |
+| 런타임 | Node | >=24.18.0 (.nvmrc 핀) |
 | 패키지매니저 | pnpm | 11.8.0 |
 | 빌드 | Turbo | ^2.9.18 |
 | 언어 | TypeScript | ^6.0.3 |
