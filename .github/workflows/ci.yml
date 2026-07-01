@@ -24,5 +24,6 @@ jobs:
           node-version-file: .nvmrc
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      # lint / typecheck / test 하드 게이트 — 하나라도 실패하면 PR 빨간불
-      - run: pnpm turbo run lint typecheck test
+      # lint / typecheck / test / build 하드 게이트 — 하나라도 실패하면 PR 빨간불
+      # build는 web만 대상 (native·packages엔 build 태스크 없어 turbo가 자동 스킵)
+      - run: pnpm turbo run lint typecheck test build
