@@ -12,7 +12,6 @@ reviews:
       - develop
     ignore_title_keywords:
       - "WIP"
-      - "chore"
   path_filters:
     - "!pnpm-lock.yaml"
     - "!.agents/**"
