@@ -1,15 +1,16 @@
-name: Knip
+name: CI
 
 on:
   pull_request:
-    branches: [main]
+    # develop 전환 대비해 미리 포함
+    branches: [main, develop]
 
 concurrency:
-  group: knip-${{ github.ref }}
+  group: ci-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
-  knip:
+  verify:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -23,5 +24,5 @@ jobs:
           node-version-file: .nvmrc
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      - run: pnpm knip
-        continue-on-error: true
+      # lint / typecheck / test 하드 게이트 — 하나라도 실패하면 PR 빨간불
+      - run: pnpm turbo run lint typecheck test
