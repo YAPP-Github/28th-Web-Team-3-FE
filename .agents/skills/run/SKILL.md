@@ -8,7 +8,7 @@ argument-hint: [web|native|ios|android|dev|build]
 
 # 로컬 실행 스킬
 
-`pnpm web / native / ios / android` 단축 스크립트를 활용해 앱을 실행합니다.
+`pnpm web / native / ios / android` 단축 스크립트로 앱을 실행한다.
 
 ## 단축 스크립트 매핑
 
@@ -45,10 +45,10 @@ argument-hint: [web|native|ios|android|dev|build]
 
 ## Expo dev-client 안내
 
-`pnpm native`는 Expo Go가 아닌 **dev-client** 모드로 실행됩니다.
-기기에 dev-client 앱이 없다면 먼저 `pnpm ios` 또는 `pnpm android`로 빌드해야 합니다.
+`pnpm native`는 Expo Go가 아닌 **dev-client** 모드로 실행된다.
+기기에 dev-client 앱이 없으면 먼저 `pnpm ios` 또는 `pnpm android`로 빌드한다.
 
 ## EAS 클라우드 빌드
 
-로컬 빌드가 아닌 EAS 빌드는 `eas build` 명령을 사용합니다 (`apps/native/eas.json` 참고).
-이 스킬은 **로컬 빌드 전용**입니다.
+로컬 빌드가 아닌 EAS 빌드는 `eas build` 명령을 사용한다 (`apps/native/eas.json` 참고).
+이 스킬은 **로컬 빌드 전용**이다.

@@ -35,7 +35,7 @@ pnpm 단축 스크립트, Expo dev-client 셋업, 포트 관리, prebuild 흐름
 **규칙:** 단일 앱을 실행할 때는 `pnpm --filter <app> <script>` 대신
 `pnpm web`, `pnpm native`, `pnpm ios`, `pnpm android`를 쓴다.
 
-**이유:** 루트 단축 스크립트는 인지 부담을 줄이고 filter 이름 오타를 막는다.
+**이유:** 루트 단축 스크립트는 외울 게 적고 filter 이름 오타를 막는다.
 이 레포의 표준 진입점이다.
 
 | 단축 | 동등 명령 | 용도 |
@@ -159,11 +159,11 @@ pnpm --filter native start --clear
 **규칙:** 빌드 실패를 디버깅하기 전에 런타임이 레포 요구사항에 맞는지 확인한다.
 
 ```bash
-node --version   # >= 20 이어야 함
+node --version   # >= 24.18.0 이어야 함 (.nvmrc 핀)
 pnpm --version   # 11.x 이어야 함
 ```
 
-**이유:** Node 20 미만은 crypto·ESM 해석에서 미묘한 실패를 일으키고, 이게
+**이유:** 요구 버전 미만의 Node는 crypto·ESM 해석에서 미묘한 실패를 일으키고, 이게
 패키지 내부의 엉뚱한 에러처럼 보인다.
 
 ---
