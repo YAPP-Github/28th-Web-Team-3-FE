@@ -4,8 +4,8 @@ description: 코드 빌드·테스트 → AI 리뷰 → 푸시 → GitHub PR 생
 argument-hint: [브랜치] [리뷰어]
 ---
 
-빌드·테스트(vitest → Playwright) → next16-rn AI 리뷰 → 푸시 → PR 생성을 한번에 처리합니다.
-**셸 스크립트 없음** — 각 단계를 도구 호출로 실행합니다.
+빌드·테스트(vitest → Playwright) → next16-rn AI 리뷰 → 푸시 → PR 생성을 한번에 처리한다.
+**셸 스크립트 없음** — 각 단계를 도구 호출로 실행한다.
 
 ## 인자
 
