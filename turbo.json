@@ -15,11 +15,8 @@
       "cache": false,
       "persistent": true
     },
-    "lint": {
-      "dependsOn": ["^build"]
-    },
+    "lint": {},
     "typecheck": {
-      "dependsOn": ["^build"],
       "outputs": ["*.tsbuildinfo"]
     },
     "test": {
