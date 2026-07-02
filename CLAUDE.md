@@ -73,7 +73,7 @@ pnpm + Turborepo 모노레포. Next.js 웹 + Expo 네이티브, WebView 브릿�
 ```
 apps/web      Next.js 16 (App Router)
 apps/native   Expo 56 / React Native 0.85
-packages/*    @repo/{api,auth,bridge,schema,ui,config}
+packages/*    @repo/{api,bridge,schema,ui,config}
 ```
 
 ### 명령어 (루트에서)
@@ -111,6 +111,10 @@ pnpm format      # biome format --write .
 | 스타일 | Tailwind | ^4.3.1 |
 | 브릿지 | @webview-bridge/* | ^1.7.9 |
 | 테스트 | Vitest / Playwright | ^4.1.9 / ^1.61.0 |
+| API 모킹 | msw | ^2.14.6 |
+| 모니터링 | @sentry/nextjs | ^10.61.0 |
+| 컴포넌트 문서 | Storybook / Chromatic | ^10.4.6 / ^17.8.0 |
+| 데드코드 탐지 | knip | ^6.23.0 |
 | 네이티브 | Expo / React Native | ~56.0 / 0.85.3 |
 
 ### 규칙
