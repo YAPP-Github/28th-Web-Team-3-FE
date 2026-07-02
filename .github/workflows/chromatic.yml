@@ -22,6 +22,7 @@ jobs:
         with:
           # 전체 git 히스토리 필요 — TurboSnap이 변경된 스토리만 추적하기 위해 사용
           fetch-depth: 0
+          persist-credentials: false
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
