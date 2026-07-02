@@ -81,6 +81,10 @@ allowBuilds:
   msw: true
   sharp: true
 
+# 출시 1일(pnpm 11 기본값과 동일) 미만 버전 설치 차단 — 공급망 공격 완충.
+# 아래 exclude는 이 규칙의 예외 (도입 시점에 신선했던 버전들).
+minimumReleaseAge: 1440
+
 minimumReleaseAgeExclude:
   - '@sentry/browser-utils@10.61.0'
   - '@sentry/browser@10.61.0'
