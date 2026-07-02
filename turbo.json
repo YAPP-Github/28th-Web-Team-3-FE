@@ -17,6 +17,7 @@
     },
     "lint": {},
     "typecheck": {
+      "dependsOn": ["^typecheck"],
       "outputs": ["*.tsbuildinfo"]
     },
     "test": {
