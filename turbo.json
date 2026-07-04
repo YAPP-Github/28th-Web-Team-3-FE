@@ -6,7 +6,13 @@
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
-      "outputs": [".next/**", "!.next/cache/**", "dist/**", "storybook-static/**"]
+      "outputs": [
+        ".next/**",
+        "!.next/cache/**",
+        "dist/**",
+        "storybook-static/**",
+        "src/styles/tokens.generated.css"
+      ]
     },
     "dev": {
       "dependsOn": ["^build"],

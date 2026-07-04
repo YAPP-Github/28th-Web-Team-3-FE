@@ -9,6 +9,9 @@ out/
 storybook-static/
 *.tsbuildinfo
 
+# Style Dictionary output (generated from packages/ui/tokens/*.json)
+packages/ui/src/styles/tokens.generated.css
+
 # Turbo
 .turbo/
 

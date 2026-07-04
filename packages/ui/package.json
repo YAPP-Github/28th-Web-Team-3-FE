@@ -10,10 +10,11 @@
     "./components/*": "./src/components/*.tsx"
   },
   "scripts": {
+    "build": "style-dictionary build --config style-dictionary.config.mjs",
     "lint": "biome check .",
     "typecheck": "tsc --noEmit",
-    "storybook": "storybook dev -p 6006",
-    "build-storybook": "storybook build --stats-json",
+    "storybook": "pnpm run build && storybook dev -p 6006",
+    "build-storybook": "pnpm run build && storybook build --stats-json",
     "chromatic": "chromatic --build-script-name build-storybook"
   },
   "dependencies": {
@@ -39,6 +40,7 @@
     "react-dom": "catalog:",
     "chromatic": "catalog:",
     "storybook": "catalog:",
+    "style-dictionary": "catalog:",
     "tailwindcss": "catalog:",
     "typescript": "catalog:",
     "vite": "catalog:"
