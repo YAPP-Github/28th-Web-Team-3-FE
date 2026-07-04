@@ -4,7 +4,7 @@ import StyleDictionary from "style-dictionary";
 register(StyleDictionary, { excludeParentKeys: true });
 
 const sd = new StyleDictionary({
-  source: ["tokens/tokens.json"],
+  source: ["tokens.json"],
   preprocessors: ["tokens-studio"],
   platforms: {
     css: {

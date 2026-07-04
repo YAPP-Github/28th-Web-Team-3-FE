@@ -17,7 +17,9 @@
       "!**/.expo",
       "!**/*.gen.ts",
       "!**/.agents",
-      "!**/mockServiceWorker.js"
+      "!**/mockServiceWorker.js",
+      "!packages/ui/tokens.json",
+      "!packages/ui/src/styles/tokens.generated.css"
     ]
   }
 }
