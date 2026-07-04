@@ -18,8 +18,7 @@
       "!**/*.gen.ts",
       "!**/.agents",
       "!**/mockServiceWorker.js",
-      "!packages/ui/tokens.json",
-      "!packages/ui/src/styles/tokens.generated.css"
+      "!packages/ui/tokens.json"
     ]
   }
 }

@@ -8,6 +8,7 @@ dist/
 out/
 storybook-static/
 *.tsbuildinfo
+packages/ui/src/styles/tokens.generated.css
 
 # Turbo
 .turbo/

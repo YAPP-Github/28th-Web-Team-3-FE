@@ -10,6 +10,7 @@
     "./components/*": "./src/components/*.tsx"
   },
   "scripts": {
+    "build": "node scripts/build-tokens.mjs",
     "lint": "biome check .",
     "typecheck": "tsc --noEmit",
     "storybook": "storybook dev -p 6006",
