@@ -1,3 +1,4 @@
+import { existsSync } from "node:fs";
 import { register } from "@tokens-studio/sd-transforms";
 import StyleDictionary from "style-dictionary";
 import { propertyFormatNames } from "style-dictionary/enums";
@@ -50,3 +51,11 @@ const sd = new StyleDictionary({
 });
 
 await sd.buildAllPlatforms();
+
+const outputPath = "src/styles/tokens.generated.css";
+if (!existsSync(outputPath)) {
+  console.error(
+    `tokens.json에 색상 토큰이 하나도 없어서 ${outputPath}가 생성되지 않았습니다. Figma push 내용을 확인하세요.`,
+  );
+  process.exit(1);
+}

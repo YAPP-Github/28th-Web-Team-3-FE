@@ -13,8 +13,8 @@
     "build": "node scripts/build-tokens.mjs",
     "lint": "biome check .",
     "typecheck": "tsc --noEmit",
-    "storybook": "storybook dev -p 6006",
-    "build-storybook": "storybook build --stats-json",
+    "storybook": "node scripts/build-tokens.mjs && storybook dev -p 6006",
+    "build-storybook": "node scripts/build-tokens.mjs && storybook build --stats-json",
     "chromatic": "chromatic --build-script-name build-storybook",
     "tokens:build": "node scripts/build-tokens.mjs"
   },
