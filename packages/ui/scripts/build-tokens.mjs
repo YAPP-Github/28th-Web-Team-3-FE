@@ -1,10 +1,14 @@
-import { existsSync, rmSync } from "node:fs";
+import { rmSync } from "node:fs";
 import { register } from "@tokens-studio/sd-transforms";
 import StyleDictionary from "style-dictionary";
 import { propertyFormatNames } from "style-dictionary/enums";
 import { createPropertyFormatter, fileHeader } from "style-dictionary/utils";
 
 register(StyleDictionary, { excludeParentKeys: true });
+
+// 색상 토큰 개수를 밖에서 검증할 수 있게 클로저로 기록해둠 (format 함수 밖에서는
+// 변환된 dictionary에 접근할 방법이 없음).
+let colorTokenCount = 0;
 
 // 색상 토큰은 --color-* 네임스페이스로 @theme 안에 넣어서 Tailwind v4가
 // bg-gray-500 같은 유틸리티 클래스를 자동 생성하게 함. 나머지(타이포그래피 등)는
@@ -22,6 +26,7 @@ StyleDictionary.registerFormat({
 
     const colorTokens = dictionary.allTokens.filter((t) => t.$type === "color");
     const restTokens = dictionary.allTokens.filter((t) => t.$type !== "color");
+    colorTokenCount = colorTokens.length;
 
     const theme = colorTokens
       .map((t) => formatProperty({ ...t, name: `color-${t.name}` }))
@@ -55,9 +60,9 @@ rmSync(outputPath, { force: true });
 
 await sd.buildAllPlatforms();
 
-if (!existsSync(outputPath)) {
+if (colorTokenCount === 0) {
   console.error(
-    `tokens.json에 색상 토큰이 하나도 없어서 ${outputPath}가 생성되지 않았습니다. Figma push 내용을 확인하세요.`,
+    `tokens.json에 색상($type: "color") 토큰이 하나도 없습니다. Figma push 내용을 확인하세요.`,
   );
   process.exit(1);
 }
