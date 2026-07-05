@@ -92,30 +92,30 @@ pnpm format      # biome format --write .
 
 ### 스택 / 버전 (catalog = `pnpm-workspace.yaml` 단일 소스)
 
-| 영역 | 패키지 | 버전 |
-|---|---|---|
-| 런타임 | Node | >=24.18.0 (.nvmrc 핀) |
-| 패키지매니저 | pnpm | 11.8.0 |
-| 빌드 | Turbo | ^2.9.18 |
-| 언어 | TypeScript | ^6.0.3 |
-| 린트/포맷 | Biome | ^2.5.0 |
-| Git 훅 | lefthook | ^2.1.9 |
-| 웹 | Next.js | ^16.2.9 |
-| React | react / react-dom | ^19.2.7 |
-| 폼 | react-hook-form | ^7.80.0 |
-| 스키마 | zod | ^4.4.3 (워크스페이스 1카피) |
-| 데이터 | @tanstack/react-query | ^5.101.0 |
-| HTTP | ky | ^2.0.2 |
-| 인증 | 백엔드(Spring) 세션 — 클라 측 auth 라이브러리 없음 | — |
-| 상태 | zustand | ^5.0.14 |
-| 스타일 | Tailwind | ^4.3.1 |
-| 브릿지 | @webview-bridge/* | ^1.7.9 |
-| 테스트 | Vitest / Playwright | ^4.1.9 / ^1.61.0 |
-| API 모킹 | msw | ^2.14.6 |
-| 모니터링 | @sentry/nextjs | ^10.61.0 |
-| 컴포넌트 문서 | Storybook / Chromatic | ^10.4.6 / ^17.8.0 |
-| 데드코드 탐지 | knip | ^6.23.0 |
-| 네이티브 | Expo / React Native | ~56.0 / 0.85.3 |
+| 영역          | 패키지                                             | 버전                        |
+| ------------- | -------------------------------------------------- | --------------------------- |
+| 런타임        | Node                                               | >=24.18.0 (.nvmrc 핀)       |
+| 패키지매니저  | pnpm                                               | 11.8.0                      |
+| 빌드          | Turbo                                              | ^2.9.18                     |
+| 언어          | TypeScript                                         | ^6.0.3                      |
+| 린트/포맷     | Biome                                              | ^2.5.0                      |
+| Git 훅        | lefthook                                           | ^2.1.9                      |
+| 웹            | Next.js                                            | ^16.2.9                     |
+| React         | react / react-dom                                  | ^19.2.7                     |
+| 폼            | react-hook-form                                    | ^7.80.0                     |
+| 스키마        | zod                                                | ^4.4.3 (워크스페이스 1카피) |
+| 데이터        | @tanstack/react-query                              | ^5.101.0                    |
+| HTTP          | ky                                                 | ^2.0.2                      |
+| 인증          | 백엔드(Spring) 세션 — 클라 측 auth 라이브러리 없음 | —                           |
+| 상태          | zustand                                            | ^5.0.14                     |
+| 스타일        | Tailwind                                           | ^4.3.1                      |
+| 브릿지        | @webview-bridge/*                                  | ^1.7.9                      |
+| 테스트        | Vitest / Playwright                                | ^4.1.9 / ^1.61.0            |
+| API 모킹      | msw                                                | ^2.14.6                     |
+| 모니터링      | @sentry/nextjs                                     | ^10.61.0                    |
+| 컴포넌트 문서 | Storybook / Chromatic                              | ^10.4.6 / ^17.8.0           |
+| 데드코드 탐지 | knip                                               | ^6.23.0                     |
+| 네이티브      | Expo / React Native                                | ~56.0 / 0.85.3              |
 
 ### 규칙
 

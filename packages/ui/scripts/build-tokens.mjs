@@ -14,7 +14,9 @@ StyleDictionary.registerTransform({
   name: "ts/lineheight/px",
   type: "value",
   transitive: true,
-  filter: (token) => token.$type === "lineHeight" && typeof token.$value === "number",
+  filter: (token) =>
+    (token.$type === "lineHeight" || token.$type === "lineHeights") &&
+    typeof token.$value === "number",
   transform: (token) => `${token.$value}px`,
 });
 
@@ -30,6 +32,7 @@ const TYPOGRAPHY_CSS_PROP = {
   textCase: "text-transform",
   textDecoration: "text-decoration-line",
 };
+const TYPOGRAPHY_DROPPED_PROPS = new Set(["paragraphSpacing", "paragraphIndent"]);
 
 // 색상 토큰 개수를 밖에서 검증할 수 있게 클로저로 기록해둠 (format 함수 밖에서는
 // 변환된 dictionary에 접근할 방법이 없음).
@@ -57,9 +60,16 @@ StyleDictionary.registerFormat({
     const typographyTokens = dictionary.allTokens.filter(
       (t) => t.path.length === 3 && TYPOGRAPHY_CSS_PROP[t.path[2]],
     );
-    const restTokens = dictionary.allTokens.filter(
-      (t) => !colorTokens.includes(t) && t.path.length !== 3,
-    );
+    // length===3인데 typography 매핑도, 의도적 제외 목록에도 없는 토큰(예: 앞으로
+    // Figma가 push할 shadow/border 같은 다른 복합 토큰)은 조용히 사라지지 않고
+    // :root에 그대로 남도록 함 — 인식 못 하는 걸 자동으로 지우지 않는다.
+    const restTokens = dictionary.allTokens.filter((t) => {
+      if (t.$type === "color") return false;
+      if (t.path.length === 3) {
+        return !TYPOGRAPHY_CSS_PROP[t.path[2]] && !TYPOGRAPHY_DROPPED_PROPS.has(t.path[2]);
+      }
+      return true;
+    });
 
     const theme = colorTokens
       .map((t) => formatProperty({ ...t, name: `color-${t.name}` }))
