@@ -125,3 +125,7 @@ pnpm format      # biome format --write .
 - 커밋 전 lefthook 훅 통과 필수 (`pnpm prepare`로 설치).
 - 워크스페이스 내부 의존성은 `workspace:*`.
 - Next 16 / React 19 / Tailwind v4 최신 API 기준 — 학습 데이터의 구버전 패턴 주의.
+
+### 디자인 토큰 (packages/ui)
+
+Figma Tokens Studio가 `packages/ui/tokens.json`에 GitHub Sync로 직접 push (손대지 말 것, biome 제외). `scripts/build-tokens.mjs`가 색상 토큰은 Tailwind `@theme`로, 타이포그래피 토큰은 `@utility text-*`(font/line-height/letter-spacing 등 개별 속성)로 변환해 `tokens.generated.css` 생성 (gitignore, turbo build 자동 편입). lineHeight는 Figma가 항상 px 절대값으로 준다고 가정하고 단위를 붙임 — 퍼센트 기반으로 바뀌면 재검토 필요. Pretendard는 `packages/ui/src/fonts/`에서 `@font-face`로 로드.
