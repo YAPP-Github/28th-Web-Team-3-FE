@@ -64,6 +64,10 @@ catalog:
   # Dead code detection
   knip: ^6.23.0
 
+  # Design tokens (@repo/ui, Tokens Studio 연동)
+  style-dictionary: ^5.5.0
+  "@tokens-studio/sd-transforms": ^2.0.3
+
   # Storybook / Vite tooling (@repo/ui)
   storybook: ^10.4.6
   "@storybook/react": ^10.4.6

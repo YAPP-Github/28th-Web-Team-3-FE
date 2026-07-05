@@ -1,11 +1,72 @@
 @import "tailwindcss";
+@import "./tokens.generated.css";
 
 /* Tailwind v4, CSS-first. THIS FILE IS THE SINGLE SOURCE OF TRUTH FOR THEME TOKENS.
    Apps consume it via `@import "@repo/ui/globals.css"` and scan ui classes with @source.
-   The web/native(WebView) apps do NOT redefine tokens. */
+   The web/native(WebView) apps do NOT redefine tokens.
+   tokens.generated.css (Figma → Tokens Studio → Style Dictionary)는 @theme 안에
+   color-gray, color-blue 원시 팔레트만 제공. background/primary 등 시맨틱 토큰은
+   여전히 이 파일이 직접 관리하며 Figma 값을 참조하지 않음. */
 
 @custom-variant dark (&:is(.dark *));
 
+@font-face {
+  font-family: "Pretendard";
+  src: url("../fonts/Pretendard-Thin.woff2") format("woff2");
+  font-weight: 100;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Pretendard";
+  src: url("../fonts/Pretendard-ExtraLight.woff2") format("woff2");
+  font-weight: 200;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Pretendard";
+  src: url("../fonts/Pretendard-Light.woff2") format("woff2");
+  font-weight: 300;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Pretendard";
+  src: url("../fonts/Pretendard-Regular.woff2") format("woff2");
+  font-weight: 400;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Pretendard";
+  src: url("../fonts/Pretendard-Medium.woff2") format("woff2");
+  font-weight: 500;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Pretendard";
+  src: url("../fonts/Pretendard-SemiBold.woff2") format("woff2");
+  font-weight: 600;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Pretendard";
+  src: url("../fonts/Pretendard-Bold.woff2") format("woff2");
+  font-weight: 700;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Pretendard";
+  src: url("../fonts/Pretendard-ExtraBold.woff2") format("woff2");
+  font-weight: 800;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Pretendard";
+  src: url("../fonts/Pretendard-Black.woff2") format("woff2");
+  font-weight: 900;
+  font-display: swap;
+}
+
+/* TODO: 아래 :root/.dark 색상 값과 @theme inline의 --color-* 매핑은 shadcn init 기본값
+   그대로임 (Figma 값 아님). Figma 시맨틱 팔레트 확정되면 정리 예정. */
 :root {
   --radius: 0.625rem;
 
@@ -55,6 +116,8 @@
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
+
+  --font-sans: "Pretendard", sans-serif;
 }
 
 @layer base {
@@ -64,5 +127,6 @@
   body {
     background-color: var(--color-background);
     color: var(--color-foreground);
+    font-family: var(--font-sans);
   }
 }
