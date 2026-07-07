@@ -8,6 +8,9 @@ import type { AppBridge } from "./types";
  * Type comes entirely from the shared contract — no native code imported here.
  */
 export const bridge = linkBridge<AppBridge>({
+  // 토큰 재발급(refreshAccessToken)은 네이티브 쪽에서 네트워크를 타므로
+  // 기본 2초로는 부족하다. 넉넉히 10초.
+  timeout: 10_000,
   throwOnError: true,
   onReady: () => {
     // Bridge handshake complete; native methods are now callable.

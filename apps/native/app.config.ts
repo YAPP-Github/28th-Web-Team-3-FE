@@ -36,7 +36,8 @@ const config: ExpoConfig = {
     // dev: Metro host serving the Next.js app; prod: the deployed web origin.
     // Intentionally no fallback — config.ts provides platform-aware defaults.
     webUrl: process.env.EXPO_PUBLIC_WEB_URL,
-    cookieDomain: process.env.EXPO_PUBLIC_COOKIE_DOMAIN,
+    // 게스트 인증 API(Spring) origin.
+    apiUrl: process.env.EXPO_PUBLIC_API_URL,
   },
 };
 

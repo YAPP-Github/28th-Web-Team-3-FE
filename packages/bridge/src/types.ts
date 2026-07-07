@@ -43,6 +43,19 @@ export type AppBridgeMethods = {
   registerPush(): Promise<boolean>;
   /** Platform / capability probe for feature-gating in the web UI. */
   getNativeInfo(): Promise<NativeInfo>;
+  /**
+   * Guest auth: RN 메모리에 있는 access token을 반환한다 (pull 모델).
+   * 없으면 네이티브가 발급을 시도하고, 발급 실패(오프라인 등) 시 null.
+   * refreshToken은 절대 이 경계를 넘지 않는다.
+   */
+  getAccessToken(): Promise<string | null>;
+  /**
+   * Guest auth: 웹이 401을 받았을 때 호출하는 재발급 요청.
+   * 네이티브가 single-flight로 rotation을 수행하고 새 access token을 반환한다.
+   * refresh token까지 만료된 경우 저장된 기기 uuid로 /auth/guest를 다시 호출해
+   * 같은 게스트 계정으로 복귀한다. 그마저 실패하면 null (호출부는 에러 UI).
+   */
+  refreshAccessToken(): Promise<string | null>;
 };
 
 /**

@@ -2,6 +2,7 @@ import type { AppBridgeMethods, NativeInfo } from "@repo/bridge/types";
 import { bridge } from "@webview-bridge/react-native";
 import Constants from "expo-constants";
 import { Platform } from "react-native";
+import * as guestAuth from "./auth/guestAuth";
 import * as biometric from "./native/biometric";
 import * as push from "./native/push";
 import * as share from "./native/share";
@@ -25,6 +26,8 @@ const handlers = {
   getPushToken: () => push.getToken(), // stub
   registerPush: () => push.register(), // stub
   getNativeInfo,
+  getAccessToken: () => guestAuth.getAccessToken(),
+  refreshAccessToken: () => guestAuth.refreshAccessToken(),
 } satisfies AppBridgeMethods;
 
 export const appBridge = bridge(handlers);
