@@ -125,7 +125,7 @@ pnpm format      # biome format --write .
 - **린트/포맷은 Biome 단일**. ESLint·Prettier 도입 금지.
 - 커밋 전 lefthook 훅 통과 필수 (`pnpm prepare`로 설치).
 - 워크스페이스 내부 의존성은 `workspace:*`.
-- **인증은 비로그인 게스트 JWT — 쿠키/세션 사용 금지.** 로그인 없음. native가 UUID(expo-secure-store) 기반으로 access/refresh를 발급받고, refresh·UUID는 네이티브 밖으로 내보내지 않는다. 웹은 bridge(`getToken`/`reissue`)로 access만 받아 메모리에서 사용하고 `Authorization: Bearer` 헤더로 API 호출. `credentials: "include"`·세션 쿠키(JSESSIONID) 코드 작성 금지.
+- **인증은 비로그인 게스트 JWT — 쿠키/세션 사용 금지.** 로그인 없음. native가 UUID(expo-secure-store) 기반으로 access/refresh를 발급받고, refresh·UUID는 네이티브 밖으로 내보내지 않는다. 웹은 bridge(토큰 조회/재발급 메서드)로 access만 받아 메모리에서 사용하고 `Authorization: Bearer` 헤더로 API 호출. `credentials: "include"`·세션 쿠키(JSESSIONID) 코드 작성 금지.
 - Next 16 / React 19 / Tailwind v4 최신 API 기준 — 학습 데이터의 구버전 패턴 주의.
 
 ### 디자인 토큰 (packages/ui)
