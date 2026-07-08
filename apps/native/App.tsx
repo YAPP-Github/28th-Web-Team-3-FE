@@ -1,16 +1,16 @@
 import { StatusBar } from "expo-status-bar";
 import { useEffect, useState } from "react";
 import { ActivityIndicator, Platform, StyleSheet, View } from "react-native";
+import { initGuestAuth } from "./src/auth/guestAuth";
 import { ORIGIN_WHITELIST, WEB_URL } from "./src/config";
 import { authenticate, isBiometricAvailable } from "./src/native/biometric";
-import { captureCookieFromWebView, injectStoredCookie } from "./src/session/cookie";
 import { WebView } from "./src/webview";
 
 /**
- * App shell. Boot order (decision #5):
- *   biometric unlock -> load cookie from SecureStore -> inject into WebView -> navigate.
- * After navigation we capture any session cookie the web app set, so the next
- * launch can restore it.
+ * App shell. Boot order:
+ *   biometric unlock -> guest 토큰 준비(refresh 갱신 or 신규 발급) -> WebView 진입.
+ * 토큰 준비가 실패해도(오프라인 등) 진입은 막지 않는다 — 웹의 API 호출이
+ * bridge.getAccessToken()을 통해 발급을 다시 시도한다.
  */
 export default function App() {
   const [ready, setReady] = useState(false);
@@ -18,11 +18,10 @@ export default function App() {
   useEffect(() => {
     (async () => {
       if (await isBiometricAvailable()) {
-        // Gate the injection of the persisted session behind a biometric unlock.
-        // On failure we still proceed but without restoring the session (web shows login).
+        // On failure we still proceed — 게스트 인증이라 잠금 실패가 치명적이지 않다.
         await authenticate("앱 잠금 해제").catch(() => false);
       }
-      await injectStoredCookie();
+      await initGuestAuth();
       setReady(true);
     })();
   }, []);
@@ -41,12 +40,6 @@ export default function App() {
       <WebView
         source={{ uri: WEB_URL }}
         originWhitelist={ORIGIN_WHITELIST}
-        sharedCookiesEnabled
-        thirdPartyCookiesEnabled
-        onNavigationStateChange={() => {
-          // Persist the session cookie the web app set (e.g. right after login).
-          void captureCookieFromWebView();
-        }}
         style={styles.webview}
       />
     </View>
