@@ -54,7 +54,7 @@ model: opus
 
 **공통**
 - zod 스키마는 `@repo/schema`로 공유, 중복 금지.
-- 인증 흐름 — 비로그인 게스트 JWT. native가 UUID(secure-store) 기반으로 access/refresh 발급받고, 웹은 bridge(`getToken`/`reissue`)로 access만 받아 메모리에서 사용(`Authorization: Bearer`). refresh·UUID가 웹뷰로 넘어가거나, 웹이 토큰을 storage/쿠키에 저장하거나, `credentials: "include"`·세션 쿠키(JSESSIONID) 코드가 보이면 flag. 401 재발급은 native 쪽 single-flight + 재시도 1회인지 확인.
+- 인증 흐름 — 비로그인 게스트 JWT. native가 UUID(secure-store) 기반으로 access/refresh 발급받고, 웹은 bridge(토큰 조회/재발급 메서드)로 access만 받아 메모리에서 사용(`Authorization: Bearer`). refresh·UUID가 웹뷰로 넘어가거나, 웹이 토큰을 storage/쿠키에 저장하거나, `credentials: "include"`·세션 쿠키(JSESSIONID) 코드가 보이면 flag. 401 재발급은 native 쪽 single-flight + 재시도 1회인지 확인.
 - TypeScript: `any` 밀반입 금지, 이유 없는 `@ts-ignore` 금지. Biome 클린.
 - 접근성, error/loading 경계, 처리 안 된 promise rejection 금지.
 - 성능 — 번들 크기·데이터 페칭 워터폴·불필요한 리렌더는 "리뷰 전에"에서 읽은 Vercel 성능 스킬 룰 기준으로 판단.
