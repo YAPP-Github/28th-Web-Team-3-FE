@@ -76,12 +76,19 @@ git diff --stat --merge-base origin/<base> HEAD -- ':!pnpm-lock.yaml' ':!package
 
 ### Step 5: AI 리뷰 (3·4 모두 통과한 경우에만)
 
-1. Task 도구로 **`next16-rn-reviewer`** 서브에이전트 디스패치. 프롬프트에 head 브랜치, 베이스,
-   diff 범위(lockfile 제외) 전달:
+1. 리뷰 두 개를 **병렬로** 디스패치. diff 범위(lockfile 제외)는 공통:
    `git diff --merge-base origin/<base> HEAD -- ':!pnpm-lock.yaml' ':!package-lock.json' ':!yarn.lock'`
-2. 리뷰 결과(판정 + 발견 사항) 사용자에게 표시.
+   - Task 도구로 **`next16-rn-reviewer`** 서브에이전트. 프롬프트에 head 브랜치, 베이스, diff 범위 전달.
+   - **Codex 교차 리뷰** — openai-codex 플러그인이 설치된 경우에만. `/codex:review`가 쓰는
+     리뷰 전용 companion script를 실행한다(리뷰만 수행, 코드 수정 구조적으로 불가):
+     `node ~/.claude/plugins/cache/openai-codex/codex/*/scripts/codex-companion.mjs review --wait`
+     (버전 디렉터리는 glob으로 해석 — 여러 개면 최신 버전 사용. `--wait` 필수: 게이트라서 동기 완료 필요.)
+     (`codex-rescue` 서브에이전트는 쓰지 않는다 — 그건 조사/수정 위임용, 리뷰 게이트용 아님.)
+     플러그인이나 Codex CLI가 없으면 생략하고 "Codex 교차 리뷰 생략됨"만 알림 — 실패로 취급하지 않는다.
+2. 리뷰 결과(판정 + 발견 사항) 모두 사용자에게 표시. 두 리뷰가 실행됐으면 최종 판정은 더 나쁜 쪽 채택
+   (Codex 출력엔 판정 이모지가 없으므로 blocking·치명 이슈가 있으면 🔴로 취급).
 3. 판정에 따라:
-   - 🔴 **변경 요청** → 사용자에게 경고. 멈추고 먼저 고칠지, draft로 진행할지 질문. **말없이 진행 금지.**
+   - 🔴 **변경 요청** (둘 중 하나라도) → 사용자에게 경고. 멈추고 먼저 고칠지, draft로 진행할지 질문. **말없이 진행 금지.**
    - 🟡 이하 → 결과 보여주고 계속 진행 여부 확인.
 
 ### Step 6: 푸시 (승인 게이트)
@@ -124,7 +131,8 @@ git diff --stat --merge-base origin/<base> HEAD -- ':!pnpm-lock.yaml' ':!package
 
 ## 🤖 AI 리뷰
 
-<Step 5 서브에이전트(next16-rn-reviewer)의 판정 + 발견 사항 전체 붙여넣기>
+<Step 5 리뷰 판정 + 발견 사항 전체 붙여넣기. Codex 교차 리뷰가 실행됐으면
+"### Claude (next16-rn-reviewer)" / "### Codex 교차 리뷰" 소제목으로 각각 구분>
 
 ## 💬 기타 코멘트
 
