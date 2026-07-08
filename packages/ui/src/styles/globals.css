@@ -6,7 +6,7 @@
    The web/native(WebView) apps do NOT redefine tokens.
    tokens.generated.css (Figma → Tokens Studio → Style Dictionary)는 @theme 안에
    color-gray, color-blue 원시 팔레트만 제공. background/primary 등 시맨틱 토큰은
-   여전히 이 파일이 직접 관리하며 Figma 값을 참조하지 않음. */
+   이 파일이 직접 관리하며, 값은 원시 팔레트를 var()로 참조한다. */
 
 @custom-variant dark (&:is(.dark *));
 
@@ -65,54 +65,49 @@
   font-display: swap;
 }
 
-/* TODO: 아래 :root/.dark 색상 값과 @theme inline의 --color-* 매핑은 shadcn init 기본값
-   그대로임 (Figma 값 아님). Figma 시맨틱 팔레트 확정되면 정리 예정. */
+/* Figma 변수 기준으로 tokens.json(마지막 push)보다 앞서 있는 원시 토큰.
+   blue-600은 생성 파일 값(#008dcf)을 덮어쓰는 오버라이드지만, 나머지는 생성 파일에
+   아예 없는 누락분(gray-100/200, error/warning/success, dim)이라 여기가 유일한 정의.
+   디자이너가 Tokens Studio로 다시 push하면 이 블록을 지우고 생성 파일이 대체한다.
+   가이드 아트보드 라벨과 변수가 다른 항목(blue-600, gray-100)은 변수 값을 따름 —
+   디자이너 확인 필요. */
+@theme {
+  --color-blue-600: #3e4fff; /* tokens.json은 #008dcf — Figma 변수가 최신 */
+  --color-gray-100: #dfe4ec;
+  --color-gray-200: #c9ced4;
+  --color-error: #ff443b;
+  --color-error-light: #ffe5e4;
+  --color-warning: #ffe14d;
+  --color-success: #2ddd93;
+  --color-dim-light: rgb(0 0 0 / 40%);
+  --color-dim-dark: rgb(0 0 0 / 60%);
+}
+
+/* 시맨틱 토큰 — Figma Design System(Guide-Color) 기준으로 프리미티브를 용도별로
+   별칭화. 컴포넌트는 원시 팔레트(bg-blue-500) 대신 이 시맨틱 토큰을 사용할 것.
+   Secondary는 Figma 가이드가 미확정(라벨·스와치 불일치)이라 확정 전까지 중립 회색.
+   다른 변수를 참조하는 색상 토큰은 @theme inline이어야 opacity modifier
+   (bg-primary/90 등)의 color-mix가 올바로 동작한다 (Tailwind v4 문서). */
+@theme inline {
+  --color-background: var(--color-gray-0);
+  --color-foreground: var(--color-gray-900);
+  --color-primary: var(--color-blue-500);
+  --color-primary-foreground: var(--color-gray-0);
+  --color-secondary: var(--color-gray-50);
+  --color-secondary-foreground: var(--color-gray-900);
+  --color-muted: var(--color-gray-10);
+  --color-muted-foreground: var(--color-gray-500);
+  --color-destructive: var(--color-error);
+  --color-border: var(--color-gray-100);
+  --color-input: var(--color-gray-200);
+  --color-ring: var(--color-blue-500);
+}
+
 :root {
   --radius: 0.625rem;
-
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
 }
 
-.dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --primary: oklch(0.985 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --color-primary: var(--primary);
-  --color-primary-foreground: var(--primary-foreground);
-  --color-secondary: var(--secondary);
-  --color-secondary-foreground: var(--secondary-foreground);
-  --color-muted: var(--muted);
-  --color-muted-foreground: var(--muted-foreground);
-  --color-destructive: var(--destructive);
-  --color-border: var(--border);
-  --color-input: var(--input);
-  --color-ring: var(--ring);
-
+@theme {
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
