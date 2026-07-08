@@ -36,7 +36,9 @@ PR에 달린 리뷰 코멘트를 GraphQL로 한 번에 모아 채팅에 요약�
 1. `$0`이 주어졌으면 그 번호 사용.
 2. 없으면 현재 브랜치 기준으로 자동 감지: `gh pr view --json number -q .number`.
    - 실패(연결된 PR 없음) → 사용자에게 PR 번호를 물어볼 것. 추측하지 말 것.
-3. 레포 컨텍스트 확보: `gh repo view --json owner,name -q '.owner.login + " " + .name'` → `OWNER`, `REPO`로 저장.
+3. 레포 컨텍스트 확보:
+   - `gh repo view --json owner -q .owner.login` → `OWNER`로 저장.
+   - `gh repo view --json name -q .name` → `REPO`로 저장.
 
 ### Step 2: 코멘트 일괄 조회 (GraphQL 1회)
 
