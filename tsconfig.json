@@ -1,5 +1,5 @@
 {
-  "//": "Root config for editor convenience. Each workspace package is typechecked independently via its own tsconfig (run by `turbo run typecheck`). No project references — packages share TS source directly through the internal-package pattern.",
+  "//": "에디터 편의를 위한 루트 설정. 각 워크스페이스 패키지는 자기 tsconfig로 독립 타입체크한다(`turbo run typecheck`가 실행). project references는 쓰지 않는다 — 패키지는 internal-package 패턴으로 TS 소스를 직접 공유한다.",
   "extends": "@repo/config/tsconfig/base",
   "compilerOptions": {
     "noEmit": true
