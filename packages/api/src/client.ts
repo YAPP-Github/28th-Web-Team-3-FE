@@ -45,7 +45,8 @@ export function createApiClient({ baseUrl, tokenProvider }: ApiClientOptions = {
               // 인스턴스가 아닌 순정 ky로 재요청해야 이 훅이 다시 붙지 않는다(재시도 1회 보장).
               // throwHttpErrors:false — 여기서 받은 응답을 최종 응답으로 돌려주고,
               // 여전히 401이면 인스턴스 쪽 에러 처리로 일관되게 흘려보낸다.
-              return ky(request, { throwHttpErrors: false });
+              // retry limit 0 — 순정 ky의 기본 retry 정책이 끼어들지 않게 재시도를 여기 1회로 고정.
+              return ky(request, { throwHttpErrors: false, retry: { limit: 0 } });
             },
           ]
         : [],

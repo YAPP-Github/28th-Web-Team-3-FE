@@ -72,6 +72,9 @@ catalogs:
     class-variance-authority:
       specifier: ^0.7.1
       version: 0.7.1
+    client-only:
+      specifier: ^0.0.1
+      version: 0.0.1
     clsx:
       specifier: ^2.1.1
       version: 2.1.1
@@ -105,6 +108,9 @@ catalogs:
     react-hook-form:
       specifier: ^7.80.0
       version: 7.80.0
+    server-only:
+      specifier: ^0.0.1
+      version: 0.0.1
     storybook:
       specifier: ^10.4.6
       version: 10.4.6
@@ -243,6 +249,9 @@ importers:
       '@tanstack/react-query':
         specifier: 'catalog:'
         version: 5.101.0(react@19.2.7)
+      client-only:
+        specifier: 'catalog:'
+        version: 0.0.1
       ky:
         specifier: 'catalog:'
         version: 2.0.2
@@ -259,7 +268,7 @@ importers:
         specifier: 'catalog:'
         version: 7.80.0(react@19.2.7)
       server-only:
-        specifier: ^0.0.1
+        specifier: 'catalog:'
         version: 0.0.1
       zod:
         specifier: 'catalog:'

@@ -8,9 +8,9 @@ import { WebView } from "./src/webview";
 
 /**
  * App shell. Boot order:
- *   biometric unlock -> guest 토큰 준비(refresh 갱신 or 신규 발급) -> WebView 진입.
- * 토큰 준비가 실패해도(오프라인 등) 진입은 막지 않는다 — 웹의 API 호출이
- * bridge.getAccessToken()을 통해 발급을 다시 시도한다.
+ *   biometric unlock -> guest 토큰 발급 시작(await 안 함) -> WebView 진입.
+ * 토큰 발급은 기다리지 않는다 — 느린 네트워크에서 부트가 스피너에 갇히지 않도록.
+ * 발급은 single-flight라, 웹의 첫 bridge.getAccessToken()이 같은 발급을 공유·대기한다.
  */
 export default function App() {
   const [ready, setReady] = useState(false);
@@ -21,7 +21,8 @@ export default function App() {
         // On failure we still proceed — 게스트 인증이라 잠금 실패가 치명적이지 않다.
         await authenticate("앱 잠금 해제").catch(() => false);
       }
-      await initGuestAuth();
+      // fire-and-forget: 발급 완료를 기다리지 않고 바로 진입.
+      void initGuestAuth();
       setReady(true);
     })();
   }, []);

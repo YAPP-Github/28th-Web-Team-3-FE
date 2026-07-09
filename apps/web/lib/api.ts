@@ -1,3 +1,5 @@
+import "client-only";
+
 import { createApiClient, type TokenProvider } from "@repo/api/client";
 import { bridge, isNativeApp } from "@repo/bridge";
 
@@ -6,22 +8,38 @@ import { bridge, isNativeApp } from "@repo/bridge";
  * 당겨 와(pull) Authorization 헤더에 싣고, 401이면 네이티브에 재발급을 요청한 뒤
  * 1회 재시도한다. 일반 브라우저에서는 토큰 없이 동작한다(MSW 개발용).
  *
- * 클라이언트 컴포넌트에서만 import할 것 — bridge는 브라우저 전용이고,
- * 서버 컴포넌트(RSC)는 게스트 토큰에 접근할 수 없다.
+ * bridge는 브라우저 전용이고 서버 컴포넌트(RSC)는 게스트 토큰에 접근할 수 없으므로,
+ * "client-only"로 서버 번들 유입을 빌드 타임에 차단한다.
  */
 
+// access token은 네이티브 메모리가 원본. 웹은 사본만 캐시해 요청마다 bridge를
+// 왕복하지 않는다. 만료돼 서버가 401을 주면 refreshAccessToken이 사본을 새로 채운다.
+// (캐시가 만료 토큰을 들고 있어도 401 → 재발급 → 재시도로 자가치유된다.)
+let cachedToken: string | null = null;
 // 동시 401에 대한 웹 쪽 single-flight. 네이티브도 자체 single-flight를 갖지만,
 // 여기서 묶으면 bridge 왕복 자체가 1회로 줄어든다.
 let refreshInflight: Promise<string | null> | null = null;
 
 const tokenProvider: TokenProvider = {
-  getAccessToken: () =>
-    isNativeApp() ? bridge.getAccessToken().catch(() => null) : Promise.resolve(null),
+  getAccessToken: async () => {
+    if (!isNativeApp()) return null;
+    if (cachedToken === null) {
+      cachedToken = await bridge.getAccessToken().catch(() => null);
+    }
+    return cachedToken;
+  },
   refreshAccessToken: () => {
     if (!isNativeApp()) return Promise.resolve(null);
     refreshInflight ??= bridge
       .refreshAccessToken()
-      .catch(() => null)
+      .then((token) => {
+        cachedToken = token;
+        return token;
+      })
+      .catch(() => {
+        cachedToken = null;
+        return null;
+      })
       .finally(() => {
         refreshInflight = null;
       });

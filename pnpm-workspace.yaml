@@ -21,6 +21,9 @@ catalog:
   "@types/react": ^19.2.17
   "@types/react-dom": ^19.2.3
   next: ^16.2.9
+  # RSC 경계 마커 (server/client 전용 모듈을 잘못된 번들에 넣으면 빌드 실패)
+  server-only: ^0.0.1
+  client-only: ^0.0.1
 
   # Schema / forms — zod v4 (one copy across the workspace).
   zod: ^4.4.3

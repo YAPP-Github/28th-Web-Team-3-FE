@@ -15,17 +15,18 @@
   "dependencies": {
     "@hookform/resolvers": "catalog:",
     "@repo/api": "workspace:*",
-    "ky": "catalog:",
     "@repo/bridge": "workspace:*",
     "@repo/schema": "workspace:*",
     "@repo/ui": "workspace:*",
     "@sentry/nextjs": "catalog:",
     "@tanstack/react-query": "catalog:",
+    "client-only": "catalog:",
+    "ky": "catalog:",
     "next": "catalog:",
     "react": "catalog:",
     "react-dom": "catalog:",
     "react-hook-form": "catalog:",
-    "server-only": "^0.0.1",
+    "server-only": "catalog:",
     "zod": "catalog:"
   },
   "devDependencies": {
