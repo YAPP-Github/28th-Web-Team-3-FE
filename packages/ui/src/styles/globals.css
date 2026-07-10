@@ -1,12 +1,13 @@
 @import "tailwindcss";
-@import "./tokens.generated.css";
 
 /* Tailwind v4, CSS-first. THIS FILE IS THE SINGLE SOURCE OF TRUTH FOR THEME TOKENS.
    Apps consume it via `@import "@repo/ui/globals.css"` and scan ui classes with @source.
    The web/native(WebView) apps do NOT redefine tokens.
-   tokens.generated.css (Figma → Tokens Studio → Style Dictionary)는 @theme 안에
-   color-gray, color-blue 원시 팔레트만 제공. background/primary 등 시맨틱 토큰은
-   이 파일이 직접 관리하며, 값은 원시 팔레트를 var()로 참조한다. */
+   Tokens Studio 파이프라인(tokens.json → tokens.generated.css)은 잠정 연동 해제 —
+   당분간 Figma MCP로 이 파일에 직접 토큰을 채워 넣는다. 그 전까지 시맨틱 토큰이
+   참조하는 color-gray-0/10/50/500/900, color-blue-500 등 핵심 원시 팔레트가
+   정의돼 있지 않다 (누락분 오버라이드로 아래 @theme 블록에 남아있는 항목 제외).
+   자세한 내용은 DESIGN.md 참고. */
 
 @custom-variant dark (&:is(.dark *));
 
@@ -65,10 +66,9 @@
   font-display: swap;
 }
 
-/* Figma 변수 기준으로 tokens.json(마지막 push)보다 앞서 있는 원시 토큰.
-   blue-600은 생성 파일 값(#008dcf)을 덮어쓰는 오버라이드지만, 나머지는 생성 파일에
-   아예 없는 누락분(gray-100/200, error/warning/success, dim)이라 여기가 유일한 정의.
-   디자이너가 Tokens Studio로 다시 push하면 이 블록을 지우고 생성 파일이 대체한다.
+/* Figma 변수 기준의 원시 토큰. Tokens Studio 파이프라인이 잠정 연동 해제된 지금은
+   이 블록이 blue-600/gray-100/200/error/warning/success/dim의 유일한 정의다.
+   나중에 Figma MCP나 Tokens Studio 재연결로 값을 다시 채울 때 이 블록을 갱신한다.
    가이드 아트보드 라벨과 변수가 다른 항목(blue-600, gray-100)은 변수 값을 따름 —
    디자이너 확인 필요. */
 @theme {

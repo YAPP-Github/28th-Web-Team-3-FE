@@ -4,7 +4,12 @@
 ([Design System 페이지](https://www.figma.com/design/WNPFcxA9sEnAMrTVMRVfjm/?node-id=433-336))이고,
 코드에는 파이프라인을 통해서만 들어온다.
 
-## 파이프라인
+> **잠정 연동 해제**: 아래 Tokens Studio 파이프라인은 당분간 build/storybook에서
+> 자동 실행하지 않는다. 대신 Figma MCP로 `src/styles/globals.css`에 토큰을 직접
+> 채워 넣는 방식으로 운영. `tokens.json`·`scripts/build-tokens.mjs`는 나중에 다시
+> 쓸 수 있도록 남겨뒀고, `pnpm --filter @repo/ui tokens:build`로 수동 실행 가능.
+
+## 파이프라인 (재연결 시)
 
 ```
 Figma (Tokens Studio) → tokens.json → scripts/build-tokens.mjs → src/styles/tokens.generated.css

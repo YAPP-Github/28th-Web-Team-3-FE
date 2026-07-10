@@ -8,13 +8,7 @@
       "dependsOn": ["^build"],
       "env": ["SENTRY_AUTH_TOKEN", "CI"],
       "inputs": ["$TURBO_DEFAULT$", ".env*"],
-      "outputs": [
-        ".next/**",
-        "!.next/cache/**",
-        "dist/**",
-        "storybook-static/**",
-        "src/styles/tokens.generated.css"
-      ]
+      "outputs": [".next/**", "!.next/cache/**", "dist/**", "storybook-static/**"]
     },
     "dev": {
       "dependsOn": ["^build"],
