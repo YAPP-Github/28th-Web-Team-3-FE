@@ -1,12 +1,11 @@
 @import "tailwindcss";
-@import "./tokens.generated.css";
 
 /* Tailwind v4, CSS-first. THIS FILE IS THE SINGLE SOURCE OF TRUTH FOR THEME TOKENS.
    Apps consume it via `@import "@repo/ui/globals.css"` and scan ui classes with @source.
    The web/native(WebView) apps do NOT redefine tokens.
-   tokens.generated.css (Figma → Tokens Studio → Style Dictionary)는 @theme 안에
-   color-gray, color-blue 원시 팔레트만 제공. background/primary 등 시맨틱 토큰은
-   이 파일이 직접 관리하며, 값은 원시 팔레트를 var()로 참조한다. */
+   Tokens Studio 파이프라인(tokens.json → tokens.generated.css)은 잠정 연동 해제 —
+   당분간 Figma MCP로 이 파일에 직접 토큰을 채워 넣는다. 그 전까지 color-gray-*,
+   color-blue-* 등 원시 팔레트는 정의돼 있지 않다. 자세한 내용은 DESIGN.md 참고. */
 
 @custom-variant dark (&:is(.dark *));
 
