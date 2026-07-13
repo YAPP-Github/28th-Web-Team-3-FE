@@ -19,7 +19,7 @@ const buttonVariants = cva(
         lg: "h-11 rounded-md px-6",
         icon: "h-10 w-10",
         // 퍼널 하단 CTA("다음"/"적용" 등 앞으로가기 역할) — 풀너비 알약형.
-        full: "h-12 w-full rounded-full px-6 text-base",
+        full: "w-full rounded-full px-6 py-4 text-base",
       },
     },
     defaultVariants: {
