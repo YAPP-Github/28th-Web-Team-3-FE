@@ -18,6 +18,8 @@
     "tokens:build": "node scripts/build-tokens.mjs"
   },
   "dependencies": {
+    "@radix-ui/react-progress": "catalog:",
+    "@radix-ui/react-slider": "catalog:",
     "class-variance-authority": "catalog:",
     "clsx": "catalog:",
     "lucide-react": "catalog:",

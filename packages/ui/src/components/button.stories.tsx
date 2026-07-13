@@ -14,3 +14,5 @@ export const Default: Story = {};
 export const Secondary: Story = { args: { variant: "secondary" } };
 export const Destructive: Story = { args: { variant: "destructive" } };
 export const Outline: Story = { args: { variant: "outline" } };
+/** 퍼널 하단 CTA — 풀너비 알약형 (앞으로가기 역할). */
+export const FullCta: Story = { args: { size: "full", children: "30초 성향 설문 시작" } };
