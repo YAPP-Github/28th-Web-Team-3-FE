@@ -44,8 +44,13 @@ async function postAuth(
       body: JSON.stringify(body),
     });
     // "rejected"(4xx: 만료·무효·차단)만 uuid 재발급으로 복구 가능한 실패로 취급.
+    // 단 429(rate limit)·408(timeout)은 일시 장애 — 즉시 신규 발급으로 이어가면
+    // 제한 걸린 서버에 요청만 보태므로 null로 끝내고 다음 요청에서 자연 재시도.
     // 백엔드 에러 코드 계약이 확정되면 4xx 안에서 코드별 분기를 추가한다.
-    if (!res.ok) return res.status < 500 ? "rejected" : null;
+    if (!res.ok) {
+      if (res.status === 429 || res.status === 408) return null;
+      return res.status < 500 ? "rejected" : null;
+    }
     return authTokensSchema.parse(await res.json());
   } catch {
     // 네트워크/파싱 실패. 응답에 토큰이 섞일 수 있으므로 상세 내용은 로그로 남기지 않는다.
