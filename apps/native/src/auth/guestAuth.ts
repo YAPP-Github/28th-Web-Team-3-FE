@@ -33,23 +33,37 @@ async function getOrCreateDeviceUuid(): Promise<string> {
   return uuid;
 }
 
+// 응답이 영영 안 오는 요청이 single-flight `inflight`를 무한 점유하면 앱 재시작까지
+// 인증이 막힌다 — 타임아웃으로 반드시 settle시켜 finally가 상태를 비우게 한다.
+const AUTH_FETCH_TIMEOUT_MS = 10_000;
+
 async function postAuth(
   path: "/auth/guest" | "/auth/guest/refresh",
   body: Record<string, string>,
 ): Promise<AuthTokens | "rejected" | null> {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), AUTH_FETCH_TIMEOUT_MS);
   try {
     const res = await fetch(`${API_URL}${path}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(body),
+      signal: controller.signal,
     });
     // "rejected"(4xx: 만료·무효·차단)만 uuid 재발급으로 복구 가능한 실패로 취급.
+    // 단 429(rate limit)·408(timeout)은 일시 장애 — 즉시 신규 발급으로 이어가면
+    // 제한 걸린 서버에 요청만 보태므로 null로 끝내고 다음 요청에서 자연 재시도.
     // 백엔드 에러 코드 계약이 확정되면 4xx 안에서 코드별 분기를 추가한다.
-    if (!res.ok) return res.status < 500 ? "rejected" : null;
+    if (!res.ok) {
+      if (res.status === 429 || res.status === 408) return null;
+      return res.status < 500 ? "rejected" : null;
+    }
     return authTokensSchema.parse(await res.json());
   } catch {
-    // 네트워크/파싱 실패. 응답에 토큰이 섞일 수 있으므로 상세 내용은 로그로 남기지 않는다.
+    // 네트워크/파싱/타임아웃 실패. 응답에 토큰이 섞일 수 있으므로 상세 내용은 로그로 남기지 않는다.
     return null;
+  } finally {
+    clearTimeout(timer);
   }
 }
 
