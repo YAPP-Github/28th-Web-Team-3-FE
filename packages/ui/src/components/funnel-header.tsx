@@ -16,7 +16,7 @@ export interface FunnelHeaderProps extends React.HTMLAttributes<HTMLElement> {
 
 /**
  * 설문 퍼널 상단 헤더 — 뒤로가기 + 진행 게이지바.
- * 와이어프레임 기준: 좌상단 ← 버튼, 그 아래 전체 폭 얇은 파란 진행바.
+ * 와이어프레임 기준: 좌상단 X 버튼, 그 아래 전체 폭 얇은 파란 진행바.
  * 앞으로가기는 별도 버튼이 없고 화면 하단 CTA(Button size="full")가 담당한다.
  */
 export function FunnelHeader({ step, totalSteps, onBack, className, ...props }: FunnelHeaderProps) {

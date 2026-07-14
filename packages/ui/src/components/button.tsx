@@ -15,7 +15,7 @@ const buttonVariants = cva(
         // 온보딩 이전 버튼
         onboardingBack: "bg-gray-900 text-gray-0 hover:bg-gray-900/90",
         // 온보딩 다음 버튼
-        onboardingNext: "bg-primary text-gray-0 hover:bg-primary/90",
+        onboardingNext: "bg-primary text-primary-foreground hover:bg-primary/90",
       },
       size: {
         default: "h-10 px-4 py-2",
