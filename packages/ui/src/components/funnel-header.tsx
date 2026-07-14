@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowLeft } from "lucide-react";
+import { X } from "lucide-react";
 import type * as React from "react";
 import { cn } from "../lib/utils";
 import { Progress } from "./progress";
@@ -30,7 +30,7 @@ export function FunnelHeader({ step, totalSteps, onBack, className, ...props }: 
             onClick={onBack}
             className="flex size-10 items-center justify-center rounded-md text-foreground hover:bg-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
-            <ArrowLeft className="size-6" />
+            <X className="size-6" />
           </button>
         )}
       </div>
