@@ -12,6 +12,10 @@ const buttonVariants = cva(
         destructive: "bg-destructive text-white hover:bg-destructive/90",
         outline: "border border-input bg-background hover:bg-secondary",
         ghost: "hover:bg-secondary",
+        // 온보딩 이전 버튼
+        onboardingBack: "bg-gray-900 text-gray-0 hover:bg-gray-900/90",
+        // 온보딩 다음 버튼
+        onboardingNext: "bg-primary text-gray-0 hover:bg-primary/90",
       },
       size: {
         default: "h-10 px-4 py-2",
@@ -20,6 +24,8 @@ const buttonVariants = cva(
         icon: "h-10 w-10",
         // 퍼널 하단 CTA("다음"/"적용" 등 앞으로가기 역할) — 풀너비 알약형.
         full: "w-full rounded-full px-6 py-4 text-base",
+        // 플로팅 버튼 (온보딩 하단 페이지 이동 버튼)
+        floating: "h-12.5 w-12.5 rounded-full",
       },
     },
     defaultVariants: {
