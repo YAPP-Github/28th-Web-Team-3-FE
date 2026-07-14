@@ -72,13 +72,15 @@
    갱신한다. 가이드 아트보드 라벨과 변수가 다른 항목(blue-600, gray-100)은 변수
    값을 따름 — 디자이너 확인 필요. */
 @theme {
+  --color-blue-50: #e5f6fe;
   --color-blue-500: #00aeff;
-  --color-blue-600: #3e4fff; /* tokens.json은 #008dcf — Figma 변수가 최신 */
+  --color-blue-600: #008dcf;
   --color-gray-0: #ffffff;
   --color-gray-10: #f9fafb;
   --color-gray-50: #f0f3f8;
   --color-gray-100: #dfe4ec;
   --color-gray-200: #c9ced4;
+  --color-gray-400: #8f949c;
   --color-gray-500: #747a83;
   --color-gray-900: #232529;
   --color-error: #ff443b;
