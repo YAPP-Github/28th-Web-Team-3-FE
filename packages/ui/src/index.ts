@@ -3,4 +3,5 @@ export { FunnelHeader, type FunnelHeaderProps } from "./components/funnel-header
 export { Input, type InputProps } from "./components/input";
 export { Progress, type ProgressProps } from "./components/progress";
 export { Slider, type SliderProps } from "./components/slider";
+export { Toggle, type ToggleProps, toggleVariants } from "./components/toggle";
 export { cn } from "./lib/utils";
