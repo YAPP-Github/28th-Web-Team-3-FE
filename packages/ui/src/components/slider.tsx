@@ -23,7 +23,7 @@ export function Slider({ className, thumbLabels, ...props }: SliderProps) {
       )}
       {...props}
     >
-      <SliderPrimitive.Track className="relative h-1.5 w-full grow overflow-hidden rounded-full bg-gray-100">
+      <SliderPrimitive.Track className="relative h-1 w-full grow overflow-hidden rounded-full bg-gray-100">
         <SliderPrimitive.Range className="absolute h-full bg-primary" />
       </SliderPrimitive.Track>
       {/* value/defaultValue 개수만큼 썸을 렌더 — 단일·범위 슬라이더 모두 대응. */}
@@ -32,7 +32,7 @@ export function Slider({ className, thumbLabels, ...props }: SliderProps) {
           key={i}
           aria-label={thumbLabels?.[i]}
           className={cn(
-            "block size-5 rounded-full border-2 border-primary bg-background shadow",
+            "block size-8 rounded-full border border-gray-100 bg-background shadow-md",
             "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
           )}
         />
