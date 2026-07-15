@@ -12,11 +12,14 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {};
+export const DefaultDisabled: Story = { args: { disabled: true } };
 export const Secondary: Story = { args: { variant: "secondary" } };
 export const Destructive: Story = { args: { variant: "destructive" } };
 export const Outline: Story = { args: { variant: "outline" } };
 /** 퍼널 하단 CTA — 풀너비 알약형 (앞으로가기 역할). */
-export const FullCta: Story = { args: { size: "full", children: "30초 성향 설문 시작" } };
+export const FullCta: Story = {
+  args: { size: "cta", children: "30초 성향 설문 시작" },
+};
 
 /** 온보딩 하단 이전 페이지 이동 — 플로팅 원형 버튼. */
 export const OnboardingBack: Story = {

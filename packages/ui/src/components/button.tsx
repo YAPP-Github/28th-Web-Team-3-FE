@@ -3,12 +3,13 @@ import type * as React from "react";
 import { cn } from "../lib/utils";
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-colors disabled:pointer-events-none disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-colors disabled:pointer-events-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
   {
     variants: {
       variant: {
-        default: "bg-primary text-primary-foreground hover:bg-primary/90",
-        secondary: "bg-secondary text-secondary-foreground hover:bg-secondary/80",
+        default:
+          "bg-primary text-primary-foreground hover:bg-primary/90 disabled:bg-secondary disabled:text-gray-300",
+        secondary: "bg-secondary text-gray-700 hover:bg-secondary/80",
         destructive: "bg-destructive text-white hover:bg-destructive/90",
         outline: "border border-input bg-background hover:bg-secondary",
         ghost: "hover:bg-secondary",
@@ -22,8 +23,8 @@ const buttonVariants = cva(
         sm: "h-9 rounded-md px-3",
         lg: "h-11 rounded-md px-6",
         icon: "h-10 w-10",
-        // 퍼널 하단 CTA("다음"/"적용" 등 앞으로가기 역할) — 풀너비 알약형.
-        full: "w-full rounded-full px-6 py-4 text-base",
+        // 하단 CTA("다음"/"적용" 등 앞으로가기 역할) — 풀너비.
+        cta: "w-full rounded-3 py-[14px]",
         // 플로팅 버튼 (온보딩 하단 페이지 이동 버튼)
         floating: "h-12.5 w-12.5 rounded-full",
       },
