@@ -17,7 +17,7 @@ export const Single: Story = {
 
 /** Figma 기준 단일 슬라이더 상태. */
 export const FigmaDefault: Story = {
-  args: { defaultValue: [56], min: 0, max: 100, step: 1 },
+  args: { defaultValue: [56], min: 0, max: 100, step: 1, thumbLabels: ["값"] },
 };
 
 /** 금액 구간처럼 범위 선택. */

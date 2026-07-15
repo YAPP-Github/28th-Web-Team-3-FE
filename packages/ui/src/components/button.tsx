@@ -24,7 +24,9 @@ const buttonVariants = cva(
         lg: "h-11 rounded-md px-6",
         icon: "h-10 w-10",
         // 하단 CTA("다음"/"적용" 등 앞으로가기 역할) — 풀너비.
-        cta: "w-full rounded-3 py-[14px]",
+        cta: "w-full rounded-[12px] py-[14px]",
+        // 이전 API 호환용 alias.
+        full: "w-full rounded-[12px] py-[14px]",
         // 플로팅 버튼 (온보딩 하단 페이지 이동 버튼)
         floating: "h-12.5 w-12.5 rounded-full",
       },
