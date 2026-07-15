@@ -6,15 +6,16 @@ import type * as React from "react";
 import { cn } from "../lib/utils";
 
 const toggleVariants = cva(
-  "inline-flex items-center justify-center gap-2 rounded-md text-sm font-medium transition-colors hover:bg-secondary hover:text-secondary-foreground disabled:pointer-events-none disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring data-[state=on]:bg-primary data-[state=on]:text-primary-foreground",
+  "inline-flex items-center justify-center gap-2 rounded-md text-sm font-medium transition-colors disabled:pointer-events-none disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
   {
     variants: {
       variant: {
-        default: "bg-transparent",
+        default:
+          "bg-transparent hover:bg-secondary hover:text-secondary-foreground data-[state=on]:bg-primary data-[state=on]:text-primary-foreground",
         outline:
-          "border border-input bg-background hover:bg-secondary hover:text-secondary-foreground",
+          "border border-input bg-background hover:bg-secondary hover:text-secondary-foreground data-[state=on]:bg-primary data-[state=on]:text-primary-foreground",
         onboarding:
-          "rounded-sm bg-muted text-[18px] font-bold leading-[26px] tracking-[-0.2px] text-gray-400 hover:bg-muted hover:text-gray-400 data-[state=on]:bg-blue-50 data-[state=on]:text-blue-600",
+          "border border-gray-100 bg-background text-body-b1-500 text-gray-900 hover:bg-background hover:text-gray-900 data-[state=on]:border-primary data-[state=on]:bg-blue-50 data-[state=on]:text-gray-900",
       },
       size: {
         default: "h-10 min-w-10 px-3",
@@ -26,6 +27,13 @@ const toggleVariants = cva(
       variant: "default",
       size: "default",
     },
+    compoundVariants: [
+      {
+        variant: "onboarding",
+        size: "default",
+        className: "h-auto min-w-0 w-full justify-start rounded-[12px] px-4 py-[14px]",
+      },
+    ],
   },
 );
 

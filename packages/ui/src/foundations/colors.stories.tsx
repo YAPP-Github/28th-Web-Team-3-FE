@@ -1,8 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react";
 import { useEffect, useRef, useState } from "react";
 
-/** 디자인 토큰 쇼케이스. 원시 팔레트(tokens.generated.css + globals.css 임시 블록)와
- * globals.css의 시맨틱 토큰을 그대로 렌더링한다.
+/** 디자인 토큰 쇼케이스. globals.css의 원시 팔레트와 시맨틱 토큰을 그대로 렌더링한다.
  * 토큰 변경 PR에서 Chromatic 시각 diff의 기준점 역할.
  * 클래스는 문자열 리터럴로 나열 — Tailwind v4는 스캐너에 안 잡힌 테마 변수를
  * tree-shake하므로 inline style var() 참조로는 스와치가 렌더되지 않는다. */
