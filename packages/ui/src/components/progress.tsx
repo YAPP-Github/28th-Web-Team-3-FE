@@ -13,12 +13,12 @@ export type ProgressProps = React.ComponentProps<typeof ProgressPrimitive.Root>;
 export function Progress({ className, value, ...props }: ProgressProps) {
   return (
     <ProgressPrimitive.Root
-      className={cn("relative h-1 w-full overflow-hidden bg-gray-100", className)}
+      className={cn("relative h-1 w-full rounded-full overflow-hidden bg-gray-100", className)}
       value={value}
       {...props}
     >
       <ProgressPrimitive.Indicator
-        className="h-full w-full flex-1 bg-primary transition-transform duration-300"
+        className="h-full w-full rounded-full flex-1 bg-primary transition-transform duration-300"
         style={{ transform: `translateX(-${100 - (value ?? 0)}%)` }}
       />
     </ProgressPrimitive.Root>
