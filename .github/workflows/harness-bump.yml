@@ -2,9 +2,11 @@ name: Harness Submodule Bump
 
 # Harness 레포의 최신 main으로 서브모듈 포인터를 자동 갱신한다.
 # 포인터 범프는 기계적 변경이라 PR 없이 develop에 직접 커밋한다.
+# develop에 머지될 때마다 갱신 — 포인터가 늘 최신이라 develop→main 머지에 그대로 딸려간다.
+# 봇 커밋 자체는 기본 GITHUB_TOKEN 푸시라 이 워크플로우를 재트리거하지 않는다(루프 없음).
 on:
-  schedule:
-    - cron: "0 0 * * *" # 매일 09:00 KST
+  push:
+    branches: [develop]
   workflow_dispatch:
 
 permissions:
