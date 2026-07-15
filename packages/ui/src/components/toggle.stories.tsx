@@ -25,11 +25,22 @@ export const Outline: Story = {
 
 /** 온보딩 플로우 전용 — 선택 전/후 배경·텍스트 색이 뚜렷하게 갈리는 칩형 토글. */
 export const Onboarding: Story = {
-  args: { variant: "onboarding", children: "Toggle" },
+  args: { variant: "onboarding", children: "10대" },
 };
 
 export const OnboardingPressed: Story = {
-  args: { variant: "onboarding", defaultPressed: true, children: "Toggle" },
+  args: { variant: "onboarding", defaultPressed: true, children: "20대" },
+};
+
+export const OnboardingGrid: Story = {
+  render: () => (
+    <div className="grid w-80 grid-cols-2 gap-2">
+      <Toggle variant="onboarding">10대</Toggle>
+      <Toggle variant="onboarding" defaultPressed>
+        20대
+      </Toggle>
+    </div>
+  ),
 };
 
 export const Pressed: Story = {
