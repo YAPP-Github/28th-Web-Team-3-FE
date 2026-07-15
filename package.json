@@ -19,6 +19,7 @@
     "native": "turbo run native#start",
     "ios": "turbo run native#ios",
     "android": "turbo run native#android",
+    "storybook": "pnpm --filter @repo/ui storybook",
     "chromatic": "pnpm --filter @repo/ui chromatic",
     "knip": "knip"
   },
