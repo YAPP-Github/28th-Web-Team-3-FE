@@ -12,7 +12,7 @@ type Story = StoryObj<typeof meta>;
 
 /** 나이 입력처럼 단일 값 선택. */
 export const Single: Story = {
-  args: { defaultValue: [29], min: 10, max: 80, step: 1 },
+  args: { defaultValue: [29], min: 10, max: 80, step: 1, thumbLabels: ["나이"] },
 };
 
 /** Figma 기준 단일 슬라이더 상태. */
@@ -22,9 +22,15 @@ export const FigmaDefault: Story = {
 
 /** 금액 구간처럼 범위 선택. */
 export const Range: Story = {
-  args: { defaultValue: [1000, 5000], min: 0, max: 10000, step: 100 },
+  args: {
+    defaultValue: [1000, 5000],
+    min: 0,
+    max: 10000,
+    step: 100,
+    thumbLabels: ["최소 금액", "최대 금액"],
+  },
 };
 
 export const Disabled: Story = {
-  args: { defaultValue: [50], disabled: true },
+  args: { defaultValue: [50], disabled: true, thumbLabels: ["값"] },
 };

@@ -9,14 +9,15 @@ const buttonVariants = cva(
       variant: {
         default:
           "bg-primary text-primary-foreground hover:bg-primary/90 disabled:bg-secondary disabled:text-gray-300",
-        secondary: "bg-secondary text-gray-700 hover:bg-secondary/80",
-        destructive: "bg-destructive text-white hover:bg-destructive/90",
-        outline: "border border-input bg-background hover:bg-secondary",
-        ghost: "hover:bg-secondary",
+        secondary: "bg-secondary text-gray-700 hover:bg-secondary/80 disabled:opacity-50",
+        destructive: "bg-destructive text-white hover:bg-destructive/90 disabled:opacity-50",
+        outline: "border border-input bg-background hover:bg-secondary disabled:opacity-50",
+        ghost: "hover:bg-secondary disabled:opacity-50",
         // 온보딩 이전 버튼
-        onboardingBack: "bg-gray-900 text-gray-0 hover:bg-gray-900/90",
+        onboardingBack: "bg-gray-900 text-gray-0 hover:bg-gray-900/90 disabled:opacity-50",
         // 온보딩 다음 버튼
-        onboardingNext: "bg-primary text-primary-foreground hover:bg-primary/90",
+        onboardingNext:
+          "bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50",
       },
       size: {
         default: "h-10 px-4 py-2",
