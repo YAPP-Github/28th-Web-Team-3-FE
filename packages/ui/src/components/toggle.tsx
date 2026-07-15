@@ -14,7 +14,7 @@ const toggleVariants = cva(
         outline:
           "border border-input bg-background hover:bg-secondary hover:text-secondary-foreground",
         onboarding:
-          "rounded-sm bg-muted text-[18px] font-bold leading-[26px] tracking-[-0.2px] text-gray-400 hover:bg-muted hover:text-gray-400 data-[state=on]:bg-blue-50 data-[state=on]:text-blue-600",
+          "rounded-sm bg-muted text-title-t2-700 text-gray-400 hover:bg-muted hover:text-gray-400 data-[state=on]:bg-blue-50 data-[state=on]:text-blue-600",
       },
       size: {
         default: "h-10 min-w-10 px-3",

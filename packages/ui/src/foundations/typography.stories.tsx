@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react";
 
-/** 타이포그래피 토큰 쇼케이스. tokens.generated.css의 @utility text-* 클래스를
- * 전부 렌더링한다. 클래스명은 Tailwind 스캐너가 인식하도록 문자열 리터럴로 나열. */
+/** 타이포그래피 토큰 쇼케이스. globals.css의 @utility text-* 클래스를 전부 렌더링한다.
+ * 클래스명은 Tailwind 스캐너가 인식하도록 문자열 리터럴로 나열. */
 
 const TEXT_STYLES = [
   "text-headline-h1-700",
