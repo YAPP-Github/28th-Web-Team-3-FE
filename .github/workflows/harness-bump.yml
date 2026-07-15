@@ -1,0 +1,47 @@
+name: Harness Submodule Bump
+
+# Harness 레포의 최신 main으로 서브모듈 포인터를 자동 갱신한다.
+# 포인터 범프는 기계적 변경이라 PR 없이 develop에 직접 커밋한다.
+on:
+  schedule:
+    - cron: "0 0 * * *" # 매일 09:00 KST
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+# 쓰기(push) 잡은 도중 취소하지 않는다 — 커밋·푸시 사이 취소로 어중간한 상태 방지
+concurrency:
+  group: harness-bump
+  cancel-in-progress: false
+
+jobs:
+  bump:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: develop
+          submodules: true
+
+      # .gitmodules의 branch = main 설정을 따라 최신 커밋으로 이동
+      - name: Harness를 최신 main으로 갱신
+        run: git submodule update --init --remote Harness
+
+      - name: 변경 있으면 커밋·푸시
+        run: |
+          if git diff --quiet Harness; then
+            echo "Harness 변경 없음 — 스킵"
+            exit 0
+          fi
+          SHA=$(git -C Harness rev-parse --short HEAD)
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add Harness
+          git commit -m "chore: Harness 서브모듈 최신 main(${SHA})으로 업데이트"
+          # 체크아웃 이후 develop이 앞서갔으면 rebase 후 1회 재시도
+          git push origin develop || {
+            git fetch origin develop
+            git rebase origin/develop
+            git push origin develop
+          }
