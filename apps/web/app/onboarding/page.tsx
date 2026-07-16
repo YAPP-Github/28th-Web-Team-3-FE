@@ -1,7 +1,5 @@
+import { redirect } from "next/navigation";
+
 export default function OnboardingPage() {
-  return (
-    <main className="">
-      <form></form>
-    </main>
-  );
+  redirect("/onboarding/intro");
 }

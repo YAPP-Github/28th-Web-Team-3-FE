@@ -27,7 +27,8 @@
     "react-dom": "catalog:",
     "react-hook-form": "catalog:",
     "server-only": "catalog:",
-    "zod": "catalog:"
+    "zod": "catalog:",
+    "lucide-react": "catalog:"
   },
   "devDependencies": {
     "@playwright/test": "catalog:",
