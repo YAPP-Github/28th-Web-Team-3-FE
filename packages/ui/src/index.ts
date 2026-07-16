@@ -2,7 +2,6 @@ export { AmountField, type AmountFieldProps } from "./components/amount-field";
 export { BottomSheet, type BottomSheetProps } from "./components/bottom-sheet";
 export { Button, type ButtonProps, buttonVariants } from "./components/button";
 export { ButtonGroup, type ButtonGroupProps } from "./components/button-group";
-export { FunnelHeader, type FunnelHeaderProps } from "./components/funnel-header";
 export { Input, type InputProps } from "./components/input";
 export {
   OptionGroup,

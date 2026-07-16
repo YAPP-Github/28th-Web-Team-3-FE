@@ -7,8 +7,8 @@ import { cn } from "../lib/utils";
 export type ProgressProps = React.ComponentProps<typeof ProgressPrimitive.Root>;
 
 /**
- * 상단 게이지바. 설문 퍼널 헤더 아래 진행률 표시용 얇은 바. value는 0~100.
- * 단독으로도 쓰고, FunnelHeader가 내부에서 조합한다.
+ * 설문 퍼널 상단 진행 게이지바. value는 0~100.
+ * 디자인 기준: 트랙 gray-100, 채움 gray-800. 좌우 20px 인셋 배치는 화면 쪽에서 감싼다.
  */
 export function Progress({ className, value, ...props }: ProgressProps) {
   return (
@@ -18,7 +18,7 @@ export function Progress({ className, value, ...props }: ProgressProps) {
       {...props}
     >
       <ProgressPrimitive.Indicator
-        className="h-full w-full rounded-full flex-1 bg-primary transition-transform duration-300"
+        className="h-full w-full rounded-full flex-1 bg-gray-800 transition-transform duration-300"
         style={{ transform: `translateX(-${100 - (value ?? 0)}%)` }}
       />
     </ProgressPrimitive.Root>
