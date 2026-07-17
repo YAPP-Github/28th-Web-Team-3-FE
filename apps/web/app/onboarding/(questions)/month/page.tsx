@@ -6,8 +6,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Controller, useFormContext } from "react-hook-form";
 import { LabelSlider } from "../../_components/label-slider";
-
-const SLIDER_MAX_AMOUNT = 650;
+import { MONTHLY_AMOUNT_SLIDER_MAX } from "../../constants/amounts";
 
 function toMonthlyAmount(value: string) {
   return Math.min(Number(value.replace(/\D/g, "")), MAX_MONTHLY_AMOUNT);
@@ -49,7 +48,7 @@ export default function MonthOnboardingPage() {
                 <LabelSlider
                   helperText="매월 월급이 다르다면 평균으로 설정해주세요."
                   label="월급"
-                  max={SLIDER_MAX_AMOUNT}
+                  max={MONTHLY_AMOUNT_SLIDER_MAX}
                   value={field.value}
                   onValueChange={field.onChange}
                 />
@@ -62,7 +61,7 @@ export default function MonthOnboardingPage() {
                 <LabelSlider
                   helperText="매월 저축액이 다르다면 평균으로 설정해주세요."
                   label="월 저축액"
-                  max={SLIDER_MAX_AMOUNT}
+                  max={MONTHLY_AMOUNT_SLIDER_MAX}
                   value={field.value}
                   onValueChange={field.onChange}
                 />

@@ -5,40 +5,20 @@ import { ButtonGroup, OptionGroup, OptionItem } from "@repo/ui";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { Controller, useFormContext } from "react-hook-form";
-
-type ChoiceFieldName =
-  | "financialAssetRatio"
-  | "investmentExperience"
-  | "investmentPeriod"
-  | "lossTolerance"
-  | "riskPreference"
-  | "taxSavingInterest";
-
-interface ChoiceOption {
-  label: string;
-  value: string;
-}
+import type { SingleChoiceQuestion as SingleChoiceQuestionDefinition } from "../../constants/questions";
+import { getNextQuestionPath, getPreviousQuestionPath } from "../../lib/question-navigation";
 
 interface SingleChoiceQuestionProps {
-  fieldName: ChoiceFieldName;
-  nextPath: string;
-  options: readonly ChoiceOption[];
-  prevPath: string;
-  subtitle: string;
-  title: string;
+  question: SingleChoiceQuestionDefinition;
 }
 
-export function SingleChoiceQuestion({
-  fieldName,
-  nextPath,
-  options,
-  prevPath,
-  subtitle,
-  title,
-}: SingleChoiceQuestionProps) {
+export function SingleChoiceQuestion({ question }: SingleChoiceQuestionProps) {
   const router = useRouter();
   const { control, watch } = useFormContext<OnboardingFormValues>();
+  const { fieldName, options, step, subtitle, title } = question;
   const selectedValue = watch(fieldName);
+  const prevPath = getPreviousQuestionPath(step);
+  const nextPath = getNextQuestionPath(step);
 
   useEffect(() => {
     router.prefetch(prevPath);

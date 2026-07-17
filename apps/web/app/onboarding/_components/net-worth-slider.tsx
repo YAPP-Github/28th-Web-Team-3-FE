@@ -1,8 +1,7 @@
 "use client";
 
 import { Slider } from "@repo/ui";
-
-export const NET_WORTH_SLIDER_MAX = 10_000;
+import { NET_WORTH_SLIDER_MAX } from "../constants/amounts";
 
 interface NetWorthSliderProps {
   value: string;

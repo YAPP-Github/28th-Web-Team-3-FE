@@ -4,15 +4,7 @@ import type { OnboardingFormValues } from "@repo/schema";
 import { Button, Toggle } from "@repo/ui";
 import { useRouter } from "next/navigation";
 import { Controller, useFormContext } from "react-hook-form";
-
-const AGE_OPTIONS = [
-  { label: "10대", value: "teens" },
-  { label: "20대", value: "twenties" },
-  { label: "30대", value: "thirties" },
-  { label: "40대", value: "forties" },
-  { label: "50대", value: "fifties" },
-  { label: "60대 이상", value: "sixties-or-older" },
-] as const;
+import { AGE_OPTIONS } from "../../constants/questions";
 
 export default function AgeOnboardingPage() {
   const router = useRouter();

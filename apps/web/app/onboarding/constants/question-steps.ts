@@ -11,7 +11,3 @@ export const QUESTION_STEPS = [
 ] as const;
 
 export type QuestionStep = (typeof QUESTION_STEPS)[number];
-
-export function getQuestionStepIndex(pathname: string) {
-  return QUESTION_STEPS.findIndex((step) => pathname === `/onboarding/${step}`);
-}

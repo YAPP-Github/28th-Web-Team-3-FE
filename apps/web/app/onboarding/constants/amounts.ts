@@ -1,0 +1,2 @@
+export const MONTHLY_AMOUNT_SLIDER_MAX = 650;
+export const NET_WORTH_SLIDER_MAX = 10_000;

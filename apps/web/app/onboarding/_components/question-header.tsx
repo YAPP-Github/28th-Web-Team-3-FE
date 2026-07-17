@@ -3,15 +3,16 @@
 import { Button, Progress } from "@repo/ui";
 import { ChevronLeft } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
-import { getQuestionStepIndex, QUESTION_STEPS } from "./question-steps";
+import { QUESTION_STEPS } from "../constants/question-steps";
+import { getPreviousQuestionPath, getQuestionStepIndex } from "../lib/question-navigation";
 
 export function QuestionHeader() {
   const pathname = usePathname();
   const router = useRouter();
   const stepIndex = getQuestionStepIndex(pathname);
+  const currentStep = stepIndex < 0 ? undefined : QUESTION_STEPS[stepIndex];
   const progress = stepIndex < 0 ? 0 : ((stepIndex + 1) / QUESTION_STEPS.length) * 100;
-  const previousPath =
-    stepIndex <= 0 ? "/onboarding/intro" : `/onboarding/${QUESTION_STEPS[stepIndex - 1]}`;
+  const previousPath = currentStep ? getPreviousQuestionPath(currentStep) : "/onboarding/intro";
 
   return (
     <header>
