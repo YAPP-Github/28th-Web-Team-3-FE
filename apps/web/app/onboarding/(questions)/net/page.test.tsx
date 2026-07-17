@@ -46,7 +46,10 @@ describe("NetOnboardingPage", () => {
     });
     fireEvent.click(screen.getByRole("button", { name: "완료" }));
 
-    fireEvent.click(screen.getByRole("button", { name: "순자산 슬라이더 활성화" }));
+    const sliderActivationButton = screen.getByRole("button", { name: "순자산 슬라이더 활성화" });
+    expect(sliderActivationButton.querySelector(".bg-primary")).toHaveClass("w-full");
+
+    fireEvent.click(sliderActivationButton);
 
     expect(screen.getByText("자산 10,000만원")).toBeInTheDocument();
     expect(screen.getByRole("slider", { name: "순자산" })).toBeInTheDocument();

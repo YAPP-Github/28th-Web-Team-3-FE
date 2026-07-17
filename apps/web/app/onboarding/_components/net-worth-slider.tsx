@@ -36,7 +36,9 @@ export function NetWorthSlider({ value, onValueChange }: NetWorthSliderProps) {
             type="button"
             onClick={() => onValueChange(String(NET_WORTH_SLIDER_MAX))}
           >
-            <span className="h-1 w-full rounded-full bg-gray-100" />
+            <span className="h-1 w-full overflow-hidden rounded-full bg-gray-100">
+              <span className="block h-full w-full bg-primary" />
+            </span>
           </button>
         ) : (
           <Slider

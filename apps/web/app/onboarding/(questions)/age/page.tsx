@@ -1,14 +1,23 @@
 "use client";
 
+import type { OnboardingFormValues } from "@repo/schema";
 import { Button, Toggle } from "@repo/ui";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { Controller, useFormContext } from "react-hook-form";
 
-const AGE_OPTIONS = ["10대", "20대", "30대", "40대", "50대", "60대 이상"] as const;
+const AGE_OPTIONS = [
+  { label: "10대", value: "teens" },
+  { label: "20대", value: "twenties" },
+  { label: "30대", value: "thirties" },
+  { label: "40대", value: "forties" },
+  { label: "50대", value: "fifties" },
+  { label: "60대 이상", value: "sixties-or-older" },
+] as const;
 
 export default function AgeOnboardingPage() {
   const router = useRouter();
-  const [selectedAge, setSelectedAge] = useState<(typeof AGE_OPTIONS)[number] | null>(null);
+  const { control, trigger, watch } = useFormContext<OnboardingFormValues>();
+  const ageGroup = watch("ageGroup");
 
   return (
     <div className="flex min-h-[calc(100dvh-56px)] flex-col px-5 pt-8">
@@ -18,25 +27,35 @@ export default function AgeOnboardingPage() {
           연령대에 맞는 정보를 드리기 위해 필요해요.
         </p>
         <div className="mt-8 grid grid-cols-2 gap-3">
-          {AGE_OPTIONS.map((age) => (
-            <Toggle
-              key={age}
-              pressed={selectedAge === age}
-              variant="onboarding"
-              onPressedChange={(pressed) => {
-                setSelectedAge(pressed ? age : null);
-              }}
-            >
-              {age}
-            </Toggle>
-          ))}
+          <Controller
+            control={control}
+            name="ageGroup"
+            render={({ field }) => (
+              <>
+                {AGE_OPTIONS.map((age) => (
+                  <Toggle
+                    key={age.value}
+                    pressed={field.value === age.value}
+                    variant="onboarding"
+                    onPressedChange={(pressed) => field.onChange(pressed ? age.value : "")}
+                  >
+                    {age.label}
+                  </Toggle>
+                ))}
+              </>
+            )}
+          />
         </div>
       </section>
       <Button
         className="mt-auto mb-6 disabled:bg-gray-50 disabled:text-gray-300 disabled:opacity-100"
-        disabled={selectedAge === null}
+        disabled={ageGroup === ""}
         size="cta"
-        onClick={() => router.push("/onboarding/month")}
+        onClick={async () => {
+          if (await trigger("ageGroup", { shouldFocus: true })) {
+            router.push("/onboarding/month");
+          }
+        }}
       >
         다음
       </Button>
