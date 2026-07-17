@@ -39,7 +39,7 @@ describe("MonthOnboardingPage", () => {
     });
 
     fireEvent.click(screen.getByRole("button", { name: "완료" }));
-    await waitFor(() => expect(push).toHaveBeenCalledWith("/onboarding/finance"));
+    await waitFor(() => expect(push).toHaveBeenCalledWith("/onboarding/net"));
   });
 
   it("이전 버튼이 이전 질문 경로로 이동한다", () => {

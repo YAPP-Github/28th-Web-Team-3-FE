@@ -23,7 +23,7 @@ export default function MonthOnboardingPage() {
 
   async function moveToNextQuestion() {
     if (await trigger(["income", "savings"], { shouldFocus: true })) {
-      router.push("/onboarding/finance");
+      router.push("/onboarding/net");
     }
   }
 

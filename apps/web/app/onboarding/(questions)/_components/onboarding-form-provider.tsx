@@ -9,6 +9,7 @@ export function OnboardingFormProvider({ children }: { children: ReactNode }) {
   const methods = useForm<OnboardingFormValues>({
     defaultValues: {
       income: 0,
+      netWorth: "",
       savings: 0,
     },
     resolver: zodResolver(onboardingFormSchema),
