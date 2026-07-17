@@ -1,18 +1,31 @@
 "use client";
 
+import { MAX_MONTHLY_AMOUNT, type OnboardingFormValues } from "@repo/schema";
 import { AmountField, BottomSheet, ButtonGroup, TextButton } from "@repo/ui";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { Controller, useFormContext } from "react-hook-form";
 import { LabelSlider } from "../../_components/label-slider";
 
-const MAX_AMOUNT = 650;
+const SLIDER_MAX_AMOUNT = 650;
+
+function toMonthlyAmount(value: string) {
+  return Math.min(Number(value.replace(/\D/g, "")), MAX_MONTHLY_AMOUNT);
+}
 
 export default function MonthOnboardingPage() {
   const router = useRouter();
-  const [income, setIncome] = useState(0);
-  const [savings, setSavings] = useState(0);
   const [isSheetOpen, setIsSheetOpen] = useState(false);
+  const { control, trigger, watch } = useFormContext<OnboardingFormValues>();
+  const income = watch("income");
+  const savings = watch("savings");
   const canProceed = income > 0 && savings > 0;
+
+  async function moveToNextQuestion() {
+    if (await trigger(["income", "savings"], { shouldFocus: true })) {
+      router.push("/onboarding/finance");
+    }
+  }
 
   return (
     <div className="flex min-h-[calc(100dvh-56px)] flex-col justify-between px-5 pt-7">
@@ -29,19 +42,31 @@ export default function MonthOnboardingPage() {
             </p>
           </div>
           <div className="flex flex-col gap-12">
-            <LabelSlider
-              helperText="매월 월급이 다르다면 평균으로 설정해주세요."
-              label="월급"
-              max={MAX_AMOUNT}
-              value={income}
-              onValueChange={setIncome}
+            <Controller
+              control={control}
+              name="income"
+              render={({ field }) => (
+                <LabelSlider
+                  helperText="매월 월급이 다르다면 평균으로 설정해주세요."
+                  label="월급"
+                  max={SLIDER_MAX_AMOUNT}
+                  value={field.value}
+                  onValueChange={field.onChange}
+                />
+              )}
             />
-            <LabelSlider
-              helperText="매월 저축액이 다르다면 평균으로 설정해주세요."
-              label="월 저축액"
-              max={MAX_AMOUNT}
-              value={savings}
-              onValueChange={setSavings}
+            <Controller
+              control={control}
+              name="savings"
+              render={({ field }) => (
+                <LabelSlider
+                  helperText="매월 저축액이 다르다면 평균으로 설정해주세요."
+                  label="월 저축액"
+                  max={SLIDER_MAX_AMOUNT}
+                  value={field.value}
+                  onValueChange={field.onChange}
+                />
+              )}
             />
           </div>
         </section>
@@ -54,22 +79,36 @@ export default function MonthOnboardingPage() {
         >
           <div className="flex flex-col gap-12 pt-6">
             <div className="flex gap-2 px-5">
-              <AmountField
-                label="월급"
-                value={income === 0 ? "" : String(income)}
-                onChange={(event) => setIncome(Number(event.target.value.replace(/\D/g, "")))}
+              <Controller
+                control={control}
+                name="income"
+                render={({ field }) => (
+                  <AmountField
+                    label="월급"
+                    maxLength={String(MAX_MONTHLY_AMOUNT).length}
+                    value={field.value === 0 ? "" : String(field.value)}
+                    onChange={(event) => field.onChange(toMonthlyAmount(event.target.value))}
+                  />
+                )}
               />
-              <AmountField
-                label="월 저축액"
-                value={savings === 0 ? "" : String(savings)}
-                onChange={(event) => setSavings(Number(event.target.value.replace(/\D/g, "")))}
+              <Controller
+                control={control}
+                name="savings"
+                render={({ field }) => (
+                  <AmountField
+                    label="월 저축액"
+                    maxLength={String(MAX_MONTHLY_AMOUNT).length}
+                    value={field.value === 0 ? "" : String(field.value)}
+                    onChange={(event) => field.onChange(toMonthlyAmount(event.target.value))}
+                  />
+                )}
               />
             </div>
             <div className="px-5 pt-2 pb-3">
               <ButtonGroup
                 nextDisabled={!canProceed}
                 nextLabel="완료"
-                onNext={() => setIsSheetOpen(false)}
+                onNext={moveToNextQuestion}
               />
             </div>
           </div>
@@ -79,7 +118,7 @@ export default function MonthOnboardingPage() {
       <div className="pt-8 pb-6">
         <ButtonGroup
           nextDisabled={!canProceed}
-          onNext={() => router.push("/onboarding/finance")}
+          onNext={moveToNextQuestion}
           onPrev={() => router.push("/onboarding/age")}
         />
       </div>

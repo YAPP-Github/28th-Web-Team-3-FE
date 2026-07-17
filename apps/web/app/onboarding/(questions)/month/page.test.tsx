@@ -1,10 +1,19 @@
-import { fireEvent, render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { OnboardingFormProvider } from "../_components/onboarding-form-provider";
 import MonthOnboardingPage from "./page";
 
 const push = vi.fn();
 
 vi.mock("next/navigation", () => ({ useRouter: () => ({ push }) }));
+
+function renderPage() {
+  return render(
+    <OnboardingFormProvider>
+      <MonthOnboardingPage />
+    </OnboardingFormProvider>,
+  );
+}
 
 describe("MonthOnboardingPage", () => {
   beforeEach(() => {
@@ -12,13 +21,13 @@ describe("MonthOnboardingPage", () => {
   });
 
   it("금액을 입력하기 전에는 다음 버튼이 비활성화된다", () => {
-    render(<MonthOnboardingPage />);
+    renderPage();
 
     expect(screen.getByRole("button", { name: "다음" })).toBeDisabled();
   });
 
-  it("직접 입력한 월급과 저축액을 완료하면 다음 버튼이 활성화된다", () => {
-    render(<MonthOnboardingPage />);
+  it("직접 입력한 월급과 저축액을 완료하면 다음 질문으로 이동한다", async () => {
+    renderPage();
 
     fireEvent.click(screen.getByRole("button", { name: "직접 입력" }));
 
@@ -30,18 +39,24 @@ describe("MonthOnboardingPage", () => {
     });
 
     fireEvent.click(screen.getByRole("button", { name: "완료" }));
-
-    const nextButton = screen.getByRole("button", { name: "다음" });
-    expect(nextButton).toBeEnabled();
-
-    fireEvent.click(nextButton);
-    expect(push).toHaveBeenCalledWith("/onboarding/finance");
+    await waitFor(() => expect(push).toHaveBeenCalledWith("/onboarding/finance"));
   });
 
   it("이전 버튼이 이전 질문 경로로 이동한다", () => {
-    render(<MonthOnboardingPage />);
+    renderPage();
 
     fireEvent.click(screen.getByRole("button", { name: "이전" }));
     expect(push).toHaveBeenCalledWith("/onboarding/age");
+  });
+
+  it("직접 입력 금액은 9,999,999만원을 넘을 수 없다", () => {
+    renderPage();
+
+    fireEvent.click(screen.getByRole("button", { name: "직접 입력" }));
+    fireEvent.change(screen.getByRole("textbox", { name: "월급만원" }), {
+      target: { value: "10000000" },
+    });
+
+    expect(screen.getByRole("textbox", { name: "월급만원" })).toHaveValue("9999999");
   });
 });
