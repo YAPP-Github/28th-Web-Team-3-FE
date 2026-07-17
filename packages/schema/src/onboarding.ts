@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 export const MAX_MONTHLY_AMOUNT = 9_999_999;
-export const MAX_NET_WORTH_AMOUNT = "9999999999999999999";
+export const MAX_NET_WORTH_AMOUNT = "999999999999999";
 
 const monthlyAmountSchema = z
   .number()

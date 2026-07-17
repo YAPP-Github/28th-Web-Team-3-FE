@@ -26,7 +26,7 @@ describe("MonthOnboardingPage", () => {
     expect(screen.getByRole("button", { name: "다음" })).toBeDisabled();
   });
 
-  it("직접 입력한 월급과 저축액을 완료하면 다음 질문으로 이동한다", async () => {
+  it("직접 입력한 월급과 저축액을 완료하면 입력창을 닫는다", async () => {
     renderPage();
 
     fireEvent.click(screen.getByRole("button", { name: "직접 입력" }));
@@ -39,7 +39,9 @@ describe("MonthOnboardingPage", () => {
     });
 
     fireEvent.click(screen.getByRole("button", { name: "완료" }));
-    await waitFor(() => expect(push).toHaveBeenCalledWith("/onboarding/net"));
+
+    await waitFor(() => expect(screen.queryByRole("dialog")).not.toBeInTheDocument());
+    expect(push).not.toHaveBeenCalled();
   });
 
   it("이전 버튼이 이전 질문 경로로 이동한다", () => {

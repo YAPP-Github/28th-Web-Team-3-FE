@@ -34,7 +34,7 @@ describe("NetOnboardingPage", () => {
       target: { value: "10000000000000000000" },
     });
 
-    expect(screen.getByRole("textbox", { name: "순자산만원" })).toHaveValue("9999999999999999999");
+    expect(screen.getByRole("textbox", { name: "순자산만원" })).toHaveValue("999999999999999");
   });
 
   it("슬라이더 상한을 넘는 값은 바를 누르면 1억원으로 돌아온다", async () => {

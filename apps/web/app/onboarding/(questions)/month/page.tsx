@@ -108,7 +108,7 @@ export default function MonthOnboardingPage() {
               <ButtonGroup
                 nextDisabled={!canProceed}
                 nextLabel="완료"
-                onNext={moveToNextQuestion}
+                onNext={() => setIsSheetOpen(false)}
               />
             </div>
           </div>
