@@ -4,7 +4,7 @@ import { FormProvider, useForm } from "react-hook-form";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import OnboardingResultPage from "./page";
 
-const formValues: OnboardingFormValues = {
+const sampleOnboardingFormValues: OnboardingFormValues = {
   ageGroup: "twenties",
   financialAssetRatio: "about-half",
   income: 300,
@@ -17,11 +17,11 @@ const formValues: OnboardingFormValues = {
   taxSavingInterest: "later",
 };
 
-function ResultPageWithForm() {
-  const methods = useForm<OnboardingFormValues>({ defaultValues: formValues });
+function OnboardingResultPageTestHarness() {
+  const formMethods = useForm<OnboardingFormValues>({ defaultValues: sampleOnboardingFormValues });
 
   return (
-    <FormProvider {...methods}>
+    <FormProvider {...formMethods}>
       <OnboardingResultPage />
     </FormProvider>
   );
@@ -35,8 +35,8 @@ describe("OnboardingResultPage", () => {
   it("수집한 온보딩 입력값을 콘솔에 출력한다", () => {
     const log = vi.spyOn(console, "log").mockImplementation(() => undefined);
 
-    render(<ResultPageWithForm />);
+    render(<OnboardingResultPageTestHarness />);
 
-    expect(log).toHaveBeenCalledWith("Onboarding form values:", formValues);
+    expect(log).toHaveBeenCalledWith("Onboarding form values:", sampleOnboardingFormValues);
   });
 });

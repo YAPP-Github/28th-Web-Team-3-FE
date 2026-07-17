@@ -2,7 +2,7 @@ import { fireEvent, render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import { LabelSlider } from "./label-slider";
 
-const sliderProps = vi.fn();
+const sliderPropsSpy = vi.fn();
 
 vi.mock("@repo/ui", () => ({
   Slider: (props: {
@@ -13,7 +13,7 @@ vi.mock("@repo/ui", () => ({
     thumbLabels: string[];
     value: number[];
   }) => {
-    sliderProps(props);
+    sliderPropsSpy(props);
 
     return (
       <button type="button" onClick={() => props.onValueChange([250])}>
@@ -27,11 +27,11 @@ describe("LabelSlider", () => {
   it("라벨, 현재 값, 안내 문구와 최대값을 표시한다", () => {
     render(
       <LabelSlider
-        helperText="월급을 선택해주세요"
-        label="월급"
-        max={500}
-        value={200}
-        onValueChange={vi.fn()}
+        amount={200}
+        amountLabel="월급"
+        helperMessage="월급을 선택해주세요"
+        maxAmount={500}
+        onAmountChange={vi.fn()}
       />,
     );
 
@@ -42,19 +42,19 @@ describe("LabelSlider", () => {
   });
 
   it("Slider의 값을 단일 숫자로 전달하고 변경값을 전달한다", () => {
-    const onValueChange = vi.fn();
+    const onAmountChange = vi.fn();
 
     render(
       <LabelSlider
-        helperText="월급을 선택해주세요"
-        label="월급"
-        max={500}
-        value={200}
-        onValueChange={onValueChange}
+        amount={200}
+        amountLabel="월급"
+        helperMessage="월급을 선택해주세요"
+        maxAmount={500}
+        onAmountChange={onAmountChange}
       />,
     );
 
-    expect(sliderProps).toHaveBeenLastCalledWith(
+    expect(sliderPropsSpy).toHaveBeenLastCalledWith(
       expect.objectContaining({
         max: 500,
         min: 0,
@@ -66,6 +66,6 @@ describe("LabelSlider", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "슬라이더" }));
 
-    expect(onValueChange).toHaveBeenCalledWith(250);
+    expect(onAmountChange).toHaveBeenCalledWith(250);
   });
 });

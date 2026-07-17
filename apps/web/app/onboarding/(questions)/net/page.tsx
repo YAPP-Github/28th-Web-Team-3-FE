@@ -7,24 +7,24 @@ import { useState } from "react";
 import { Controller, useFormContext } from "react-hook-form";
 import { NetWorthSlider } from "../../_components/net-worth-slider";
 
-function toNetWorthAmount(value: string) {
-  const digits = value.replace(/\D/g, "").replace(/^0+(?=\d)/, "");
+function parseNetWorthInput(inputValue: string) {
+  const numericValue = inputValue.replace(/\D/g, "").replace(/^0+(?=\d)/, "");
 
-  if (digits === "") {
+  if (numericValue === "") {
     return "";
   }
 
-  return BigInt(digits) > BigInt(MAX_NET_WORTH_AMOUNT) ? MAX_NET_WORTH_AMOUNT : digits;
+  return BigInt(numericValue) > BigInt(MAX_NET_WORTH_AMOUNT) ? MAX_NET_WORTH_AMOUNT : numericValue;
 }
 
-export default function NetOnboardingPage() {
+export default function NetWorthOnboardingPage() {
   const router = useRouter();
-  const [isSheetOpen, setIsSheetOpen] = useState(false);
+  const [isDirectInputSheetOpen, setIsDirectInputSheetOpen] = useState(false);
   const { control, trigger, watch } = useFormContext<OnboardingFormValues>();
-  const netWorth = watch("netWorth");
-  const canProceed = BigInt(netWorth || "0") > 0n;
+  const netWorthAmount = watch("netWorth");
+  const hasNetWorthAmount = BigInt(netWorthAmount || "0") > 0n;
 
-  async function moveToNextQuestion() {
+  async function navigateToFinancialAssetsQuestion() {
     if (await trigger("netWorth", { shouldFocus: true })) {
       router.push("/onboarding/finance");
     }
@@ -48,16 +48,19 @@ export default function NetOnboardingPage() {
             control={control}
             name="netWorth"
             render={({ field }) => (
-              <NetWorthSlider value={field.value} onValueChange={field.onChange} />
+              <NetWorthSlider
+                netWorthAmount={field.value}
+                onNetWorthAmountChange={field.onChange}
+              />
             )}
           />
         </section>
 
         <BottomSheet
-          open={isSheetOpen}
+          open={isDirectInputSheetOpen}
           title="직접 입력"
           trigger={<TextButton className="mx-auto">직접 입력</TextButton>}
-          onOpenChange={setIsSheetOpen}
+          onOpenChange={setIsDirectInputSheetOpen}
         >
           <div className="flex flex-col gap-12 pt-6">
             <div className="px-5">
@@ -69,16 +72,16 @@ export default function NetOnboardingPage() {
                     label="순자산"
                     maxLength={MAX_NET_WORTH_AMOUNT.length}
                     value={field.value}
-                    onChange={(event) => field.onChange(toNetWorthAmount(event.target.value))}
+                    onChange={(event) => field.onChange(parseNetWorthInput(event.target.value))}
                   />
                 )}
               />
             </div>
             <div className="px-5 pt-2 pb-3">
               <ButtonGroup
-                nextDisabled={!canProceed}
+                nextDisabled={!hasNetWorthAmount}
                 nextLabel="완료"
-                onNext={() => setIsSheetOpen(false)}
+                onNext={() => setIsDirectInputSheetOpen(false)}
               />
             </div>
           </div>
@@ -87,8 +90,8 @@ export default function NetOnboardingPage() {
 
       <div className="pt-8 pb-6">
         <ButtonGroup
-          nextDisabled={!canProceed}
-          onNext={moveToNextQuestion}
+          nextDisabled={!hasNetWorthAmount}
+          onNext={navigateToFinancialAssetsQuestion}
           onPrev={() => router.push("/onboarding/month")}
         />
       </div>

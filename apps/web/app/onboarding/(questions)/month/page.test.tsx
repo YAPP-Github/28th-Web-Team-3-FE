@@ -1,33 +1,33 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { OnboardingFormProvider } from "../_components/onboarding-form-provider";
-import MonthOnboardingPage from "./page";
+import MonthlyIncomeAndSavingsOnboardingPage from "./page";
 
-const push = vi.fn();
+const pushMock = vi.fn();
 
-vi.mock("next/navigation", () => ({ useRouter: () => ({ push }) }));
+vi.mock("next/navigation", () => ({ useRouter: () => ({ push: pushMock }) }));
 
-function renderPage() {
+function renderMonthOnboardingPage() {
   return render(
     <OnboardingFormProvider>
-      <MonthOnboardingPage />
+      <MonthlyIncomeAndSavingsOnboardingPage />
     </OnboardingFormProvider>,
   );
 }
 
-describe("MonthOnboardingPage", () => {
+describe("MonthlyIncomeAndSavingsOnboardingPage", () => {
   beforeEach(() => {
-    push.mockClear();
+    pushMock.mockClear();
   });
 
   it("금액을 입력하기 전에는 다음 버튼이 비활성화된다", () => {
-    renderPage();
+    renderMonthOnboardingPage();
 
     expect(screen.getByRole("button", { name: "다음" })).toBeDisabled();
   });
 
   it("직접 입력한 월급과 저축액을 완료하면 입력창을 닫는다", async () => {
-    renderPage();
+    renderMonthOnboardingPage();
 
     fireEvent.click(screen.getByRole("button", { name: "직접 입력" }));
 
@@ -41,18 +41,18 @@ describe("MonthOnboardingPage", () => {
     fireEvent.click(screen.getByRole("button", { name: "완료" }));
 
     await waitFor(() => expect(screen.queryByRole("dialog")).not.toBeInTheDocument());
-    expect(push).not.toHaveBeenCalled();
+    expect(pushMock).not.toHaveBeenCalled();
   });
 
   it("이전 버튼이 이전 질문 경로로 이동한다", () => {
-    renderPage();
+    renderMonthOnboardingPage();
 
     fireEvent.click(screen.getByRole("button", { name: "이전" }));
-    expect(push).toHaveBeenCalledWith("/onboarding/age");
+    expect(pushMock).toHaveBeenCalledWith("/onboarding/age");
   });
 
   it("직접 입력 금액은 9,999,999만원을 넘을 수 없다", () => {
-    renderPage();
+    renderMonthOnboardingPage();
 
     fireEvent.click(screen.getByRole("button", { name: "직접 입력" }));
     fireEvent.change(screen.getByRole("textbox", { name: "월급만원" }), {

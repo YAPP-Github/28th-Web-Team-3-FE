@@ -1,6 +1,5 @@
-import { SINGLE_CHOICE_QUESTIONS } from "../../constants/questions";
-import { SingleChoiceQuestion } from "../_components/single-choice-question";
+import { SingleChoiceQuestionPage } from "../_components/single-choice-question";
 
-export default function PeriodOnboardingPage() {
-  return <SingleChoiceQuestion question={SINGLE_CHOICE_QUESTIONS.period} />;
+export default function InvestmentPeriodOnboardingPage() {
+  return <SingleChoiceQuestionPage questionStep="period" />;
 }

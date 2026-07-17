@@ -1,4 +1,4 @@
-export const QUESTION_STEPS = [
+export const ONBOARDING_QUESTION_STEPS = [
   "age",
   "month",
   "net",
@@ -10,4 +10,4 @@ export const QUESTION_STEPS = [
   "interest",
 ] as const;
 
-export type QuestionStep = (typeof QUESTION_STEPS)[number];
+export type OnboardingQuestionStep = (typeof ONBOARDING_QUESTION_STEPS)[number];

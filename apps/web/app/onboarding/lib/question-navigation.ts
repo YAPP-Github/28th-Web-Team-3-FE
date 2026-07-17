@@ -1,18 +1,25 @@
-import { QUESTION_STEPS, type QuestionStep } from "../constants/question-steps";
+import {
+  ONBOARDING_QUESTION_STEPS,
+  type OnboardingQuestionStep,
+} from "../constants/question-steps";
 
-export function getQuestionStepIndex(pathname: string) {
-  return QUESTION_STEPS.findIndex((step) => pathname === `/onboarding/${step}`);
+export function getOnboardingQuestionStepIndex(pathname: string) {
+  return ONBOARDING_QUESTION_STEPS.findIndex(
+    (questionStep) => pathname === `/onboarding/${questionStep}`,
+  );
 }
 
-export function getPreviousQuestionPath(step: QuestionStep) {
-  const stepIndex = QUESTION_STEPS.indexOf(step);
+export function getPreviousOnboardingQuestionPath(questionStep: OnboardingQuestionStep) {
+  const questionStepIndex = ONBOARDING_QUESTION_STEPS.indexOf(questionStep);
 
-  return stepIndex === 0 ? "/onboarding/intro" : `/onboarding/${QUESTION_STEPS[stepIndex - 1]}`;
+  return questionStepIndex === 0
+    ? "/onboarding/intro"
+    : `/onboarding/${ONBOARDING_QUESTION_STEPS[questionStepIndex - 1]}`;
 }
 
-export function getNextQuestionPath(step: QuestionStep) {
-  const stepIndex = QUESTION_STEPS.indexOf(step);
-  const nextStep = QUESTION_STEPS[stepIndex + 1];
+export function getNextOnboardingQuestionPath(questionStep: OnboardingQuestionStep) {
+  const questionStepIndex = ONBOARDING_QUESTION_STEPS.indexOf(questionStep);
+  const nextQuestionStep = ONBOARDING_QUESTION_STEPS[questionStepIndex + 1];
 
-  return nextStep ? `/onboarding/${nextStep}` : "/onboarding/result";
+  return nextQuestionStep ? `/onboarding/${nextQuestionStep}` : "/onboarding/result";
 }

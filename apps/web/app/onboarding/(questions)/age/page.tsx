@@ -4,12 +4,12 @@ import type { OnboardingFormValues } from "@repo/schema";
 import { Button, Toggle } from "@repo/ui";
 import { useRouter } from "next/navigation";
 import { Controller, useFormContext } from "react-hook-form";
-import { AGE_OPTIONS } from "../../constants/questions";
+import { AGE_GROUP_OPTIONS } from "../../constants/questions";
 
 export default function AgeOnboardingPage() {
   const router = useRouter();
   const { control, trigger, watch } = useFormContext<OnboardingFormValues>();
-  const ageGroup = watch("ageGroup");
+  const selectedAgeGroup = watch("ageGroup");
 
   return (
     <div className="flex min-h-[calc(100dvh-56px)] flex-col px-5 pt-8">
@@ -24,14 +24,16 @@ export default function AgeOnboardingPage() {
             name="ageGroup"
             render={({ field }) => (
               <>
-                {AGE_OPTIONS.map((age) => (
+                {AGE_GROUP_OPTIONS.map((ageGroupOption) => (
                   <Toggle
-                    key={age.value}
-                    pressed={field.value === age.value}
+                    key={ageGroupOption.value}
+                    pressed={field.value === ageGroupOption.value}
                     variant="onboarding"
-                    onPressedChange={(pressed) => field.onChange(pressed ? age.value : "")}
+                    onPressedChange={(pressed) =>
+                      field.onChange(pressed ? ageGroupOption.value : "")
+                    }
                   >
-                    {age.label}
+                    {ageGroupOption.label}
                   </Toggle>
                 ))}
               </>
@@ -41,7 +43,7 @@ export default function AgeOnboardingPage() {
       </section>
       <Button
         className="mt-auto mb-6 disabled:bg-gray-50 disabled:text-gray-300 disabled:opacity-100"
-        disabled={ageGroup === ""}
+        disabled={selectedAgeGroup === ""}
         size="cta"
         onClick={async () => {
           if (await trigger("ageGroup", { shouldFocus: true })) {

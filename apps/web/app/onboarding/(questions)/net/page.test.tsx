@@ -1,33 +1,33 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { OnboardingFormProvider } from "../_components/onboarding-form-provider";
-import NetOnboardingPage from "./page";
+import NetWorthOnboardingPage from "./page";
 
-const push = vi.fn();
+const pushMock = vi.fn();
 
-vi.mock("next/navigation", () => ({ useRouter: () => ({ push }) }));
+vi.mock("next/navigation", () => ({ useRouter: () => ({ push: pushMock }) }));
 
-function renderPage() {
+function renderNetWorthOnboardingPage() {
   return render(
     <OnboardingFormProvider>
-      <NetOnboardingPage />
+      <NetWorthOnboardingPage />
     </OnboardingFormProvider>,
   );
 }
 
-describe("NetOnboardingPage", () => {
+describe("NetWorthOnboardingPage", () => {
   beforeEach(() => {
-    push.mockClear();
+    pushMock.mockClear();
   });
 
   it("금액을 입력하기 전에는 다음 버튼이 비활성화된다", () => {
-    renderPage();
+    renderNetWorthOnboardingPage();
 
     expect(screen.getByRole("button", { name: "다음" })).toBeDisabled();
   });
 
   it("한도 초과 직접 입력은 최대값으로 제한한다", () => {
-    renderPage();
+    renderNetWorthOnboardingPage();
 
     fireEvent.click(screen.getByRole("button", { name: "직접 입력" }));
     fireEvent.change(screen.getByRole("textbox", { name: "순자산만원" }), {
@@ -38,7 +38,7 @@ describe("NetOnboardingPage", () => {
   });
 
   it("슬라이더 상한을 넘는 값은 바를 누르면 1억원으로 돌아온다", async () => {
-    renderPage();
+    renderNetWorthOnboardingPage();
 
     fireEvent.click(screen.getByRole("button", { name: "직접 입력" }));
     fireEvent.change(screen.getByRole("textbox", { name: "순자산만원" }), {
@@ -56,7 +56,7 @@ describe("NetOnboardingPage", () => {
   });
 
   it("입력한 순자산으로 다음 질문으로 이동한다", async () => {
-    renderPage();
+    renderNetWorthOnboardingPage();
 
     fireEvent.click(screen.getByRole("button", { name: "직접 입력" }));
     fireEvent.change(screen.getByRole("textbox", { name: "순자산만원" }), {
@@ -65,13 +65,13 @@ describe("NetOnboardingPage", () => {
     fireEvent.click(screen.getByRole("button", { name: "완료" }));
     fireEvent.click(screen.getByRole("button", { name: "다음" }));
 
-    await waitFor(() => expect(push).toHaveBeenCalledWith("/onboarding/finance"));
+    await waitFor(() => expect(pushMock).toHaveBeenCalledWith("/onboarding/finance"));
   });
 
   it("이전 버튼이 월급 질문 경로로 이동한다", () => {
-    renderPage();
+    renderNetWorthOnboardingPage();
 
     fireEvent.click(screen.getByRole("button", { name: "이전" }));
-    expect(push).toHaveBeenCalledWith("/onboarding/month");
+    expect(pushMock).toHaveBeenCalledWith("/onboarding/month");
   });
 });
