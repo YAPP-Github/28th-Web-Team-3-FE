@@ -3,9 +3,12 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { OnboardingFormProvider } from "../_components/onboarding-form-provider";
 import AgeOnboardingPage from "./page";
 
+const prefetchMock = vi.fn();
 const pushMock = vi.fn();
 
-vi.mock("next/navigation", () => ({ useRouter: () => ({ push: pushMock }) }));
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({ prefetch: prefetchMock, push: pushMock }),
+}));
 
 function renderAgeOnboardingPage() {
   return render(
@@ -17,7 +20,14 @@ function renderAgeOnboardingPage() {
 
 describe("AgeOnboardingPage", () => {
   beforeEach(() => {
+    prefetchMock.mockClear();
     pushMock.mockClear();
+  });
+
+  it("다음 질문 경로를 미리 불러온다", () => {
+    renderAgeOnboardingPage();
+
+    expect(prefetchMock).toHaveBeenCalledWith("/onboarding/month");
   });
 
   it("선택 전에는 다음 버튼이 비활성화된다", () => {

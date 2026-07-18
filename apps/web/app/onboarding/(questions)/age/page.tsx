@@ -3,6 +3,7 @@
 import type { OnboardingFormValues } from "@repo/schema";
 import { Button, Toggle } from "@repo/ui";
 import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 import { Controller, useFormContext } from "react-hook-form";
 import { AGE_GROUP_OPTIONS } from "../../constants/questions";
 
@@ -10,6 +11,10 @@ export default function AgeOnboardingPage() {
   const router = useRouter();
   const { control, trigger, watch } = useFormContext<OnboardingFormValues>();
   const selectedAgeGroup = watch("ageGroup");
+
+  useEffect(() => {
+    router.prefetch("/onboarding/month");
+  }, [router]);
 
   return (
     <div className="flex min-h-[calc(100dvh-56px)] flex-col px-5 pt-8">

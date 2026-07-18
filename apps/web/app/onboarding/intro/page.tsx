@@ -1,4 +1,4 @@
-import { Button } from "@repo/ui";
+import { buttonVariants, cn } from "@repo/ui";
 import Link from "next/link";
 
 export default function IntroOnboardingPage() {
@@ -10,10 +10,11 @@ export default function IntroOnboardingPage() {
         <span className="text-blue-600">딱 맞는 투자 선배</span>를 찾기 위해
         <br />몇 가지만 확인할게요.
       </h1>
-      <Link className="mt-auto mb-6" href="/onboarding/age" passHref>
-        <Button size="cta" variant="onboardingNext">
-          시작
-        </Button>
+      <Link
+        className={cn(buttonVariants({ size: "cta", variant: "onboardingNext" }), "mt-auto mb-6")}
+        href="/onboarding/age"
+      >
+        시작
       </Link>
     </div>
   );

@@ -27,18 +27,18 @@ describe("LabelSlider", () => {
   it("라벨, 현재 값, 안내 문구와 최대값을 표시한다", () => {
     render(
       <LabelSlider
-        amount={200}
+        amount={1_000}
         amountLabel="월급"
         helperMessage="월급을 선택해주세요"
-        maxAmount={500}
+        maxAmount={1_500}
         onAmountChange={vi.fn()}
       />,
     );
 
-    expect(screen.getByText("월급 200만원")).toBeInTheDocument();
+    expect(screen.getByText("월급 1,000만원")).toBeInTheDocument();
     expect(screen.getByText("월급을 선택해주세요")).toBeInTheDocument();
     expect(screen.getByText("0")).toBeInTheDocument();
-    expect(screen.getByText("500만원")).toBeInTheDocument();
+    expect(screen.getByText("1,500만원")).toBeInTheDocument();
   });
 
   it("Slider의 값을 단일 숫자로 전달하고 변경값을 전달한다", () => {

@@ -85,7 +85,7 @@ export default function MonthlyIncomeAndSavingsOnboardingPage() {
                   <AmountField
                     label="월급"
                     maxLength={String(MAX_MONTHLY_AMOUNT).length}
-                    value={field.value === 0 ? "" : String(field.value)}
+                    value={field.value ? String(field.value) : ""}
                     onChange={(event) =>
                       field.onChange(parseMonthlyAmountInput(event.target.value))
                     }
@@ -99,7 +99,7 @@ export default function MonthlyIncomeAndSavingsOnboardingPage() {
                   <AmountField
                     label="월 저축액"
                     maxLength={String(MAX_MONTHLY_AMOUNT).length}
-                    value={field.value === 0 ? "" : String(field.value)}
+                    value={field.value ? String(field.value) : ""}
                     onChange={(event) =>
                       field.onChange(parseMonthlyAmountInput(event.target.value))
                     }

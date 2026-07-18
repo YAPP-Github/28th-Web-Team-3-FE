@@ -71,7 +71,7 @@ export default function NetWorthOnboardingPage() {
                   <AmountField
                     label="순자산"
                     maxLength={MAX_NET_WORTH_AMOUNT.length}
-                    value={field.value}
+                    value={field.value || ""}
                     onChange={(event) => field.onChange(parseNetWorthInput(event.target.value))}
                   />
                 )}
