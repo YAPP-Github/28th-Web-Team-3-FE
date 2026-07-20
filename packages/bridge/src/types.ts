@@ -37,6 +37,12 @@ export type AppBridgeMethods = {
   authenticate(reason?: string): Promise<boolean>;
   /** Open the OS native share sheet. Resolves true if the user completed/dismissed. */
   share(payload: SharePayload): Promise<boolean>;
+  /**
+   * Open a URL outside the WebView — the OS browser or the matching app (카카오톡 등).
+   * WebView 안에서 `window.open`/`target="_blank"`는 통하지 않으므로 네이티브에 위임한다.
+   * Resolves true if the OS accepted the open request.
+   */
+  openExternal(url: string): Promise<boolean>;
   /** Push: get the device push token. STUB for now (returns null). */
   getPushToken(): Promise<string | null>;
   /** Push: request permission + register. STUB for now (returns false). */
