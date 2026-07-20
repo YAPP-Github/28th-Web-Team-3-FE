@@ -4,6 +4,10 @@
     ".": {
       "entry": []
     },
+    "apps/admin": {
+      "project": ["**/*.{ts,tsx}"],
+      "ignoreDependencies": ["postcss-load-config", "tailwindcss"]
+    },
     "apps/web": {
       "project": ["**/*.{ts,tsx}"],
       "ignoreDependencies": ["server-only", "postcss-load-config", "tailwindcss"]
