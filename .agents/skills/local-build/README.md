@@ -3,7 +3,7 @@
 **web-team-3-fe** 모노레포의 로컬 개발·빌드 워크플로 규칙.
 
 `pnpm` 단축 스크립트, Expo prebuild 흐름, 포트 관리, 그리고 Next.js 16(apps/web)·
-Expo 56(apps/native)의 자주 나오는 에러 해결을 다룬다.
+Expo 57(apps/native)의 자주 나오는 에러 해결을 다룬다.
 
 ## 빠른 시작
 
