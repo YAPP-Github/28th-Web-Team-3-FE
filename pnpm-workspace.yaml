@@ -44,6 +44,8 @@ catalog:
   tailwind-merge: ^3.6.0
   class-variance-authority: ^0.7.1
   lucide-react: ^1.21.0
+  # SVG → React 컴포넌트 (Turbopack rules로 연결)
+  "@svgr/webpack": ^8.1.0
   "@radix-ui/react-dialog": ^1.1.19
   "@radix-ui/react-progress": ^1.1.7
   "@radix-ui/react-radio-group": ^1.4.3

@@ -32,6 +32,7 @@
   },
   "devDependencies": {
     "@playwright/test": "catalog:",
+    "@svgr/webpack": "catalog:",
     "@repo/config": "workspace:*",
     "@tailwindcss/postcss": "catalog:",
     "@testing-library/dom": "catalog:",
