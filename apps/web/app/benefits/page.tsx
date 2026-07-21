@@ -18,6 +18,10 @@ export default async function BenefitsPage({ searchParams }: BenefitsPageProps) 
       </header>
 
       <BenefitsExplorer initialCategory={initialCategory} />
+
+      <p className="mt-6 text-center text-caption-c1-500 text-gray-400">
+        정책 내용은 변동될 수 있어요. 공식 페이지 기준으로 확인해 주세요.
+      </p>
     </main>
   );
 }
