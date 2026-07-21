@@ -55,7 +55,7 @@ pnpm + Turborepo 모노레포. Next.js 웹 + Expo 네이티브, WebView 브릿�
 
 ```
 apps/web      Next.js 16 (App Router)
-apps/native   Expo 56 / React Native 0.85
+apps/native   Expo 57 / React Native 0.86
 packages/*    @repo/{api,bridge,schema,ui,config}
 ```
 
@@ -84,7 +84,7 @@ pnpm format      # biome format --write .
 | 린트/포맷     | Biome                                              | ^2.5.0                      |
 | Git 훅        | lefthook                                           | ^2.1.9                      |
 | 웹            | Next.js                                            | ^16.2.9                     |
-| React         | react / react-dom                                  | ^19.2.7                     |
+| React         | react / react-dom                                  | 19.2.3 (RN 0.86 정합 exact 핀) |
 | 폼            | react-hook-form                                    | ^7.80.0                     |
 | 스키마        | zod                                                | ^4.4.3 (워크스페이스 1카피) |
 | 데이터        | @tanstack/react-query                              | ^5.101.0                    |
@@ -98,7 +98,7 @@ pnpm format      # biome format --write .
 | 모니터링      | @sentry/nextjs                                     | ^10.61.0                    |
 | 컴포넌트 문서 | Storybook / Chromatic                              | ^10.4.6 / ^17.8.0           |
 | 데드코드 탐지 | knip                                               | ^6.23.0                     |
-| 네이티브      | Expo / React Native                                | ~56.0 / 0.85.3              |
+| 네이티브      | Expo / React Native                                | ~57.0 / 0.86.0              |
 
 ### 규칙
 

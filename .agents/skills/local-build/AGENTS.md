@@ -12,7 +12,7 @@
 
 ## 개요
 
-web-team-3-fe 모노레포(Next.js 16 + Expo 56)의 로컬 개발·빌드 워크플로 가이드.
+web-team-3-fe 모노레포(Next.js 16 + Expo 57)의 로컬 개발·빌드 워크플로 가이드.
 pnpm 단축 스크립트, Expo dev-client 셋업, 포트 관리, prebuild 흐름, 자주 나오는
 에러 해결을 다룬다.
 

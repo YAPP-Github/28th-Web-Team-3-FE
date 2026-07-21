@@ -4,6 +4,7 @@ import Constants from "expo-constants";
 import { Platform } from "react-native";
 import * as guestAuth from "./auth/guestAuth";
 import * as biometric from "./native/biometric";
+import * as link from "./native/link";
 import * as push from "./native/push";
 import * as share from "./native/share";
 
@@ -23,6 +24,7 @@ async function getNativeInfo(): Promise<NativeInfo> {
 const handlers = {
   authenticate: (reason?: string) => biometric.authenticate(reason),
   share: (payload) => share.open(payload),
+  openExternal: (url) => link.openExternal(url),
   getPushToken: () => push.getToken(), // stub
   registerPush: () => push.register(), // stub
   getNativeInfo,
