@@ -17,13 +17,14 @@ const TABS: { label: string; href: string; Icon: FC<SVGProps<SVGSVGElement>> }[]
 ];
 
 export function BottomNav() {
-  const pathname = usePathname();
+  const pathname = usePathname() ?? "";
 
   return (
     <nav className="fixed inset-x-0 bottom-0 mx-auto max-w-md border-gray-100 border-t bg-gray-0 pb-[env(safe-area-inset-bottom)]">
       <ul className="flex">
         {TABS.map(({ label, href, Icon }) => {
-          const active = pathname === href;
+          const active =
+            href === "/" ? pathname === "/" : pathname === href || pathname.startsWith(`${href}/`);
           return (
             <li key={href} className="flex-1">
               <Link
