@@ -1,8 +1,19 @@
 import react from "@vitejs/plugin-react";
-import { defineConfig } from "vitest/config";
+import { defineConfig, type Plugin } from "vitest/config";
+
+// 런타임(SVGR)처럼 .svg import를 React 컴포넌트로 취급 — 테스트에선 빈 <svg> 스텁으로 충분.
+const svgComponentStub: Plugin = {
+  name: "svg-component-stub",
+  enforce: "pre",
+  load(id) {
+    if (id.endsWith(".svg")) {
+      return 'import { createElement } from "react"; export default (props) => createElement("svg", props);';
+    }
+  },
+};
 
 export default defineConfig({
-  plugins: [react()],
+  plugins: [svgComponentStub, react()],
   resolve: {
     // hoisted pnpm 모노레포에서 react/react-dom이 여러 카피(top-level vs .pnpm)로 잡히면
     // 훅 dispatcher가 갈라져 "Invalid hook call"(useState null)이 난다. dedupe는 bare 스펙만
