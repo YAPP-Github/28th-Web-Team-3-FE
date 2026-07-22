@@ -24,14 +24,16 @@ export function LegalPageLayout({ title, children }: LegalPageLayoutProps) {
   }
 
   return (
-    <div className="px-4 pt-1 pb-10">
+    <div className="pb-10">
       <header className="flex h-11 items-center">
         <Button aria-label="뒤로가기" size="icon" variant="ghost" onClick={goBack}>
           <ChevronLeft className="size-6" strokeWidth={1.6} />
         </Button>
       </header>
-      <h1 className="mt-2 text-headline-h2-700 text-gray-900">{title}</h1>
-      <div className="mt-6 flex flex-col gap-6">{children}</div>
+      <div className="px-5">
+        <h1 className="mt-2 text-headline-h2-700 text-gray-900">{title}</h1>
+        <div className="mt-6 flex flex-col gap-6">{children}</div>
+      </div>
     </div>
   );
 }
