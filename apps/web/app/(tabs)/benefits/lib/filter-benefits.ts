@@ -1,4 +1,8 @@
-import { BENEFIT_CATEGORY_VALUES, type Benefit, type BenefitCategory } from "../types";
+import {
+  BENEFIT_CATEGORY_VALUES,
+  type Benefit,
+  type BenefitCategory,
+} from "@/app/(tabs)/benefits/types";
 
 /** URL 쿼리의 category 값을 허용된 값으로 좁힌다. 알 수 없는 값은 전체("all")로 처리한다. */
 export function parseBenefitCategory(value: string | string[] | undefined): BenefitCategory {

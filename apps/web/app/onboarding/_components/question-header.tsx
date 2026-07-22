@@ -3,11 +3,11 @@
 import { Button, Progress } from "@repo/ui";
 import { ChevronLeft } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
-import { ONBOARDING_QUESTION_STEPS } from "../constants/question-steps";
+import { ONBOARDING_QUESTION_STEPS } from "@/app/onboarding/constants/question-steps";
 import {
   getOnboardingQuestionStepIndex,
   getPreviousOnboardingQuestionPath,
-} from "../lib/question-navigation";
+} from "@/app/onboarding/lib/question-navigation";
 
 export function QuestionHeader() {
   const pathname = usePathname();

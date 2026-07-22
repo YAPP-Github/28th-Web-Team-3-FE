@@ -2,7 +2,7 @@ import type { AppBridgeMethods, NativeInfo } from "@repo/bridge/types";
 import { bridge } from "@webview-bridge/react-native";
 import Constants from "expo-constants";
 import { Platform } from "react-native";
-import * as guestAuth from "./auth/guestAuth";
+import * as guestAuth from "./auth/guest-auth";
 import * as biometric from "./native/biometric";
 import * as link from "./native/link";
 import * as push from "./native/push";

@@ -5,7 +5,7 @@ import { AmountField, BottomSheet, ButtonGroup, TextButton } from "@repo/ui";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Controller, useFormContext } from "react-hook-form";
-import { NetWorthSlider } from "../../_components/net-worth-slider";
+import { NetWorthSlider } from "@/app/onboarding/_components/net-worth-slider";
 
 function parseNetWorthInput(inputValue: string) {
   const numericValue = inputValue.replace(/\D/g, "").replace(/^0+(?=\d)/, "");

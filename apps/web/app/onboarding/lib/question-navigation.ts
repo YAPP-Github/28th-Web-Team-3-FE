@@ -1,7 +1,7 @@
 import {
   ONBOARDING_QUESTION_STEPS,
   type OnboardingQuestionStep,
-} from "../constants/question-steps";
+} from "@/app/onboarding/constants/question-steps";
 
 export function getOnboardingQuestionStepIndex(pathname: string) {
   return ONBOARDING_QUESTION_STEPS.findIndex(

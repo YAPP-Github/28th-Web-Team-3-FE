@@ -5,7 +5,7 @@ import { Button, Toggle } from "@repo/ui";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { Controller, useFormContext } from "react-hook-form";
-import { AGE_GROUP_OPTIONS } from "../../constants/questions";
+import { AGE_GROUP_OPTIONS } from "@/app/onboarding/constants/questions";
 
 export default function AgeOnboardingPage() {
   const router = useRouter();

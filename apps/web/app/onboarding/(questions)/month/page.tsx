@@ -5,8 +5,8 @@ import { AmountField, BottomSheet, ButtonGroup, TextButton } from "@repo/ui";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Controller, useFormContext } from "react-hook-form";
-import { LabelSlider } from "../../_components/label-slider";
-import { MAX_MONTHLY_AMOUNT_SLIDER_VALUE } from "../../constants/amounts";
+import { LabelSlider } from "@/app/onboarding/_components/label-slider";
+import { MAX_MONTHLY_AMOUNT_SLIDER_VALUE } from "@/app/onboarding/constants/amounts";
 
 function parseMonthlyAmountInput(inputValue: string) {
   return Math.min(Number(inputValue.replace(/\D/g, "")), MAX_MONTHLY_AMOUNT);

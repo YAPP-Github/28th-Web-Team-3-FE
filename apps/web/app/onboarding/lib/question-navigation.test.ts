@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { ONBOARDING_QUESTION_STEPS } from "../constants/question-steps";
+import { ONBOARDING_QUESTION_STEPS } from "@/app/onboarding/constants/question-steps";
 import {
   getNextOnboardingQuestionPath,
   getOnboardingQuestionStepIndex,

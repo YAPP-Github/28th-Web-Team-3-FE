@@ -1,9 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { BENEFITS } from "../constants";
-import { filterBenefits } from "../lib/filter-benefits";
-import type { BenefitCategory } from "../types";
+import { BENEFITS } from "@/app/(tabs)/benefits/constants";
+import { getBenefitCategoryHref } from "@/app/(tabs)/benefits/lib/category-href";
+import { filterBenefits } from "@/app/(tabs)/benefits/lib/filter-benefits";
+import type { BenefitCategory } from "@/app/(tabs)/benefits/types";
 import { BenefitCard } from "./benefit-card";
 import { CategoryFilter } from "./category-filter";
 
@@ -19,8 +20,7 @@ export function BenefitsExplorer({ initialCategory }: { initialCategory: Benefit
 
   function selectCategory(next: BenefitCategory) {
     setCategory(next);
-    const url = next === "all" ? "/benefits" : `/benefits?category=${next}`;
-    window.history.replaceState(null, "", url);
+    window.history.replaceState(null, "", getBenefitCategoryHref(next));
   }
 
   return (

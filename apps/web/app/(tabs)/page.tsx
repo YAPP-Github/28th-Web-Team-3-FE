@@ -1,8 +1,8 @@
-import { NativeFeatures } from "../native-features";
+import { NativeFeatures } from "@/app/native-features";
 
 export default function HomePage() {
   return (
-    <main className="mx-auto flex min-h-dvh max-w-md flex-col justify-center gap-6 p-6 pb-24">
+    <main className="mx-auto flex w-full max-w-md flex-1 flex-col justify-center gap-6 p-6">
       <div className="space-y-2">
         <h1 className="font-semibold text-2xl">Web Team 3</h1>
         <p className="text-muted-foreground text-sm">

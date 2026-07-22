@@ -8,11 +8,11 @@ import { Controller, useFormContext } from "react-hook-form";
 import {
   SINGLE_CHOICE_QUESTION_DEFINITIONS,
   type SingleChoiceQuestionStep,
-} from "../../constants/questions";
+} from "@/app/onboarding/constants/questions";
 import {
   getNextOnboardingQuestionPath,
   getPreviousOnboardingQuestionPath,
-} from "../../lib/question-navigation";
+} from "@/app/onboarding/lib/question-navigation";
 
 interface SingleChoiceQuestionPageProps {
   questionStep: SingleChoiceQuestionStep;

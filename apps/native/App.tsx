@@ -1,7 +1,7 @@
 import { StatusBar } from "expo-status-bar";
 import { useEffect, useState } from "react";
 import { ActivityIndicator, Platform, StyleSheet, View } from "react-native";
-import { initGuestAuth } from "./src/auth/guestAuth";
+import { initGuestAuth } from "./src/auth/guest-auth";
 import { ORIGIN_WHITELIST, WEB_URL } from "./src/config";
 import { authenticate, isBiometricAvailable } from "./src/native/biometric";
 import { WebView } from "./src/webview";

@@ -1,6 +1,6 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { OnboardingFormProvider } from "../_components/onboarding-form-provider";
+import { OnboardingFormProvider } from "@/app/onboarding/(questions)/_components/onboarding-form-provider";
 import MonthlyIncomeAndSavingsOnboardingPage from "./page";
 
 const pushMock = vi.fn();
