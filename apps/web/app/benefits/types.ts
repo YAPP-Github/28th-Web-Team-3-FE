@@ -2,19 +2,13 @@ export const BENEFIT_CATEGORY_VALUES = ["all", "savings", "housing", "living", "
 export type BenefitCategory = (typeof BENEFIT_CATEGORY_VALUES)[number];
 export type BenefitItemCategory = Exclude<BenefitCategory, "all">;
 
-export type BenefitStatus = "available" | "scheduled" | "closed" | "check-required";
-
 export interface Benefit {
   id: string;
   category: BenefitItemCategory;
   title: string;
-  status: BenefitStatus;
   summary: string;
+  /** 대상·요건 한 줄 요약. */
   condition: string;
-  estimatedSaving: string;
-  deadline: string;
-  officialLinks: readonly {
-    label: string;
-    url: string;
-  }[];
+  /** 공식 페이지 URL — 카드를 누르면 바로 이동한다. */
+  officialUrl: string;
 }
