@@ -1,5 +1,5 @@
-import { BENEFIT_CATEGORIES } from "../constants";
-import type { BenefitCategory } from "../types";
+import { BENEFIT_CATEGORIES } from "@/app/(tabs)/benefits/constants";
+import type { BenefitCategory } from "@/app/(tabs)/benefits/types";
 
 interface CategoryFilterProps {
   selected: BenefitCategory;

@@ -3,7 +3,7 @@ import {
   LegalList,
   LegalPageLayout,
   LegalSection,
-} from "../_components/legal-page-layout";
+} from "@/app/(tabs)/mypage/_components/legal-page-layout";
 
 export default function PrivacyPage() {
   return (

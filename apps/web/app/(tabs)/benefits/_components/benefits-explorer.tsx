@@ -1,9 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { BENEFITS } from "../constants";
-import { filterBenefits } from "../lib/filter-benefits";
-import type { BenefitCategory } from "../types";
+import { BENEFITS } from "@/app/(tabs)/benefits/constants";
+import { filterBenefits } from "@/app/(tabs)/benefits/lib/filter-benefits";
+import type { BenefitCategory } from "@/app/(tabs)/benefits/types";
 import { BenefitCard } from "./benefit-card";
 import { CategoryFilter } from "./category-filter";
 

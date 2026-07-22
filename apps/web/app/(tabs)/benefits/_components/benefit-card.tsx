@@ -3,8 +3,8 @@
 import { bridge, isNativeApp } from "@repo/bridge";
 import { ChevronRight, UserRound } from "lucide-react";
 import type { MouseEvent } from "react";
-import { BENEFIT_ITEM_CATEGORY_LABELS } from "../constants";
-import type { Benefit } from "../types";
+import { BENEFIT_ITEM_CATEGORY_LABELS } from "@/app/(tabs)/benefits/constants";
+import type { Benefit } from "@/app/(tabs)/benefits/types";
 
 /**
  * 정책 카드 — 카드 전체가 공식 페이지로 가는 링크다 (UT 대응 가안).

@@ -1,3 +1,4 @@
+import { fileURLToPath } from "node:url";
 import react from "@vitejs/plugin-react";
 import { defineConfig, type Plugin } from "vitest/config";
 
@@ -15,6 +16,11 @@ const svgComponentStub: Plugin = {
 export default defineConfig({
   plugins: [svgComponentStub, react()],
   resolve: {
+    // Next는 tsconfig paths를 자동으로 읽지만 Vitest는 읽지 않는다. `@/*` alias를 여기에
+    // 다시 선언해 앱 코드와 테스트가 같은 경로로 모듈을 찾게 한다 (tsconfig.json과 동기화 필요).
+    alias: {
+      "@": fileURLToPath(new URL("./", import.meta.url)),
+    },
     // hoisted pnpm 모노레포에서 react/react-dom이 여러 카피(top-level vs .pnpm)로 잡히면
     // 훅 dispatcher가 갈라져 "Invalid hook call"(useState null)이 난다. dedupe는 bare 스펙만
     // 고정하던 기존 alias와 달리 react/jsx-runtime 같은 서브패스까지 단일 카피로 강제한다.
