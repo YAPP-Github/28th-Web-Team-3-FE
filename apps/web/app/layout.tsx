@@ -2,7 +2,7 @@ import { QueryProvider } from "@repo/api/provider";
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import "./globals.css";
-import { MSWProvider } from "./MSWProvider";
+import { MSWProvider } from "./msw-provider";
 
 export const metadata: Metadata = {
   title: "Web Team 3",

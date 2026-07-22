@@ -1,4 +1,5 @@
 import { BENEFIT_CATEGORIES } from "@/app/(tabs)/benefits/constants";
+import { getBenefitCategoryHref } from "@/app/(tabs)/benefits/lib/category-href";
 import type { BenefitCategory } from "@/app/(tabs)/benefits/types";
 
 interface CategoryFilterProps {
@@ -22,9 +23,7 @@ export function CategoryFilter({ selected, onSelect }: CategoryFilterProps) {
           return (
             <li key={category.value}>
               <a
-                href={
-                  category.value === "all" ? "/benefits" : `/benefits?category=${category.value}`
-                }
+                href={getBenefitCategoryHref(category.value)}
                 aria-current={isSelected ? "page" : undefined}
                 onClick={(event) => {
                   // 좌클릭만 가로채 즉시 필터링. 새 탭·수식키 클릭은 브라우저 기본 동작에 맡긴다.
