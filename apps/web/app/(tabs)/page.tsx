@@ -1,5 +1,4 @@
-import { BottomNav } from "./_components/bottom-nav";
-import { NativeFeatures } from "./native-features";
+import { NativeFeatures } from "../native-features";
 
 export default function HomePage() {
   return (
@@ -13,8 +12,6 @@ export default function HomePage() {
 
       {/* Native-only actions (share / biometric). Hidden in a plain browser. */}
       <NativeFeatures />
-
-      <BottomNav />
     </main>
   );
 }
