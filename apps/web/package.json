@@ -33,6 +33,7 @@
   "devDependencies": {
     "@playwright/test": "catalog:",
     "babel-plugin-react-compiler": "catalog:",
+    "@svgr/webpack": "catalog:",
     "@repo/config": "workspace:*",
     "@tailwindcss/postcss": "catalog:",
     "@testing-library/dom": "catalog:",
