@@ -44,6 +44,8 @@ catalog:
   tailwind-merge: ^3.6.0
   class-variance-authority: ^0.7.1
   lucide-react: ^1.21.0
+  # React Compiler (native는 babel-preset-expo가 자체 의존성으로 가짐)
+  babel-plugin-react-compiler: ^1.0.0
   "@radix-ui/react-dialog": ^1.1.19
   "@radix-ui/react-progress": ^1.1.7
   "@radix-ui/react-radio-group": ^1.4.3

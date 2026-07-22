@@ -5,6 +5,7 @@ const nextConfig: NextConfig = {
   reactStrictMode: true,
   // Internal packages ship TS/TSX source; Next compiles them here.
   transpilePackages: ["@repo/ui", "@repo/api", "@repo/schema", "@repo/bridge"],
+  reactCompiler: true,
 };
 
 export default withSentryConfig(nextConfig, {

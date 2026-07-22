@@ -32,6 +32,10 @@ const config: ExpoConfig = {
     ],
     "expo-notifications",
   ],
+  experiments: {
+    // React Compiler 활성화 — babel-preset-expo가 babel-plugin-react-compiler를 이 플래그로 켠다.
+    reactCompiler: true,
+  },
   extra: {
     // dev: Metro host serving the Next.js app; prod: the deployed web origin.
     // Intentionally no fallback — config.ts provides platform-aware defaults.
