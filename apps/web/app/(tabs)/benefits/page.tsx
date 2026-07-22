@@ -9,7 +9,7 @@ export default async function BenefitsPage({ searchParams }: BenefitsPageProps) 
   const initialCategory = parseBenefitCategory((await searchParams).category);
 
   return (
-    <main className="mx-auto min-h-dvh max-w-md bg-gray-50 px-5 py-6">
+    <main className="mx-auto min-h-dvh max-w-md bg-gray-50 px-5 py-6 pb-24">
       <header className="mb-5 flex flex-col gap-1">
         <h1 className="text-headline-h2-700 text-gray-900">정책 혜택</h1>
         <p className="text-body-b2-400 text-gray-600">
