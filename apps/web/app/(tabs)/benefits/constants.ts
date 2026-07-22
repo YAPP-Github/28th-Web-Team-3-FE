@@ -117,7 +117,7 @@ export const BENEFITS = [
     title: "에너지바우처",
     summary: "냉난방 등 에너지 비용을 지원받아요.",
     condition: "취약계층 · 소득·세대 요건",
-    officialUrl: "https://www.bokjiro.go.kr/ssis-tbu/cms/pc/main/popup/1309903_1245.html",
+    officialUrl: "https://www.energyv.or.kr/",
   },
   {
     id: "culture-nuri-card",
