@@ -1,4 +1,4 @@
-import type { BenefitCategory } from "../types";
+import type { BenefitCategory } from "@/app/(tabs)/benefits/types";
 
 /**
  * 카테고리별 혜택 목록 URL. 필터 링크(`href`)와 선택 후 히스토리 동기화가 같은 규칙을

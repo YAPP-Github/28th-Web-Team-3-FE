@@ -4,7 +4,7 @@ import { useEffect } from "react";
 
 export function MSWProvider() {
   useEffect(() => {
-    import("../mocks/browser").then(({ worker }) => {
+    import("@/mocks/browser").then(({ worker }) => {
       worker.start({ onUnhandledRequest: "bypass" });
     });
   }, []);
