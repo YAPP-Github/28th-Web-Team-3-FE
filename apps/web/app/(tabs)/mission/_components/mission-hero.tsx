@@ -3,7 +3,7 @@ import Image from "next/image";
 
 export function MissionHero() {
   return (
-    <section className="relative flex min-h-64 flex-col gap-8 overflow-hidden rounded-b-2xl bg-gray-50 px-5 pt-2">
+    <section className="relative flex min-h-64 flex-col gap-8 overflow-hidden bg-gray-50 px-5 pt-2">
       <h1 className="text-title-t1-700">미션</h1>
       <div className="flex flex-col items-start gap-3">
         <span className="rounded bg-gray-100 px-2 py-0.5 text-body-b2-700 text-gray-700">D-7</span>
