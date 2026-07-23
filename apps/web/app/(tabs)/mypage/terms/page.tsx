@@ -1,8 +1,5 @@
-import {
-  LegalDraftNotice,
-  LegalPageLayout,
-  LegalSection,
-} from "@/app/(tabs)/mypage/_components/legal-page-layout";
+import { LegalDraftNotice, LegalSection } from "@/app/(tabs)/mypage/_components/legal-content";
+import { LegalPageLayout } from "@/app/(tabs)/mypage/_components/legal-page-layout";
 
 export default function TermsPage() {
   return (

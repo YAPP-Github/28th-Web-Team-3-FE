@@ -9,7 +9,7 @@ import { BenefitCard } from "./benefit-card";
 import { CategoryFilter } from "./category-filter";
 
 /**
- * 카테고리 필터 + 정책 목록. 데이터(15개)는 정적이라 서버에 다시 요청하지 않고
+ * 카테고리 필터 + 정책 목록. 데이터는 정적이라 서버에 다시 요청하지 않고
  * 브라우저에서 즉시 필터링한다. URL은 history.replaceState로만 동기화해(서버 재렌더 없음)
  * 공유·딥링크는 유지하되 전환은 끊김 없이 즉각 반영된다.
  * 초기 카테고리는 서버 페이지가 searchParams로 읽어 넘겨준다(딥링크 SSR·새로고침 유지).

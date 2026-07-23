@@ -29,11 +29,11 @@
     "react-native-webview": "13.16.1"
   },
   "devDependencies": {
-    "@babel/core": "^7.25.0",
+    "@babel/core": "catalog:",
     "@expo/dom-webview": "~57.0.1",
     "@repo/config": "workspace:*",
     "@types/react": "catalog:",
-    "eas-cli": "^20.4.0",
+    "eas-cli": "catalog:",
     "typescript": "catalog:"
   }
 }
