@@ -36,7 +36,7 @@
     "lint": {},
     "typecheck": {
       "dependsOn": ["^typecheck"],
-      "outputs": ["*.tsbuildinfo"]
+      "outputs": ["**/*.tsbuildinfo"]
     },
     "test": {
       "dependsOn": ["^build"],

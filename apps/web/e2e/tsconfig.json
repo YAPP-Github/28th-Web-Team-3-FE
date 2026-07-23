@@ -1,8 +1,8 @@
 {
   "extends": "../tsconfig.json",
-  "compilerOptions": {
-    "types": ["node"]
-  },
-  "include": ["**/*.ts", "../playwright.config.ts"],
+  // 상위 설정이 `exclude`로 e2e를 빼두므로 여기서 비워 되살린다. `include`를 덮어쓰는 만큼
+  // React 타입을 공급하는 `next-env.d.ts`도 직접 넣어야 한다 — 빠지면 앱 컴포넌트를 import한
+  // 스펙이 `TS7026: no interface 'JSX.IntrinsicElements'`로 깨진다.
+  "include": ["**/*.ts", "**/*.tsx", "../next-env.d.ts"],
   "exclude": []
 }
