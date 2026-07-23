@@ -4,7 +4,7 @@ import { MAX_NET_WORTH_AMOUNT, type OnboardingFormValues } from "@repo/schema";
 import { AmountField, BottomSheet, ButtonGroup, TextButton } from "@repo/ui";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { Controller, useFormContext } from "react-hook-form";
+import { Controller, useFormContext, useWatch } from "react-hook-form";
 import { NetWorthSlider } from "@/app/onboarding/_components/net-worth-slider";
 
 function parseNetWorthInput(inputValue: string) {
@@ -20,13 +20,13 @@ function parseNetWorthInput(inputValue: string) {
 export default function NetWorthOnboardingPage() {
   const router = useRouter();
   const [isDirectInputSheetOpen, setIsDirectInputSheetOpen] = useState(false);
-  const { control, trigger, watch } = useFormContext<OnboardingFormValues>();
-  const netWorthAmount = watch("netWorth");
+  const { control, trigger } = useFormContext<OnboardingFormValues>();
+  const netWorthAmount = useWatch({ control, name: "netWorth" });
   const hasNetWorthAmount = BigInt(netWorthAmount || "0") > 0n;
 
-  async function navigateToFinancialAssetsQuestion() {
+  async function navigateToInvestmentPeriodQuestion() {
     if (await trigger("netWorth", { shouldFocus: true })) {
-      router.push("/onboarding/finance");
+      router.push("/onboarding/period");
     }
   }
 
@@ -91,7 +91,7 @@ export default function NetWorthOnboardingPage() {
       <div className="pt-8 pb-6">
         <ButtonGroup
           nextDisabled={!hasNetWorthAmount}
-          onNext={navigateToFinancialAssetsQuestion}
+          onNext={navigateToInvestmentPeriodQuestion}
           onPrev={() => router.push("/onboarding/month")}
         />
       </div>
