@@ -1,60 +1,59 @@
 # AGENTS.md
 
-LLM 코딩 실수를 줄이기 위한 행동 가이드라인. 프로젝트별 지침과 병합해서 사용.
-**트레이드오프**: 속도보다 신중함에 무게를 둔다. 사소한 작업은 판단껏.
-**동기화**: 이 파일은 CLAUDE.md와 내용 동일 — 한쪽만 고치지 말고 둘 다 갱신.
+AI 코딩 도구가 불필요한 변경과 과설계를 피하도록 돕는 공통 작업 원칙이다. 아래 프로젝트 규칙과 함께 적용한다.
+**우선순위**: 단순한 작업에는 필요한 만큼만 적용하되, 기본적으로 속도보다 정확성을 우선한다.
+**단일 원본**: 공통 AI 작업 지침은 이 파일에서만 관리한다. CLAUDE.md는 이 파일을 불러온다.
 
-## 행동 가이드라인
+## 작업 원칙
 
-### 1. 코딩 전에 생각하라
+### 1. 구현 전에 맥락 확인
 
-가정하지 말 것. 혼란을 숨기지 말 것. 트레이드오프를 드러낼 것. 구현 전에:
+요구사항과 기존 코드를 먼저 확인한다. 가정으로 빈틈을 메우거나 모호함을 감추지 않는다.
 
-- 가정을 명시하라. 불확실하거나 해석이 여러 개면 멈추고 물어라 — 혼자 고르지 마라.
-- 더 단순한 방법이 있으면 말하고, 필요하면 반박하라.
+- 해석이 여러 개이거나 결과에 영향을 주는 정보가 부족하면 가정을 밝히고 질문한다.
+- 더 단순한 해법이 있으면 이유와 트레이드오프를 함께 제시한다.
 
 ### 2. 단순함 우선
 
-문제를 푸는 최소 코드만. 추측성 코드 금지.
+현재 요구사항을 충족하는 최소 코드로 해결한다.
 
-- 요청 범위를 넘는 기능·"유연성"·일회용 추상화·불가능한 경우의 방어 코드 금지.
-- 200줄 짠 게 50줄로 가능하면 다시 써라.
+- 요청하지 않은 기능, 일회용 추상화, 막연한 확장성은 추가하지 않는다.
+- 200줄로 작성한 코드를 50줄로 해결할 수 있다면 다시 쓴다.
 
-자문: "시니어 엔지니어가 과하다고 할까?" 그렇다면 단순화.
+자가 점검: "시니어 엔지니어가 이 변경을 과하다고 볼까?" 그렇다면 단순화한다.
 
-### 3. 수술적 변경
+### 3. 변경 범위 지키기
 
-꼭 필요한 것만 건드려라. 네가 만든 잔여물만 치워라. 기존 코드 수정 시:
+요청과 직접 관련된 코드만 바꾼다.
 
-- 인접 코드·주석·포맷을 "개선"하거나 고장 안 난 걸 리팩터링하지 마라.
-- 다르게 하고 싶어도 기존 스타일에 맞춰라.
-- 무관한 죽은 코드는 언급만 하고 지우지 마라. 단, 네 변경이 미사용으로 만든 import·변수·함수는 제거하라.
+- 인접 코드나 주석, 포맷을 함께 정리하거나 정상 동작하는 코드를 리팩터링하지 않는다.
+- 선호하는 방식이 달라도 기존 코드의 구조와 스타일을 따른다.
+- 무관한 미사용 코드는 언급만 한다. 이번 변경으로 필요 없어진 import, 변수, 함수는 정리한다.
 
-기준: 바뀐 모든 줄은 사용자 요청으로 직접 추적돼야 한다.
+바뀐 모든 줄은 요청이나 그 변경에 필요한 정리로 설명할 수 있어야 한다.
 
-### 4. 목표 주도 실행
+### 4. 검증 가능한 목표로 작업
 
-성공 기준을 정의하라. 검증될 때까지 반복하라. 작업을 검증 가능한 목표로 바꿔라 — 예: "버그 수정" → "재현 테스트 작성 후 통과시키기". 다단계 작업은 짧은 계획을 명시:
+작업을 시작하기 전에 성공 기준을 정한다. 예를 들어 "버그 수정"은 "문제를 재현하는 테스트를 작성하고 통과시킨다"로 구체화한다. 여러 단계가 필요하면 짧은 계획을 남긴다.
 
 ```
 1. [단계] → 검증: [확인]
 2. [단계] → 검증: [확인]
 ```
 
-강한 성공 기준은 독립적 반복을 가능케 한다. 약한 기준("되게 해줘")은 계속 되묻게 만든다.
-
-이 가이드라인이 효과 있는 신호: diff 속 불필요한 변경 감소, 과설계로 인한 재작성 감소, 실수 후가 아니라 구현 전에 질문이 나온다.
+검증 결과가 성공 기준을 충족할 때까지 수정과 확인을 반복한다.
 
 ---
 
 ## 프로젝트: web-team-3-fe
 
-pnpm + Turborepo 모노레포. Next.js 웹 + Expo 네이티브, WebView 브릿지 공유.
+pnpm과 Turborepo를 사용하는 모노레포다. Next.js 웹과 Expo 네이티브 앱이 WebView 브릿지를 공유한다.
 
 ### 구조
 
 ```
 apps/web      Next.js 16 (App Router)
+apps/admin    Next.js 16 어드민 (웹 전용, dev 포트 3001)
 apps/native   Expo 57 / React Native 0.86
 packages/*    @repo/{api,bridge,schema,ui,config}
 ```
@@ -72,6 +71,16 @@ pnpm format      # biome format --write .
 ```
 
 웹 E2E: `pnpm --filter web test:e2e` (Playwright). 네이티브: `pnpm --filter native ios|android`.
+
+### 프로젝트 스킬
+
+반복 워크플로는 `.agents/skills/`에 정리돼 있다. 직접 명령을 조합하기 전에 관련 스킬을 먼저 확인한다.
+
+- 실행·빌드: `run`, `local-build`
+- PR: `pr-create`(빌드·리뷰·PR 생성), `pr-comment-summary`(리뷰 댓글 요약)
+- 구현 가이드: 웹은 `vercel-react-best-practices`·`web-design-guidelines`, 네이티브는 `vercel-react-native-skills`, 공용 컴포넌트 API는 `vercel-composition-patterns`
+
+그 외 스킬은 `.agents/skills/`에서 확인한다.
 
 ### 스택 / 버전 (catalog = `pnpm-workspace.yaml` 단일 소스)
 
@@ -112,4 +121,9 @@ pnpm format      # biome format --write .
 
 ### 디자인 토큰 (packages/ui)
 
-Figma Tokens Studio가 `packages/ui/tokens.json`에 GitHub Sync로 직접 push (손대지 말 것, biome 제외). `scripts/build-tokens.mjs`가 색상 토큰은 Tailwind `@theme`로, 타이포그래피 토큰은 `@utility text-*`(font/line-height/letter-spacing 등 개별 속성)로 변환해 `tokens.generated.css` 생성 (gitignore, turbo build 자동 편입). lineHeight는 Figma가 항상 px 절대값으로 준다고 가정하고 단위를 붙임 — 퍼센트 기반으로 바뀌면 재검토 필요. Pretendard는 `packages/ui/src/fonts/`에서 `@font-face`로 로드.
+현재 Tokens Studio 자동 연동은 꺼져 있다. Figma MCP로 확인한 토큰을 `packages/ui/src/styles/globals.css`에 직접 반영하며, 이 파일을 런타임 토큰의 단일 기준으로 사용한다.
+
+- `packages/ui/tokens.json`과 `scripts/build-tokens.mjs`는 추후 Tokens Studio를 다시 연결할 때 사용할 파일이다. 현재 build와 Storybook에서는 자동 실행하지 않는다.
+- 연동을 재개하면 `Tokens Studio → tokens.json → build-tokens.mjs → tokens.generated.css` 흐름으로 전환한다. 이때 수동 토큰과 생성 토큰이 중복되지 않도록 한쪽만 단일 기준으로 남긴다.
+- `tokens.json`은 디자이너가 관리하므로 직접 수정하지 않는다. 자세한 운영 방식은 `packages/ui/DESIGN.md`를 따른다.
+- Pretendard는 `packages/ui/src/fonts/`에서 `@font-face`로 불러온다.
