@@ -7,7 +7,8 @@
     ".": "./src/index.ts",
     "./globals.css": "./src/styles/globals.css",
     "./lib/utils": "./src/lib/utils.ts",
-    "./components/*": "./src/components/*.tsx"
+    "./components/*": "./src/components/*.tsx",
+    "./svg/*": "./src/svg/*"
   },
   "scripts": {
     "lint": "biome check .",
