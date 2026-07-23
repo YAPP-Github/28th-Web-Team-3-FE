@@ -7,7 +7,7 @@ export default function IntroOnboardingPage() {
       <h1 className="text-headline-h2-700 text-black">
         반가워요!
         <br />
-        <span className="text-blue-600">딱 맞는 투자 선배</span>를 찾기 위해
+        <span className="text-blue-600">자산</span>을 모으기 위해
         <br />몇 가지만 확인할게요.
       </h1>
       <Link

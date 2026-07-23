@@ -4,7 +4,7 @@ import type { OnboardingFormValues } from "@repo/schema";
 import { ButtonGroup, OptionGroup, OptionItem } from "@repo/ui";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
-import { Controller, useFormContext } from "react-hook-form";
+import { Controller, useFormContext, useWatch } from "react-hook-form";
 import {
   SINGLE_CHOICE_QUESTION_DEFINITIONS,
   type SingleChoiceQuestionStep,
@@ -20,10 +20,10 @@ interface SingleChoiceQuestionPageProps {
 
 export function SingleChoiceQuestionPage({ questionStep }: SingleChoiceQuestionPageProps) {
   const router = useRouter();
-  const { control, watch } = useFormContext<OnboardingFormValues>();
+  const { control } = useFormContext<OnboardingFormValues>();
   const { choices, description, formFieldName, questionTitle } =
     SINGLE_CHOICE_QUESTION_DEFINITIONS[questionStep];
-  const selectedChoiceValue = watch(formFieldName);
+  const selectedChoiceValue = useWatch({ control, name: formFieldName });
   const previousQuestionPath = getPreviousOnboardingQuestionPath(questionStep);
   const nextQuestionPath = getNextOnboardingQuestionPath(questionStep);
 

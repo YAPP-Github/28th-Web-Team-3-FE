@@ -4,7 +4,7 @@ import { MAX_MONTHLY_AMOUNT, type OnboardingFormValues } from "@repo/schema";
 import { AmountField, BottomSheet, ButtonGroup, TextButton } from "@repo/ui";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { Controller, useFormContext } from "react-hook-form";
+import { Controller, useFormContext, useWatch } from "react-hook-form";
 import { LabelSlider } from "@/app/onboarding/_components/label-slider";
 import { MAX_MONTHLY_AMOUNT_SLIDER_VALUE } from "@/app/onboarding/constants/amounts";
 
@@ -15,9 +15,8 @@ function parseMonthlyAmountInput(inputValue: string) {
 export default function MonthlyIncomeAndSavingsOnboardingPage() {
   const router = useRouter();
   const [isDirectInputSheetOpen, setIsDirectInputSheetOpen] = useState(false);
-  const { control, trigger, watch } = useFormContext<OnboardingFormValues>();
-  const income = watch("income");
-  const savings = watch("savings");
+  const { control, trigger } = useFormContext<OnboardingFormValues>();
+  const [income, savings] = useWatch({ control, name: ["income", "savings"] });
   const hasRequiredMonthlyAmounts = income > 0 && savings > 0;
 
   async function navigateToNetWorthQuestion() {

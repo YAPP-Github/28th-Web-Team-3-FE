@@ -6,15 +6,10 @@ import OnboardingResultPage from "./page";
 
 const sampleOnboardingFormValues: OnboardingFormValues = {
   ageGroup: "twenties",
-  financialAssetRatio: "about-half",
   income: 300,
-  investmentExperience: "under-three-years",
   investmentPeriod: "about-one-year",
-  lossTolerance: "up-to-twenty-percent",
   netWorth: "10000",
-  riskPreference: "capital-preservation-focused",
   savings: 100,
-  taxSavingInterest: "later",
 };
 
 function OnboardingResultPageTestHarness() {

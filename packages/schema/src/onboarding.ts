@@ -27,20 +27,6 @@ export const onboardingFormSchema = z.object({
     "sixties-or-older",
   ]),
   income: monthlyAmountSchema,
-  financialAssetRatio: choiceSchema([
-    "almost-none",
-    "up-to-half",
-    "about-half",
-    "more-than-half",
-    "almost-all",
-  ]),
-  investmentExperience: choiceSchema([
-    "none",
-    "under-one-year",
-    "under-three-years",
-    "under-five-years",
-    "five-years-or-more",
-  ]),
   investmentPeriod: choiceSchema([
     "about-six-months",
     "about-one-year",
@@ -48,13 +34,6 @@ export const onboardingFormSchema = z.object({
     "about-two-years",
     "about-two-and-a-half-years",
     "about-three-years",
-  ]),
-  lossTolerance: choiceSchema([
-    "up-to-ten-percent",
-    "up-to-twenty-percent",
-    "up-to-fifty-percent",
-    "up-to-seventy-percent",
-    "total-loss",
   ]),
   savings: monthlyAmountSchema,
   netWorth: z
@@ -68,13 +47,6 @@ export const onboardingFormSchema = z.object({
       (value) => !DIGITS_ONLY_PATTERN.test(value) || BigInt(value) <= BigInt(MAX_NET_WORTH_AMOUNT),
       `금액은 ${BigInt(MAX_NET_WORTH_AMOUNT).toLocaleString("ko-KR")}만원 이하여야 해요.`,
     ),
-  riskPreference: choiceSchema([
-    "capital-preservation-required",
-    "capital-preservation-focused",
-    "capital-preservation-preferred",
-    "investment-return-preferred",
-  ]),
-  taxSavingInterest: choiceSchema(["almost-none", "later", "needs-strategy"]),
 });
 
 export type OnboardingFormValues = z.infer<typeof onboardingFormSchema>;
