@@ -18,7 +18,9 @@ export function MissionAddMenu({ isOpen, onToggle }: MissionAddMenuProps) {
             추천받기
           </Link>
           <button
-            className="w-full px-4 py-1 text-left text-body-b1-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-300"
+            aria-label="직접입력 (준비 중)"
+            className="w-full px-4 py-1 text-left text-body-b1-500 text-gray-300"
+            disabled
             type="button"
           >
             직접입력

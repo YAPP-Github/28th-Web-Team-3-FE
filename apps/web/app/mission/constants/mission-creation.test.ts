@@ -13,4 +13,8 @@ describe("mission creation constants", () => {
   it("지원하지 않는 카테고리는 단계 경로에서 제외한다", () => {
     expect(parseMissionCreationCategories("식비,기타,교통")).toEqual(["식비", "교통"]);
   });
+
+  it("반복된 카테고리는 첫 번째 순서만 유지한다", () => {
+    expect(parseMissionCreationCategories("식비,식비,교통,식비")).toEqual(["식비", "교통"]);
+  });
 });

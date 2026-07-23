@@ -21,7 +21,7 @@ export function MissionHero() {
           fill
           alt=""
           className="object-contain"
-          priority
+          preload
           sizes="208px"
           src="/images/mission-home.webp"
         />

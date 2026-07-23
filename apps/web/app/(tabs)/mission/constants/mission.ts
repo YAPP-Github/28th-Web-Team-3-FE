@@ -12,9 +12,13 @@ export const ACTIVE_MISSIONS: readonly Mission[] = [
   {
     category: "식비",
     description:
-      "배달음식 평균 금액은 약 13,000원이에요. 집밥 금액은 약 8,000원 예상되어 약 7,000원 절약 가능해요.",
+      "배달음식 평균 금액은 약 13,000원이에요. 집밥 금액은 약 8,000원 예상되어 약 5,000원 절약 가능해요.",
     title: "이번 주 배달음식 2회 이하로 주문",
   },
   { category: "생활", title: "고정비 점검하고 불필요한 구독 1개 해지" },
   { category: "교통", title: "가까운 거리 걸어다니기 1회" },
+];
+
+export const COMPLETED_MISSIONS: readonly Mission[] = [
+  { category: "생활", title: "불필요한 구독 해지 1회" },
 ];

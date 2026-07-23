@@ -16,17 +16,12 @@ export const MISSION_SUGGESTIONS: Record<MissionCreationCategory, readonly Missi
   식비: [
     {
       description:
-        "배달음식 평균 금액은 약 13,000원이에요. 집밥 금액은 약 8,000원 예상되어 약 7,000원 절약 가능해요.",
+        "배달음식 평균 금액은 약 13,000원이에요. 집밥 금액은 약 8,000원 예상되어 약 5,000원 절약 가능해요.",
       title: "이번 주 배달음식 2회 이하로 주문",
     },
     {
       description: "커피 평균 금액은 약 4,000원이에요. 3번으로 줄이면 약 8,000원 절약 가능해요.",
       title: "커피 5번에서 3번으로 줄이기",
-    },
-    {
-      description:
-        "배달음식 평균 금액은 약 13,000원이에요. 집밥 금액은 약 8,000원 예상되어 약 7,000원 절약 가능해요.",
-      title: "이번 주 배달음식 2회 이하로 주문",
     },
   ],
   교통: [
@@ -70,11 +65,15 @@ export function parseMissionCreationCategories(value: string | undefined) {
   if (!value) return [];
 
   const categoryNames = new Set(MISSION_RECOMMENDATION_CATEGORIES.map((category) => category.name));
-  return value
-    .split(",")
-    .filter((category): category is MissionCreationCategory =>
-      categoryNames.has(category as MissionCreationCategory),
-    );
+  return [
+    ...new Set(
+      value
+        .split(",")
+        .filter((category): category is MissionCreationCategory =>
+          categoryNames.has(category as MissionCreationCategory),
+        ),
+    ),
+  ];
 }
 
 export function buildMissionCreationFormHref(

@@ -4,12 +4,20 @@ import { Check, ChevronDown, ChevronUp } from "lucide-react";
 import type { Mission } from "../constants/mission";
 
 interface MissionListProps {
+  completedMissions: readonly Mission[];
   expandedMissionTitle: string | null;
   missions: readonly Mission[];
+  onDelete: (title: string) => void;
   onToggle: (title: string) => void;
 }
 
-export function MissionList({ expandedMissionTitle, missions, onToggle }: MissionListProps) {
+export function MissionList({
+  completedMissions,
+  expandedMissionTitle,
+  missions,
+  onDelete,
+  onToggle,
+}: MissionListProps) {
   return (
     <div className="flex flex-col gap-5">
       <section className="flex flex-col gap-2">
@@ -47,10 +55,16 @@ export function MissionList({ expandedMissionTitle, missions, onToggle }: Missio
                       {mission.description}
                     </p>
                     <div className="flex gap-2">
-                      <Button className="flex-1 bg-gray-100 text-black py-2.5">
+                      <Button
+                        className="flex-1 bg-gray-100 py-2.5 text-black"
+                        type="button"
+                        onClick={() => onDelete(mission.title)}
+                      >
                         <p className="text-body-b2-700">삭제</p>
                       </Button>
-                      <Button className="flex-1 py-2.5">수정</Button>
+                      <Button className="flex-1 py-2.5" disabled type="button">
+                        수정
+                      </Button>
                     </div>
                   </div>
                 ) : null}
@@ -62,10 +76,17 @@ export function MissionList({ expandedMissionTitle, missions, onToggle }: Missio
 
       <section className="flex flex-col gap-2">
         <h2 className="text-body-b2-700 text-gray-700">완료</h2>
-        <article className="flex items-center gap-2 rounded-xl bg-blue-50 px-3.5 py-[14px]">
-          <CoinIcon aria-hidden="true" className="size-[21px] shrink-0 overflow-visible" />
-          <span className="text-body-b1-700">불필요한 구독 해지 1회</span>
-        </article>
+        <div className="flex flex-col gap-2">
+          {completedMissions.map((mission) => (
+            <article
+              key={mission.title}
+              className="flex items-center gap-2 rounded-xl bg-blue-50 px-3.5 py-[14px]"
+            >
+              <CoinIcon aria-hidden="true" className="size-[21px] shrink-0 overflow-visible" />
+              <span className="text-body-b1-700">{mission.title}</span>
+            </article>
+          ))}
+        </div>
       </section>
     </div>
   );
