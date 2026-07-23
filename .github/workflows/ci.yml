@@ -5,6 +5,9 @@ on:
     # develop 전환 대비해 미리 포함
     branches: [main, develop]
 
+permissions:
+  contents: read
+
 concurrency:
   group: ci-${{ github.ref }}
   cancel-in-progress: true
@@ -12,6 +15,7 @@ concurrency:
 jobs:
   verify:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
         with:
@@ -32,5 +36,5 @@ jobs:
             turbo-${{ runner.os }}-
       - run: pnpm install --frozen-lockfile
       # lint / typecheck / test / build 하드 게이트 — 하나라도 실패하면 PR 빨간불
-      # build는 web만 대상 (native·packages엔 build 태스크 없어 turbo가 자동 스킵)
+      # build는 web·admin 대상이며, native·packages는 build 스크립트가 없어 자동 스킵
       - run: pnpm turbo run lint typecheck test build

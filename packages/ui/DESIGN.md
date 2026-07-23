@@ -1,8 +1,9 @@
 # 디자인 시스템 규칙
 
-토큰 값은 여기에 적지 않는다. 값의 단일 소스는 Figma
+토큰 값의 원본은 Figma
 ([Design System 페이지](https://www.figma.com/design/WNPFcxA9sEnAMrTVMRVfjm/?node-id=433-336))이고,
-코드에는 파이프라인을 통해서만 들어온다.
+런타임 기준은 `src/styles/globals.css`다. 값·매핑·불일치 현황은
+루트 [`DESIGN.md`](../../DESIGN.md)에서 확인한다. 이 문서는 토큰 운영 방식과 사용 규칙만 다룬다.
 
 > **잠정 연동 해제**: 아래 Tokens Studio 파이프라인은 당분간 build/storybook에서
 > 자동 실행하지 않는다. 대신 Figma MCP로 `src/styles/globals.css`에 토큰을 직접
@@ -36,5 +37,6 @@ Figma (Tokens Studio) → tokens.json → scripts/build-tokens.mjs → src/style
 
 ## 미확정 (건드리지 말 것)
 
-- Secondary 팔레트 — Figma 가이드 라벨(Lime)과 스와치(주황) 불일치, 확정 대기.
+- Secondary 팔레트 — Figma 가이드는 `Lime-600 #D2FF3E`로 정리됐지만 코드에는 `lime` 팔레트가 없다.
+  현재 `secondary`는 보조 표면용 `gray-50`을 참조하므로, 브랜드 보조색과 표면 토큰의 이름·용도를 확정할 때까지 미반영.
 - 다크모드 — 디자인 없음. `.dark` 테마 정의하지 않는다.

@@ -1,5 +1,5 @@
 {
-  "//": "에디터 편의를 위한 루트 설정. 각 워크스페이스 패키지는 자기 tsconfig로 독립 타입체크한다(`turbo run typecheck`가 실행). project references는 쓰지 않는다 — 패키지는 internal-package 패턴으로 TS 소스를 직접 공유한다.",
+  "//": "루트 tsconfig는 VS Code 등 에디터가 레포 전체 설정을 이해하기 위한 용도다. 실제 타입 검사는 각 앱과 패키지의 tsconfig로 따로 실행하며, Turbo가 이를 한꺼번에 실행한다. 공유 패키지는 별도 빌드 결과가 아니라 TypeScript 소스를 직접 import하므로 project references는 사용하지 않는다.",
   "extends": "@repo/config/tsconfig/base",
   "compilerOptions": {
     "noEmit": true
