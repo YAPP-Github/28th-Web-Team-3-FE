@@ -1,15 +1,21 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { getMissionSuggestionsById } from "@/app/mission/constants/mission-creation";
 import { MissionAddMenu } from "./_components/mission-add-menu";
 import { MissionCategoryFilter } from "./_components/mission-category-filter";
 import { MissionHero } from "./_components/mission-hero";
 import { MissionList } from "./_components/mission-list";
-import { ACTIVE_MISSIONS, COMPLETED_MISSIONS, type MissionCategory } from "./constants/mission";
+import {
+  ACTIVE_MISSIONS,
+  COMPLETED_MISSIONS,
+  type Mission,
+  type MissionCategory,
+} from "./constants/mission";
 
 export default function MissionPage() {
   const [activeCategory, setActiveCategory] = useState<MissionCategory>("전체");
-  const [expandedMissionTitle, setExpandedMissionTitle] = useState<string | null>(null);
+  const [expandedMissionId, setExpandedMissionId] = useState<string | null>(null);
   const [isAddMenuOpen, setIsAddMenuOpen] = useState(false);
   const [activeMissions, setActiveMissions] = useState(ACTIVE_MISSIONS);
   const visibleActiveMissions = activeMissions.filter(
@@ -19,9 +25,23 @@ export default function MissionPage() {
     (mission) => activeCategory === "전체" || mission.category === activeCategory,
   );
 
-  function deleteMission(title: string) {
-    setActiveMissions((missions) => missions.filter((mission) => mission.title !== title));
-    setExpandedMissionTitle((expandedTitle) => (expandedTitle === title ? null : expandedTitle));
+  useEffect(() => {
+    const missionIds =
+      new URLSearchParams(window.location.search).get("addedMissionIds")?.split(",") ?? [];
+    const addedMissions: Mission[] = getMissionSuggestionsById(missionIds);
+
+    if (addedMissions.length === 0) return;
+
+    setActiveMissions((missions) => [
+      ...addedMissions.filter((mission) => !missions.some((item) => item.id === mission.id)),
+      ...missions,
+    ]);
+    window.history.replaceState(null, "", "/mission");
+  }, []);
+
+  function deleteMission(id: string) {
+    setActiveMissions((missions) => missions.filter((mission) => mission.id !== id));
+    setExpandedMissionId((expandedId) => (expandedId === id ? null : expandedId));
   }
 
   return (
@@ -30,13 +50,11 @@ export default function MissionPage() {
       <section className="flex flex-col gap-5 px-5 pt-6">
         <MissionCategoryFilter activeCategory={activeCategory} onChange={setActiveCategory} />
         <MissionList
-          expandedMissionTitle={expandedMissionTitle}
+          expandedMissionId={expandedMissionId}
           completedMissions={visibleCompletedMissions}
           missions={visibleActiveMissions}
           onDelete={deleteMission}
-          onToggle={(title) =>
-            setExpandedMissionTitle((expandedTitle) => (expandedTitle === title ? null : title))
-          }
+          onToggle={(id) => setExpandedMissionId((expandedId) => (expandedId === id ? null : id))}
         />
       </section>
       <MissionAddMenu

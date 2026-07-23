@@ -9,6 +9,7 @@ export type MissionCreationCategory = (typeof MISSION_RECOMMENDATION_CATEGORIES)
 
 export interface MissionSuggestion {
   description: string;
+  id: string;
   title: string;
 }
 
@@ -17,45 +18,54 @@ export const MISSION_SUGGESTIONS: Record<MissionCreationCategory, readonly Missi
     {
       description:
         "배달음식 평균 금액은 약 13,000원이에요. 집밥 금액은 약 8,000원 예상되어 약 5,000원 절약 가능해요.",
+      id: "suggestion-food-delivery",
       title: "이번 주 배달음식 2회 이하로 주문",
     },
     {
       description: "커피 평균 금액은 약 4,000원이에요. 3번으로 줄이면 약 8,000원 절약 가능해요.",
+      id: "suggestion-food-coffee",
       title: "커피 5번에서 3번으로 줄이기",
     },
   ],
   교통: [
     {
       description: "가까운 거리는 걸으면 교통비를 아낄 수 있어요.",
+      id: "suggestion-transport-walk",
       title: "가까운 거리 걸어다니기 1회",
     },
     {
       description: "대중교통 이용 전 이동 경로를 한 번 더 확인해 보세요.",
+      id: "suggestion-transport-route",
       title: "교통비 절약 경로로 이동하기",
     },
   ],
   취미: [
     {
       description: "구독 1개 해지 시 약 월 1만~2만 원, 연간으로는 약 12만~24만 원 절약 가능해요.",
+      id: "suggestion-hobby-subscription",
       title: "이번 달 구독료 1개 해지하기",
     },
     {
       description: "커피 평균 금액은 약 4,000원이에요. 3번으로 줄이면 약 8,000원 절약 가능해요.",
+      id: "suggestion-hobby-coffee",
       title: "커피 5번에서 3번으로 줄이기",
     },
     {
       description:
-        "배달음식 평균 금액은 약 13,000원이에요. 집밥 금액은 약 8,000원 예상되어 약 7,000원 절약 가능해요.",
+        "배달음식 평균 금액은 약 13,000원이에요. 집밥 금액은 약 8,000원 예상되어 약 5,000원 절약 가능해요.",
+      id: "suggestion-hobby-delivery",
       title: "이번 주 배달음식 2회 이하로 주문",
     },
   ],
   생활: [
     {
       description: "하루 한 번 지출을 기록하면 불필요한 소비를 찾기 쉬워요.",
+      id: "suggestion-life-no-spend",
       title: "무지출 데이 1회 만들기",
     },
     {
       description: "고정비를 점검해 불필요한 구독을 정리해 보세요.",
+      id: "suggestion-life-subscription",
       title: "고정비 점검하고 구독 1개 해지",
     },
   ],
@@ -91,4 +101,19 @@ export function buildMissionCreationFormHref(
 export function buildMissionCreationResultHref(categories: readonly MissionCreationCategory[]) {
   const searchParams = new URLSearchParams({ categories: categories.join(",") });
   return `/mission/new/result?${searchParams}`;
+}
+
+export function buildMissionHomeHref(missionIds: readonly string[]) {
+  const searchParams = new URLSearchParams({ addedMissionIds: missionIds.join(",") });
+  return `/mission?${searchParams}`;
+}
+
+export function getMissionSuggestionsById(missionIds: readonly string[]) {
+  const requestedIds = new Set(missionIds);
+
+  return MISSION_RECOMMENDATION_CATEGORIES.flatMap(({ name: category }) =>
+    MISSION_SUGGESTIONS[category]
+      .filter((mission) => requestedIds.has(mission.id))
+      .map((mission) => ({ ...mission, category })),
+  );
 }

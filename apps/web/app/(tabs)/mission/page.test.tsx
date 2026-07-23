@@ -3,6 +3,15 @@ import { describe, expect, it } from "vitest";
 import MissionPage from "./page";
 
 describe("MissionPage", () => {
+  it("결과에서 선택한 미션을 홈 목록에 추가한다", async () => {
+    window.history.replaceState(null, "", "/mission?addedMissionIds=suggestion-life-no-spend");
+
+    render(<MissionPage />);
+
+    expect(await screen.findByText("무지출 데이 1회 만들기")).toBeInTheDocument();
+    expect(window.location.pathname).toBe("/mission");
+  });
+
   it("카테고리를 필터링하고 미션 상세를 펼친다", () => {
     render(<MissionPage />);
 

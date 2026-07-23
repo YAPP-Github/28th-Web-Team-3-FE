@@ -1,5 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { buildMissionCreationFormHref, parseMissionCreationCategories } from "./mission-creation";
+import {
+  buildMissionCreationFormHref,
+  getMissionSuggestionsById,
+  parseMissionCreationCategories,
+} from "./mission-creation";
 
 describe("mission creation constants", () => {
   it("선택한 카테고리 순서로 폼 경로를 만든다", () => {
@@ -16,5 +20,11 @@ describe("mission creation constants", () => {
 
   it("반복된 카테고리는 첫 번째 순서만 유지한다", () => {
     expect(parseMissionCreationCategories("식비,식비,교통,식비")).toEqual(["식비", "교통"]);
+  });
+
+  it("선택한 추천 미션을 카테고리와 함께 반환한다", () => {
+    expect(getMissionSuggestionsById(["suggestion-food-delivery"])).toMatchObject([
+      { category: "식비", id: "suggestion-food-delivery" },
+    ]);
   });
 });
