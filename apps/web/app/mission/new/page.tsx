@@ -22,45 +22,47 @@ export default function NewMissionPage() {
 
   return (
     <main className="mx-auto flex min-h-dvh w-full max-w-md flex-col bg-gray-0 pb-6">
-      <button
-        aria-label="미션 목록으로 돌아가기"
-        className="p-[10px] flex w-fit h-fit items-center justify-center rounded-full hover:bg-gray-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-300"
-        type="button"
-        onClick={() => router.push("/mission")}
-      >
-        <ChevronLeft aria-hidden="true" className="size-6" />
-      </button>
-      <div className="flex px-5 flex-1 flex-col gap-8 mt-8">
-        <section className="flex flex-col gap-1">
-          <h1 className="text-headline-h2-700">
-            어떤 카테고리에
-            <br />
-            도전할까요?
-          </h1>
-          <p className="text-body-b1-400 text-gray-700">중복 선택이 가능해요.</p>
-        </section>
+      <div className="flex flex-1 flex-col gap-8">
+        <button
+          aria-label="미션 목록으로 돌아가기"
+          className="flex h-fit w-fit items-center justify-center rounded-full p-2.5 hover:bg-gray-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-300"
+          type="button"
+          onClick={() => router.push("/mission")}
+        >
+          <ChevronLeft aria-hidden="true" className="size-6" />
+        </button>
+        <div className="flex flex-1 flex-col gap-8 px-5">
+          <section className="flex flex-col gap-1">
+            <h1 className="text-headline-h2-700">
+              어떤 카테고리에
+              <br />
+              도전할까요?
+            </h1>
+            <p className="text-body-b1-400 text-gray-700">중복 선택이 가능해요.</p>
+          </section>
 
-        <div className="flex flex-col gap-3">
-          {MISSION_RECOMMENDATION_CATEGORIES.map((category) => (
-            <Toggle
-              key={category.name}
-              aria-label={category.name}
-              pressed={selectedCategories.includes(category.name)}
-              className="group"
-              variant="onboarding"
-              onPressedChange={(pressed) => toggleCategory(category.name, pressed)}
-            >
-              <span className="flex flex-col items-start gap-2">
-                <span className="text-body-b1-700">{category.name}</span>
-                <span className="flex items-center gap-1 text-body-b2-500 text-gray-600">
-                  <span className="rounded bg-gray-100 px-1.5 py-1 text-caption-c1-700 text-gray-600 group-data-[state=on]:bg-blue-200 group-data-[state=on]:text-blue-700">
-                    예시
+          <div className="flex flex-col gap-3">
+            {MISSION_RECOMMENDATION_CATEGORIES.map((category) => (
+              <Toggle
+                key={category.name}
+                aria-label={category.name}
+                pressed={selectedCategories.includes(category.name)}
+                className="group"
+                variant="onboarding"
+                onPressedChange={(pressed) => toggleCategory(category.name, pressed)}
+              >
+                <span className="flex flex-col items-start gap-2">
+                  <span className="text-body-b1-700">{category.name}</span>
+                  <span className="flex items-center gap-1 text-body-b2-500 text-gray-600">
+                    <span className="rounded bg-gray-100 px-1.5 py-1 text-caption-c1-700 text-gray-600 group-data-[state=on]:bg-blue-200 group-data-[state=on]:text-blue-700">
+                      예시
+                    </span>
+                    {category.description}
                   </span>
-                  {category.description}
                 </span>
-              </span>
-            </Toggle>
-          ))}
+              </Toggle>
+            ))}
+          </div>
         </div>
       </div>
       <div className="px-5">
