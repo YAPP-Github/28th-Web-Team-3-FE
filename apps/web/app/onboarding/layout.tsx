@@ -3,7 +3,7 @@ import { OnboardingFormProvider } from "./(questions)/_components/onboarding-for
 
 export default function OnboardingLayout({ children }: { children: ReactNode }) {
   return (
-    <main className="min-h-dvh bg-gray-0">
+    <main className="mx-auto min-h-dvh w-full max-w-md bg-gray-0">
       <OnboardingFormProvider>{children}</OnboardingFormProvider>
     </main>
   );

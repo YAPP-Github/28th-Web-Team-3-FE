@@ -1,9 +1,9 @@
 import {
   LegalDraftNotice,
   LegalList,
-  LegalPageLayout,
   LegalSection,
-} from "@/app/(tabs)/mypage/_components/legal-page-layout";
+} from "@/app/(tabs)/mypage/_components/legal-content";
+import { LegalPageLayout } from "@/app/(tabs)/mypage/_components/legal-page-layout";
 
 export default function PrivacyPage() {
   return (
