@@ -16,5 +16,10 @@ describe("NewMissionPage", () => {
     expect(screen.getByRole("button", { name: "다음" })).toBeEnabled();
     expect(screen.getByRole("button", { name: "식비" })).toHaveAttribute("data-state", "on");
     expect(screen.getByRole("button", { name: "취미" })).toHaveAttribute("data-state", "on");
+
+    fireEvent.click(screen.getByRole("button", { name: "다음" }));
+    expect(pushMock).toHaveBeenCalledWith(
+      "/mission/new/form?categories=%EC%8B%9D%EB%B9%84%2C%EC%B7%A8%EB%AF%B8&step=0",
+    );
   });
 });

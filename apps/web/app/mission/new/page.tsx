@@ -4,19 +4,17 @@ import { Button, Toggle } from "@repo/ui";
 import { ChevronLeft } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-
-const RECOMMENDATION_CATEGORIES = [
-  { description: "일주일에 2번, 집밥으로 점심 해결하기", name: "식비" },
-  { description: "가까운 거리 1회 걸어가기", name: "교통" },
-  { description: "이번 달 구독료 1개 해지", name: "취미" },
-  { description: "무지출 데이 1회", name: "생활" },
-] as const;
+import {
+  buildMissionCreationFormHref,
+  MISSION_RECOMMENDATION_CATEGORIES,
+  type MissionCreationCategory,
+} from "@/app/mission/constants/mission-creation";
 
 export default function NewMissionPage() {
   const router = useRouter();
-  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
+  const [selectedCategories, setSelectedCategories] = useState<MissionCreationCategory[]>([]);
 
-  function toggleCategory(category: string, pressed: boolean) {
+  function toggleCategory(category: MissionCreationCategory, pressed: boolean) {
     setSelectedCategories((categories) =>
       pressed ? [...categories, category] : categories.filter((item) => item !== category),
     );
@@ -32,43 +30,45 @@ export default function NewMissionPage() {
       >
         <ChevronLeft aria-hidden="true" className="size-6" />
       </button>
-      <div className="flex px-5 flex-1 flex-col gap-12">
-        <div className="flex flex-col gap-10">
-          <section className="flex flex-col gap-1">
-            <h1 className="text-headline-h2-700">
-              어떤 카테고리에
-              <br />
-              도전할까요?
-            </h1>
-            <p className="text-body-b1-400 text-gray-700">중복 선택이 가능해요.</p>
-          </section>
+      <div className="flex px-5 flex-1 flex-col gap-8 mt-8">
+        <section className="flex flex-col gap-1">
+          <h1 className="text-headline-h2-700">
+            어떤 카테고리에
+            <br />
+            도전할까요?
+          </h1>
+          <p className="text-body-b1-400 text-gray-700">중복 선택이 가능해요.</p>
+        </section>
 
-          <div className="flex flex-col gap-3">
-            {RECOMMENDATION_CATEGORIES.map((category) => (
-              <Toggle
-                key={category.name}
-                aria-label={category.name}
-                pressed={selectedCategories.includes(category.name)}
-                className="group"
-                variant="onboarding"
-                onPressedChange={(pressed) => toggleCategory(category.name, pressed)}
-              >
-                <span className="flex flex-col items-start gap-2">
-                  <span className="text-body-b1-700">{category.name}</span>
-                  <span className="flex items-center gap-1 text-body-b2-500 text-gray-600">
-                    <span className="rounded bg-gray-100 px-1.5 py-1 text-caption-c1-700 text-gray-600 group-data-[state=on]:bg-blue-200 group-data-[state=on]:text-blue-700">
-                      예시
-                    </span>
-                    {category.description}
+        <div className="flex flex-col gap-3">
+          {MISSION_RECOMMENDATION_CATEGORIES.map((category) => (
+            <Toggle
+              key={category.name}
+              aria-label={category.name}
+              pressed={selectedCategories.includes(category.name)}
+              className="group"
+              variant="onboarding"
+              onPressedChange={(pressed) => toggleCategory(category.name, pressed)}
+            >
+              <span className="flex flex-col items-start gap-2">
+                <span className="text-body-b1-700">{category.name}</span>
+                <span className="flex items-center gap-1 text-body-b2-500 text-gray-600">
+                  <span className="rounded bg-gray-100 px-1.5 py-1 text-caption-c1-700 text-gray-600 group-data-[state=on]:bg-blue-200 group-data-[state=on]:text-blue-700">
+                    예시
                   </span>
+                  {category.description}
                 </span>
-              </Toggle>
-            ))}
-          </div>
+              </span>
+            </Toggle>
+          ))}
         </div>
       </div>
       <div className="px-5">
-        <Button disabled={selectedCategories.length === 0} size="cta">
+        <Button
+          disabled={selectedCategories.length === 0}
+          size="cta"
+          onClick={() => router.push(buildMissionCreationFormHref(selectedCategories, 0))}
+        >
           다음
         </Button>
       </div>
