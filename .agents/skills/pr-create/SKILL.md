@@ -84,8 +84,12 @@ git diff --stat --merge-base origin/<base> HEAD -- ':!pnpm-lock.yaml' ':!package
      세션이라 이 규칙을 상속받지 못하므로 매번 프롬프트에 넣어야 한다.)
    - **Codex 교차 리뷰** — openai-codex 플러그인이 설치된 경우에만. `/codex:review`가 쓰는
      리뷰 전용 companion script를 실행한다(리뷰만 수행, 코드 수정 구조적으로 불가):
-     `node ~/.claude/plugins/cache/openai-codex/codex/*/scripts/codex-companion.mjs review --wait`
+     `node ~/.claude/plugins/cache/openai-codex/codex/*/scripts/codex-companion.mjs review --wait --base origin/<base>`
      (버전 디렉터리는 glob으로 해석 — 여러 개면 최신 버전 사용. `--wait` 필수: 게이트라서 동기 완료 필요.)
+     **`--base origin/<base>`(Step 0에서 정한 베이스, 보통 `origin/develop`)를 반드시 넘길 것.**
+     생략하면 companion script의 `detectDefaultBranch()`가 `origin/HEAD`(= `main`)를 잡고,
+     fallback 후보도 `main`·`master`·`trunk`뿐이라 `develop`은 절대 선택되지 않는다. 그 결과
+     이미 `develop`에 머지된 코드까지 diff에 들어와 이 PR과 무관한 지적이 나온다.
      (`codex-rescue` 서브에이전트는 쓰지 않는다 — 그건 조사/수정 위임용, 리뷰 게이트용 아님.)
      플러그인이나 Codex CLI가 없으면 생략하고 "Codex 교차 리뷰 생략됨"만 알림 — 실패로 취급하지 않는다.
 2. 리뷰 결과(판정 + 발견 사항) 모두 사용자에게 표시. 두 리뷰가 실행됐으면 최종 판정은 더 나쁜 쪽 채택
