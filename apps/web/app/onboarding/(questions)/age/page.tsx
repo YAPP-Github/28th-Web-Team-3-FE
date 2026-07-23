@@ -1,16 +1,26 @@
 "use client";
 
 import type { OnboardingFormValues } from "@repo/schema";
-import { Button, Toggle } from "@repo/ui";
+import { Button } from "@repo/ui";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { Controller, useFormContext, useWatch } from "react-hook-form";
-import { AGE_GROUP_OPTIONS } from "@/app/onboarding/constants/questions";
+import { patchOnboardingProfile } from "@/lib/onboarding-api";
+
+function formatBirthDateInput(value: string) {
+  const digits = value.replace(/\D/g, "").slice(0, 8);
+  return [digits.slice(0, 4), digits.slice(4, 6), digits.slice(6, 8)].filter(Boolean).join(".");
+}
+
+function toBirthDate(value: string) {
+  return /^\d{4}\.\d{2}\.\d{2}$/.test(value) ? value.replaceAll(".", "-") : value;
+}
 
 export default function AgeOnboardingPage() {
   const router = useRouter();
   const { control, trigger } = useFormContext<OnboardingFormValues>();
-  const selectedAgeGroup = useWatch({ control, name: "ageGroup" });
+  const birthDate = useWatch({ control, name: "birthDate" });
+  const isBirthDateValid = /^\d{4}-\d{2}-\d{2}$/.test(birthDate);
 
   useEffect(() => {
     router.prefetch("/onboarding/month");
@@ -23,35 +33,39 @@ export default function AgeOnboardingPage() {
         <p className="mt-1 text-body-b1-400 text-gray-700">
           연령대에 맞는 정보를 드리기 위해 필요해요.
         </p>
-        <div className="mt-8 grid grid-cols-2 gap-3">
+        <div className="mt-12 flex flex-col gap-2">
+          <label className="text-body-b2-500 text-gray-700" htmlFor="birth-date">
+            생년월일
+          </label>
           <Controller
             control={control}
-            name="ageGroup"
+            name="birthDate"
             render={({ field }) => (
-              <>
-                {AGE_GROUP_OPTIONS.map((ageGroupOption) => (
-                  <Toggle
-                    key={ageGroupOption.value}
-                    pressed={field.value === ageGroupOption.value}
-                    variant="onboarding"
-                    onPressedChange={(pressed) =>
-                      field.onChange(pressed ? ageGroupOption.value : "")
-                    }
-                  >
-                    {ageGroupOption.label}
-                  </Toggle>
-                ))}
-              </>
+              <input
+                {...field}
+                id="birth-date"
+                autoComplete="off"
+                className="h-[52px] rounded-xl border border-gray-100 px-4 text-body-b1-500 text-gray-900 placeholder:text-gray-200 focus-visible:border-gray-800 focus-visible:ring-2 focus-visible:ring-gray-100 focus-visible:outline-none"
+                inputMode="numeric"
+                maxLength={10}
+                name="birthDate"
+                placeholder="YYYY.MM.DD"
+                value={field.value.replaceAll("-", ".")}
+                onChange={(event) =>
+                  field.onChange(toBirthDate(formatBirthDateInput(event.target.value)))
+                }
+              />
             )}
           />
         </div>
       </section>
       <Button
         className="mt-auto mb-6 disabled:bg-gray-50 disabled:text-gray-300 disabled:opacity-100"
-        disabled={selectedAgeGroup === ""}
+        disabled={!isBirthDateValid}
         size="cta"
         onClick={async () => {
-          if (await trigger("ageGroup", { shouldFocus: true })) {
+          if (await trigger("birthDate", { shouldFocus: true })) {
+            await patchOnboardingProfile({ birthDate });
             router.push("/onboarding/month");
           }
         }}

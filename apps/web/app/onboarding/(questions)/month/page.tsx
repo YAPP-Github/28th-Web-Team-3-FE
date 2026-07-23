@@ -7,6 +7,7 @@ import { useState } from "react";
 import { Controller, useFormContext, useWatch } from "react-hook-form";
 import { LabelSlider } from "@/app/onboarding/_components/label-slider";
 import { MAX_MONTHLY_AMOUNT_SLIDER_VALUE } from "@/app/onboarding/constants/amounts";
+import { patchOnboardingProfile } from "@/lib/onboarding-api";
 
 function parseMonthlyAmountInput(inputValue: string) {
   return Math.min(Number(inputValue.replace(/\D/g, "")), MAX_MONTHLY_AMOUNT);
@@ -16,11 +17,21 @@ export default function MonthlyIncomeAndSavingsOnboardingPage() {
   const router = useRouter();
   const [isDirectInputSheetOpen, setIsDirectInputSheetOpen] = useState(false);
   const { control, trigger } = useFormContext<OnboardingFormValues>();
-  const [income, savings] = useWatch({ control, name: ["income", "savings"] });
+  const [income, savings] = useWatch({
+    control,
+    name: ["monthlySalaryManwon", "monthlySavingManwon"],
+  });
   const hasRequiredMonthlyAmounts = income > 0 && savings > 0;
 
   async function navigateToNetWorthQuestion() {
-    if (await trigger(["income", "savings"], { shouldFocus: true })) {
+    if (
+      savings <= income &&
+      (await trigger(["monthlySalaryManwon", "monthlySavingManwon"], { shouldFocus: true }))
+    ) {
+      await patchOnboardingProfile({
+        monthlySalaryManwon: income,
+        monthlySavingManwon: savings,
+      });
       router.push("/onboarding/net");
     }
   }
@@ -42,7 +53,7 @@ export default function MonthlyIncomeAndSavingsOnboardingPage() {
           <div className="flex flex-col gap-12">
             <Controller
               control={control}
-              name="income"
+              name="monthlySalaryManwon"
               render={({ field }) => (
                 <LabelSlider
                   amount={field.value}
@@ -55,7 +66,7 @@ export default function MonthlyIncomeAndSavingsOnboardingPage() {
             />
             <Controller
               control={control}
-              name="savings"
+              name="monthlySavingManwon"
               render={({ field }) => (
                 <LabelSlider
                   amount={field.value}
@@ -79,7 +90,7 @@ export default function MonthlyIncomeAndSavingsOnboardingPage() {
             <div className="flex gap-2 px-5">
               <Controller
                 control={control}
-                name="income"
+                name="monthlySalaryManwon"
                 render={({ field }) => (
                   <AmountField
                     label="월급"
@@ -93,7 +104,7 @@ export default function MonthlyIncomeAndSavingsOnboardingPage() {
               />
               <Controller
                 control={control}
-                name="savings"
+                name="monthlySavingManwon"
                 render={({ field }) => (
                   <AmountField
                     label="월 저축액"
