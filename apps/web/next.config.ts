@@ -7,7 +7,6 @@ const nextConfig: NextConfig = {
   transpilePackages: ["@repo/ui", "@repo/api", "@repo/schema", "@repo/bridge"],
   reactCompiler: true,
   // .svg import를 SVGR로 React 컴포넌트화 (fill=currentColor로 색상 제어).
-  // dev는 --webpack, build는 Turbopack이라 양쪽 모두 설정해야 한다.
   turbopack: {
     rules: {
       "*.svg": {
@@ -15,18 +14,6 @@ const nextConfig: NextConfig = {
         as: "*.js",
       },
     },
-  },
-  webpack(config) {
-    const fileLoaderRule = config.module.rules.find(
-      (rule: { test?: { test?: (s: string) => boolean } }) => rule.test?.test?.(".svg"),
-    );
-    fileLoaderRule.exclude = /\.svg$/i;
-    config.module.rules.push({
-      test: /\.svg$/i,
-      issuer: fileLoaderRule.issuer,
-      use: ["@svgr/webpack"],
-    });
-    return config;
   },
 };
 
