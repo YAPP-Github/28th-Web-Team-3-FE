@@ -65,7 +65,7 @@ describe("NetWorthOnboardingPage", () => {
     fireEvent.click(screen.getByRole("button", { name: "완료" }));
     fireEvent.click(screen.getByRole("button", { name: "다음" }));
 
-    await waitFor(() => expect(pushMock).toHaveBeenCalledWith("/onboarding/finance"));
+    await waitFor(() => expect(pushMock).toHaveBeenCalledWith("/onboarding/period"));
   });
 
   it("이전 버튼이 월급 질문 경로로 이동한다", () => {
