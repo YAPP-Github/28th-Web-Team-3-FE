@@ -52,4 +52,40 @@ describe("AgeOnboardingPage", () => {
     expect(screen.getByRole("button", { name: "다음" })).toBeDisabled();
     expect(patchOnboardingProfile).not.toHaveBeenCalled();
   });
+
+  it("미래 날짜는 서버에 보내지 않고 오류를 표시한다", () => {
+    render(
+      <OnboardingFormProvider>
+        <AgeOnboardingPage />
+      </OnboardingFormProvider>,
+    );
+
+    const input = screen.getByRole("textbox", { name: "생년월일" });
+    fireEvent.change(input, { target: { value: "20991231" } });
+
+    expect(screen.getByText("오늘 이전 날짜로 입력해주세요.")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "다음" })).toBeDisabled();
+    expect(patchOnboardingProfile).not.toHaveBeenCalled();
+  });
+
+  it("오늘 날짜도 과거가 아니므로 막는다", () => {
+    render(
+      <OnboardingFormProvider>
+        <AgeOnboardingPage />
+      </OnboardingFormProvider>,
+    );
+
+    const today = new Date();
+    const todayDigits = [
+      String(today.getFullYear()),
+      String(today.getMonth() + 1).padStart(2, "0"),
+      String(today.getDate()).padStart(2, "0"),
+    ].join("");
+    fireEvent.change(screen.getByRole("textbox", { name: "생년월일" }), {
+      target: { value: todayDigits },
+    });
+
+    expect(screen.getByText("오늘 이전 날짜로 입력해주세요.")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "다음" })).toBeDisabled();
+  });
 });

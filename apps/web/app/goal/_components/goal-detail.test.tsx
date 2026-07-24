@@ -1,5 +1,5 @@
 import type { GoalStatus } from "@repo/schema/goal";
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 // 조회/변경 훅을 목으로 대체한다 — 데이터 주입 후 렌더·인터랙션 로직을 검증한다.
@@ -96,6 +96,50 @@ describe("GoalDetail", () => {
       goalPeriodMonths: 16,
       monthlySalaryManwon: 650,
     });
+  });
+
+  it("목표 기간이 하한 미만이면 보내지 않고 오류를 표시한다", async () => {
+    render(<GoalDetail />);
+
+    fireEvent.click(screen.getByRole("button", { name: /수정/ }));
+    await waitFor(() =>
+      expect(screen.getByRole("textbox", { name: "목표 기간개월" })).toHaveValue("16"),
+    );
+
+    fireEvent.change(screen.getByRole("textbox", { name: "목표 기간개월" }), {
+      target: { value: "2" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "완료" }));
+
+    expect(screen.getByText("목표 기간은 3개월 이상으로 입력해주세요.")).toBeInTheDocument();
+    expect(goalMutation.mutate).not.toHaveBeenCalled();
+  });
+
+  it("목표 기간 상한을 넘겨 입력하면 최대값으로 제한한다", async () => {
+    render(<GoalDetail />);
+
+    fireEvent.click(screen.getByRole("button", { name: /수정/ }));
+    await waitFor(() =>
+      expect(screen.getByRole("textbox", { name: "목표 기간개월" })).toHaveValue("16"),
+    );
+
+    fireEvent.change(screen.getByRole("textbox", { name: "목표 기간개월" }), {
+      target: { value: "100" },
+    });
+
+    expect(screen.getByRole("textbox", { name: "목표 기간개월" })).toHaveValue("36");
+  });
+
+  it("저장에 실패하면 시트에 오류를 표시한다", () => {
+    render(<GoalDetail />);
+
+    fireEvent.click(screen.getByRole("button", { name: "현재 저축액 입력" }));
+    fireEvent.click(screen.getByRole("button", { name: "완료" }));
+
+    const [, options] = savingsMutation.mutate.mock.calls.at(-1) ?? [];
+    act(() => options.onError(new Error("bad request")));
+
+    expect(screen.getByText("저장하지 못했어요. 잠시 후 다시 시도해주세요.")).toBeInTheDocument();
   });
 
   it("현재저축액 입력은 목표금액을 수정하지 않는다", () => {
