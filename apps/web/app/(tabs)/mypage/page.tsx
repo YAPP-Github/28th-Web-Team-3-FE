@@ -3,10 +3,10 @@ import { SettingLinkRow } from "./_components/setting-row";
 
 export default function MyPage() {
   return (
-    <div className="px-4 pt-4">
-      <h1 className="text-headline-h2-700 text-gray-900">마이페이지</h1>
+    <div className="px-4 pt-2">
+      <h1 className="text-title-t1-700 text-gray-900">마이페이지</h1>
 
-      <section className="mt-8">
+      <section className="mt-4">
         <h2 className="text-body-b2-500 text-gray-400">설정</h2>
         <ul className="mt-2">
           <li>

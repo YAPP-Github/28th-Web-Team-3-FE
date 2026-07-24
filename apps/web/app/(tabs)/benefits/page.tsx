@@ -9,11 +9,12 @@ export default async function BenefitsPage({ searchParams }: BenefitsPageProps) 
   const initialCategory = parseBenefitCategory((await searchParams).category);
 
   return (
-    <main className="flex-1 bg-gray-0 px-5 py-6">
+    <main className="flex-1 bg-gray-0 px-5 py-2">
       <header className="mb-5 flex flex-col gap-1">
-        <h1 className="text-headline-h2-700 text-gray-900">정책 혜택</h1>
+        <h1 className="text-title-t1-700 text-gray-900">정책 혜택</h1>
         <p className="text-body-b2-400 text-gray-600">
-          저축부터 주거비, 세금 환급까지 받을 수 있는 혜택을 확인해 보세요.
+          저축부터 주거비, 세금 환급까지 받을 수 있는
+          <br /> 혜택을 확인해 보세요.
         </p>
       </header>
 
