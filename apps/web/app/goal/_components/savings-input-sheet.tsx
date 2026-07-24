@@ -1,7 +1,7 @@
 "use client";
 
 import { AmountField, BottomSheet, Button } from "@repo/ui";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useUpdateSavings } from "../queries";
 
 interface SavingsInputSheetProps {
@@ -17,6 +17,10 @@ const onlyDigits = (value: string) => value.replace(/\D/g, "");
 export function SavingsInputSheet({ open, onOpenChange, initialManwon }: SavingsInputSheetProps) {
   const [value, setValue] = useState(String(initialManwon));
   const { mutate, isPending } = useUpdateSavings();
+
+  useEffect(() => {
+    if (open) setValue(String(initialManwon));
+  }, [initialManwon, open]);
 
   function submit() {
     const savedAmountManwon = Number(onlyDigits(value));

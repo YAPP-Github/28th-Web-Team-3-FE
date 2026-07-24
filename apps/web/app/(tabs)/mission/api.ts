@@ -17,3 +17,8 @@ export async function fetchMissions(): Promise<readonly Mission[]> {
 export async function completeMission(source: MissionSource, missionId: string): Promise<void> {
   await api.patch(`missions/${source}/${missionId}/complete`);
 }
+
+/** DELETE /api/missions/recommended/{missionId} — 추천 미션 삭제. */
+export async function deleteRecommendedMission(missionId: string): Promise<void> {
+  await api.delete(`missions/recommended/${missionId}`);
+}

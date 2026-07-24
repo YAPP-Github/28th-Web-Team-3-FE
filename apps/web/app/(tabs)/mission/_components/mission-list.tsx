@@ -7,6 +7,8 @@ interface MissionListProps {
   expandedMissionId: string | null;
   missions: readonly Mission[];
   onComplete: (mission: Mission) => void;
+  onDelete: (mission: Mission) => void;
+  deletingMissionId?: string | null;
   onToggle: (id: string) => void;
 }
 
@@ -15,6 +17,8 @@ export function MissionList({
   expandedMissionId,
   missions,
   onComplete,
+  onDelete,
+  deletingMissionId,
   onToggle,
 }: MissionListProps) {
   return (
@@ -30,6 +34,8 @@ export function MissionList({
           <div className="flex flex-col gap-2">
             {missions.map((mission) => {
               const isExpanded = expandedMissionId === mission.id;
+              const canDelete = mission.source === "RECOMMENDED";
+              const isDeleting = deletingMissionId === mission.id;
               return (
                 <article
                   key={mission.id}
@@ -69,12 +75,13 @@ export function MissionList({
                         <span>{mission.savingsLabel}</span>
                       </p>
                       <button
-                        aria-label="삭제 (준비 중)"
+                        aria-label={canDelete ? "미션 삭제" : "삭제 (지원 안 함)"}
                         className="flex h-11 w-full items-center justify-center rounded-xl bg-gray-100 text-body-b1-700 text-gray-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-300 disabled:opacity-50"
-                        disabled
+                        disabled={!canDelete || isDeleting}
                         type="button"
+                        onClick={() => onDelete(mission)}
                       >
-                        삭제
+                        {isDeleting ? "삭제 중" : "삭제"}
                       </button>
                     </>
                   ) : null}

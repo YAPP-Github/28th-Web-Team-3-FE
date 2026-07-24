@@ -1,6 +1,8 @@
 "use client";
 
+import { useState } from "react";
 import { MonthlyGoalCard } from "@/app/goal/_components/monthly-goal-card";
+import { SavingsInputSheet } from "@/app/goal/_components/savings-input-sheet";
 import { formatDday, formatManwon } from "@/app/goal/lib/format";
 import { useGoalStatus } from "@/app/goal/queries";
 import { GoalTrackerRow } from "./goal-tracker-row";
@@ -11,6 +13,7 @@ import { GoalTrackerRow } from "./goal-tracker-row";
  */
 export function HomeGoalSection() {
   const { data: goal, isPending, isError } = useGoalStatus();
+  const [savingsOpen, setSavingsOpen] = useState(false);
 
   if (isPending) {
     // 라인 + 이번 달 카드 실제 높이에 근사시켜 데이터 도착 시 레이아웃 시프트를 줄인다.
@@ -35,6 +38,12 @@ export function HomeGoalSection() {
         ddayLabel={formatDday(thisMonth.dDay)}
         percent={thisMonth.progressPercent}
         targetLabel={formatManwon(thisMonth.targetManwon)}
+        onSaveClick={() => setSavingsOpen(true)}
+      />
+      <SavingsInputSheet
+        initialManwon={thisMonth.savedManwon}
+        open={savingsOpen}
+        onOpenChange={setSavingsOpen}
       />
     </>
   );
