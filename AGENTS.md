@@ -117,6 +117,7 @@ pnpm format      # biome format --write .
 - 커밋 전 lefthook 훅 통과 필수 (`pnpm prepare`로 설치).
 - 워크스페이스 내부 의존성은 `workspace:*`.
 - **인증은 비로그인 게스트 JWT — 쿠키/세션 사용 금지.** 로그인 없음. native가 UUID(expo-secure-store) 기반으로 access/refresh를 발급받고, refresh·UUID는 네이티브 밖으로 내보내지 않는다. 웹은 bridge(토큰 조회/재발급 메서드)로 access만 받아 메모리에서 사용하고 `Authorization: Bearer` 헤더로 API 호출. `credentials: "include"`·세션 쿠키(JSESSIONID) 코드 작성 금지.
+  - **임시 UT(사용자 테스트) 예외:** 네이티브 셸 없이 일반 브라우저에서 백엔드 연동을 검증하는 동안에만 기기 UUID를 `sessionStorage`에 저장할 수 있다. access token은 메모리에만 두고, refresh token은 브라우저에 저장하지 않는다. 401이면 같은 UUID로 access token을 다시 발급한다. 쿠키·`localStorage`는 계속 금지하며, 이 예외는 정식 배포 인증 정책이 아니다.
 - Next 16 / React 19 / Tailwind v4 최신 API 기준 — 학습 데이터의 구버전 패턴 주의.
 
 ### 디자인 토큰 (packages/ui)

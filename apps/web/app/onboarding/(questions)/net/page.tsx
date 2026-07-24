@@ -6,27 +6,25 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Controller, useFormContext, useWatch } from "react-hook-form";
 import { NetWorthSlider } from "@/app/onboarding/_components/net-worth-slider";
+import { useSaveOnboardingProfile } from "@/app/onboarding/_hooks/use-save-onboarding-profile";
 
 function parseNetWorthInput(inputValue: string) {
-  const numericValue = inputValue.replace(/\D/g, "").replace(/^0+(?=\d)/, "");
-
-  if (numericValue === "") {
-    return "";
-  }
-
-  return BigInt(numericValue) > BigInt(MAX_NET_WORTH_AMOUNT) ? MAX_NET_WORTH_AMOUNT : numericValue;
+  return Math.min(Number(inputValue.replace(/\D/g, "")), MAX_NET_WORTH_AMOUNT);
 }
 
 export default function NetWorthOnboardingPage() {
   const router = useRouter();
   const [isDirectInputSheetOpen, setIsDirectInputSheetOpen] = useState(false);
   const { control, trigger } = useFormContext<OnboardingFormValues>();
-  const netWorthAmount = useWatch({ control, name: "netWorth" });
-  const hasNetWorthAmount = BigInt(netWorthAmount || "0") > 0n;
+  const netWorthAmount = useWatch({ control, name: "netWorthManwon" });
+  const hasNetWorthAmount = netWorthAmount > 0;
+  const { isSaving, saveError, saveProfile } = useSaveOnboardingProfile();
 
   async function navigateToInvestmentPeriodQuestion() {
-    if (await trigger("netWorth", { shouldFocus: true })) {
-      router.push("/onboarding/period");
+    if (await trigger("netWorthManwon", { shouldFocus: true })) {
+      if (await saveProfile({ netWorthManwon: netWorthAmount })) {
+        router.push("/onboarding/period");
+      }
     }
   }
 
@@ -46,7 +44,7 @@ export default function NetWorthOnboardingPage() {
           </div>
           <Controller
             control={control}
-            name="netWorth"
+            name="netWorthManwon"
             render={({ field }) => (
               <NetWorthSlider
                 netWorthAmount={field.value}
@@ -66,12 +64,12 @@ export default function NetWorthOnboardingPage() {
             <div className="px-5">
               <Controller
                 control={control}
-                name="netWorth"
+                name="netWorthManwon"
                 render={({ field }) => (
                   <AmountField
                     label="순자산"
-                    maxLength={MAX_NET_WORTH_AMOUNT.length}
-                    value={field.value || ""}
+                    maxLength={String(MAX_NET_WORTH_AMOUNT).length}
+                    value={field.value ? String(field.value) : ""}
                     onChange={(event) => field.onChange(parseNetWorthInput(event.target.value))}
                   />
                 )}
@@ -88,9 +86,15 @@ export default function NetWorthOnboardingPage() {
         </BottomSheet>
       </div>
 
+      {saveError ? (
+        <p aria-live="polite" className="pt-4 text-center text-body-b2-500 text-gray-700">
+          {saveError}
+        </p>
+      ) : null}
       <div className="pt-8 pb-6">
         <ButtonGroup
-          nextDisabled={!hasNetWorthAmount}
+          nextDisabled={!hasNetWorthAmount || isSaving}
+          nextLabel={isSaving ? "저장 중…" : "다음"}
           onNext={navigateToInvestmentPeriodQuestion}
           onPrev={() => router.push("/onboarding/month")}
         />

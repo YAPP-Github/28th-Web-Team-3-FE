@@ -1,11 +1,16 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { OnboardingFormProvider } from "@/app/onboarding/(questions)/_components/onboarding-form-provider";
+import { patchOnboardingProfile } from "@/lib/onboarding";
 import NetWorthOnboardingPage from "./page";
 
 const pushMock = vi.fn();
 
 vi.mock("next/navigation", () => ({ useRouter: () => ({ push: pushMock }) }));
+vi.mock("@/lib/onboarding", () => ({
+  getOnboardingProfile: vi.fn().mockRejectedValue(new Error("test")),
+  patchOnboardingProfile: vi.fn().mockResolvedValue({}),
+}));
 
 function renderNetWorthOnboardingPage() {
   return render(
@@ -17,7 +22,7 @@ function renderNetWorthOnboardingPage() {
 
 describe("NetWorthOnboardingPage", () => {
   beforeEach(() => {
-    pushMock.mockClear();
+    vi.clearAllMocks();
   });
 
   it("금액을 입력하기 전에는 다음 버튼이 비활성화된다", () => {
@@ -31,28 +36,10 @@ describe("NetWorthOnboardingPage", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "직접 입력" }));
     fireEvent.change(screen.getByRole("textbox", { name: "순자산만원" }), {
-      target: { value: "10000000000000000000" },
-    });
-
-    expect(screen.getByRole("textbox", { name: "순자산만원" })).toHaveValue("999999999999999");
-  });
-
-  it("슬라이더 상한을 넘는 값은 바를 누르면 1억원으로 돌아온다", async () => {
-    renderNetWorthOnboardingPage();
-
-    fireEvent.click(screen.getByRole("button", { name: "직접 입력" }));
-    fireEvent.change(screen.getByRole("textbox", { name: "순자산만원" }), {
       target: { value: "10001" },
     });
-    fireEvent.click(screen.getByRole("button", { name: "완료" }));
 
-    const sliderActivationButton = screen.getByRole("button", { name: "순자산 슬라이더 활성화" });
-    expect(sliderActivationButton.querySelector(".bg-primary")).toHaveClass("w-full");
-
-    fireEvent.click(sliderActivationButton);
-
-    expect(screen.getByText("자산 10,000만원")).toBeInTheDocument();
-    expect(screen.getByRole("slider", { name: "순자산" })).toBeInTheDocument();
+    expect(screen.getByRole("textbox", { name: "순자산만원" })).toHaveValue("10000");
   });
 
   it("입력한 순자산으로 다음 질문으로 이동한다", async () => {
@@ -66,6 +53,7 @@ describe("NetWorthOnboardingPage", () => {
     fireEvent.click(screen.getByRole("button", { name: "다음" }));
 
     await waitFor(() => expect(pushMock).toHaveBeenCalledWith("/onboarding/period"));
+    expect(patchOnboardingProfile).toHaveBeenCalledWith({ netWorthManwon: 10000 });
   });
 
   it("이전 버튼이 월급 질문 경로로 이동한다", () => {

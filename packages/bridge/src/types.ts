@@ -58,7 +58,7 @@ export type AppBridgeMethods = {
   /**
    * Guest auth: 웹이 401을 받았을 때 호출하는 재발급 요청.
    * 네이티브가 single-flight로 rotation을 수행하고 새 access token을 반환한다.
-   * refresh token까지 만료된 경우 저장된 기기 uuid로 /auth/guest를 다시 호출해
+   * refresh token까지 만료된 경우 저장된 기기 uuid로 /api/auth/guest를 다시 호출해
    * 같은 게스트 계정으로 복귀한다. 그마저 실패하면 null (호출부는 에러 UI).
    */
   refreshAccessToken(): Promise<string | null>;

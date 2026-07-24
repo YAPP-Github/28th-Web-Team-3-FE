@@ -1,34 +1,50 @@
-import type { OnboardingFormValues } from "@repo/schema";
-import { render, screen } from "@testing-library/react";
-import { FormProvider, useForm } from "react-hook-form";
-import { describe, expect, it, vi } from "vitest";
+import { fireEvent, render, screen } from "@testing-library/react";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import { getOnboardingReport } from "@/lib/onboarding";
 import OnboardingResultPage from "./page";
 
-vi.mock("next/navigation", () => ({ useRouter: () => ({ push: vi.fn() }) }));
+const push = vi.fn();
 
-const sampleOnboardingFormValues: OnboardingFormValues = {
-  ageGroup: "twenties",
-  income: 300,
-  investmentPeriod: "about-one-year",
-  netWorth: "10000",
-  savings: 100,
+vi.mock("next/navigation", () => ({ useRouter: () => ({ push }) }));
+vi.mock("@/lib/onboarding", () => ({
+  getOnboardingReport: vi.fn(),
+}));
+
+const report = {
+  simulation: {
+    baselineManwon: 11_200,
+    simulationManwon: 11_380,
+    diffManwon: 180,
+    upliftPercent: 2,
+    periodMonths: 12,
+  },
+  peer: { assetRatioPercent: 50, incomeTopPercent: 30, consumptionTopPercent: 40 },
+  histogram: {
+    income: { bins: [], markerManwon: 300 },
+    consumption: { bins: [], markerManwon: 200 },
+  },
+  diagnosis: { branchCode: 1, message: "저축액을 조금 높이면 목표에 가까워져요." },
+  disclaimer: "안내",
+  datasetVersion: "1",
+  configVersion: "1",
 };
 
-function OnboardingResultPageTestHarness() {
-  const formMethods = useForm<OnboardingFormValues>({ defaultValues: sampleOnboardingFormValues });
-
-  return (
-    <FormProvider {...formMethods}>
-      <OnboardingResultPage />
-    </FormProvider>
-  );
-}
-
 describe("OnboardingResultPage", () => {
-  it("입력한 자산과 저축액으로 예상 금액을 보여준다", () => {
-    render(<OnboardingResultPageTestHarness />);
+  beforeEach(() => {
+    vi.clearAllMocks();
+    vi.mocked(getOnboardingReport).mockResolvedValue(report);
+  });
 
-    expect(screen.getByText("11,380만원 예상")).toBeInTheDocument();
+  it("report 응답을 표시한다", async () => {
+    render(<OnboardingResultPage />);
+    expect(await screen.findByText("11,380만원 예상")).toBeInTheDocument();
     expect(screen.getByText("180만원")).toBeInTheDocument();
+  });
+
+  it("다음 버튼을 누르면 목표 선택 페이지로 이동한다", async () => {
+    render(<OnboardingResultPage />);
+    fireEvent.click(await screen.findByRole("button", { name: "다음" }));
+
+    expect(push).toHaveBeenCalledWith("/onboarding/goal");
   });
 });
