@@ -56,6 +56,20 @@ describe("NetWorthOnboardingPage", () => {
     expect(patchOnboardingProfile).toHaveBeenCalledWith({ netWorthManwon: 10000 });
   });
 
+  it("순자산 0도 유효한 답변이라 다음으로 넘어간다", async () => {
+    renderNetWorthOnboardingPage();
+
+    fireEvent.click(screen.getByRole("button", { name: "직접 입력" }));
+    fireEvent.change(screen.getByRole("textbox", { name: "순자산만원" }), {
+      target: { value: "0" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "완료" }));
+    fireEvent.click(screen.getByRole("button", { name: "다음" }));
+
+    await waitFor(() => expect(pushMock).toHaveBeenCalledWith("/onboarding/period"));
+    expect(patchOnboardingProfile).toHaveBeenCalledWith({ netWorthManwon: 0 });
+  });
+
   it("이전 버튼이 월급 질문 경로로 이동한다", () => {
     renderNetWorthOnboardingPage();
 

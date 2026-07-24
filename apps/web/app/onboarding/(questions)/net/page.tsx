@@ -17,7 +17,8 @@ export default function NetWorthOnboardingPage() {
   const [isDirectInputSheetOpen, setIsDirectInputSheetOpen] = useState(false);
   const { control, trigger } = useFormContext<OnboardingFormValues>();
   const netWorthAmount = useWatch({ control, name: "netWorthManwon" });
-  const hasNetWorthAmount = netWorthAmount > 0;
+  // 순자산 0은 유효한 답변(모으기 시작 단계)이라 금액이 아니라 "응답했는지"로 다음을 연다.
+  const [hasAnswered, setHasAnswered] = useState(false);
   const { isSaving, saveError, saveProfile } = useSaveOnboardingProfile();
 
   async function navigateToInvestmentPeriodQuestion() {
@@ -48,7 +49,10 @@ export default function NetWorthOnboardingPage() {
             render={({ field }) => (
               <NetWorthSlider
                 netWorthAmount={field.value}
-                onNetWorthAmountChange={field.onChange}
+                onNetWorthAmountChange={(amount) => {
+                  setHasAnswered(true);
+                  field.onChange(amount);
+                }}
               />
             )}
           />
@@ -70,17 +74,16 @@ export default function NetWorthOnboardingPage() {
                     label="순자산"
                     maxLength={String(MAX_NET_WORTH_AMOUNT).length}
                     value={field.value ? String(field.value) : ""}
-                    onChange={(event) => field.onChange(parseNetWorthInput(event.target.value))}
+                    onChange={(event) => {
+                      setHasAnswered(true);
+                      field.onChange(parseNetWorthInput(event.target.value));
+                    }}
                   />
                 )}
               />
             </div>
             <div className="px-5 pt-2 pb-3">
-              <ButtonGroup
-                nextDisabled={!hasNetWorthAmount}
-                nextLabel="완료"
-                onNext={() => setIsDirectInputSheetOpen(false)}
-              />
+              <ButtonGroup nextLabel="완료" onNext={() => setIsDirectInputSheetOpen(false)} />
             </div>
           </div>
         </BottomSheet>
@@ -93,7 +96,7 @@ export default function NetWorthOnboardingPage() {
       ) : null}
       <div className="pt-8 pb-6">
         <ButtonGroup
-          nextDisabled={!hasNetWorthAmount || isSaving}
+          nextDisabled={!hasAnswered || isSaving}
           nextLabel={isSaving ? "저장 중…" : "다음"}
           onNext={navigateToInvestmentPeriodQuestion}
           onPrev={() => router.push("/onboarding/month")}

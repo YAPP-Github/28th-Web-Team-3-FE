@@ -26,15 +26,27 @@ export const goalStatusSchema = z.object({
 export type ThisMonth = z.infer<typeof thisMonthSchema>;
 export type GoalStatus = z.infer<typeof goalStatusSchema>;
 
+/** 요청 값 허용 범위 — 백엔드 검증과 동일하게 맞춘다(초과하면 400). */
+export const MAX_SAVED_AMOUNT_MANWON = 100_000;
+export const MIN_GOAL_TARGET_MANWON = 1;
+export const MAX_GOAL_TARGET_MANWON = 1_000_000;
+export const MIN_GOAL_PERIOD_MONTHS = 3;
+export const MAX_GOAL_PERIOD_MONTHS = 36;
+
 /** PUT /api/goal/savings 요청 — 현재 저축액 입력. */
 export const savingRequestSchema = z.object({
-  savedAmountManwon: z.number().int().min(0),
+  savedAmountManwon: z.number().int().min(0).max(MAX_SAVED_AMOUNT_MANWON),
 });
 export type SavingRequest = z.infer<typeof savingRequestSchema>;
 
 /** PATCH /api/goal 요청 — 목표 금액/기간 수정. 둘 다 선택(null이면 미변경). */
 export const goalUpdateRequestSchema = z.object({
-  targetAmountManwon: z.number().int().positive().nullable(),
-  periodMonths: z.number().int().positive().nullable(),
+  targetAmountManwon: z
+    .number()
+    .int()
+    .min(MIN_GOAL_TARGET_MANWON)
+    .max(MAX_GOAL_TARGET_MANWON)
+    .nullable(),
+  periodMonths: z.number().int().min(MIN_GOAL_PERIOD_MONTHS).max(MAX_GOAL_PERIOD_MONTHS).nullable(),
 });
 export type GoalUpdateRequest = z.infer<typeof goalUpdateRequestSchema>;

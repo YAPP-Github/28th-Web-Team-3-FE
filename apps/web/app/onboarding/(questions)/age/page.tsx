@@ -29,14 +29,27 @@ function isRealBirthDate(value: string) {
   );
 }
 
+/** 서버는 생년월일을 과거 날짜로만 받는다(오늘도 거부) — 보내기 전에 같은 기준으로 거른다. */
+function isPastBirthDate(value: string) {
+  const today = new Date();
+  const todayUtc = Date.UTC(today.getFullYear(), today.getMonth(), today.getDate());
+  const parts = value.split("-");
+  return Date.UTC(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2])) < todayUtc;
+}
+
 export default function AgeOnboardingPage() {
   const router = useRouter();
   const { control, trigger } = useFormContext<OnboardingFormValues>();
   const birthDate = useWatch({ control, name: "birthDate" });
   const hasBirthDateFormat = /^\d{4}-\d{2}-\d{2}$/.test(birthDate);
-  const isBirthDateValid = isRealBirthDate(birthDate);
-  const birthDateError =
-    hasBirthDateFormat && !isBirthDateValid ? "올바른 날짜를 입력해주세요." : undefined;
+  const isBirthDateValid = isRealBirthDate(birthDate) && isPastBirthDate(birthDate);
+  const birthDateError = !hasBirthDateFormat
+    ? undefined
+    : !isRealBirthDate(birthDate)
+      ? "올바른 날짜를 입력해주세요."
+      : !isPastBirthDate(birthDate)
+        ? "오늘 이전 날짜로 입력해주세요."
+        : undefined;
   const { isSaving, saveError, saveProfile } = useSaveOnboardingProfile();
 
   useEffect(() => {

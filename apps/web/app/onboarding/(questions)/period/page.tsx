@@ -44,7 +44,7 @@ export default function InvestmentPeriodOnboardingPage() {
                   목표기간 {formatGoalPeriod(field.value)}
                 </p>
                 <p className="text-caption-c1-500 text-gray-500">
-                  현재 투자 및 예/적금 자산 모두 총합을 입력해주세요.
+                  6개월 단위로 최대 3년까지 설정할 수 있어요.
                 </p>
               </div>
               <div className="flex flex-col gap-0.5">
