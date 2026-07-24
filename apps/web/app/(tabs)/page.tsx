@@ -3,8 +3,10 @@
 import { Button } from "@repo/ui";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { NativeFeatures } from "@/app/native-features";
+import { MonthlyGoalCard } from "@/app/goal/_components/monthly-goal-card";
+import { GOAL } from "@/app/goal/constants";
 import { getOnboardingProfile } from "@/lib/onboarding";
+import { GoalTrackerRow } from "./_components/goal-tracker-row";
 
 export default function HomePage() {
   const router = useRouter();
@@ -48,16 +50,15 @@ export default function HomePage() {
   }
 
   return (
-    <main className="flex flex-1 flex-col justify-center gap-6 p-6">
-      <div className="space-y-2">
-        <h1 className="font-semibold text-2xl">Web Team 3</h1>
-        <p className="text-muted-foreground text-sm">
-          Next.js 웹 + Expo WebView 셸이 UI·스키마·API를 공유합니다.
-        </p>
-      </div>
-
-      {/* Native-only actions (share / biometric). Hidden in a plain browser. */}
-      <NativeFeatures />
+    <main className="flex flex-1 flex-col gap-4 bg-gray-0 px-5 pt-2">
+      <h1 className="flex h-11 items-center text-title-t1-700 text-gray-900">홈</h1>
+      <GoalTrackerRow />
+      <MonthlyGoalCard
+        currentLabel={GOAL.monthly.currentLabel}
+        ddayLabel={GOAL.monthly.ddayLabel}
+        percent={GOAL.monthly.percent}
+        targetLabel={GOAL.monthly.targetLabel}
+      />
     </main>
   );
 }
