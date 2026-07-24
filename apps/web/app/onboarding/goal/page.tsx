@@ -2,7 +2,7 @@
 
 import type { OnboardingGoalPlans } from "@repo/schema/onboarding-api";
 import { ButtonGroup, OptionGroup, OptionItem } from "@repo/ui";
-import Image from "next/image";
+import GoalUpIcon from "@repo/ui/svg/goal-up.svg";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { GoalPlanChart } from "@/app/onboarding/goal/_components/goal-plan-chart";
@@ -75,7 +75,7 @@ export default function OnboardingGoalPage() {
   const increaseMaxPercent = calculateIncreasePercent(plan.increaseMaxManwon, goalPlans);
 
   return (
-    <div className="flex min-h-dvh flex-col overflow-x-hidden bg-gray-0 pt-6">
+    <div className="flex min-h-dvh flex-col overflow-x-hidden bg-gray-0 pt-8">
       <header className="px-5">
         <h1 className="text-pretty text-headline-h2-700 text-gray-900">
           2가지 목표금액을
@@ -119,12 +119,7 @@ export default function OnboardingGoalPage() {
             </span>
             <br />더 모으기에 도전해요
           </h2>
-          <div className="relative h-[44.47px] w-[42.223px] shrink-0" aria-hidden="true">
-            <Image alt="" fill sizes="43px" src="/icons/goal-house.svg" />
-            <span className="absolute top-[11.7px] left-[13.4px] flex h-[24px] w-[15.8px] flex-col items-center font-bold text-[14px] leading-[16px] text-white">
-              W<span className="mt-0.5 h-0.5 w-[15px] bg-white" />
-            </span>
-          </div>
+          <GoalUpIcon aria-hidden="true" className="h-[46px] w-[43px] shrink-0" />
         </div>
       </section>
 
