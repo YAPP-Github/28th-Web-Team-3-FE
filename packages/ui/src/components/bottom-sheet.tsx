@@ -31,11 +31,21 @@ export function BottomSheet({
   const keyboardInsetRef = useRef(0);
   const animationFrameRef = useRef<number | null>(null);
   const resetTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const closeResetTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     if (!rootProps.open) {
+      if (animationFrameRef.current !== null) cancelAnimationFrame(animationFrameRef.current);
+      if (resetTimeoutRef.current !== null) clearTimeout(resetTimeoutRef.current);
+      if (closeResetTimeoutRef.current !== null) clearTimeout(closeResetTimeoutRef.current);
+      closeResetTimeoutRef.current = setTimeout(() => {
+        keyboardInsetRef.current = 0;
+        setKeyboardInset(0);
+      }, 160);
       return;
     }
+
+    if (closeResetTimeoutRef.current !== null) clearTimeout(closeResetTimeoutRef.current);
 
     const viewport = window.visualViewport;
     if (!viewport) return;
@@ -65,6 +75,7 @@ export function BottomSheet({
     return () => {
       if (animationFrameRef.current !== null) cancelAnimationFrame(animationFrameRef.current);
       if (resetTimeoutRef.current !== null) clearTimeout(resetTimeoutRef.current);
+      if (closeResetTimeoutRef.current !== null) clearTimeout(closeResetTimeoutRef.current);
       viewport.removeEventListener("resize", updateKeyboardInset);
       viewport.removeEventListener("scroll", updateKeyboardInset);
     };
