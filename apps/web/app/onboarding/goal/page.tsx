@@ -76,7 +76,7 @@ export default function OnboardingGoalPage() {
 
   return (
     <div className="flex min-h-dvh flex-col overflow-x-hidden bg-gray-0">
-      <div className="flex flex-1 flex-col gap-9 pt-16">
+      <div className="flex flex-1 flex-col gap-9 pt-8 pb-4">
         <div className="flex flex-col gap-8">
           <header className="flex flex-col gap-1 px-5">
             <h1 className="text-pretty text-headline-h2-700 text-gray-900">
