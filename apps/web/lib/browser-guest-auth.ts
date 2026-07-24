@@ -20,12 +20,13 @@ function getOrCreateDeviceUuid(): string {
 async function issueAccessToken(): Promise<string | null> {
   const apiUrl = process.env.NEXT_PUBLIC_API_URL;
   if (!apiUrl) return null;
+  const apiBaseUrl = apiUrl.endsWith("/") ? apiUrl : `${apiUrl}/`;
 
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), AUTH_FETCH_TIMEOUT_MS);
 
   try {
-    const response = await fetch(new URL("auth/guest", apiUrl), {
+    const response = await fetch(new URL("auth/guest", apiBaseUrl), {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ uuid: getOrCreateDeviceUuid() }),

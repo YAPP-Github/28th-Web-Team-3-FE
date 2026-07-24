@@ -15,7 +15,7 @@ describe("browser guest auth", () => {
   beforeEach(() => {
     vi.resetModules();
     sessionStorage.clear();
-    process.env.NEXT_PUBLIC_API_URL = "https://api.example.test/api/";
+    process.env.NEXT_PUBLIC_API_URL = "https://api.example.test/api";
     vi.stubGlobal("fetch", fetchMock);
     vi.stubGlobal("crypto", { randomUUID: randomUuid });
     fetchMock.mockReset();
@@ -66,5 +66,18 @@ describe("browser guest auth", () => {
     ]);
     expect(randomUuid).toHaveBeenCalledOnce();
     expect(sessionStorage.getItem("ut_guest_refresh_token")).toBeNull();
+  });
+
+  it("API URL 끝에 슬래시가 있어도 /api 경로를 보존한다", async () => {
+    process.env.NEXT_PUBLIC_API_URL = "https://api.example.test/api/";
+    fetchMock.mockResolvedValue(tokenResponse("access-token"));
+    const { getBrowserAccessToken } = await import("./browser-guest-auth");
+
+    await getBrowserAccessToken();
+
+    expect(fetchMock).toHaveBeenCalledWith(
+      new URL("https://api.example.test/api/auth/guest"),
+      expect.anything(),
+    );
   });
 });
