@@ -3,9 +3,9 @@ import { HttpResponse, http, type RequestHandler } from "msw";
 
 // BE 연동 전 개발/테스트용 목 상태. 요청 간 값이 유지돼 저축 입력·목표 수정이 화면에 반영된다.
 const goal: GoalStatus = {
-  targetAmountManwon: 5000,
+  targetAmountManwon: 3050,
   totalSavedManwon: 1950,
-  progressPercent: 39,
+  progressPercent: 100,
   usageMonths: 8,
   deadlineDDay: 486,
   thisMonth: {
@@ -17,9 +17,10 @@ const goal: GoalStatus = {
 };
 
 function recalcPercent() {
+  const totalTargetManwon = goal.totalSavedManwon + goal.targetAmountManwon;
   goal.progressPercent =
-    goal.targetAmountManwon > 0
-      ? Math.min(100, Math.round((goal.totalSavedManwon / goal.targetAmountManwon) * 100))
+    totalTargetManwon > 0
+      ? Math.min(100, Math.round((goal.totalSavedManwon / totalTargetManwon) * 100))
       : 0;
 }
 

@@ -1,10 +1,11 @@
 "use client";
 
-import GoalCoinIcon from "@repo/ui/svg/goal-coin.svg";
+import Bill from "@repo/ui/svg/bill.svg";
 import { Pencil } from "lucide-react";
 import { useState } from "react";
 import { GOAL_TITLE_SUFFIX } from "../constants";
 import { formatDday, formatManwon } from "../lib/format";
+import { calculateGoalProgressPercent, calculateGoalTotalTargetManwon } from "../lib/progress";
 import { useGoalStatus } from "../queries";
 import { GoalEditSheet } from "./goal-edit-sheet";
 import { MonthlyGoalCard } from "./monthly-goal-card";
@@ -30,14 +31,19 @@ export function GoalDetail() {
   }
 
   const { thisMonth } = goal;
+  const totalTargetManwon = calculateGoalTotalTargetManwon(
+    goal.totalSavedManwon,
+    goal.targetAmountManwon,
+  );
+  const progressPercent = calculateGoalProgressPercent(goal.totalSavedManwon, totalTargetManwon);
 
   return (
     <>
       <div className="flex items-center justify-between px-5 pt-4">
         <span className="flex items-center gap-2">
-          <GoalCoinIcon aria-hidden="true" className="size-6 shrink-0" />
+          <Bill aria-hidden="true" className="h-6.25 w-8 shrink-0" />
           <span className="text-title-t1-700 text-gray-900">
-            {formatManwon(goal.targetAmountManwon)} {GOAL_TITLE_SUFFIX}
+            {formatManwon(totalTargetManwon)} {GOAL_TITLE_SUFFIX}
           </span>
         </span>
         <button
@@ -52,9 +58,9 @@ export function GoalDetail() {
 
       <div className="px-5 pt-12">
         <SemicircleGauge
-          maxLabel={formatManwon(goal.targetAmountManwon)}
+          maxLabel={formatManwon(totalTargetManwon)}
           minLabel="0"
-          percent={goal.progressPercent}
+          percent={progressPercent}
           savedLabel={formatManwon(goal.totalSavedManwon)}
         />
       </div>
@@ -86,7 +92,8 @@ export function GoalDetail() {
         onOpenChange={setSavingsOpen}
       />
       <GoalEditSheet
-        initialTargetManwon={goal.targetAmountManwon}
+        currentSavedManwon={goal.totalSavedManwon}
+        initialTargetManwon={totalTargetManwon}
         open={editOpen}
         onOpenChange={setEditOpen}
       />
