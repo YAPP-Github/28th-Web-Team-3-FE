@@ -15,11 +15,13 @@ export function LegalPageLayout({ title, children }: LegalPageLayoutProps) {
   const router = useRouter();
 
   // 딥링크·새로고침 등 앱 내 히스토리가 없을 때는 back()이 무의미하므로 마이페이지로 이동한다.
+  // history.length는 앱 밖 방문까지 세므로, App Router가 유지하는 진입 인덱스(idx)로 판단한다.
   function goBack() {
-    if (window.history.length > 1) {
+    const idx = (window.history.state as { idx?: number } | null)?.idx ?? 0;
+    if (idx > 0) {
       router.back();
     } else {
-      router.push("/mypage");
+      router.replace("/mypage");
     }
   }
 

@@ -9,11 +9,13 @@ export function GoalHeader() {
   const router = useRouter();
 
   // 앱 내 히스토리가 없을 때(딥링크·새로고침)는 홈으로 보낸다.
+  // history.length는 앱 밖 방문까지 세므로, App Router가 유지하는 진입 인덱스(idx)로 판단한다.
   function goBack() {
-    if (window.history.length > 1) {
+    const idx = (window.history.state as { idx?: number } | null)?.idx ?? 0;
+    if (idx > 0) {
       router.back();
     } else {
-      router.push("/");
+      router.replace("/");
     }
   }
 
