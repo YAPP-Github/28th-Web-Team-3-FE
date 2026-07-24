@@ -51,7 +51,7 @@ export default function HomePage() {
 
   return (
     <main className="flex flex-1 flex-col gap-4 bg-gray-0 px-5 pt-2">
-      <h1 className="flex h-11 items-center text-title-t1-700 text-gray-900">홈</h1>
+      <h1 className="flex py-2 items-center text-title-t1-700 text-gray-900">홈</h1>
       <GoalTrackerRow />
       <MonthlyGoalCard
         currentLabel={GOAL.monthly.currentLabel}
