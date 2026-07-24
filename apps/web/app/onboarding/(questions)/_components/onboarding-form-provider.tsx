@@ -13,29 +13,32 @@ export function OnboardingFormProvider({ children }: { children: ReactNode }) {
     resolver: zodResolver(onboardingFormSchema),
   });
 
-  useEffect(() => {
-    let active = true;
+  useEffect(
+    function syncOnboardingProfile() {
+      let active = true;
 
-    getOnboardingProfile()
-      .then((profile) => {
-        if (!active) return;
-        formMethods.reset(
-          {
-            birthDate: profile.birthDate ?? "",
-            monthlySalaryManwon: profile.monthlySalaryManwon ?? 0,
-            monthlySavingManwon: profile.monthlySavingManwon ?? 0,
-            netWorthManwon: profile.netWorthManwon ?? 0,
-            goalPeriodMonths: profile.goalPeriodMonths ?? "",
-          },
-          { keepDirtyValues: true },
-        );
-      })
-      .catch(() => undefined);
+      getOnboardingProfile()
+        .then((profile) => {
+          if (!active) return;
+          formMethods.reset(
+            {
+              birthDate: profile.birthDate ?? "",
+              monthlySalaryManwon: profile.monthlySalaryManwon ?? 0,
+              monthlySavingManwon: profile.monthlySavingManwon ?? 0,
+              netWorthManwon: profile.netWorthManwon ?? 0,
+              goalPeriodMonths: profile.goalPeriodMonths ?? "",
+            },
+            { keepDirtyValues: true },
+          );
+        })
+        .catch(() => undefined);
 
-    return () => {
-      active = false;
-    };
-  }, [formMethods]);
+      return () => {
+        active = false;
+      };
+    },
+    [formMethods],
+  );
 
   return <FormProvider {...formMethods}>{children}</FormProvider>;
 }
