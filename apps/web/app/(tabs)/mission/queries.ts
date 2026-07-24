@@ -1,6 +1,6 @@
 import type { MissionSource } from "@repo/schema/mission";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { completeMission, fetchMissions } from "./api";
+import { completeMission, deleteRecommendedMission, fetchMissions } from "./api";
 
 const MISSIONS_QUERY_KEY = ["missions"] as const;
 
@@ -18,6 +18,15 @@ export function useCompleteMission() {
   return useMutation({
     mutationFn: ({ source, missionId }: { source: MissionSource; missionId: string }) =>
       completeMission(source, missionId),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: MISSIONS_QUERY_KEY }),
+  });
+}
+
+/** 추천 미션 삭제 후 목록을 갱신한다. */
+export function useDeleteRecommendedMission() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ missionId }: { missionId: string }) => deleteRecommendedMission(missionId),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: MISSIONS_QUERY_KEY }),
   });
 }
