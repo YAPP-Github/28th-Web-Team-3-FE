@@ -2,21 +2,33 @@
 
 import { AmountField, BottomSheet, Button } from "@repo/ui";
 import { useEffect, useState } from "react";
-import { useUpdateSavings } from "../queries";
+import { calculateAdditionalTargetManwon } from "../lib/progress";
+import { useUpdateGoal, useUpdateSavings } from "../queries";
 
 interface SavingsInputSheetProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   /** 시트를 열 때 채워둘 현재 저축액(만원). */
   initialManwon: number;
+  currentMonthSavedManwon: number;
+  totalSavedManwon: number;
+  totalTargetManwon: number;
 }
 
 const onlyDigits = (value: string) => value.replace(/\D/g, "");
 
 /** 현재 저축액 입력 바텀시트 — PUT /api/goal/savings. */
-export function SavingsInputSheet({ open, onOpenChange, initialManwon }: SavingsInputSheetProps) {
+export function SavingsInputSheet({
+  open,
+  onOpenChange,
+  initialManwon,
+  currentMonthSavedManwon,
+  totalSavedManwon,
+  totalTargetManwon,
+}: SavingsInputSheetProps) {
   const [value, setValue] = useState(String(initialManwon));
-  const { mutate, isPending } = useUpdateSavings();
+  const updateSavings = useUpdateSavings();
+  const updateGoal = useUpdateGoal();
 
   // 시트는 항상 마운트 상태(open 제어)라 useState 초기값이 재오픈 시 반영되지 않는다.
   // 열 때마다 최신 프리필로 되돌린다.
@@ -26,7 +38,24 @@ export function SavingsInputSheet({ open, onOpenChange, initialManwon }: Savings
 
   function submit() {
     const savedAmountManwon = Number(onlyDigits(value));
-    mutate({ savedAmountManwon }, { onSuccess: () => onOpenChange(false) });
+    const nextTotalSavedManwon = totalSavedManwon - currentMonthSavedManwon + savedAmountManwon;
+    updateSavings.mutate(
+      { savedAmountManwon },
+      {
+        onSuccess: () => {
+          updateGoal.mutate(
+            {
+              targetAmountManwon: calculateAdditionalTargetManwon(
+                totalTargetManwon,
+                nextTotalSavedManwon,
+              ),
+              periodMonths: null,
+            },
+            { onSuccess: () => onOpenChange(false) },
+          );
+        },
+      },
+    );
   }
 
   return (
@@ -38,7 +67,11 @@ export function SavingsInputSheet({ open, onOpenChange, initialManwon }: Savings
           value={value}
           onChange={(event) => setValue(onlyDigits(event.target.value))}
         />
-        <Button size="cta" disabled={isPending || value === ""} onClick={submit}>
+        <Button
+          size="cta"
+          disabled={updateSavings.isPending || updateGoal.isPending || value === ""}
+          onClick={submit}
+        >
           완료
         </Button>
       </div>

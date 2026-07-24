@@ -14,6 +14,7 @@ import {
   emptyAnswerValue,
   findNumericRule,
   frequencyUnitSuffix,
+  isFrequencyRangeAnswered,
   isKeyedNumberAnswered,
   isMultiChoiceAnswered,
   isNumberAnswered,
@@ -165,6 +166,8 @@ export function MissionSurveyQuestions({
         );
       case "NUMBER":
         return isNumberAnswered(value);
+      case "FREQUENCY_RANGE":
+        return isFrequencyRangeAnswered(value);
       case "KEYED_NUMBER": {
         const keyField = MISSION_SURVEY_KEYED_NUMBER_KEY_FIELDS[question.code] ?? "key";
         const entries = Array.isArray(value) ? (value as Record<string, unknown>[]) : [];
@@ -250,6 +253,17 @@ export function MissionSurveyQuestions({
               />
             );
           })()}
+
+        {question.answerType === "FREQUENCY_RANGE" && (
+          <OptionPillList
+            options={(question.frequencyRangeOptions ?? []).map((option) => ({
+              code: option.code,
+              label: option.label,
+            }))}
+            selectedCodes={typeof value === "string" && value ? [value] : []}
+            onToggle={(code) => setField(fieldPath, code)}
+          />
+        )}
 
         {question.answerType === "KEYED_NUMBER" &&
           dependencyQuestion &&

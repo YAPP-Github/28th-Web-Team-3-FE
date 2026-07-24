@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   findNumericRule,
   frequencyUnitSuffix,
+  isFrequencyRangeAnswered,
   isKeyedNumberAnswered,
   isMultiChoiceAnswered,
   isNumberAnswered,
@@ -91,6 +92,12 @@ describe("답변 완료 판정", () => {
     expect(isNumberAnswered(3)).toBe(true);
     expect(isNumberAnswered(undefined)).toBe(false);
     expect(isNumberAnswered(1.5)).toBe(false);
+  });
+
+  it("빈도 범위는 범위 코드가 있어야 완료다", () => {
+    expect(isFrequencyRangeAnswered("ONE_TO_TWO")).toBe(true);
+    expect(isFrequencyRangeAnswered("")).toBe(false);
+    expect(isFrequencyRangeAnswered(null)).toBe(false);
   });
 
   it("주관식은 textRule 길이 범위를 만족해야 유효하다", () => {

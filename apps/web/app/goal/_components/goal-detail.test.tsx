@@ -13,12 +13,13 @@ const MOCK_GOAL: GoalStatus = {
   thisMonth: { targetManwon: 82, savedManwon: 67, progressPercent: 82, dDay: 12 },
 };
 
-const mutation = { mutate: vi.fn(), isPending: false };
+const savingsMutation = { mutate: vi.fn(), isPending: false };
+const goalMutation = { mutate: vi.fn(), isPending: false };
 
 vi.mock("../queries", () => ({
   useGoalStatus: () => ({ data: MOCK_GOAL, isPending: false, isError: false }),
-  useUpdateSavings: () => mutation,
-  useUpdateGoal: () => mutation,
+  useUpdateSavings: () => savingsMutation,
+  useUpdateGoal: () => goalMutation,
 }));
 
 vi.mock("@/lib/onboarding", () => ({
@@ -84,16 +85,39 @@ describe("GoalDetail", () => {
     });
     fireEvent.click(screen.getByRole("button", { name: "완료" }));
 
-    expect(mutation.mutate).toHaveBeenCalledWith(
+    expect(goalMutation.mutate).toHaveBeenCalledWith(
       { targetAmountManwon: 4050, periodMonths: 16 },
       expect.objectContaining({ onSuccess: expect.any(Function) }),
     );
 
-    const [, options] = mutation.mutate.mock.calls.at(-1) ?? [];
+    const [, options] = goalMutation.mutate.mock.calls.at(-1) ?? [];
     await options.onSuccess();
     expect(patchOnboardingProfile).toHaveBeenCalledWith({
       goalPeriodMonths: 16,
       monthlySalaryManwon: 650,
     });
+  });
+
+  it("현재저축액 입력 후 전체 목표금액이 유지되도록 추가 목표액을 보정한다", () => {
+    render(<GoalDetail />);
+
+    fireEvent.click(screen.getByRole("button", { name: "현재 저축액 입력" }));
+    fireEvent.change(screen.getByRole("textbox", { name: "저축액만원" }), {
+      target: { value: "100" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "완료" }));
+
+    expect(savingsMutation.mutate).toHaveBeenCalledWith(
+      { savedAmountManwon: 100 },
+      expect.objectContaining({ onSuccess: expect.any(Function) }),
+    );
+
+    const [, savingsOptions] = savingsMutation.mutate.mock.calls.at(-1) ?? [];
+    savingsOptions.onSuccess();
+
+    expect(goalMutation.mutate).toHaveBeenCalledWith(
+      { targetAmountManwon: 3017, periodMonths: null },
+      expect.objectContaining({ onSuccess: expect.any(Function) }),
+    );
   });
 });
