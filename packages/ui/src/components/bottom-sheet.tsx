@@ -2,6 +2,7 @@
 
 import * as DialogPrimitive from "@radix-ui/react-dialog";
 import type * as React from "react";
+import { useEffect, useState } from "react";
 import { cn } from "../lib/utils";
 
 export interface BottomSheetProps extends React.ComponentProps<typeof DialogPrimitive.Root> {
@@ -26,6 +27,26 @@ export function BottomSheet({
   contentClassName,
   ...rootProps
 }: BottomSheetProps) {
+  const [keyboardInset, setKeyboardInset] = useState(0);
+
+  useEffect(() => {
+    const viewport = window.visualViewport;
+    if (!viewport) return;
+
+    function updateKeyboardInset() {
+      if (!viewport) return;
+      setKeyboardInset(Math.max(0, window.innerHeight - viewport.height - viewport.offsetTop));
+    }
+
+    updateKeyboardInset();
+    viewport.addEventListener("resize", updateKeyboardInset);
+    viewport.addEventListener("scroll", updateKeyboardInset);
+    return () => {
+      viewport.removeEventListener("resize", updateKeyboardInset);
+      viewport.removeEventListener("scroll", updateKeyboardInset);
+    };
+  }, []);
+
   return (
     <DialogPrimitive.Root {...rootProps}>
       {trigger && <DialogPrimitive.Trigger asChild>{trigger}</DialogPrimitive.Trigger>}
@@ -34,9 +55,15 @@ export function BottomSheet({
         <DialogPrimitive.Content
           aria-describedby={undefined}
           className={cn(
-            "fixed inset-x-0 bottom-0 z-50 rounded-t-[20px] bg-background focus:outline-none",
+            "fixed inset-x-0 bottom-0 z-50 max-h-[calc(100dvh-var(--keyboard-inset,0px))] overflow-y-auto rounded-t-[20px] bg-background focus:outline-none",
             contentClassName,
           )}
+          style={
+            {
+              "--keyboard-inset": `${keyboardInset}px`,
+              transform: `translateY(-${keyboardInset}px)`,
+            } as React.CSSProperties
+          }
         >
           <div className="flex justify-center pt-3 pb-2">
             <div className="h-1 w-9 rounded-full bg-gray-100" aria-hidden />
