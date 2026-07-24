@@ -73,7 +73,7 @@ export function GoalDetail() {
 
         <MonthlyGoalCard
           currentLabel={formatManwon(thisMonth.savedManwon)}
-          ddayLabel={formatDday(thisMonth.dday)}
+          ddayLabel={formatDday(thisMonth.dDay)}
           percent={thisMonth.progressPercent}
           targetLabel={formatManwon(thisMonth.targetManwon)}
           onSaveClick={() => setSavingsOpen(true)}

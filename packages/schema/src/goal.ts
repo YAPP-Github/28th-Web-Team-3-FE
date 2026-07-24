@@ -10,7 +10,7 @@ export const thisMonthSchema = z.object({
   targetManwon: z.number().int(),
   savedManwon: z.number().int(),
   progressPercent: z.number().int(),
-  dday: z.number().int(),
+  dDay: z.number().int(),
 });
 
 /** GET /api/goal 응답. */

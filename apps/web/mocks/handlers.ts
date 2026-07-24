@@ -12,7 +12,7 @@ const goal: GoalStatus = {
     targetManwon: 82,
     savedManwon: 67,
     progressPercent: 82,
-    dday: 12,
+    dDay: 12,
   },
 };
 

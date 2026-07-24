@@ -10,7 +10,7 @@ const MOCK_GOAL: GoalStatus = {
   progressPercent: 39,
   usageMonths: 8,
   deadlineDDay: 486,
-  thisMonth: { targetManwon: 82, savedManwon: 67, progressPercent: 82, dday: 12 },
+  thisMonth: { targetManwon: 82, savedManwon: 67, progressPercent: 82, dDay: 12 },
 };
 
 const mutation = { mutate: vi.fn(), isPending: false };
