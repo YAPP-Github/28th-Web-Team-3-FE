@@ -2,7 +2,7 @@
 
 import type { OnboardingReport } from "@repo/schema/onboarding-api";
 import { ButtonGroup } from "@repo/ui";
-import { Sparkles } from "lucide-react";
+import AppleIntelIcon from "@repo/ui/svg/apple-intel.svg";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { SavingsComparisonChart } from "@/app/onboarding/_components/savings-comparison-chart";
@@ -84,7 +84,7 @@ export default function OnboardingResultPage() {
 
       <section className="mt-3 rounded-[14px] bg-gradient-to-r from-[#e6ebff] to-[#e2f8ff] p-5">
         <div className="flex gap-2">
-          <Sparkles aria-hidden="true" className="mt-0.5 size-4 shrink-0 text-blue-500" />
+          <AppleIntelIcon aria-hidden="true" className="mt-0.5 size-[17px] shrink-0" />
           <p className="break-words text-body-b2-500 text-gray-800">{report.diagnosis.message}</p>
         </div>
       </section>
