@@ -29,6 +29,19 @@ const MOCK_MISSIONS: Mission[] = [
     status: "ACTIVE",
     weekEndsAt: "2099-01-01T00:00:00Z",
   },
+  {
+    id: "m3",
+    source: "RECOMMENDED",
+    category: "HOBBY",
+    title: "취미 구독 점검하기",
+    targetCount: 1,
+    targetUnit: "TIMES_PER_WEEK",
+    estimatedSavingsWon: 4000,
+    savingsEstimateVersion: "V1",
+    savingsLabel: "약 4,000원 절약 예상",
+    status: "ACTIVE",
+    weekEndsAt: "2099-01-01T00:00:00Z",
+  },
 ];
 
 const mutation = { isPending: false, mutate: vi.fn() };
@@ -52,6 +65,9 @@ describe("WeeklyMissionSection", () => {
     fireEvent.click(screen.getByRole("button", { name: "교통" }));
     expect(screen.getByText("가까운 거리 걸어다니기 1회")).toBeInTheDocument();
     expect(screen.queryByText("이번 주 배달음식 2회 이하로 주문")).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "취미" }));
+    expect(screen.getByText("취미 구독 점검하기")).toBeInTheDocument();
   });
 
   it("미션이 없으면 추가 CTA를 표시한다", () => {

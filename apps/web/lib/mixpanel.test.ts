@@ -23,7 +23,13 @@ describe("mixpanel", () => {
     expect(init).toHaveBeenCalledOnce();
     expect(init).toHaveBeenCalledWith(
       "mixpanel-token",
-      expect.objectContaining({ autocapture: false, ignore_dnt: false }),
+      expect.objectContaining({
+        autocapture: false,
+        ignore_dnt: false,
+        record_mask_all_inputs: true,
+        record_mask_all_text: true,
+        record_sessions_percent: 100,
+      }),
     );
     expect(track).toHaveBeenCalledTimes(2);
     expect(track).toHaveBeenNthCalledWith(1, "Page Viewed", { path: "/" });
@@ -38,5 +44,29 @@ describe("mixpanel", () => {
 
     expect(init).not.toHaveBeenCalled();
     expect(track).not.toHaveBeenCalled();
+  });
+
+  it("Replay 샘플링 비율을 환경변수로 조정한다", async () => {
+    vi.stubEnv("NEXT_PUBLIC_MIXPANEL_REPLAY_SAMPLE_PERCENT", "25");
+    const { trackPageView } = await import("./mixpanel");
+
+    trackPageView("/");
+
+    expect(init).toHaveBeenCalledWith(
+      "mixpanel-token",
+      expect.objectContaining({ record_sessions_percent: 25 }),
+    );
+  });
+
+  it("Replay 샘플링 비율은 0~100으로 제한한다", async () => {
+    vi.stubEnv("NEXT_PUBLIC_MIXPANEL_REPLAY_SAMPLE_PERCENT", "150");
+    const { trackPageView } = await import("./mixpanel");
+
+    trackPageView("/");
+
+    expect(init).toHaveBeenCalledWith(
+      "mixpanel-token",
+      expect.objectContaining({ record_sessions_percent: 100 }),
+    );
   });
 });
