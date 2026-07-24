@@ -9,7 +9,8 @@ import { getOnboardingProfile } from "@/lib/onboarding";
 import { FinancialTipList } from "./_components/financial-tip-list";
 import { GoalTrackerRow } from "./_components/goal-tracker-row";
 import { WeeklyMissionSection } from "./_components/weekly-mission-section";
-import { FINANCIAL_TIPS, HOME_MISSIONS } from "./constants/home";
+import { FINANCIAL_TIPS } from "./benefits/constants";
+import { HOME_MISSIONS } from "./constants/home";
 
 export default function HomePage() {
   const router = useRouter();

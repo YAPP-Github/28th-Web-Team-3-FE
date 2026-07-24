@@ -1,4 +1,4 @@
-import type { Benefit, BenefitCategory, BenefitItemCategory } from "./types";
+import type { Benefit, BenefitCategory, BenefitItemCategory, FinancialTip } from "./types";
 
 export const BENEFIT_CATEGORIES: readonly { value: BenefitCategory; label: string }[] = [
   { value: "all", label: "전체" },
@@ -152,3 +152,24 @@ export const BENEFITS = [
     officialUrl: "https://www.nts.go.kr/nts/cm/cntnts/cntntsView.do?cntntsId=239025&mi=40634",
   },
 ] satisfies Benefit[];
+
+export const FINANCIAL_TIPS = [
+  {
+    id: "youth-future-savings",
+    category: "정부 정책",
+    title: "20대 필수, 청년 미래적금 가입조건 정리",
+    summary: "최대 2,255만원 수령 가능",
+  },
+  {
+    id: "delivery-saving",
+    category: "절약 꿀팁",
+    title: "배달비만 줄여도 쏠쏠해요",
+    summary: "1인 가구 식비 절약법",
+  },
+  {
+    id: "subscription-saving",
+    category: "고정비 관리",
+    title: "안 쓰는 구독은 이번 달에 정리해요",
+    summary: "월 1만원부터 모아보기",
+  },
+] satisfies readonly FinancialTip[];

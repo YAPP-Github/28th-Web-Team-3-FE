@@ -1,4 +1,4 @@
-import type { FinancialTip } from "@/app/(tabs)/constants/home";
+import type { FinancialTip } from "@/app/(tabs)/benefits/types";
 import { SectionHeader } from "./section-header";
 
 interface FinancialTipListProps {
