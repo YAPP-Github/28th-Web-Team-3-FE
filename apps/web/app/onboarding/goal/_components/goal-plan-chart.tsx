@@ -16,7 +16,7 @@ export function GoalPlanChart({ plan }: { plan: GoalPlan }) {
       aria-label={`기간별 목표 예상 금액: ${plan.checkpoints
         .map((point) => `${point.month}개월 ${formatAmount(point.amountManwon)}`)
         .join(", ")}`}
-      className="flex h-[221px] items-end justify-center gap-[18px]"
+      className="flex h-[249px] items-end justify-center gap-[18px]"
       role="img"
     >
       {plan.checkpoints.map((point, index) => {

@@ -130,7 +130,7 @@ export default function OnboardingGoalPage() {
             </div>
           </section>
 
-          <section className="flex flex-col gap-4" aria-labelledby="goal-chart-title">
+          <section className="flex flex-col gap-[10px]" aria-labelledby="goal-chart-title">
             <div className="flex flex-col gap-1 px-5">
               <h2 id="goal-chart-title" className="text-pretty text-headline-h2-700 text-gray-900">
                 기간별 목표 예상 금액
