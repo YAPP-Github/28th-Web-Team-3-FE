@@ -31,7 +31,7 @@ const MOCK_MISSIONS: Mission[] = [
   },
 ];
 
-const mutation = { mutate: vi.fn() };
+const mutation = { isPending: false, mutate: vi.fn() };
 let mockData: Mission[] = MOCK_MISSIONS;
 
 vi.mock("@/app/(tabs)/mission/queries", () => ({
@@ -62,6 +62,22 @@ describe("WeeklyMissionSection", () => {
     expect(screen.getByRole("link", { name: "5,000만원 달성을 위한 미션 추가" })).toHaveAttribute(
       "href",
       "/mission/new",
+    );
+  });
+
+  it("체크 아이콘 확인 모달에서 완료를 요청한다", () => {
+    mockData = MOCK_MISSIONS;
+    render(<WeeklyMissionSection />);
+
+    const [completeButton] = screen.getAllByRole("button", { name: "미션 완료" });
+    if (!completeButton) throw new Error("미션 완료 버튼을 찾을 수 없습니다.");
+    fireEvent.click(completeButton);
+    expect(screen.getByRole("dialog", { name: "미션을 완료할까요?" })).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "완료" }));
+    expect(mutation.mutate).toHaveBeenCalledWith(
+      { source: "RECOMMENDED", missionId: "m1" },
+      expect.objectContaining({ onSuccess: expect.any(Function) }),
     );
   });
 });

@@ -44,7 +44,7 @@ const MOCK_MISSIONS: Mission[] = [
   },
 ];
 
-const completeMutation = { mutate: vi.fn() };
+const completeMutation = { isPending: false, mutate: vi.fn() };
 const deleteMutation = { isPending: false, mutate: vi.fn(), variables: undefined };
 
 vi.mock("./queries", () => ({
@@ -70,15 +70,21 @@ describe("MissionPage", () => {
     expect(screen.queryByText("불필요한 구독 해지 1회")).not.toBeInTheDocument();
   });
 
-  it("체크 아이콘으로 미션 완료를 요청한다", () => {
+  it("체크 아이콘 확인 모달에서 완료를 요청한다", () => {
     render(<MissionPage />);
 
     fireEvent.click(screen.getByRole("tab", { name: "식비" }));
     fireEvent.click(screen.getByRole("button", { name: "미션 완료" }));
-    expect(completeMutation.mutate).toHaveBeenCalledWith({
-      source: "RECOMMENDED",
-      missionId: "meal-1",
-    });
+    expect(screen.getByRole("dialog", { name: "미션을 완료할까요?" })).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "완료" }));
+    expect(completeMutation.mutate).toHaveBeenCalledWith(
+      {
+        source: "RECOMMENDED",
+        missionId: "meal-1",
+      },
+      expect.objectContaining({ onSuccess: expect.any(Function) }),
+    );
   });
 
   it("펼친 추천 미션에서 삭제를 요청한다", () => {
