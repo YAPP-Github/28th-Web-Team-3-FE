@@ -4,17 +4,15 @@ import { Slider } from "@repo/ui";
 import { MAX_NET_WORTH_SLIDER_VALUE } from "@/app/onboarding/constants/amounts";
 
 interface NetWorthSliderProps {
-  netWorthAmount: string;
-  onNetWorthAmountChange: (netWorthAmount: string) => void;
+  netWorthAmount: number;
+  onNetWorthAmountChange: (netWorthAmount: number) => void;
 }
 
-function formatNetWorthAmount(netWorthAmount: string) {
-  return BigInt(netWorthAmount || "0").toLocaleString("ko-KR");
+function formatNetWorthAmount(netWorthAmount: number) {
+  return netWorthAmount.toLocaleString("ko-KR");
 }
 
 export function NetWorthSlider({ netWorthAmount, onNetWorthAmountChange }: NetWorthSliderProps) {
-  const exceedsSliderMaximum = BigInt(netWorthAmount || "0") > BigInt(MAX_NET_WORTH_SLIDER_VALUE);
-
   return (
     <div className="flex flex-col gap-4">
       <div className="flex flex-col gap-1">
@@ -30,31 +28,16 @@ export function NetWorthSlider({ netWorthAmount, onNetWorthAmountChange }: NetWo
           <span>0</span>
           <span>1억원</span>
         </div>
-        {exceedsSliderMaximum ? (
-          <button
-            aria-label="순자산 슬라이더 활성화"
-            className="flex h-8 w-full items-center"
-            type="button"
-            onClick={() => onNetWorthAmountChange(String(MAX_NET_WORTH_SLIDER_VALUE))}
-          >
-            <span className="h-1 w-full overflow-hidden rounded-full bg-gray-100">
-              <span className="block h-full w-full bg-primary" />
-            </span>
-          </button>
-        ) : (
-          <Slider
-            max={MAX_NET_WORTH_SLIDER_VALUE}
-            min={0}
-            step={100}
-            thumbLabels={["순자산"]}
-            value={[Number(netWorthAmount || 0)]}
-            onValueChange={([nextNetWorthAmount]) => {
-              if (nextNetWorthAmount !== undefined) {
-                onNetWorthAmountChange(String(nextNetWorthAmount));
-              }
-            }}
-          />
-        )}
+        <Slider
+          max={MAX_NET_WORTH_SLIDER_VALUE}
+          min={0}
+          step={100}
+          thumbLabels={["순자산"]}
+          value={[netWorthAmount]}
+          onValueChange={([nextNetWorthAmount]) => {
+            if (nextNetWorthAmount !== undefined) onNetWorthAmountChange(nextNetWorthAmount);
+          }}
+        />
       </div>
     </div>
   );

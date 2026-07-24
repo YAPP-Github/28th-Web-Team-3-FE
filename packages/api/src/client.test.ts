@@ -24,6 +24,16 @@ beforeEach(() => {
 });
 
 describe("createApiClient + tokenProvider", () => {
+  it("baseUrl에 경로가 있어도 trailing slash 없이 상대 경로를 이어 붙인다", async () => {
+    fetchMock.mockResolvedValue(jsonResponse({ ok: true }));
+    const api = createApiClient({ baseUrl: "https://api.test/api" });
+
+    await api.get("onboarding/profile").json();
+
+    const sent = fetchMock.mock.calls[0]?.[0] as Request;
+    expect(sent.url).toBe("https://api.test/api/onboarding/profile");
+  });
+
   it("모든 요청에 Bearer access token을 붙인다", async () => {
     fetchMock.mockResolvedValue(jsonResponse({ ok: true }));
     const api = createApiClient({ baseUrl: "https://api.test", tokenProvider: makeProvider() });

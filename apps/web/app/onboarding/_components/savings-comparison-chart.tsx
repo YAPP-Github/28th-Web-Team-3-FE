@@ -1,63 +1,82 @@
 "use client";
 
-import { type ChartConfig, ChartContainer } from "@repo/ui";
-import { Bar, BarChart, Cell, LabelList, ReferenceLine, XAxis, YAxis } from "recharts";
-
 interface SavingsComparisonChartProps {
   currentEstimate: number;
   improvedEstimate: number;
 }
 
-const chartConfig = {
-  current: { color: "var(--color-gray-200)", label: "예상 금액" },
-  improved: { color: "var(--color-gray-900)", label: "서비스 이용 시" },
-} satisfies ChartConfig;
+const MAX_BAR_HEIGHT = 108;
+const MIN_VISUAL_GAP = 27;
+const MAX_VISUAL_GAP = 54;
 
 function formatAmount(amount: number) {
   return `${Math.round(amount).toLocaleString("ko-KR")}만원`;
+}
+
+function getVisualHeights(currentEstimate: number, improvedEstimate: number) {
+  const maxEstimate = Math.max(currentEstimate, improvedEstimate, 1);
+  const difference = Math.abs(improvedEstimate - currentEstimate);
+  const proportionalGap = Math.round((difference / maxEstimate) * MAX_BAR_HEIGHT * 4);
+  const visualGap =
+    difference === 0 ? 0 : Math.min(MAX_VISUAL_GAP, Math.max(MIN_VISUAL_GAP, proportionalGap));
+
+  return improvedEstimate >= currentEstimate
+    ? { currentHeight: MAX_BAR_HEIGHT - visualGap, improvedHeight: MAX_BAR_HEIGHT }
+    : { currentHeight: MAX_BAR_HEIGHT, improvedHeight: MAX_BAR_HEIGHT - visualGap };
 }
 
 export function SavingsComparisonChart({
   currentEstimate,
   improvedEstimate,
 }: SavingsComparisonChartProps) {
-  const chartData = [
-    { amount: currentEstimate, label: chartConfig.current.label, type: "current" },
-    { amount: improvedEstimate, label: chartConfig.improved.label, type: "improved" },
-  ];
+  const { currentHeight, improvedHeight } = getVisualHeights(currentEstimate, improvedEstimate);
 
   return (
-    <ChartContainer
-      aria-label="예상 자산 비교 차트"
-      className="h-44 w-full"
-      config={chartConfig}
+    <div
+      aria-label={`예상 자산 비교: 예상 금액 ${formatAmount(currentEstimate)}, 서비스 이용 시 ${formatAmount(improvedEstimate)}`}
+      className="relative mt-5 h-44 w-full"
       role="img"
     >
-      <BarChart
-        accessibilityLayer
-        data={chartData}
-        margin={{ bottom: 0, left: 0, right: 0, top: 34 }}
-      >
-        <YAxis domain={[0, "dataMax"]} hide />
-        <XAxis
-          axisLine={{ stroke: "var(--color-gray-400)", strokeDasharray: "3 3" }}
-          dataKey="label"
-          tick={{ fill: "var(--color-gray-600)", fontSize: 16, fontWeight: 500 }}
-          tickLine={false}
+      <div className="absolute inset-x-0 top-0 h-[136px] border-gray-400 border-b border-dashed">
+        <div
+          aria-hidden="true"
+          className="absolute inset-x-0 z-10 h-0.5 bg-blue-300"
+          style={{ bottom: currentHeight }}
         />
-        <ReferenceLine stroke="var(--color-blue-300)" strokeWidth={2} y={currentEstimate} />
-        <Bar dataKey="amount" maxBarSize={55} radius={[6, 6, 0, 0]}>
-          <LabelList
-            dataKey="amount"
-            formatter={(value) => formatAmount(Number(value))}
-            position="top"
-            style={{ fill: "var(--color-gray-600)", fontSize: 16, fontWeight: 700 }}
-          />
-          {chartData.map((item) => (
-            <Cell key={item.type} fill={`var(--color-${item.type})`} />
-          ))}
-        </Bar>
-      </BarChart>
-    </ChartContainer>
+
+        <div className="absolute inset-0 flex items-end justify-center gap-8">
+          <div className="flex h-full w-[55px] flex-col items-center justify-end">
+            <span className="mb-1 shrink-0 whitespace-nowrap text-body-b1-500 text-gray-600 tabular-nums">
+              {formatAmount(currentEstimate)}
+            </span>
+            <div
+              className="w-[55px] shrink-0 rounded-t-md bg-gradient-to-b from-gray-200 to-gray-100"
+              data-testid="current-savings-bar"
+              style={{ height: currentHeight }}
+            />
+          </div>
+
+          <div className="flex h-full w-[55px] flex-col items-center justify-end">
+            <span className="mb-1 shrink-0 whitespace-nowrap text-body-b1-700 text-gray-600 tabular-nums">
+              {formatAmount(improvedEstimate)}
+            </span>
+            <div
+              className="w-[55px] shrink-0 rounded-t-md bg-gray-900"
+              data-testid="improved-savings-bar"
+              style={{ height: improvedHeight }}
+            />
+          </div>
+        </div>
+      </div>
+
+      <div className="absolute inset-x-0 top-[142px] flex justify-center gap-8">
+        <span className="w-[55px] whitespace-nowrap text-center text-body-b1-500 text-gray-600">
+          예상 금액
+        </span>
+        <span className="w-[55px] whitespace-nowrap text-center text-body-b1-700 text-gray-600">
+          서비스 이용시
+        </span>
+      </div>
+    </div>
   );
 }

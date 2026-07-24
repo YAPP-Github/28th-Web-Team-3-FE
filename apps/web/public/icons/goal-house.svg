@@ -1,0 +1,10 @@
+<svg width="42.2233" height="44.4698" viewBox="0 0 42.2233 44.4698" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <title>목표 금액</title>
+  <path d="M19.6807 0.620154C20.6621 -0.214963 22.1072 -0.205812 23.0772 0.642615L41.3301 16.6094C43.137 18.19 42.0189 21.1661 39.6182 21.1661H33.6094L35.3057 41.6553C35.4311 43.1705 34.2352 44.4698 32.7149 44.4698H9.3633C7.84295 44.4698 6.64706 43.1705 6.77248 41.6553L8.46877 21.1661H2.60451C0.186624 21.1659 -0.921341 18.1541 0.919943 16.587L19.6807 0.620154Z" fill="url(#goal-house-gradient)"/>
+  <defs>
+    <linearGradient id="goal-house-gradient" x1="29.5" y1="41.333" x2="23" y2="11.833" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#8ADAFF"/>
+      <stop offset="1" stop-color="#00AEFF"/>
+    </linearGradient>
+  </defs>
+</svg>

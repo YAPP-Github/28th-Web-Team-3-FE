@@ -1,11 +1,16 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { OnboardingFormProvider } from "@/app/onboarding/(questions)/_components/onboarding-form-provider";
+import { patchOnboardingProfile } from "@/lib/onboarding";
 import MonthlyIncomeAndSavingsOnboardingPage from "./page";
 
 const pushMock = vi.fn();
 
 vi.mock("next/navigation", () => ({ useRouter: () => ({ push: pushMock }) }));
+vi.mock("@/lib/onboarding", () => ({
+  getOnboardingProfile: vi.fn().mockRejectedValue(new Error("test")),
+  patchOnboardingProfile: vi.fn().mockResolvedValue({}),
+}));
 
 function renderMonthOnboardingPage() {
   return render(
@@ -17,7 +22,7 @@ function renderMonthOnboardingPage() {
 
 describe("MonthlyIncomeAndSavingsOnboardingPage", () => {
   beforeEach(() => {
-    pushMock.mockClear();
+    vi.clearAllMocks();
   });
 
   it("금액을 입력하기 전에는 다음 버튼이 비활성화된다", () => {
@@ -51,14 +56,50 @@ describe("MonthlyIncomeAndSavingsOnboardingPage", () => {
     expect(pushMock).toHaveBeenCalledWith("/onboarding/age");
   });
 
-  it("직접 입력 금액은 9,999,999만원을 넘을 수 없다", () => {
+  it("직접 입력 금액은 백엔드 상한 650만원을 넘을 수 없다", () => {
     renderMonthOnboardingPage();
 
     fireEvent.click(screen.getByRole("button", { name: "직접 입력" }));
     fireEvent.change(screen.getByRole("textbox", { name: "월급만원" }), {
-      target: { value: "10000000" },
+      target: { value: "700" },
     });
 
-    expect(screen.getByRole("textbox", { name: "월급만원" })).toHaveValue("9999999");
+    expect(screen.getByRole("textbox", { name: "월급만원" })).toHaveValue("650");
+  });
+
+  it("다음 단계에서 월급과 저축액 필드만 저장한다", async () => {
+    renderMonthOnboardingPage();
+    fireEvent.click(screen.getByRole("button", { name: "직접 입력" }));
+    fireEvent.change(screen.getByRole("textbox", { name: "월급만원" }), {
+      target: { value: "300" },
+    });
+    fireEvent.change(screen.getByRole("textbox", { name: "월 저축액만원" }), {
+      target: { value: "100" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "완료" }));
+    fireEvent.click(screen.getByRole("button", { name: "다음" }));
+
+    await waitFor(() =>
+      expect(patchOnboardingProfile).toHaveBeenCalledWith({
+        monthlySalaryManwon: 300,
+        monthlySavingManwon: 100,
+      }),
+    );
+  });
+
+  it("저축액이 월급보다 크면 슬라이더 아래에 오류를 표시한다", async () => {
+    renderMonthOnboardingPage();
+    fireEvent.click(screen.getByRole("button", { name: "직접 입력" }));
+    fireEvent.change(screen.getByRole("textbox", { name: "월급만원" }), {
+      target: { value: "100" },
+    });
+    fireEvent.change(screen.getByRole("textbox", { name: "월 저축액만원" }), {
+      target: { value: "200" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "완료" }));
+
+    const error = await screen.findByText("월 저축액은 월급보다 클 수 없어요.");
+    expect(error).toHaveClass("text-body-b2-500", "text-error");
+    expect(screen.getByRole("button", { name: "다음" })).toBeDisabled();
   });
 });
