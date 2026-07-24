@@ -10,12 +10,10 @@ export const metadata: Metadata = {
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {
+  const app = <QueryProvider>{children}</QueryProvider>;
   return (
     <html lang="ko">
-      <body>
-        {process.env.NODE_ENV === "development" && <MSWProvider />}
-        <QueryProvider>{children}</QueryProvider>
-      </body>
+      <body>{process.env.NODE_ENV === "development" ? <MSWProvider>{app}</MSWProvider> : app}</body>
     </html>
   );
 }
