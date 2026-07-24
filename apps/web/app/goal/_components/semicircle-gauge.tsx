@@ -28,14 +28,17 @@ export function SemicircleGauge({ percent, savedLabel, minLabel, maxLabel }: Sem
             strokeLinecap="round"
             strokeWidth={16}
           />
-          <path
-            d={ARC_PATH}
-            pathLength={100}
-            stroke="var(--color-blue-500)"
-            strokeDasharray={`${percent} 100`}
-            strokeLinecap="round"
-            strokeWidth={16}
-          />
+          {/* percent 0이면 그리지 않는다 — 길이 0 대시 + round 캡이 시작점에 점으로 남는다. */}
+          {percent > 0 && (
+            <path
+              d={ARC_PATH}
+              pathLength={100}
+              stroke="var(--color-blue-500)"
+              strokeDasharray={`${percent} 100`}
+              strokeLinecap="round"
+              strokeWidth={16}
+            />
+          )}
         </svg>
 
         <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 pt-6">

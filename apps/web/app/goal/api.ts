@@ -2,7 +2,9 @@ import {
   type GoalStatus,
   type GoalUpdateRequest,
   goalStatusSchema,
+  goalUpdateRequestSchema,
   type SavingRequest,
+  savingRequestSchema,
 } from "@repo/schema/goal";
 import { api } from "@/lib/api";
 
@@ -16,12 +18,12 @@ export async function fetchGoalStatus(): Promise<GoalStatus> {
   return goalStatusSchema.parse(await api.get("api/goal").json());
 }
 
-/** PUT /api/goal/savings — 현재 저축액 입력. */
+/** PUT /api/goal/savings — 현재 저축액 입력. 전송 전 계약 검증. */
 export async function updateSavings(body: SavingRequest): Promise<void> {
-  await api.put("api/goal/savings", { json: body });
+  await api.put("api/goal/savings", { json: savingRequestSchema.parse(body) });
 }
 
-/** PATCH /api/goal — 목표 금액/기간 수정. */
+/** PATCH /api/goal — 목표 금액/기간 수정. 전송 전 계약 검증(양수 또는 null). */
 export async function updateGoal(body: GoalUpdateRequest): Promise<void> {
-  await api.patch("api/goal", { json: body });
+  await api.patch("api/goal", { json: goalUpdateRequestSchema.parse(body) });
 }

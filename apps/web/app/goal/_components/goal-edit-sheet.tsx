@@ -8,27 +8,30 @@ interface GoalEditSheetProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   initialTargetManwon: number;
-  initialPeriodMonths: number;
 }
 
 const onlyDigits = (value: string) => value.replace(/\D/g, "");
+/** 빈 입력·0은 "미변경"(null)으로 본다. PATCH 계약이 목표액/기간에 양수만 허용하기 때문. */
+const toNullableAmount = (value: string): number | null => {
+  const n = Number(onlyDigits(value));
+  return n > 0 ? n : null;
+};
 
-/** 목표 금액·기간 수정 바텀시트 — PATCH /api/goal. */
-export function GoalEditSheet({
-  open,
-  onOpenChange,
-  initialTargetManwon,
-  initialPeriodMonths,
-}: GoalEditSheetProps) {
+/**
+ * 목표 금액·기간 수정 바텀시트 — PATCH /api/goal.
+ * 목표 현황 응답에는 기간 필드가 없어 프리필 소스가 없다 — 기간은 빈칸으로 시작하고,
+ * 입력했을 때만 전송한다(미입력이면 null=미변경).
+ */
+export function GoalEditSheet({ open, onOpenChange, initialTargetManwon }: GoalEditSheetProps) {
   const [target, setTarget] = useState(String(initialTargetManwon));
-  const [period, setPeriod] = useState(String(initialPeriodMonths));
+  const [period, setPeriod] = useState("");
   const { mutate, isPending } = useUpdateGoal();
 
   function submit() {
     mutate(
       {
-        targetAmountManwon: target === "" ? null : Number(onlyDigits(target)),
-        periodMonths: period === "" ? null : Number(onlyDigits(period)),
+        targetAmountManwon: toNullableAmount(target),
+        periodMonths: toNullableAmount(period),
       },
       { onSuccess: () => onOpenChange(false) },
     );
@@ -44,7 +47,7 @@ export function GoalEditSheet({
           onChange={(event) => setTarget(onlyDigits(event.target.value))}
         />
         <AmountField
-          label="목표 기간"
+          label="목표 기간 (변경 시에만 입력)"
           unit="개월"
           inputMode="numeric"
           value={period}

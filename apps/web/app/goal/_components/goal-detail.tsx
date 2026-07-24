@@ -86,7 +86,6 @@ export function GoalDetail() {
         onOpenChange={setSavingsOpen}
       />
       <GoalEditSheet
-        initialPeriodMonths={0}
         initialTargetManwon={goal.targetAmountManwon}
         open={editOpen}
         onOpenChange={setEditOpen}
