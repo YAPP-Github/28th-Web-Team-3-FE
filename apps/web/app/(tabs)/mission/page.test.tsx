@@ -45,10 +45,12 @@ const MOCK_MISSIONS: Mission[] = [
 ];
 
 const completeMutation = { mutate: vi.fn() };
+const deleteMutation = { isPending: false, mutate: vi.fn(), variables: undefined };
 
 vi.mock("./queries", () => ({
   useMissions: () => ({ data: MOCK_MISSIONS, isPending: false, isError: false }),
   useCompleteMission: () => completeMutation,
+  useDeleteRecommendedMission: () => deleteMutation,
 }));
 
 import MissionPage from "./page";
@@ -79,13 +81,17 @@ describe("MissionPage", () => {
     });
   });
 
-  it("펼친 미션에서 준비 중인 삭제 버튼을 표시한다", () => {
+  it("펼친 추천 미션에서 삭제를 요청한다", () => {
     render(<MissionPage />);
 
     fireEvent.click(screen.getByRole("tab", { name: "식비" }));
     fireEvent.click(screen.getByRole("button", { name: /이번 주 배달음식/ }));
+    fireEvent.click(screen.getByRole("button", { name: "미션 삭제" }));
 
-    expect(screen.getByRole("button", { name: "삭제 (준비 중)" })).toBeDisabled();
+    expect(deleteMutation.mutate).toHaveBeenCalledWith(
+      { missionId: "meal-1" },
+      expect.objectContaining({ onSuccess: expect.any(Function) }),
+    );
   });
 
   it("플로팅 버튼으로 미션 추가 메뉴를 연다", () => {

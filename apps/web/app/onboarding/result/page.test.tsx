@@ -43,7 +43,7 @@ describe("OnboardingResultPage", () => {
 
   it("다음 버튼을 누르면 목표 선택 페이지로 이동한다", async () => {
     render(<OnboardingResultPage />);
-    fireEvent.click(await screen.findByRole("button", { name: "다음" }));
+    fireEvent.click(await screen.findByRole("button", { name: "목표금액 설정하기" }));
 
     expect(push).toHaveBeenCalledWith("/onboarding/goal");
   });

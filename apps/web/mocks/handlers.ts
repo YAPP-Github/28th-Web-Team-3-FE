@@ -31,7 +31,12 @@ export const handlers: RequestHandler[] = [
 
   http.put("*/api/goal/savings", async ({ request }) => {
     const { savedAmountManwon } = (await request.json()) as SavingRequest;
-    goal.totalSavedManwon = savedAmountManwon;
+    goal.totalSavedManwon = goal.totalSavedManwon - goal.thisMonth.savedManwon + savedAmountManwon;
+    goal.thisMonth.savedManwon = savedAmountManwon;
+    goal.thisMonth.progressPercent =
+      goal.thisMonth.targetManwon > 0
+        ? Math.min(100, Math.round((savedAmountManwon / goal.thisMonth.targetManwon) * 100))
+        : 0;
     recalcPercent();
     return new HttpResponse(null, { status: 204 });
   }),

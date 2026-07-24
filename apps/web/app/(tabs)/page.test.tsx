@@ -45,6 +45,7 @@ vi.mock("@/app/goal/queries", () => ({
     isPending: false,
     isError: false,
   }),
+  useUpdateSavings: () => ({ isPending: false, mutate: vi.fn() }),
 }));
 
 vi.mock("@/app/(tabs)/mission/queries", () => ({
@@ -72,6 +73,7 @@ describe("HomePage", () => {
     render(<HomePage />);
 
     expect(screen.getByRole("main")).toHaveAttribute("aria-busy", "true");
+    expect(screen.queryByRole("heading", { name: "홈" })).not.toBeInTheDocument();
     expect(await screen.findByRole("heading", { name: "홈" })).toBeInTheDocument();
     expect(screen.getByRole("link", { name: /5,000만원 모으기/ })).toHaveAttribute("href", "/goal");
     expect(screen.getByRole("heading", { name: "이번 주 미션" })).toBeInTheDocument();

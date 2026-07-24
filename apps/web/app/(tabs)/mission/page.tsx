@@ -8,11 +8,12 @@ import { MissionHero } from "./_components/mission-hero";
 import { MissionList } from "./_components/mission-list";
 import { MISSION_CATEGORY_LABELS, type MissionCategory } from "./constants/mission";
 import { calculateProgressPercent, formatWeekDday } from "./lib/format";
-import { useCompleteMission, useMissions } from "./queries";
+import { useCompleteMission, useDeleteRecommendedMission, useMissions } from "./queries";
 
 export default function MissionPage() {
   const { data: missions, isPending, isError } = useMissions();
   const completeMission = useCompleteMission();
+  const deleteMission = useDeleteRecommendedMission();
   const [activeCategory, setActiveCategory] = useState<MissionCategory>("전체");
   const [expandedMissionId, setExpandedMissionId] = useState<string | null>(null);
   const [isAddMenuOpen, setIsAddMenuOpen] = useState(false);
@@ -53,9 +54,16 @@ export default function MissionPage() {
         <MissionList
           expandedMissionId={expandedMissionId}
           completedMissions={visibleCompletedMissions}
+          deletingMissionId={deleteMission.isPending ? deleteMission.variables?.missionId : null}
           missions={visibleActiveMissions}
           onComplete={(mission) =>
             completeMission.mutate({ source: mission.source, missionId: mission.id })
+          }
+          onDelete={(mission) =>
+            deleteMission.mutate(
+              { missionId: mission.id },
+              { onSuccess: () => setExpandedMissionId(null) },
+            )
           }
           onToggle={(id) => setExpandedMissionId((expandedId) => (expandedId === id ? null : id))}
         />
