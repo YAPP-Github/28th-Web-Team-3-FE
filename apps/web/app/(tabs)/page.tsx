@@ -55,7 +55,7 @@ export default function HomePage() {
 
   return (
     <main className="flex flex-1 flex-col bg-gray-0">
-      <section className="flex flex-col gap-4 px-5 pt-6">
+      <section className="flex flex-col gap-4 px-5">
         <h1 className="py-2 text-title-t1-700 text-gray-900">홈</h1>
         <GoalTrackerRow />
         <MonthlyGoalCard

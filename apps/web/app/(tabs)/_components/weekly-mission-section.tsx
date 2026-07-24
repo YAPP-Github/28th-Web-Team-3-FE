@@ -2,7 +2,7 @@
 
 import { buttonVariants, cn } from "@repo/ui";
 import CoinIcon from "@repo/ui/svg/coin.svg";
-import { Check, ChevronDown, ChevronRight } from "lucide-react";
+import { Check, ChevronDown, ChevronRight, ChevronUp } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
@@ -19,6 +19,7 @@ interface WeeklyMissionSectionProps {
 
 export function WeeklyMissionSection({ missions }: WeeklyMissionSectionProps) {
   const [category, setCategory] = useState<HomeMissionCategory>("전체");
+  const [expandedId, setExpandedId] = useState<string | null>(null);
   const visibleMissions = missions.filter(
     (mission) => category === "전체" || mission.category === category,
   );
@@ -61,21 +62,44 @@ export function WeeklyMissionSection({ missions }: WeeklyMissionSectionProps) {
           </div>
 
           <div className="flex flex-col gap-3">
-            {visibleMissions.map((mission) => (
-              <Link
-                key={mission.id}
-                className="flex items-center gap-2 rounded-xl bg-gray-50 px-3.5 py-3.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-300"
-                href="/mission"
-              >
-                <span className="flex size-5 shrink-0 items-center justify-center rounded-full border border-gray-400">
-                  <Check aria-hidden="true" className="size-3 text-gray-400" />
-                </span>
-                <span className="min-w-0 flex-1 text-body-b1-700 text-gray-900">
-                  {mission.title}
-                </span>
-                <ChevronDown aria-hidden="true" className="size-5 shrink-0 text-gray-400" />
-              </Link>
-            ))}
+            {visibleMissions.map((mission) => {
+              const isExpanded = expandedId === mission.id;
+              return (
+                <div
+                  key={mission.id}
+                  className="flex flex-col gap-3 rounded-xl bg-gray-50 px-3.5 py-3.5"
+                >
+                  <button
+                    aria-expanded={isExpanded}
+                    className="flex w-full items-center gap-2 rounded-md text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-300"
+                    type="button"
+                    onClick={() =>
+                      setExpandedId((current) => (current === mission.id ? null : mission.id))
+                    }
+                  >
+                    <span className="flex size-5 shrink-0 items-center justify-center rounded-full border border-gray-400">
+                      <Check aria-hidden="true" className="size-3 text-gray-400" />
+                    </span>
+                    <span className="min-w-0 flex-1 text-body-b1-700 text-gray-900">
+                      {mission.title}
+                    </span>
+                    {isExpanded ? (
+                      <ChevronUp aria-hidden="true" className="size-5 shrink-0 text-gray-400" />
+                    ) : (
+                      <ChevronDown aria-hidden="true" className="size-5 shrink-0 text-gray-400" />
+                    )}
+                  </button>
+                  {isExpanded && mission.description ? (
+                    <p className="pl-7 text-body-b2-500 text-gray-700">
+                      <span className="mr-2 rounded bg-blue-100 px-1.5 py-1 text-blue-600">
+                        달성 시
+                      </span>
+                      {mission.description}
+                    </p>
+                  ) : null}
+                </div>
+              );
+            })}
           </div>
         </div>
       ) : (
@@ -86,7 +110,10 @@ export function WeeklyMissionSection({ missions }: WeeklyMissionSectionProps) {
             절약 미션을 추가하고 달성해보세요.
           </p>
           <Link
-            className={buttonVariants({ size: "cta", variant: "onboardingBack" })}
+            className={buttonVariants({
+              size: "cta",
+              variant: "onboardingBack",
+            })}
             href="/mission/new"
           >
             5,000만원 달성을 위한 미션 추가
@@ -101,25 +128,27 @@ function MissionProgress({ hasMissions }: { hasMissions: boolean }) {
   const progressLabel = hasMissions ? "10% 달성" : "0% 달성";
 
   return (
-    <div className="relative flex min-h-38 overflow-hidden bg-blue-50 px-5 py-5">
-      <div className="relative z-10 flex flex-col gap-1">
+    <div className="flex flex-row justify-between bg-gray-50 px-5 py-[10px]">
+      <div className="flex flex-col justify-center gap-2">
         <span className="w-fit rounded bg-gray-100 px-2 py-1 text-body-b2-700 text-gray-700">
           D-2
         </span>
-        <strong className="text-headline-h2-700 text-gray-900">{progressLabel}</strong>
-        <p className="text-body-b2-500 text-gray-700">미션을 추가하고 달성해보세요!</p>
+        <div className="flex flex-col gap-[1px]">
+          <strong className="text-title-t1-700 text-gray-900">{progressLabel}</strong>
+          <p className="text-caption-c1-500 text-gray-700">미션을 추가하고 달성해보세요!</p>
+        </div>
         <span className="flex items-center gap-1 text-body-b2-500 text-gray-800">
-          <CoinIcon aria-hidden="true" className="size-5" />
+          <CoinIcon aria-hidden="true" />
           +0
         </span>
       </div>
       <Image
         alt=""
         aria-hidden="true"
-        className="pointer-events-none absolute right-2 bottom-0 h-32 w-auto object-contain"
+        className="pointer-events-none h-32 w-auto object-contain"
         height={256}
         priority
-        src="/images/home-mission-coin.png"
+        src="/images/mission-home.webp"
         width={384}
       />
     </div>
