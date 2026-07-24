@@ -57,6 +57,10 @@ export function isSingleChoiceAnswered(value: unknown): boolean {
   return typeof value === "string" && value.length > 0;
 }
 
+export function isFrequencyRangeAnswered(value: unknown): boolean {
+  return isSingleChoiceAnswered(value);
+}
+
 export function isMultiChoiceAnswered(
   values: readonly string[],
   minSelections: number | null,

@@ -12,6 +12,7 @@ export const missionSurveyAnswerTypeSchema = z.enum([
   "SINGLE_CHOICE",
   "MULTI_CHOICE",
   "NUMBER",
+  "FREQUENCY_RANGE",
   "KEYED_NUMBER",
 ]);
 export type MissionSurveyAnswerType = z.infer<typeof missionSurveyAnswerTypeSchema>;
@@ -37,6 +38,24 @@ export const missionSurveyNumericRuleSchema = z.object({
   maximum: z.number().int(),
 });
 export type MissionSurveyNumericRule = z.infer<typeof missionSurveyNumericRuleSchema>;
+
+export const missionSurveyFrequencyRangeCodeSchema = z.enum([
+  "ONE_TO_TWO",
+  "THREE_TO_FOUR",
+  "FIVE_TO_SIX",
+  "SEVEN_OR_MORE",
+]);
+export type MissionSurveyFrequencyRangeCode = z.infer<typeof missionSurveyFrequencyRangeCodeSchema>;
+
+export const missionSurveyFrequencyRangeOptionSchema = z.object({
+  code: missionSurveyFrequencyRangeCodeSchema,
+  label: z.string(),
+  minimum: z.number().int(),
+  maximum: z.number().int().nullable(),
+});
+export type MissionSurveyFrequencyRangeOption = z.infer<
+  typeof missionSurveyFrequencyRangeOptionSchema
+>;
 
 export const missionSurveyTextRuleSchema = z.object({
   subjectOptionCode: z.string(),
@@ -65,6 +84,7 @@ export const missionSurveyQuestionSchema = z.object({
   skipWhenOptionCodes: z.array(z.string()),
   numericRules: z.array(missionSurveyNumericRuleSchema),
   textRules: z.array(missionSurveyTextRuleSchema),
+  frequencyRangeOptions: z.array(missionSurveyFrequencyRangeOptionSchema).optional(),
   exclusiveOptionCodes: z.array(z.string()),
   conditionalOptionRules: z.array(missionSurveyConditionalOptionRuleSchema),
   impacts: z.array(z.string()),
@@ -88,6 +108,7 @@ export type MissionSurveyQuestionsResponse = z.infer<typeof missionSurveyQuestio
 export const mealSurveyAnswersSchema = z.object({
   target: z.string(),
   weeklyFrequency: z.number().int().nullable().optional(),
+  weeklyFrequencyRange: missionSurveyFrequencyRangeCodeSchema.nullable().optional(),
   alternatives: z.array(z.string()),
   reason: z.string().nullable().optional(),
   exclusions: z.array(z.string()),
@@ -98,6 +119,7 @@ export const transportSurveyAnswersSchema = z.object({
   primaryMode: z.string(),
   target: z.string(),
   weeklyFrequency: z.number().int().nullable().optional(),
+  weeklyFrequencyRange: missionSurveyFrequencyRangeCodeSchema.nullable().optional(),
   reason: z.string(),
   exclusions: z.array(z.string()),
 });

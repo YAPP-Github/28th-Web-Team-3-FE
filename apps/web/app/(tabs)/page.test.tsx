@@ -46,6 +46,7 @@ vi.mock("@/app/goal/queries", () => ({
     isError: false,
   }),
   useUpdateSavings: () => ({ isPending: false, mutate: vi.fn() }),
+  useUpdateGoal: () => ({ isPending: false, mutate: vi.fn() }),
 }));
 
 vi.mock("@/app/(tabs)/mission/queries", () => ({
