@@ -18,9 +18,11 @@ export function SavingsInputSheet({ open, onOpenChange, initialManwon }: Savings
   const [value, setValue] = useState(String(initialManwon));
   const { mutate, isPending } = useUpdateSavings();
 
+  // 시트는 항상 마운트 상태(open 제어)라 useState 초기값이 재오픈 시 반영되지 않는다.
+  // 열 때마다 최신 프리필로 되돌린다.
   useEffect(() => {
     if (open) setValue(String(initialManwon));
-  }, [initialManwon, open]);
+  }, [open, initialManwon]);
 
   function submit() {
     const savedAmountManwon = Number(onlyDigits(value));
@@ -31,13 +33,13 @@ export function SavingsInputSheet({ open, onOpenChange, initialManwon }: Savings
     <BottomSheet open={open} title="현재 저축액 입력" onOpenChange={onOpenChange}>
       <div className="flex flex-col gap-6 px-5 pt-6 pb-8">
         <AmountField
-          label="현재 저축액"
+          label="저축액"
           inputMode="numeric"
           value={value}
           onChange={(event) => setValue(onlyDigits(event.target.value))}
         />
         <Button size="cta" disabled={isPending || value === ""} onClick={submit}>
-          저장
+          완료
         </Button>
       </div>
     </BottomSheet>

@@ -89,7 +89,9 @@ export function BottomSheet({
         <DialogPrimitive.Content
           aria-describedby={undefined}
           className={cn(
-            "fixed inset-x-0 bottom-0 z-50 max-h-[calc(100dvh-var(--keyboard-inset,0px))] overflow-y-auto rounded-t-[20px] bg-background focus:outline-none",
+            // 내용이 뷰포트(키보드 등)를 넘치면 시트 안에서 세로 스크롤.
+            // overscroll-contain으로 뒤 배경 스크롤 전파 차단.
+            "fixed inset-x-0 bottom-0 z-50 max-h-[calc(100dvh-var(--keyboard-inset,0px))] overflow-y-auto overscroll-contain rounded-t-[20px] bg-background focus:outline-none",
             contentClassName,
           )}
           style={

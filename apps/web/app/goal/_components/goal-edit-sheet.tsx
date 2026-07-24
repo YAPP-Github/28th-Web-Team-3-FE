@@ -1,7 +1,7 @@
 "use client";
 
 import { AmountField, BottomSheet, Button } from "@repo/ui";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useUpdateGoal } from "../queries";
 
 interface GoalEditSheetProps {
@@ -27,6 +27,15 @@ export function GoalEditSheet({ open, onOpenChange, initialTargetManwon }: GoalE
   const [period, setPeriod] = useState("");
   const { mutate, isPending } = useUpdateGoal();
 
+  // 시트는 항상 마운트 상태(open 제어)라 useState 초기값이 재오픈 시 반영되지 않는다.
+  // 열 때마다 목표 금액은 최신값으로, 기간은 빈칸(미변경)으로 되돌린다.
+  useEffect(() => {
+    if (open) {
+      setTarget(String(initialTargetManwon));
+      setPeriod("");
+    }
+  }, [open, initialTargetManwon]);
+
   function submit() {
     mutate(
       {
@@ -38,8 +47,8 @@ export function GoalEditSheet({ open, onOpenChange, initialTargetManwon }: GoalE
   }
 
   return (
-    <BottomSheet open={open} title="목표 수정" onOpenChange={onOpenChange}>
-      <div className="flex flex-col gap-4 px-5 pt-6 pb-8">
+    <BottomSheet open={open} title="수정" onOpenChange={onOpenChange}>
+      <div className="flex flex-col gap-6 px-5 pt-6 pb-8">
         <AmountField
           label="목표 금액"
           inputMode="numeric"
@@ -47,14 +56,14 @@ export function GoalEditSheet({ open, onOpenChange, initialTargetManwon }: GoalE
           onChange={(event) => setTarget(onlyDigits(event.target.value))}
         />
         <AmountField
-          label="목표 기간 (변경 시에만 입력)"
+          label="목표 기간"
           unit="개월"
           inputMode="numeric"
           value={period}
           onChange={(event) => setPeriod(onlyDigits(event.target.value))}
         />
-        <Button className="mt-2" size="cta" disabled={isPending} onClick={submit}>
-          저장
+        <Button size="cta" disabled={isPending} onClick={submit}>
+          완료
         </Button>
       </div>
     </BottomSheet>
