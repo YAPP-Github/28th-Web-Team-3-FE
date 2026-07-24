@@ -50,7 +50,7 @@ export function GoalDetail() {
         </button>
       </div>
 
-      <div className="px-5 pt-8">
+      <div className="px-5 pt-12">
         <SemicircleGauge
           maxLabel={formatManwon(goal.targetAmountManwon)}
           minLabel="0"
@@ -81,7 +81,7 @@ export function GoalDetail() {
       </div>
 
       <SavingsInputSheet
-        initialManwon={goal.totalSavedManwon}
+        initialManwon={thisMonth.savedManwon}
         open={savingsOpen}
         onOpenChange={setSavingsOpen}
       />
