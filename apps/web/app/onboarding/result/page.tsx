@@ -53,10 +53,10 @@ export default function OnboardingResultPage() {
   const { simulation } = report;
 
   return (
-    <div className="mx-auto flex min-h-dvh w-full max-w-md flex-col bg-gray-0 px-5 pt-14">
+    <div className="mx-auto flex min-h-dvh w-full max-w-md flex-col bg-gray-0 px-5 pt-2">
       <h1 className="text-center text-headline-h2-700 text-gray-800">나는 잘하고 있을까?</h1>
 
-      <section className="mt-7 rounded-2xl bg-blue-50 px-6 py-8 text-center">
+      <section className="mt-7 rounded-2xl bg-[#F3F9FE] px-6 py-8 text-center">
         <p className="text-title-t2-700 text-blue-600">저축 계획을 조정하면</p>
         <p className="mt-1 text-headline-h1-700 text-gray-900">
           {formatAmount(simulation.simulationManwon)} 예상
@@ -91,6 +91,7 @@ export default function OnboardingResultPage() {
 
       <div className="mt-auto pt-8 pb-6">
         <ButtonGroup
+          nextLabel="목표금액 설정하기"
           onNext={() => router.push("/onboarding/goal")}
           onPrev={() => router.push("/onboarding/period")}
         />
