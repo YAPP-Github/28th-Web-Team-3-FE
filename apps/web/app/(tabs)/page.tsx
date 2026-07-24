@@ -3,11 +3,9 @@
 import { Button } from "@repo/ui";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { MonthlyGoalCard } from "@/app/goal/_components/monthly-goal-card";
-import { GOAL } from "@/app/goal/constants";
 import { getOnboardingProfile } from "@/lib/onboarding";
 import { FinancialTipList } from "./_components/financial-tip-list";
-import { GoalTrackerRow } from "./_components/goal-tracker-row";
+import { HomeGoalSection } from "./_components/home-goal-section";
 import { WeeklyMissionSection } from "./_components/weekly-mission-section";
 import { FINANCIAL_TIPS } from "./benefits/constants";
 
@@ -56,13 +54,7 @@ export default function HomePage() {
     <main className="flex flex-1 flex-col bg-gray-0">
       <section className="flex flex-col gap-4 px-5">
         <h1 className="py-2 text-title-t1-700 text-gray-900">홈</h1>
-        <GoalTrackerRow />
-        <MonthlyGoalCard
-          currentLabel={GOAL.monthly.currentLabel}
-          ddayLabel={GOAL.monthly.ddayLabel}
-          percent={GOAL.monthly.percent}
-          targetLabel={GOAL.monthly.targetLabel}
-        />
+        <HomeGoalSection />
       </section>
       <WeeklyMissionSection />
       <FinancialTipList tips={FINANCIAL_TIPS} />
