@@ -36,4 +36,20 @@ describe("AgeOnboardingPage", () => {
       expect(pushMock).toHaveBeenCalledWith("/onboarding/month");
     });
   });
+
+  it("존재하지 않는 날짜는 오류를 표시하고 다음을 비활성화한다", () => {
+    render(
+      <OnboardingFormProvider>
+        <AgeOnboardingPage />
+      </OnboardingFormProvider>,
+    );
+
+    const input = screen.getByRole("textbox", { name: "생년월일" });
+    fireEvent.change(input, { target: { value: "19990229" } });
+
+    expect(screen.getByText("올바른 날짜를 입력해주세요.")).toBeInTheDocument();
+    expect(input).toHaveAttribute("aria-invalid", "true");
+    expect(screen.getByRole("button", { name: "다음" })).toBeDisabled();
+    expect(patchOnboardingProfile).not.toHaveBeenCalled();
+  });
 });

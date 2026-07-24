@@ -16,11 +16,27 @@ function toBirthDate(value: string) {
   return /^\d{4}\.\d{2}\.\d{2}$/.test(value) ? value.replaceAll(".", "-") : value;
 }
 
+function isRealBirthDate(value: string) {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
+
+  const parts = value.split("-");
+  const year = Number(parts[0]);
+  const month = Number(parts[1]);
+  const day = Number(parts[2]);
+  const date = new Date(Date.UTC(year, month - 1, day));
+  return (
+    date.getUTCFullYear() === year && date.getUTCMonth() === month - 1 && date.getUTCDate() === day
+  );
+}
+
 export default function AgeOnboardingPage() {
   const router = useRouter();
   const { control, trigger } = useFormContext<OnboardingFormValues>();
   const birthDate = useWatch({ control, name: "birthDate" });
-  const isBirthDateValid = /^\d{4}-\d{2}-\d{2}$/.test(birthDate);
+  const hasBirthDateFormat = /^\d{4}-\d{2}-\d{2}$/.test(birthDate);
+  const isBirthDateValid = isRealBirthDate(birthDate);
+  const birthDateError =
+    hasBirthDateFormat && !isBirthDateValid ? "올바른 날짜를 입력해주세요." : undefined;
   const { isSaving, saveError, saveProfile } = useSaveOnboardingProfile();
 
   useEffect(() => {
@@ -45,8 +61,10 @@ export default function AgeOnboardingPage() {
               <input
                 {...field}
                 id="birth-date"
+                aria-describedby={birthDateError ? "birth-date-error" : undefined}
+                aria-invalid={birthDateError ? true : undefined}
                 autoComplete="off"
-                className="h-[52px] rounded-xl border border-gray-100 px-4 text-body-b1-500 text-gray-900 placeholder:text-gray-200 focus-visible:border-gray-800 focus-visible:ring-2 focus-visible:ring-gray-100 focus-visible:outline-none"
+                className={`h-[52px] rounded-xl border px-4 text-body-b1-500 text-gray-900 placeholder:text-gray-200 focus-visible:ring-2 focus-visible:outline-none ${birthDateError ? "border-error focus-visible:border-error focus-visible:ring-error-light" : "border-gray-100 focus-visible:border-gray-800 focus-visible:ring-gray-100"}`}
                 inputMode="numeric"
                 maxLength={10}
                 name="birthDate"
@@ -58,6 +76,11 @@ export default function AgeOnboardingPage() {
               />
             )}
           />
+          {birthDateError ? (
+            <p id="birth-date-error" aria-live="polite" className="text-body-b2-500 text-error">
+              {birthDateError}
+            </p>
+          ) : null}
         </div>
       </section>
       {saveError ? (
