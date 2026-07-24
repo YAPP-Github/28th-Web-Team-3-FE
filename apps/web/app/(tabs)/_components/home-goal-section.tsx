@@ -4,6 +4,7 @@ import { useState } from "react";
 import { MonthlyGoalCard } from "@/app/goal/_components/monthly-goal-card";
 import { SavingsInputSheet } from "@/app/goal/_components/savings-input-sheet";
 import { formatDday, formatManwon } from "@/app/goal/lib/format";
+import { calculateGoalTotalTargetManwon } from "@/app/goal/lib/progress";
 import { useGoalStatus } from "@/app/goal/queries";
 import { GoalTrackerRow } from "./goal-tracker-row";
 
@@ -29,10 +30,14 @@ export function HomeGoalSection() {
   }
 
   const { thisMonth } = goal;
+  const totalTargetManwon = calculateGoalTotalTargetManwon(
+    goal.totalSavedManwon,
+    goal.targetAmountManwon,
+  );
 
   return (
     <>
-      <GoalTrackerRow targetAmountManwon={goal.targetAmountManwon} />
+      <GoalTrackerRow targetAmountManwon={totalTargetManwon} />
       <MonthlyGoalCard
         currentLabel={formatManwon(thisMonth.savedManwon)}
         ddayLabel={formatDday(thisMonth.dDay)}

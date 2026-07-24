@@ -28,9 +28,9 @@ test("home page renders", async ({ page }) => {
       status: 200,
       contentType: "application/json",
       body: JSON.stringify({
-        targetAmountManwon: 5_000,
+        targetAmountManwon: 3_050,
         totalSavedManwon: 1_950,
-        progressPercent: 39,
+        progressPercent: 100,
         usageMonths: 8,
         deadlineDDay: 486,
         thisMonth: { targetManwon: 82, savedManwon: 67, progressPercent: 82, dDay: 12 },

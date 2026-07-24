@@ -12,10 +12,14 @@ import { MissionCompleteDialog } from "@/app/(tabs)/mission/_components/mission-
 import { MISSION_CATEGORY_LABELS } from "@/app/(tabs)/mission/constants/mission";
 import { calculateProgressPercent, formatWeekDday } from "@/app/(tabs)/mission/lib/format";
 import { useCompleteMission, useMissions } from "@/app/(tabs)/mission/queries";
+import { formatManwon } from "@/app/goal/lib/format";
+import { calculateGoalTotalTargetManwon } from "@/app/goal/lib/progress";
+import { useGoalStatus } from "@/app/goal/queries";
 import { SectionHeader } from "./section-header";
 
 export function WeeklyMissionSection() {
   const { data: missions, isPending, isError } = useMissions();
+  const { data: goal } = useGoalStatus();
   const completeMission = useCompleteMission();
   const [category, setCategory] = useState<HomeMissionCategory>("전체");
   const [expandedId, setExpandedId] = useState<string | null>(null);
@@ -38,6 +42,9 @@ export function WeeklyMissionSection() {
     (mission) => category === "전체" || MISSION_CATEGORY_LABELS[mission.category] === category,
   );
   const hasMissions = activeMissions.length > 0;
+  const totalTargetLabel = goal
+    ? formatManwon(calculateGoalTotalTargetManwon(goal.totalSavedManwon, goal.targetAmountManwon))
+    : "목표";
 
   return (
     <section className="flex flex-col pt-8">
@@ -135,7 +142,7 @@ export function WeeklyMissionSection() {
             절약 미션을 추가하고 달성해보세요.
           </p>
           <Link className={buttonVariants({ size: "cta" })} href="/mission/new">
-            5,000만원 달성을 위한 미션 추가
+            {totalTargetLabel} 달성을 위한 미션 추가
           </Link>
         </div>
       )}
