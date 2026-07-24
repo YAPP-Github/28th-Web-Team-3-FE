@@ -20,7 +20,7 @@ describe("HomePage", () => {
     vi.clearAllMocks();
   });
 
-  it("온보딩을 완료했다면 제목과 모으기 라인을 렌더한다", async () => {
+  it("온보딩을 완료했다면 Figma 홈의 목표·미션·팁 섹션을 렌더한다", async () => {
     vi.mocked(getOnboardingProfile).mockResolvedValue({
       status: "COMPLETED",
       birthDate: "1998-03-01",
@@ -35,6 +35,9 @@ describe("HomePage", () => {
     expect(screen.getByRole("main")).toHaveAttribute("aria-busy", "true");
     expect(await screen.findByRole("heading", { name: "홈" })).toBeInTheDocument();
     expect(screen.getByRole("link", { name: /5,000만원 모으기/ })).toHaveAttribute("href", "/goal");
+    expect(screen.getByRole("heading", { name: "이번 주 미션" })).toBeInTheDocument();
+    expect(screen.getByText("이번 주 배달음식 2회 이하로 주문")).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "재테크 선배의 팁" })).toBeInTheDocument();
   });
 
   it("온보딩이 미완료면 소개 화면으로 교체 이동한다", async () => {

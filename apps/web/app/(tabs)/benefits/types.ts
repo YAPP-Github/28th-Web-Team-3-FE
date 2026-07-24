@@ -12,3 +12,10 @@ export interface Benefit {
   /** 공식 페이지 URL — 카드를 누르면 바로 이동한다. */
   officialUrl: string;
 }
+
+export interface FinancialTip {
+  id: string;
+  category: string;
+  summary: string;
+  title: string;
+}

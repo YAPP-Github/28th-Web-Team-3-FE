@@ -6,7 +6,11 @@ import { useEffect, useState } from "react";
 import { MonthlyGoalCard } from "@/app/goal/_components/monthly-goal-card";
 import { GOAL } from "@/app/goal/constants";
 import { getOnboardingProfile } from "@/lib/onboarding";
+import { FinancialTipList } from "./_components/financial-tip-list";
 import { GoalTrackerRow } from "./_components/goal-tracker-row";
+import { WeeklyMissionSection } from "./_components/weekly-mission-section";
+import { FINANCIAL_TIPS } from "./benefits/constants";
+import { HOME_MISSIONS } from "./constants/home";
 
 export default function HomePage() {
   const router = useRouter();
@@ -50,15 +54,19 @@ export default function HomePage() {
   }
 
   return (
-    <main className="flex flex-1 flex-col gap-4 bg-gray-0 px-5 pt-2">
-      <h1 className="flex h-11 items-center text-title-t1-700 text-gray-900">홈</h1>
-      <GoalTrackerRow />
-      <MonthlyGoalCard
-        currentLabel={GOAL.monthly.currentLabel}
-        ddayLabel={GOAL.monthly.ddayLabel}
-        percent={GOAL.monthly.percent}
-        targetLabel={GOAL.monthly.targetLabel}
-      />
+    <main className="flex flex-1 flex-col bg-gray-0">
+      <section className="flex flex-col gap-4 px-5">
+        <h1 className="py-2 text-title-t1-700 text-gray-900">홈</h1>
+        <GoalTrackerRow />
+        <MonthlyGoalCard
+          currentLabel={GOAL.monthly.currentLabel}
+          ddayLabel={GOAL.monthly.ddayLabel}
+          percent={GOAL.monthly.percent}
+          targetLabel={GOAL.monthly.targetLabel}
+        />
+      </section>
+      <WeeklyMissionSection missions={HOME_MISSIONS} />
+      <FinancialTipList tips={FINANCIAL_TIPS} />
     </main>
   );
 }
