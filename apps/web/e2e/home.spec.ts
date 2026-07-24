@@ -23,6 +23,21 @@ test("home page renders", async ({ page }) => {
     }),
   );
 
+  await page.route("**/api/goal", (route) =>
+    route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({
+        targetAmountManwon: 5_000,
+        totalSavedManwon: 1_950,
+        progressPercent: 39,
+        usageMonths: 8,
+        deadlineDDay: 486,
+        thisMonth: { targetManwon: 82, savedManwon: 67, progressPercent: 82, dDay: 12 },
+      }),
+    }),
+  );
+
   await page.goto("/");
   await expect(page.getByRole("heading", { name: "홈" })).toBeVisible();
   await expect(page.getByRole("link", { name: /5,000만원 모으기/ })).toBeVisible();

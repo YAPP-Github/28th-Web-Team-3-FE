@@ -1,15 +1,23 @@
 import GoalCoinIcon from "@repo/ui/svg/goal-coin.svg";
 import { ChevronRight } from "lucide-react";
 import Link from "next/link";
-import { GOAL } from "@/app/goal/constants";
+import { GOAL_TITLE_SUFFIX } from "@/app/goal/constants";
+import { formatManwon } from "@/app/goal/lib/format";
 
-/** 홈 상단 "5,000만원 모으기" 라인. 전체가 목표 상세로 가는 링크다. */
-export function GoalTrackerRow() {
+interface GoalTrackerRowProps {
+  /** 목표 금액(만원) — API 응답값. `"5,000만원 모으기"` 라인 제목을 파생한다. */
+  targetAmountManwon: number;
+}
+
+/** 홈 상단 "N만원 모으기" 라인. 전체가 목표 상세로 가는 링크다. */
+export function GoalTrackerRow({ targetAmountManwon }: GoalTrackerRowProps) {
   return (
     <Link href="/goal" className="flex items-center justify-between">
       <span className="flex items-center gap-2">
         <GoalCoinIcon aria-hidden="true" className="size-6 shrink-0" />
-        <span className="text-title-t1-700 text-gray-900">{GOAL.title}</span>
+        <span className="text-title-t1-700 text-gray-900">
+          {formatManwon(targetAmountManwon)} {GOAL_TITLE_SUFFIX}
+        </span>
       </span>
       <ChevronRight aria-hidden="true" className="size-5 shrink-0 text-gray-900" strokeWidth={2} />
     </Link>

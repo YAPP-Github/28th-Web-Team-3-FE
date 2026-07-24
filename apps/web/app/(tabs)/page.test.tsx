@@ -13,6 +13,23 @@ vi.mock("@/lib/onboarding", () => ({
   getOnboardingProfile: vi.fn(),
 }));
 
+// 홈 목표 섹션은 목표 상세와 같은 `useGoalStatus`로 실데이터를 조회한다.
+// jsdom은 msw/node fetch를 가로채지 못하므로 훅을 목으로 대체해 데이터를 주입한다.
+vi.mock("@/app/goal/queries", () => ({
+  useGoalStatus: () => ({
+    data: {
+      targetAmountManwon: 5000,
+      totalSavedManwon: 1950,
+      progressPercent: 39,
+      usageMonths: 8,
+      deadlineDDay: 486,
+      thisMonth: { targetManwon: 82, savedManwon: 67, progressPercent: 82, dDay: 12 },
+    },
+    isPending: false,
+    isError: false,
+  }),
+}));
+
 import { getOnboardingProfile } from "@/lib/onboarding";
 
 describe("HomePage", () => {
