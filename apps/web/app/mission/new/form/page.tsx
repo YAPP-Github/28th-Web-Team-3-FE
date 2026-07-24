@@ -1,8 +1,8 @@
 import { redirect } from "next/navigation";
-import { MissionCreationIntro } from "@/app/mission/_components/mission-creation-intro";
+import { MissionCreationFormClient } from "@/app/mission/_components/mission-creation-form-client";
 import {
   buildMissionCreationFormHref,
-  buildMissionCreationResultHref,
+  MISSION_CREATION_CATEGORY_CODES,
   parseMissionCreationCategories,
 } from "@/app/mission/constants/mission-creation";
 
@@ -30,10 +30,17 @@ export default async function MissionCreationFormPage({
     step === 0 ? "/mission/new" : buildMissionCreationFormHref(categories, step - 1);
   const nextHref =
     step === categories.length - 1
-      ? buildMissionCreationResultHref(categories)
+      ? "/mission/new/generating"
       : buildMissionCreationFormHref(categories, step + 1);
 
   return (
-    <MissionCreationIntro category={category} nextHref={nextHref} previousHref={previousHref} />
+    <MissionCreationFormClient
+      key={`${category}-${step}`}
+      category={category}
+      categoryCode={MISSION_CREATION_CATEGORY_CODES[category]}
+      isLastCategory={step === categories.length - 1}
+      nextHref={nextHref}
+      previousHref={previousHref}
+    />
   );
 }

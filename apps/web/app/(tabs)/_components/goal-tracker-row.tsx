@@ -1,4 +1,4 @@
-import GoalCoinIcon from "@repo/ui/svg/goal-coin.svg";
+import Bill from "@repo/ui/svg/bill.svg";
 import { ChevronRight } from "lucide-react";
 import Link from "next/link";
 import { GOAL_TITLE_SUFFIX } from "@/app/goal/constants";
@@ -14,12 +14,16 @@ export function GoalTrackerRow({ targetAmountManwon }: GoalTrackerRowProps) {
   return (
     <Link href="/goal" className="flex items-center justify-between">
       <span className="flex items-center gap-2">
-        <GoalCoinIcon aria-hidden="true" className="size-6 shrink-0" />
+        <Bill aria-hidden="true" className="h-6.25 w-8 shrink-0" />
         <span className="text-title-t1-700 text-gray-900">
           {formatManwon(targetAmountManwon)} {GOAL_TITLE_SUFFIX}
         </span>
       </span>
-      <ChevronRight aria-hidden="true" className="size-5 shrink-0 text-gray-900" strokeWidth={2} />
+      <ChevronRight
+        aria-hidden="true"
+        className="size-5 shrink-0 text-gray-900"
+        strokeWidth={1.4}
+      />
     </Link>
   );
 }

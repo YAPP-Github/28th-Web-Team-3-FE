@@ -7,6 +7,9 @@
     ".": "./src/index.ts",
     "./auth": "./src/auth.ts",
     "./goal": "./src/goal.ts",
+    "./mission": "./src/mission.ts",
+    "./mission-generation": "./src/mission-generation.ts",
+    "./mission-survey": "./src/mission-survey.ts",
     "./onboarding-api": "./src/onboarding-api.ts",
     "./user": "./src/user.ts"
   },

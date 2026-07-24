@@ -1,59 +1,62 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { getMissionSuggestionsById } from "@/app/mission/constants/mission-creation";
+import type { Mission } from "@repo/schema/mission";
+import { useState } from "react";
 import { MissionAddMenu } from "./_components/mission-add-menu";
 import { MissionCategoryFilter } from "./_components/mission-category-filter";
 import { MissionHero } from "./_components/mission-hero";
 import { MissionList } from "./_components/mission-list";
-import {
-  ACTIVE_MISSIONS,
-  COMPLETED_MISSIONS,
-  type Mission,
-  type MissionCategory,
-} from "./constants/mission";
+import { MISSION_CATEGORY_LABELS, type MissionCategory } from "./constants/mission";
+import { calculateProgressPercent, formatWeekDday } from "./lib/format";
+import { useCompleteMission, useMissions } from "./queries";
 
 export default function MissionPage() {
+  const { data: missions, isPending, isError } = useMissions();
+  const completeMission = useCompleteMission();
   const [activeCategory, setActiveCategory] = useState<MissionCategory>("전체");
   const [expandedMissionId, setExpandedMissionId] = useState<string | null>(null);
   const [isAddMenuOpen, setIsAddMenuOpen] = useState(false);
-  const [activeMissions, setActiveMissions] = useState(ACTIVE_MISSIONS);
-  const visibleActiveMissions = activeMissions.filter(
-    (mission) => activeCategory === "전체" || mission.category === activeCategory,
-  );
-  const visibleCompletedMissions = COMPLETED_MISSIONS.filter(
-    (mission) => activeCategory === "전체" || mission.category === activeCategory,
-  );
 
-  useEffect(() => {
-    const missionIds =
-      new URLSearchParams(window.location.search).get("addedMissionIds")?.split(",") ?? [];
-    const addedMissions: Mission[] = getMissionSuggestionsById(missionIds);
-
-    if (addedMissions.length === 0) return;
-
-    setActiveMissions((missions) => [
-      ...addedMissions.filter((mission) => !missions.some((item) => item.id === mission.id)),
-      ...missions,
-    ]);
-    window.history.replaceState(null, "", "/mission");
-  }, []);
-
-  function deleteMission(id: string) {
-    setActiveMissions((missions) => missions.filter((mission) => mission.id !== id));
-    setExpandedMissionId((expandedId) => (expandedId === id ? null : expandedId));
+  if (isPending) {
+    return <p className="px-5 pt-20 text-center text-body-b2-500 text-gray-400">불러오는 중…</p>;
   }
 
+  if (isError) {
+    return (
+      <p className="px-5 pt-20 text-center text-body-b2-500 text-gray-500">
+        미션을 불러오지 못했어요. 잠시 후 다시 시도해 주세요.
+      </p>
+    );
+  }
+
+  function matchesCategory(mission: Mission) {
+    return (
+      activeCategory === "전체" || MISSION_CATEGORY_LABELS[mission.category] === activeCategory
+    );
+  }
+
+  const visibleActiveMissions = missions.filter(
+    (mission) => mission.status === "ACTIVE" && matchesCategory(mission),
+  );
+  const visibleCompletedMissions = missions.filter(
+    (mission) => mission.status === "COMPLETED" && matchesCategory(mission),
+  );
+
   return (
-    <main className="mx-auto min-h-dvh w-full max-w-md bg-gray-0 pb-28 text-gray-900">
-      <MissionHero />
+    <main className="flex flex-1 flex-col bg-gray-0 text-gray-900">
+      <MissionHero
+        ddayLabel={formatWeekDday(missions[0]?.weekEndsAt)}
+        percent={calculateProgressPercent(missions)}
+      />
       <section className="flex flex-col gap-5 px-5 pt-6">
         <MissionCategoryFilter activeCategory={activeCategory} onChange={setActiveCategory} />
         <MissionList
           expandedMissionId={expandedMissionId}
           completedMissions={visibleCompletedMissions}
           missions={visibleActiveMissions}
-          onDelete={deleteMission}
+          onComplete={(mission) =>
+            completeMission.mutate({ source: mission.source, missionId: mission.id })
+          }
           onToggle={(id) => setExpandedMissionId((expandedId) => (expandedId === id ? null : id))}
         />
       </section>

@@ -24,6 +24,8 @@ function recalcPercent() {
 }
 
 // baseUrl이 절대(NEXT_PUBLIC_API_URL)든 상대("/")든 잡도록 와일드카드로 매칭한다.
+// 미션(목록/complete/생성)은 실서버로 연동됐으므로 목을 두지 않는다 — 목이 있으면
+// bypass되지 않고 정적 응답으로 가로채져 실제 데이터가 화면에 안 뜬다.
 export const handlers: RequestHandler[] = [
   http.get("*/api/goal", () => HttpResponse.json(goal)),
 
