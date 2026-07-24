@@ -87,15 +87,11 @@ export function GoalDetail() {
       </div>
 
       <SavingsInputSheet
-        currentMonthSavedManwon={thisMonth.savedManwon}
         initialManwon={thisMonth.savedManwon}
         open={savingsOpen}
-        totalSavedManwon={goal.totalSavedManwon}
-        totalTargetManwon={totalTargetManwon}
         onOpenChange={setSavingsOpen}
       />
       <GoalEditSheet
-        currentSavedManwon={goal.totalSavedManwon}
         initialTargetManwon={totalTargetManwon}
         open={editOpen}
         onOpenChange={setEditOpen}

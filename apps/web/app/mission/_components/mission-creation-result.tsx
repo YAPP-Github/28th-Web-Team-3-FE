@@ -85,8 +85,6 @@ export function MissionCreationResult({ jobId }: MissionCreationResultProps) {
           미션을 생성했어요.
           <br />
           시작할 미션을 골라주세요.
-          <br />
-          (최대 {MAX_SELECTABLE_DRAFTS}개)
         </h1>
 
         <div className="flex flex-col gap-8">

@@ -46,11 +46,8 @@ export function HomeGoalSection() {
         onSaveClick={() => setSavingsOpen(true)}
       />
       <SavingsInputSheet
-        currentMonthSavedManwon={thisMonth.savedManwon}
         initialManwon={thisMonth.savedManwon}
         open={savingsOpen}
-        totalSavedManwon={goal.totalSavedManwon}
-        totalTargetManwon={totalTargetManwon}
         onOpenChange={setSavingsOpen}
       />
     </>

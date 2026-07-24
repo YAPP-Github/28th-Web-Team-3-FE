@@ -5,7 +5,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 // 조회/변경 훅을 목으로 대체한다 — 데이터 주입 후 렌더·인터랙션 로직을 검증한다.
 // (API 연동 자체는 브라우저 MSW로 별도 확인. vitest jsdom은 msw/node fetch를 가로채지 못한다.)
 const MOCK_GOAL: GoalStatus = {
-  targetAmountManwon: 3050,
+  targetAmountManwon: 5000,
   totalSavedManwon: 1950,
   progressPercent: 100,
   usageMonths: 8,
@@ -66,7 +66,7 @@ describe("GoalDetail", () => {
     expect(screen.getByRole("dialog")).toBeInTheDocument();
   });
 
-  it("목표수정 시트에서 전체 목표금액을 추가 목표액으로 환산해 저장한다", async () => {
+  it("목표수정 시트에서 입력한 목표금액을 그대로 저장한다", async () => {
     render(<GoalDetail />);
 
     fireEvent.click(screen.getByRole("button", { name: /수정/ }));
@@ -86,7 +86,7 @@ describe("GoalDetail", () => {
     fireEvent.click(screen.getByRole("button", { name: "완료" }));
 
     expect(goalMutation.mutate).toHaveBeenCalledWith(
-      { targetAmountManwon: 4050, periodMonths: 16 },
+      { targetAmountManwon: 6000, periodMonths: 16 },
       expect.objectContaining({ onSuccess: expect.any(Function) }),
     );
 
@@ -98,7 +98,7 @@ describe("GoalDetail", () => {
     });
   });
 
-  it("현재저축액 입력 후 전체 목표금액이 유지되도록 추가 목표액을 보정한다", () => {
+  it("현재저축액 입력은 목표금액을 수정하지 않는다", () => {
     render(<GoalDetail />);
 
     fireEvent.click(screen.getByRole("button", { name: "현재 저축액 입력" }));
@@ -115,9 +115,6 @@ describe("GoalDetail", () => {
     const [, savingsOptions] = savingsMutation.mutate.mock.calls.at(-1) ?? [];
     savingsOptions.onSuccess();
 
-    expect(goalMutation.mutate).toHaveBeenCalledWith(
-      { targetAmountManwon: 3017, periodMonths: null },
-      expect.objectContaining({ onSuccess: expect.any(Function) }),
-    );
+    expect(goalMutation.mutate).not.toHaveBeenCalled();
   });
 });

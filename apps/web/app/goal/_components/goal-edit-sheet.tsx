@@ -4,13 +4,11 @@ import { MAX_MONTHLY_AMOUNT } from "@repo/schema";
 import { AmountField, BottomSheet, Button } from "@repo/ui";
 import { useEffect, useState } from "react";
 import { getOnboardingProfile, patchOnboardingProfile } from "@/lib/onboarding";
-import { calculateAdditionalTargetManwon } from "../lib/progress";
 import { useUpdateGoal } from "../queries";
 
 interface GoalEditSheetProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  currentSavedManwon: number;
   initialTargetManwon: number;
 }
 
@@ -32,14 +30,8 @@ const clampMonthlySalaryInput = (value: string) => {
 
 /**
  * 목표 금액·기간·월소득 수정 바텀시트.
- * 화면은 전체 목표금액을 입력받고, 목표 API에는 현재 저축액을 뺀 추가 목표액으로 환산해 보낸다.
  */
-export function GoalEditSheet({
-  open,
-  onOpenChange,
-  currentSavedManwon,
-  initialTargetManwon,
-}: GoalEditSheetProps) {
+export function GoalEditSheet({ open, onOpenChange, initialTargetManwon }: GoalEditSheetProps) {
   const [target, setTarget] = useState(String(initialTargetManwon));
   const [period, setPeriod] = useState("");
   const [monthlySalary, setMonthlySalary] = useState("");
@@ -73,10 +65,7 @@ export function GoalEditSheet({
 
     mutate(
       {
-        targetAmountManwon:
-          totalTargetManwon == null
-            ? null
-            : calculateAdditionalTargetManwon(totalTargetManwon, currentSavedManwon),
+        targetAmountManwon: totalTargetManwon,
         periodMonths,
       },
       {

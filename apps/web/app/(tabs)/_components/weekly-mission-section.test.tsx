@@ -55,7 +55,7 @@ vi.mock("@/app/(tabs)/mission/queries", () => ({
 vi.mock("@/app/goal/queries", () => ({
   useGoalStatus: () => ({
     data: {
-      targetAmountManwon: 3050,
+      targetAmountManwon: 5000,
       totalSavedManwon: 1950,
       progressPercent: 100,
       usageMonths: 8,
