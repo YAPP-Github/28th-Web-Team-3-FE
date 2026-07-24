@@ -4,6 +4,7 @@ import type { Mission } from "@repo/schema/mission";
 import { useState } from "react";
 import { MissionAddMenu } from "./_components/mission-add-menu";
 import { MissionCategoryFilter } from "./_components/mission-category-filter";
+import { MissionCompleteDialog } from "./_components/mission-complete-dialog";
 import { MissionHero } from "./_components/mission-hero";
 import { MissionList } from "./_components/mission-list";
 import { MISSION_CATEGORY_LABELS, type MissionCategory } from "./constants/mission";
@@ -17,6 +18,7 @@ export default function MissionPage() {
   const [activeCategory, setActiveCategory] = useState<MissionCategory>("전체");
   const [expandedMissionId, setExpandedMissionId] = useState<string | null>(null);
   const [isAddMenuOpen, setIsAddMenuOpen] = useState(false);
+  const [missionToComplete, setMissionToComplete] = useState<Mission | null>(null);
 
   if (isPending) {
     return <p className="px-5 pt-20 text-center text-body-b2-500 text-gray-400">불러오는 중…</p>;
@@ -56,9 +58,7 @@ export default function MissionPage() {
           completedMissions={visibleCompletedMissions}
           deletingMissionId={deleteMission.isPending ? deleteMission.variables?.missionId : null}
           missions={visibleActiveMissions}
-          onComplete={(mission) =>
-            completeMission.mutate({ source: mission.source, missionId: mission.id })
-          }
+          onComplete={setMissionToComplete}
           onDelete={(mission) =>
             deleteMission.mutate(
               { missionId: mission.id },
@@ -71,6 +71,18 @@ export default function MissionPage() {
       <MissionAddMenu
         isOpen={isAddMenuOpen}
         onToggle={() => setIsAddMenuOpen((isOpen) => !isOpen)}
+      />
+      <MissionCompleteDialog
+        open={missionToComplete != null}
+        pending={completeMission.isPending}
+        onCancel={() => setMissionToComplete(null)}
+        onConfirm={() => {
+          if (!missionToComplete) return;
+          completeMission.mutate(
+            { source: missionToComplete.source, missionId: missionToComplete.id },
+            { onSuccess: () => setMissionToComplete(null) },
+          );
+        }}
       />
     </main>
   );

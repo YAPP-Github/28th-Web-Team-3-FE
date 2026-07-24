@@ -1,5 +1,6 @@
 "use client";
 
+import type { Mission } from "@repo/schema/mission";
 import { buttonVariants, cn } from "@repo/ui";
 import CoinIcon from "@repo/ui/svg/coin.svg";
 import { Check, ChevronDown, ChevronRight, ChevronUp } from "lucide-react";
@@ -7,6 +8,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
 import { HOME_MISSION_CATEGORIES, type HomeMissionCategory } from "@/app/(tabs)/constants/home";
+import { MissionCompleteDialog } from "@/app/(tabs)/mission/_components/mission-complete-dialog";
 import { MISSION_CATEGORY_LABELS } from "@/app/(tabs)/mission/constants/mission";
 import { calculateProgressPercent, formatWeekDday } from "@/app/(tabs)/mission/lib/format";
 import { useCompleteMission, useMissions } from "@/app/(tabs)/mission/queries";
@@ -17,6 +19,7 @@ export function WeeklyMissionSection() {
   const completeMission = useCompleteMission();
   const [category, setCategory] = useState<HomeMissionCategory>("전체");
   const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [missionToComplete, setMissionToComplete] = useState<Mission | null>(null);
 
   if (isPending) {
     return <p className="px-5 pt-8 text-center text-body-b2-500 text-gray-400">불러오는 중…</p>;
@@ -89,12 +92,7 @@ export function WeeklyMissionSection() {
                       aria-label="미션 완료"
                       className="flex size-5 shrink-0 items-center justify-center rounded-full border border-gray-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-300"
                       type="button"
-                      onClick={() =>
-                        completeMission.mutate({
-                          source: mission.source,
-                          missionId: mission.id,
-                        })
-                      }
+                      onClick={() => setMissionToComplete(mission)}
                     >
                       <Check aria-hidden="true" className="size-3 text-gray-400" />
                     </button>
@@ -141,6 +139,18 @@ export function WeeklyMissionSection() {
           </Link>
         </div>
       )}
+      <MissionCompleteDialog
+        open={missionToComplete != null}
+        pending={completeMission.isPending}
+        onCancel={() => setMissionToComplete(null)}
+        onConfirm={() => {
+          if (!missionToComplete) return;
+          completeMission.mutate(
+            { source: missionToComplete.source, missionId: missionToComplete.id },
+            { onSuccess: () => setMissionToComplete(null) },
+          );
+        }}
+      />
     </section>
   );
 }
