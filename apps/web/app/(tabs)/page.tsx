@@ -49,7 +49,11 @@ export default function HomePage() {
   }
 
   if (!isOnboardingChecked) {
-    return <main aria-busy="true" className="flex flex-1" />;
+    return (
+      <main aria-busy="true" className="fixed inset-0 z-[60] bg-gray-0">
+        <span className="sr-only">사용자 정보를 확인하는 중</span>
+      </main>
+    );
   }
 
   return (
