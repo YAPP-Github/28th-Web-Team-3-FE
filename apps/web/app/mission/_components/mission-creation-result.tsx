@@ -1,32 +1,28 @@
 "use client";
 
+import type { MissionDraft } from "@repo/schema/mission-generation";
 import { ButtonGroup, Toggle } from "@repo/ui";
 import { ChevronLeft } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import {
-  buildMissionHomeHref,
-  MISSION_SUGGESTIONS,
-  type MissionCreationCategory,
-  type MissionSuggestion,
-} from "../constants/mission-creation";
+import { MISSION_CATEGORY_LABELS } from "@/app/(tabs)/mission/constants/mission";
+import { useConfirmGenerationJob, useGenerationDrafts } from "@/app/mission/generation-queries";
 
 interface MissionCreationResultProps {
-  categories: readonly MissionCreationCategory[];
-  previousHref: string;
+  jobId: string;
 }
 
-interface MissionSuggestionCardProps extends MissionSuggestion {
+interface MissionDraftCardProps extends MissionDraft {
   pressed: boolean;
   onPressedChange: (pressed: boolean) => void;
 }
 
-function MissionSuggestionCard({
-  description,
-  onPressedChange,
-  pressed,
+function MissionDraftCard({
   title,
-}: MissionSuggestionCardProps) {
+  savingsLabel,
+  pressed,
+  onPressedChange,
+}: MissionDraftCardProps) {
   return (
     <Toggle
       aria-label={title}
@@ -40,29 +36,46 @@ function MissionSuggestionCard({
         <span className="shrink-0 rounded bg-gray-50 px-1.5 py-1 text-caption-c1-700 text-gray-600">
           달성 시
         </span>
-        <span>{description}</span>
+        <span>{savingsLabel}</span>
       </span>
     </Toggle>
   );
 }
 
-export function MissionCreationResult({ categories, previousHref }: MissionCreationResultProps) {
-  const router = useRouter();
-  const [selectedMissionIds, setSelectedMissionIds] = useState<string[]>([]);
+const MAX_SELECTABLE_DRAFTS = 4;
 
-  function toggleMission(missionId: string, pressed: boolean) {
-    setSelectedMissionIds((missionIds) =>
-      pressed ? [...missionIds, missionId] : missionIds.filter((id) => id !== missionId),
+export function MissionCreationResult({ jobId }: MissionCreationResultProps) {
+  const router = useRouter();
+  const { data, isPending, isError } = useGenerationDrafts(jobId);
+  const confirmJob = useConfirmGenerationJob(jobId);
+  const [selectedDraftIds, setSelectedDraftIds] = useState<string[]>([]);
+
+  function toggleDraft(id: string, pressed: boolean) {
+    setSelectedDraftIds((ids) => {
+      if (!pressed) return ids.filter((item) => item !== id);
+      return ids.length >= MAX_SELECTABLE_DRAFTS ? ids : [...ids, id];
+    });
+  }
+
+  if (isPending) {
+    return <p className="px-5 pt-20 text-center text-body-b2-500 text-gray-400">불러오는 중…</p>;
+  }
+
+  if (isError) {
+    return (
+      <p className="px-5 pt-20 text-center text-body-b2-500 text-gray-500">
+        미션 초안을 불러오지 못했어요. 잠시 후 다시 시도해 주세요.
+      </p>
     );
   }
 
   return (
     <main className="mx-auto flex min-h-dvh w-full max-w-md flex-col bg-gray-0 pb-6">
       <button
-        aria-label="이전 단계로 돌아가기"
+        aria-label="미션 홈으로"
         className="flex size-11 items-center justify-center rounded-full p-2.5 hover:bg-gray-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-300"
         type="button"
-        onClick={() => router.push(previousHref)}
+        onClick={() => router.push("/mission")}
       >
         <ChevronLeft aria-hidden="true" className="size-6" />
       </button>
@@ -72,19 +85,23 @@ export function MissionCreationResult({ categories, previousHref }: MissionCreat
           미션을 생성했어요.
           <br />
           시작할 미션을 골라주세요.
+          <br />
+          (최대 {MAX_SELECTABLE_DRAFTS}개)
         </h1>
 
         <div className="flex flex-col gap-8">
-          {categories.map((category) => (
+          {data.categories.map(({ category, drafts }) => (
             <section key={category} className="flex flex-col gap-4">
-              <h2 className="text-title-t2-700 text-gray-900">{category}</h2>
+              <h2 className="text-title-t2-700 text-gray-900">
+                {MISSION_CATEGORY_LABELS[category]}
+              </h2>
               <div className="flex flex-col gap-3">
-                {MISSION_SUGGESTIONS[category].map((suggestion) => (
-                  <MissionSuggestionCard
-                    key={suggestion.id}
-                    {...suggestion}
-                    pressed={selectedMissionIds.includes(suggestion.id)}
-                    onPressedChange={(pressed) => toggleMission(suggestion.id, pressed)}
+                {drafts.map((draft) => (
+                  <MissionDraftCard
+                    key={draft.id}
+                    {...draft}
+                    pressed={selectedDraftIds.includes(draft.id)}
+                    onPressedChange={(pressed) => toggleDraft(draft.id, pressed)}
                   />
                 ))}
               </div>
@@ -94,10 +111,17 @@ export function MissionCreationResult({ categories, previousHref }: MissionCreat
       </div>
 
       <div className="px-5 pt-2">
+        {confirmJob.isError ? (
+          <p className="pb-2 text-center text-body-b2-500 text-red-500">
+            미션 시작에 실패했어요. 다시 시도해 주세요.
+          </p>
+        ) : null}
         <ButtonGroup
-          nextDisabled={selectedMissionIds.length === 0}
-          onNext={() => router.push(buildMissionHomeHref(selectedMissionIds))}
-          onPrev={() => router.push(previousHref)}
+          nextDisabled={selectedDraftIds.length === 0}
+          onNext={() =>
+            confirmJob.mutate({ selectedDraftIds }, { onSuccess: () => router.push("/mission") })
+          }
+          onPrev={() => router.push("/mission")}
         />
       </div>
     </main>

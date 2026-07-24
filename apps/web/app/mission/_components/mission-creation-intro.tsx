@@ -7,13 +7,13 @@ import type { MissionCreationCategory } from "../constants/mission-creation";
 
 interface MissionCreationIntroProps {
   category: MissionCreationCategory;
-  nextHref: string;
+  onNext: () => void;
   previousHref: string;
 }
 
 export function MissionCreationIntro({
   category,
-  nextHref,
+  onNext,
   previousHref,
 }: MissionCreationIntroProps) {
   const router = useRouter();
@@ -42,10 +42,7 @@ export function MissionCreationIntro({
       </section>
 
       <div className="px-5 pt-2">
-        <ButtonGroup
-          onNext={() => router.push(nextHref)}
-          onPrev={() => router.push(previousHref)}
-        />
+        <ButtonGroup onNext={onNext} onPrev={() => router.push(previousHref)} />
       </div>
     </main>
   );

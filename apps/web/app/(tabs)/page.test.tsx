@@ -1,3 +1,4 @@
+import type { Mission } from "@repo/schema/mission";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import HomePage from "./page";
@@ -5,12 +6,33 @@ import HomePage from "./page";
 const replace = vi.fn();
 const router = { replace };
 
+const MOCK_MISSIONS: Mission[] = [
+  {
+    id: "meal-1",
+    source: "RECOMMENDED",
+    category: "MEAL",
+    title: "이번 주 배달음식 2회 이하로 주문",
+    targetCount: 2,
+    targetUnit: "TIMES_PER_WEEK",
+    estimatedSavingsWon: 5000,
+    savingsEstimateVersion: "V1",
+    savingsLabel: "약 5,000원 절약 예상",
+    status: "ACTIVE",
+    weekEndsAt: "2099-01-01T00:00:00Z",
+  },
+];
+
 vi.mock("next/navigation", () => ({
   useRouter: () => router,
 }));
 
 vi.mock("@/lib/onboarding", () => ({
   getOnboardingProfile: vi.fn(),
+}));
+
+vi.mock("@/app/(tabs)/mission/queries", () => ({
+  useMissions: () => ({ data: MOCK_MISSIONS, isPending: false, isError: false }),
+  useCompleteMission: () => ({ mutate: vi.fn() }),
 }));
 
 import { getOnboardingProfile } from "@/lib/onboarding";
