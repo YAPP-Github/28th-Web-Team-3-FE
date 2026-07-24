@@ -7,8 +7,6 @@ import { z } from "zod";
 export const authTokensSchema = z.object({
   accessToken: z.string().min(1),
   refreshToken: z.string().min(1),
-  /** access token 만료까지 남은 시간(초). 백엔드가 생략할 수 있다. */
-  expiresIn: z.number().int().positive().optional(),
 });
 
 export type AuthTokens = z.infer<typeof authTokensSchema>;

@@ -5,8 +5,8 @@ import { API_URL } from "../config";
 
 /**
  * 게스트 인증 관리자. 서버 계약:
- *   POST /api/auth/guest          { uuid }         → { accessToken, refreshToken, expiresIn }
- *   POST /api/auth/guest/refresh  { refreshToken } → { accessToken, refreshToken, expiresIn } (rotation)
+ *   POST /api/auth/guest          { uuid }         → { accessToken, refreshToken }
+ *   POST /api/auth/guest/refresh  { refreshToken } → { accessToken, refreshToken } (rotation)
  *
  * 원칙:
  *  - 기기 uuid는 최초 1회 생성해 SecureStore에 영구 보관. 서버가 hash(uuid)로 게스트를
