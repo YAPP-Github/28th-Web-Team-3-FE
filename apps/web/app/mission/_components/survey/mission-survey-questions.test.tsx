@@ -46,14 +46,18 @@ const MEAL_QUESTIONS: MissionSurveyQuestion[] = [
   {
     code: "MEAL_FREQUENCY",
     prompt: "선택한 항목을 평소 한 주에 몇 번 이용하나요?",
-    answerType: "NUMBER",
+    answerType: "FREQUENCY_RANGE",
     options: [],
     minSelections: null,
     maxSelections: null,
     dependsOnQuestionCode: "MEAL_TARGET",
     skipWhenOptionCodes: ["UNKNOWN"],
-    numericRules: [
-      { subjectOptionCode: "DELIVERY", unit: "TIMES_PER_WEEK", minimum: 0, maximum: 7 },
+    numericRules: [],
+    frequencyRangeOptions: [
+      { code: "ONE_TO_TWO", label: "1~2회", minimum: 1, maximum: 2 },
+      { code: "THREE_TO_FOUR", label: "3~4회", minimum: 3, maximum: 4 },
+      { code: "FIVE_TO_SIX", label: "5~6회", minimum: 5, maximum: 6 },
+      { code: "SEVEN_OR_MORE", label: "7회 이상", minimum: 7, maximum: null },
     ],
     textRules: [],
     exclusiveOptionCodes: [],
@@ -99,7 +103,13 @@ const MEAL_QUESTIONS: MissionSurveyQuestion[] = [
 function Wrapper({ children }: { children: React.ReactNode }) {
   const form = useForm<MissionSurveyPutRequest>({
     defaultValues: {
-      meal: { target: "", weeklyFrequency: null, alternatives: [], reason: null, exclusions: [] },
+      meal: {
+        target: "",
+        weeklyFrequencyRange: null,
+        alternatives: [],
+        reason: null,
+        exclusions: [],
+      },
       transport: null,
       hobby: null,
       living: null,

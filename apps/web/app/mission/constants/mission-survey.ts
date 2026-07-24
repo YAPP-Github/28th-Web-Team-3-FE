@@ -13,13 +13,13 @@ import type {
  */
 export const MISSION_SURVEY_QUESTION_FIELDS: Record<string, string> = {
   MEAL_TARGET: "meal.target",
-  MEAL_FREQUENCY: "meal.weeklyFrequency",
+  MEAL_FREQUENCY: "meal.weeklyFrequencyRange",
   MEAL_ALTERNATIVES: "meal.alternatives",
   MEAL_REASON: "meal.reason",
   MEAL_EXCLUSIONS: "meal.exclusions",
   TRANSPORT_PRIMARY_MODE: "transport.primaryMode",
   TRANSPORT_TARGET: "transport.target",
-  TRANSPORT_FREQUENCY: "transport.weeklyFrequency",
+  TRANSPORT_FREQUENCY: "transport.weeklyFrequencyRange",
   TRANSPORT_REASON: "transport.reason",
   TRANSPORT_EXCLUSIONS: "transport.exclusions",
   HOBBY_TYPES: "hobby.hobbies",
@@ -47,7 +47,7 @@ export const MISSION_SURVEY_KEYED_NUMBER_KEY_FIELDS: Record<string, string> = {
 
 export const DEFAULT_MEAL_ANSWERS: MealSurveyAnswers = {
   target: "",
-  weeklyFrequency: null,
+  weeklyFrequencyRange: null,
   alternatives: [],
   reason: null,
   exclusions: [],
@@ -56,7 +56,7 @@ export const DEFAULT_MEAL_ANSWERS: MealSurveyAnswers = {
 export const DEFAULT_TRANSPORT_ANSWERS: TransportSurveyAnswers = {
   primaryMode: "",
   target: "",
-  weeklyFrequency: null,
+  weeklyFrequencyRange: null,
   reason: "",
   exclusions: [],
 };
