@@ -3,6 +3,7 @@ import {
   findNumericRule,
   frequencyUnitSuffix,
   isFrequencyRangeAnswered,
+  isKeyedFrequencyRangeAnswered,
   isKeyedNumberAnswered,
   isMultiChoiceAnswered,
   isNumberAnswered,
@@ -114,6 +115,22 @@ describe("답변 완료 판정", () => {
       false,
     );
     expect(isKeyedNumberAnswered([], [])).toBe(true);
+  });
+
+  it("KEYED_FREQUENCY_RANGE는 선행 선택 코드 전부에 범위 코드가 있어야 완료다", () => {
+    expect(
+      isKeyedFrequencyRangeAnswered([{ key: "GOODS", frequencyRange: "ONE_TO_TWO" }], ["GOODS"]),
+    ).toBe(true);
+    expect(
+      isKeyedFrequencyRangeAnswered(
+        [{ key: "GOODS", frequencyRange: "ONE_TO_TWO" }],
+        ["GOODS", "SUBSCRIPTION"],
+      ),
+    ).toBe(false);
+    expect(isKeyedFrequencyRangeAnswered([{ key: "GOODS", frequencyRange: "" }], ["GOODS"])).toBe(
+      false,
+    );
+    expect(isKeyedFrequencyRangeAnswered([], [])).toBe(true);
   });
 });
 

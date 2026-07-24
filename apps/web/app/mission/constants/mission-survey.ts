@@ -39,7 +39,7 @@ export const MISSION_SURVEY_TEXT_RULE_FIELDS: Record<string, string> = {
   HOBBY_TYPES: "hobby.otherHobby",
 };
 
-/** KEYED_NUMBER 응답 배열에서 항목을 구분하는 key 필드명(예: {spendingType, count} vs {area, count}). */
+/** KEYED_* 응답 배열에서 항목을 구분하는 key 필드명(예: {spendingType, frequencyRange} vs {area, frequencyRange}). */
 export const MISSION_SURVEY_KEYED_NUMBER_KEY_FIELDS: Record<string, string> = {
   HOBBY_FREQUENCIES: "spendingType",
   LIVING_FREQUENCIES: "area",
