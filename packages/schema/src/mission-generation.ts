@@ -52,9 +52,9 @@ export const missionDraftsResponseSchema = z.object({
 });
 export type MissionDraftsResponse = z.infer<typeof missionDraftsResponseSchema>;
 
-/** POST /api/missions/generation-jobs/{jobId}/confirm 요청 — 1~4개, 중복 없이. */
+/** POST /api/missions/generation-jobs/{jobId}/confirm 요청 — 1개 이상, 중복 없이. */
 export const missionConfirmRequestSchema = z.object({
-  selectedDraftIds: z.array(z.string()).min(1).max(4),
+  selectedDraftIds: z.array(z.string()).min(1),
 });
 export type MissionConfirmRequest = z.infer<typeof missionConfirmRequestSchema>;
 

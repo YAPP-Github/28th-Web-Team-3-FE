@@ -169,15 +169,30 @@ const HOBBY_QUESTIONS: MissionSurveyQuestion[] = [
   {
     code: "HOBBY_FREQUENCIES",
     prompt: "몇 번 이용하나요?",
-    answerType: "KEYED_NUMBER",
+    answerType: "KEYED_FREQUENCY_RANGE",
     options: [],
     minSelections: null,
     maxSelections: null,
     dependsOnQuestionCode: "HOBBY_SPENDING_TYPES",
     skipWhenOptionCodes: [],
-    numericRules: [
-      { subjectOptionCode: "GAME_ITEM", unit: "TIMES_PER_WEEK", minimum: 1, maximum: 2 },
-      { subjectOptionCode: "SUBSCRIPTION", unit: "SUBSCRIPTION_COUNT", minimum: 1, maximum: 2 },
+    numericRules: [],
+    frequencyRangeRules: [
+      {
+        subjectOptionCode: "GAME_ITEM",
+        unit: "TIMES_PER_FOUR_WEEKS",
+        options: [
+          { code: "ONE_TO_TWO", label: "1~2회", minimum: 1, maximum: 2 },
+          { code: "THREE_TO_FOUR", label: "3~4회", minimum: 3, maximum: 4 },
+        ],
+      },
+      {
+        subjectOptionCode: "SUBSCRIPTION",
+        unit: "SUBSCRIPTION_COUNT",
+        options: [
+          { code: "ONE", label: "1개", minimum: 1, maximum: 1 },
+          { code: "TWO", label: "2개", minimum: 2, maximum: 2 },
+        ],
+      },
     ],
     textRules: [],
     exclusiveOptionCodes: [],
@@ -321,7 +336,7 @@ describe("MissionSurveyQuestions", () => {
     expect(screen.queryByRole("button", { name: "구독" })).not.toBeInTheDocument();
   });
 
-  it("선행 다중 선택을 바꾸면 KEYED_NUMBER의 이전 키 값을 제출에서 제거한다", () => {
+  it("선행 다중 선택을 바꾸면 KEYED_FREQUENCY_RANGE의 이전 키 값을 제출에서 제거한다", () => {
     const onValues = vi.fn();
     render(
       <CaptureWrapper onValues={onValues}>
@@ -341,7 +356,7 @@ describe("MissionSurveyQuestions", () => {
     fireEvent.click(screen.getByRole("button", { name: "게임 아이템" }));
     fireEvent.click(screen.getByRole("button", { name: "구독" }));
     fireEvent.click(screen.getByRole("button", { name: "다음" }));
-    const [gameFrequencyButton] = screen.getAllByRole("button", { name: "1회" });
+    const [gameFrequencyButton] = screen.getAllByRole("button", { name: "1~2회" });
     if (!gameFrequencyButton) throw new Error("게임 아이템 빈도 선택지가 없습니다.");
     fireEvent.click(gameFrequencyButton);
     fireEvent.click(screen.getByRole("button", { name: "1개" }));
@@ -353,7 +368,7 @@ describe("MissionSurveyQuestions", () => {
     expect(onValues).toHaveBeenCalledWith(
       expect.objectContaining({
         hobby: expect.objectContaining({
-          frequencies: [{ spendingType: "GAME_ITEM", count: 1 }],
+          frequencies: [{ spendingType: "GAME_ITEM", frequencyRange: "ONE_TO_TWO" }],
         }),
       }),
     );

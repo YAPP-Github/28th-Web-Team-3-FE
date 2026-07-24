@@ -14,6 +14,7 @@ export const missionSurveyAnswerTypeSchema = z.enum([
   "NUMBER",
   "FREQUENCY_RANGE",
   "KEYED_NUMBER",
+  "KEYED_FREQUENCY_RANGE",
 ]);
 export type MissionSurveyAnswerType = z.infer<typeof missionSurveyAnswerTypeSchema>;
 
@@ -40,6 +41,9 @@ export const missionSurveyNumericRuleSchema = z.object({
 export type MissionSurveyNumericRule = z.infer<typeof missionSurveyNumericRuleSchema>;
 
 export const missionSurveyFrequencyRangeCodeSchema = z.enum([
+  "ONE",
+  "TWO",
+  "THREE_OR_MORE",
   "ONE_TO_TWO",
   "THREE_TO_FOUR",
   "FIVE_TO_SIX",
@@ -56,6 +60,13 @@ export const missionSurveyFrequencyRangeOptionSchema = z.object({
 export type MissionSurveyFrequencyRangeOption = z.infer<
   typeof missionSurveyFrequencyRangeOptionSchema
 >;
+
+export const missionSurveyFrequencyRangeRuleSchema = z.object({
+  subjectOptionCode: z.string(),
+  unit: missionSurveyFrequencyUnitSchema,
+  options: z.array(missionSurveyFrequencyRangeOptionSchema),
+});
+export type MissionSurveyFrequencyRangeRule = z.infer<typeof missionSurveyFrequencyRangeRuleSchema>;
 
 export const missionSurveyTextRuleSchema = z.object({
   subjectOptionCode: z.string(),
@@ -85,6 +96,7 @@ export const missionSurveyQuestionSchema = z.object({
   numericRules: z.array(missionSurveyNumericRuleSchema),
   textRules: z.array(missionSurveyTextRuleSchema),
   frequencyRangeOptions: z.array(missionSurveyFrequencyRangeOptionSchema).optional(),
+  frequencyRangeRules: z.array(missionSurveyFrequencyRangeRuleSchema).optional(),
   exclusiveOptionCodes: z.array(z.string()),
   conditionalOptionRules: z.array(missionSurveyConditionalOptionRuleSchema),
   impacts: z.array(z.string()),
@@ -127,7 +139,7 @@ export type TransportSurveyAnswers = z.infer<typeof transportSurveyAnswersSchema
 
 export const hobbyFrequencySchema = z.object({
   spendingType: z.string(),
-  count: z.number().int(),
+  frequencyRange: missionSurveyFrequencyRangeCodeSchema,
 });
 export type HobbyFrequency = z.infer<typeof hobbyFrequencySchema>;
 
@@ -143,7 +155,7 @@ export type HobbySurveyAnswers = z.infer<typeof hobbySurveyAnswersSchema>;
 
 export const livingFrequencySchema = z.object({
   area: z.string(),
-  count: z.number().int(),
+  frequencyRange: missionSurveyFrequencyRangeCodeSchema,
 });
 export type LivingFrequency = z.infer<typeof livingFrequencySchema>;
 

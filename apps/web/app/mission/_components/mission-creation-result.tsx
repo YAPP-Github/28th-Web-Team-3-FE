@@ -42,8 +42,6 @@ function MissionDraftCard({
   );
 }
 
-const MAX_SELECTABLE_DRAFTS = 4;
-
 export function MissionCreationResult({ jobId }: MissionCreationResultProps) {
   const router = useRouter();
   const { data, isPending, isError } = useGenerationDrafts(jobId);
@@ -53,7 +51,8 @@ export function MissionCreationResult({ jobId }: MissionCreationResultProps) {
   function toggleDraft(id: string, pressed: boolean) {
     setSelectedDraftIds((ids) => {
       if (!pressed) return ids.filter((item) => item !== id);
-      return ids.length >= MAX_SELECTABLE_DRAFTS ? ids : [...ids, id];
+      if (ids.includes(id)) return ids;
+      return [...ids, id];
     });
   }
 

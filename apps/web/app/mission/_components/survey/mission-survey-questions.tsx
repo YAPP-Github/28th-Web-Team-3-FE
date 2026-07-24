@@ -15,6 +15,7 @@ import {
   findNumericRule,
   frequencyUnitSuffix,
   isFrequencyRangeAnswered,
+  isKeyedFrequencyRangeAnswered,
   isKeyedNumberAnswered,
   isMultiChoiceAnswered,
   isNumberAnswered,
@@ -24,7 +25,7 @@ import {
   toggleMultiChoiceOption,
   walkToNextVisible,
 } from "../../lib/survey-answers";
-import { KeyedNumberQuestion } from "./keyed-number-question";
+import { KeyedFrequencyRangeQuestion, KeyedNumberQuestion } from "./keyed-number-question";
 import { OptionPillList } from "./option-pill-list";
 
 interface MissionSurveyQuestionsProps {
@@ -138,7 +139,10 @@ export function MissionSurveyQuestions({
       return;
     }
 
-    if (question.answerType === "KEYED_NUMBER" && Array.isArray(value)) {
+    if (
+      (question.answerType === "KEYED_NUMBER" || question.answerType === "KEYED_FREQUENCY_RANGE") &&
+      Array.isArray(value)
+    ) {
       const keyField = MISSION_SURVEY_KEYED_NUMBER_KEY_FIELDS[question.code] ?? "key";
       const allowedKeys = new Set(selectedCodes(dependencyValue));
       const nextValue = (value as Record<string, unknown>[]).filter((entry) =>
@@ -176,6 +180,18 @@ export function MissionSurveyQuestions({
           entries.map((entry) => ({
             key: String(entry[keyField]),
             count: typeof entry.count === "number" ? entry.count : Number.NaN,
+          })),
+          requiredKeys,
+        );
+      }
+      case "KEYED_FREQUENCY_RANGE": {
+        const keyField = MISSION_SURVEY_KEYED_NUMBER_KEY_FIELDS[question.code] ?? "key";
+        const entries = Array.isArray(value) ? (value as Record<string, unknown>[]) : [];
+        const requiredKeys = Array.isArray(dependencyValue) ? (dependencyValue as string[]) : [];
+        return isKeyedFrequencyRangeAnswered(
+          entries.map((entry) => ({
+            key: String(entry[keyField]),
+            frequencyRange: typeof entry.frequencyRange === "string" ? entry.frequencyRange : "",
           })),
           requiredKeys,
         );
@@ -283,6 +299,30 @@ export function MissionSurveyQuestions({
                 keyField={keyField}
                 keys={keys}
                 numericRules={question.numericRules}
+                value={Array.isArray(value) ? (value as Record<string, unknown>[]) : []}
+                onChange={(next) => setField(fieldPath, next)}
+              />
+            );
+          })()}
+
+        {question.answerType === "KEYED_FREQUENCY_RANGE" &&
+          dependencyQuestion &&
+          (() => {
+            const keyField = MISSION_SURVEY_KEYED_NUMBER_KEY_FIELDS[question.code] ?? "key";
+            const selectedKeyCodes = Array.isArray(dependencyValue)
+              ? (dependencyValue as string[])
+              : [];
+            const keys = selectedKeyCodes.flatMap((code) => {
+              const label = dependencyQuestion.options.find(
+                (option) => option.code === code,
+              )?.label;
+              return label ? [{ code, label }] : [];
+            });
+            return (
+              <KeyedFrequencyRangeQuestion
+                frequencyRangeRules={question.frequencyRangeRules ?? []}
+                keyField={keyField}
+                keys={keys}
                 value={Array.isArray(value) ? (value as Record<string, unknown>[]) : []}
                 onChange={(next) => setField(fieldPath, next)}
               />

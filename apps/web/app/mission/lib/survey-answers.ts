@@ -100,6 +100,21 @@ export function isKeyedNumberAnswered(
   );
 }
 
+/** KEYED_FREQUENCY_RANGE — 선행 다중 선택에서 고른 코드 전부에 범위 코드가 채워져야 완료다. */
+export function isKeyedFrequencyRangeAnswered(
+  entries: readonly { key: string; frequencyRange: string }[],
+  requiredKeys: readonly string[],
+): boolean {
+  if (requiredKeys.length === 0) return true;
+  const answeredKeys = new Set(entries.map((entry) => entry.key));
+  return (
+    entries.length === requiredKeys.length &&
+    entries.every((entry) => requiredKeys.includes(entry.key)) &&
+    requiredKeys.every((key) => answeredKeys.has(key)) &&
+    entries.every((entry) => entry.frequencyRange.length > 0)
+  );
+}
+
 /** 숫자 선택지에 붙일 단위 접미사. */
 export function frequencyUnitSuffix(unit: MissionSurveyFrequencyUnit): string {
   return unit === "SUBSCRIPTION_COUNT" ? "개" : unit === "DAYS_PER_WEEK" ? "일" : "회";
@@ -107,7 +122,11 @@ export function frequencyUnitSuffix(unit: MissionSurveyFrequencyUnit): string {
 
 /** 문항을 건너뛸 때 필드에 채울 빈 값. */
 export function emptyAnswerValue(answerType: MissionSurveyAnswerType): string[] | string | null {
-  return answerType === "MULTI_CHOICE" || answerType === "KEYED_NUMBER" ? [] : null;
+  return answerType === "MULTI_CHOICE" ||
+    answerType === "KEYED_NUMBER" ||
+    answerType === "KEYED_FREQUENCY_RANGE"
+    ? []
+    : null;
 }
 
 interface SkippableQuestion {
