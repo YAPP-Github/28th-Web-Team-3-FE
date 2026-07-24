@@ -43,23 +43,23 @@ export function WeeklyMissionSection({ missions }: WeeklyMissionSectionProps) {
 
       {hasMissions ? (
         <div className="flex flex-col gap-4 px-5 pt-6">
-          <div aria-label="홈 미션 카테고리" className="flex gap-1.5" role="tablist">
+          <fieldset className="flex gap-1.5">
+            <legend className="sr-only">홈 미션 카테고리</legend>
             {HOME_MISSION_CATEGORIES.map((item) => (
               <button
                 key={item}
-                aria-selected={category === item}
+                aria-pressed={category === item}
                 className={cn(
                   "rounded-lg px-4 py-1.5 text-body-b2-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-300",
                   category === item ? "bg-gray-800 text-gray-0" : "bg-gray-50 text-gray-400",
                 )}
-                role="tab"
                 type="button"
                 onClick={() => setCategory(item)}
               >
                 {item}
               </button>
             ))}
-          </div>
+          </fieldset>
 
           <div className="flex flex-col gap-3">
             {visibleMissions.map((mission) => {
@@ -109,13 +109,7 @@ export function WeeklyMissionSection({ missions }: WeeklyMissionSectionProps) {
             <br />
             절약 미션을 추가하고 달성해보세요.
           </p>
-          <Link
-            className={buttonVariants({
-              size: "cta",
-              variant: "onboardingBack",
-            })}
-            href="/mission/new"
-          >
+          <Link className={buttonVariants({ size: "cta" })} href="/mission/new">
             5,000만원 달성을 위한 미션 추가
           </Link>
         </div>
@@ -147,7 +141,6 @@ function MissionProgress({ hasMissions }: { hasMissions: boolean }) {
         aria-hidden="true"
         className="pointer-events-none h-32 w-auto object-contain"
         height={256}
-        priority
         src="/images/mission-home.webp"
         width={384}
       />

@@ -1,8 +1,15 @@
-import { ACTIVE_MISSIONS, type Mission } from "../mission/constants/mission";
+import {
+  ACTIVE_MISSIONS,
+  MISSION_CATEGORIES,
+  type Mission,
+  type MissionCategory,
+} from "../mission/constants/mission";
 
-export const HOME_MISSION_CATEGORIES = ["전체", "식비", "교통", "생활"] as const;
+export type HomeMissionCategory = Exclude<MissionCategory, "취미">;
 
-export type HomeMissionCategory = (typeof HOME_MISSION_CATEGORIES)[number];
+export const HOME_MISSION_CATEGORIES = MISSION_CATEGORIES.filter(
+  (category): category is HomeMissionCategory => category !== "취미",
+);
 
 export type HomeMission = Mission;
 

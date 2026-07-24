@@ -10,7 +10,7 @@ describe("WeeklyMissionSection", () => {
     expect(screen.getByText("10% 달성")).toBeInTheDocument();
     expect(screen.getByText("이번 주 배달음식 2회 이하로 주문")).toBeInTheDocument();
 
-    fireEvent.click(screen.getByRole("tab", { name: "교통" }));
+    fireEvent.click(screen.getByRole("button", { name: "교통" }));
     expect(screen.getByText("가까운 거리 걸어다니기 1회")).toBeInTheDocument();
     expect(screen.queryByText("이번 주 배달음식 2회 이하로 주문")).not.toBeInTheDocument();
   });

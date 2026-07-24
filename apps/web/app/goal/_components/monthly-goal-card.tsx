@@ -39,12 +39,12 @@ export function MonthlyGoalCard({
         <div className="h-full rounded-full bg-blue-500" style={{ width: `${percent}%` }} />
       </div>
       <Button
-        className="py-3 bg-white border-gray-200 border-[0.5px]"
+        className="h-[42px] border-[0.5px] border-gray-200 bg-white text-body-b2-700 text-gray-700"
         disabled={savePending}
         onClick={onSaveClick}
         type="button"
       >
-        <p className="text-body-b2-700 text-gray-700">현재 저축액 입력</p>
+        현재 저축액 입력
       </Button>
     </section>
   );

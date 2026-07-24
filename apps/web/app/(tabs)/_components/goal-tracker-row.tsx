@@ -8,7 +8,7 @@ export function GoalTrackerRow() {
   return (
     <Link href="/goal" className="flex items-center justify-between">
       <span className="flex items-center gap-2">
-        <Bill aria-hidden="true" className="width-8 height-[25px] shrink-0" />
+        <Bill aria-hidden="true" className="h-6.25 w-8 shrink-0" />
         <span className="text-title-t1-700 text-gray-900">{GOAL.title}</span>
       </span>
       <ChevronRight
