@@ -5,7 +5,7 @@ import { Button } from "@repo/ui";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { Controller, useFormContext, useWatch } from "react-hook-form";
-import { patchOnboardingProfile } from "@/lib/onboarding-api";
+import { useSaveOnboardingProfile } from "@/app/onboarding/_hooks/use-save-onboarding-profile";
 
 function formatBirthDateInput(value: string) {
   const digits = value.replace(/\D/g, "").slice(0, 8);
@@ -21,6 +21,7 @@ export default function AgeOnboardingPage() {
   const { control, trigger } = useFormContext<OnboardingFormValues>();
   const birthDate = useWatch({ control, name: "birthDate" });
   const isBirthDateValid = /^\d{4}-\d{2}-\d{2}$/.test(birthDate);
+  const { isSaving, saveError, saveProfile } = useSaveOnboardingProfile();
 
   useEffect(() => {
     router.prefetch("/onboarding/month");
@@ -59,18 +60,22 @@ export default function AgeOnboardingPage() {
           />
         </div>
       </section>
+      {saveError ? (
+        <p aria-live="polite" className="mt-auto text-center text-body-b2-500 text-gray-700">
+          {saveError}
+        </p>
+      ) : null}
       <Button
-        className="mt-auto mb-6 disabled:bg-gray-50 disabled:text-gray-300 disabled:opacity-100"
-        disabled={!isBirthDateValid}
+        className={`${saveError ? "mt-3" : "mt-auto"} mb-6 disabled:bg-gray-50 disabled:text-gray-300 disabled:opacity-100`}
+        disabled={!isBirthDateValid || isSaving}
         size="cta"
         onClick={async () => {
           if (await trigger("birthDate", { shouldFocus: true })) {
-            await patchOnboardingProfile({ birthDate });
-            router.push("/onboarding/month");
+            if (await saveProfile({ birthDate })) router.push("/onboarding/month");
           }
         }}
       >
-        다음
+        {isSaving ? "저장 중…" : "다음"}
       </Button>
     </div>
   );

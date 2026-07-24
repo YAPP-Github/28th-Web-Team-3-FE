@@ -19,13 +19,16 @@ export function OnboardingFormProvider({ children }: { children: ReactNode }) {
     getOnboardingProfile()
       .then((profile) => {
         if (!active) return;
-        formMethods.reset({
-          birthDate: profile.birthDate ?? "",
-          monthlySalaryManwon: profile.monthlySalaryManwon ?? 0,
-          monthlySavingManwon: profile.monthlySavingManwon ?? 0,
-          netWorthManwon: profile.netWorthManwon ?? 0,
-          goalPeriodMonths: profile.goalPeriodMonths ?? "",
-        });
+        formMethods.reset(
+          {
+            birthDate: profile.birthDate ?? "",
+            monthlySalaryManwon: profile.monthlySalaryManwon ?? 0,
+            monthlySavingManwon: profile.monthlySavingManwon ?? 0,
+            netWorthManwon: profile.netWorthManwon ?? 0,
+            goalPeriodMonths: profile.goalPeriodMonths ?? "",
+          },
+          { keepDirtyValues: true },
+        );
       })
       .catch(() => undefined);
 

@@ -1,11 +1,12 @@
-import { render, screen, waitFor } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import HomePage from "./page";
 
 const replace = vi.fn();
+const router = { replace };
 
 vi.mock("next/navigation", () => ({
-  useRouter: () => ({ replace }),
+  useRouter: () => router,
 }));
 
 vi.mock("@/lib/onboarding-api", () => ({
@@ -49,5 +50,24 @@ describe("HomePage", () => {
 
     await waitFor(() => expect(replace).toHaveBeenCalledWith("/onboarding/intro"));
     expect(screen.queryByRole("heading", { name: "Web Team 3" })).not.toBeInTheDocument();
+  });
+
+  it("프로필 조회 실패를 미완료로 오인하지 않고 재시도한다", async () => {
+    vi.mocked(getOnboardingProfile)
+      .mockRejectedValueOnce(new Error("network error"))
+      .mockResolvedValueOnce({
+        status: "COMPLETED",
+        birthDate: "1998-03-01",
+        monthlySalaryManwon: 300,
+        monthlySavingManwon: 100,
+        netWorthManwon: 1000,
+        goalPeriodMonths: 24,
+      });
+
+    render(<HomePage />);
+
+    fireEvent.click(await screen.findByRole("button", { name: "다시 시도" }));
+    expect(await screen.findByRole("heading", { name: "Web Team 3" })).toBeInTheDocument();
+    expect(replace).not.toHaveBeenCalled();
   });
 });

@@ -86,4 +86,20 @@ describe("MonthlyIncomeAndSavingsOnboardingPage", () => {
       }),
     );
   });
+
+  it("저축액이 월급보다 크면 슬라이더 아래에 오류를 표시한다", async () => {
+    renderMonthOnboardingPage();
+    fireEvent.click(screen.getByRole("button", { name: "직접 입력" }));
+    fireEvent.change(screen.getByRole("textbox", { name: "월급만원" }), {
+      target: { value: "100" },
+    });
+    fireEvent.change(screen.getByRole("textbox", { name: "월 저축액만원" }), {
+      target: { value: "200" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "완료" }));
+
+    const error = await screen.findByText("월 저축액은 월급보다 클 수 없어요.");
+    expect(error).toHaveClass("text-body-b2-500", "text-error");
+    expect(screen.getByRole("button", { name: "다음" })).toBeDisabled();
+  });
 });

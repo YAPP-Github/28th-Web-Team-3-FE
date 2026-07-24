@@ -21,17 +21,20 @@ let cachedToken: string | null = null;
 // 동시 401에 대한 웹 쪽 single-flight. 네이티브도 자체 single-flight를 갖지만,
 // 여기서 묶으면 bridge 왕복 자체가 1회로 줄어든다.
 let refreshInflight: Promise<string | null> | null = null;
+const isUtGuestAuthEnabled = process.env.NEXT_PUBLIC_ENABLE_UT_GUEST_AUTH === "true";
 
 const tokenProvider: TokenProvider = {
   getAccessToken: async () => {
-    if (!isNativeApp()) return getBrowserAccessToken();
+    if (!isNativeApp()) return isUtGuestAuthEnabled ? getBrowserAccessToken() : null;
     if (cachedToken === null) {
       cachedToken = await bridge.getAccessToken().catch(() => null);
     }
     return cachedToken;
   },
   refreshAccessToken: () => {
-    if (!isNativeApp()) return refreshBrowserAccessToken();
+    if (!isNativeApp()) {
+      return isUtGuestAuthEnabled ? refreshBrowserAccessToken() : Promise.resolve(null);
+    }
     refreshInflight ??= bridge
       .refreshAccessToken()
       .then((token) => {

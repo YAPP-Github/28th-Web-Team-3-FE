@@ -6,8 +6,8 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Controller, useFormContext, useWatch } from "react-hook-form";
 import { LabelSlider } from "@/app/onboarding/_components/label-slider";
+import { useSaveOnboardingProfile } from "@/app/onboarding/_hooks/use-save-onboarding-profile";
 import { MAX_MONTHLY_AMOUNT_SLIDER_VALUE } from "@/app/onboarding/constants/amounts";
-import { patchOnboardingProfile } from "@/lib/onboarding-api";
 
 function parseMonthlyAmountInput(inputValue: string) {
   return Math.min(Number(inputValue.replace(/\D/g, "")), MAX_MONTHLY_AMOUNT);
@@ -22,17 +22,19 @@ export default function MonthlyIncomeAndSavingsOnboardingPage() {
     name: ["monthlySalaryManwon", "monthlySavingManwon"],
   });
   const hasRequiredMonthlyAmounts = income > 0 && savings > 0;
+  const { isSaving, saveError, saveProfile } = useSaveOnboardingProfile();
+  const amountError = savings > income ? "월 저축액은 월급보다 클 수 없어요." : undefined;
 
   async function navigateToNetWorthQuestion() {
     if (
       savings <= income &&
       (await trigger(["monthlySalaryManwon", "monthlySavingManwon"], { shouldFocus: true }))
     ) {
-      await patchOnboardingProfile({
+      const saved = await saveProfile({
         monthlySalaryManwon: income,
         monthlySavingManwon: savings,
       });
-      router.push("/onboarding/net");
+      if (saved) router.push("/onboarding/net");
     }
   }
 
@@ -64,19 +66,26 @@ export default function MonthlyIncomeAndSavingsOnboardingPage() {
                 />
               )}
             />
-            <Controller
-              control={control}
-              name="monthlySavingManwon"
-              render={({ field }) => (
-                <LabelSlider
-                  amount={field.value}
-                  amountLabel="월 저축액"
-                  helperMessage="매월 저축액이 다르다면 평균으로 설정해주세요."
-                  maxAmount={MAX_MONTHLY_AMOUNT_SLIDER_VALUE}
-                  onAmountChange={field.onChange}
-                />
-              )}
-            />
+            <div>
+              <Controller
+                control={control}
+                name="monthlySavingManwon"
+                render={({ field }) => (
+                  <LabelSlider
+                    amount={field.value}
+                    amountLabel="월 저축액"
+                    helperMessage="매월 저축액이 다르다면 평균으로 설정해주세요."
+                    maxAmount={MAX_MONTHLY_AMOUNT_SLIDER_VALUE}
+                    onAmountChange={field.onChange}
+                  />
+                )}
+              />
+              {amountError ? (
+                <p aria-live="polite" className="mt-2 text-body-b2-500 text-error">
+                  {amountError}
+                </p>
+              ) : null}
+            </div>
           </div>
         </section>
 
@@ -128,9 +137,15 @@ export default function MonthlyIncomeAndSavingsOnboardingPage() {
         </BottomSheet>
       </div>
 
+      {saveError ? (
+        <p aria-live="polite" className="pt-4 text-center text-body-b2-500 text-error">
+          {saveError}
+        </p>
+      ) : null}
       <div className="pt-8 pb-6">
         <ButtonGroup
-          nextDisabled={!hasRequiredMonthlyAmounts}
+          nextDisabled={!hasRequiredMonthlyAmounts || Boolean(amountError) || isSaving}
+          nextLabel={isSaving ? "저장 중…" : "다음"}
           onNext={navigateToNetWorthQuestion}
           onPrev={() => router.push("/onboarding/age")}
         />

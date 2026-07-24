@@ -20,12 +20,32 @@ describe("period onboarding page", () => {
         <InvestmentPeriodOnboardingPage />
       </OnboardingFormProvider>,
     );
-    fireEvent.click(screen.getByRole("radio", { name: "2년 정도 예상해요" }));
+    const slider = screen.getByRole("slider", { name: "목표기간" });
+    for (let index = 0; index < 4; index += 1) {
+      fireEvent.keyDown(slider, { key: "ArrowRight" });
+    }
     fireEvent.click(screen.getByRole("button", { name: "다음" }));
 
     await waitFor(() => {
       expect(patchOnboardingProfile).toHaveBeenCalledWith({ goalPeriodMonths: 24 });
       expect(pushMock).toHaveBeenCalledWith("/onboarding/result");
     });
+  });
+
+  it("0년부터 3년까지 6개월 단위로 목표기간을 선택한다", () => {
+    render(
+      <OnboardingFormProvider>
+        <InvestmentPeriodOnboardingPage />
+      </OnboardingFormProvider>,
+    );
+
+    const slider = screen.getByRole("slider", { name: "목표기간" });
+    expect(slider).toHaveAttribute("aria-valuemin", "0");
+    expect(slider).toHaveAttribute("aria-valuemax", "36");
+    expect(screen.getByText("목표기간 0년")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "다음" })).toBeDisabled();
+    fireEvent.keyDown(slider, { key: "ArrowRight" });
+    expect(slider).toHaveAttribute("aria-valuenow", "6");
+    expect(screen.getByText("목표기간 6개월")).toBeInTheDocument();
   });
 });

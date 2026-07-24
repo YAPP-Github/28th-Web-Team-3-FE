@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Controller, useFormContext, useWatch } from "react-hook-form";
 import { NetWorthSlider } from "@/app/onboarding/_components/net-worth-slider";
-import { patchOnboardingProfile } from "@/lib/onboarding-api";
+import { useSaveOnboardingProfile } from "@/app/onboarding/_hooks/use-save-onboarding-profile";
 
 function parseNetWorthInput(inputValue: string) {
   return Math.min(Number(inputValue.replace(/\D/g, "")), MAX_NET_WORTH_AMOUNT);
@@ -18,11 +18,13 @@ export default function NetWorthOnboardingPage() {
   const { control, trigger } = useFormContext<OnboardingFormValues>();
   const netWorthAmount = useWatch({ control, name: "netWorthManwon" });
   const hasNetWorthAmount = netWorthAmount > 0;
+  const { isSaving, saveError, saveProfile } = useSaveOnboardingProfile();
 
   async function navigateToInvestmentPeriodQuestion() {
     if (await trigger("netWorthManwon", { shouldFocus: true })) {
-      await patchOnboardingProfile({ netWorthManwon: netWorthAmount });
-      router.push("/onboarding/period");
+      if (await saveProfile({ netWorthManwon: netWorthAmount })) {
+        router.push("/onboarding/period");
+      }
     }
   }
 
@@ -84,9 +86,15 @@ export default function NetWorthOnboardingPage() {
         </BottomSheet>
       </div>
 
+      {saveError ? (
+        <p aria-live="polite" className="pt-4 text-center text-body-b2-500 text-gray-700">
+          {saveError}
+        </p>
+      ) : null}
       <div className="pt-8 pb-6">
         <ButtonGroup
-          nextDisabled={!hasNetWorthAmount}
+          nextDisabled={!hasNetWorthAmount || isSaving}
+          nextLabel={isSaving ? "저장 중…" : "다음"}
           onNext={navigateToInvestmentPeriodQuestion}
           onPrev={() => router.push("/onboarding/month")}
         />
