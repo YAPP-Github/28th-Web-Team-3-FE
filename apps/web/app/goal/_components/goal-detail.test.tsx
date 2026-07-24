@@ -5,7 +5,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 // 조회/변경 훅을 목으로 대체한다 — 데이터 주입 후 렌더·인터랙션 로직을 검증한다.
 // (API 연동 자체는 브라우저 MSW로 별도 확인. vitest jsdom은 msw/node fetch를 가로채지 못한다.)
 const MOCK_GOAL: GoalStatus = {
-  targetAmountManwon: 3050,
+  targetAmountManwon: 5000,
   totalSavedManwon: 1950,
   progressPercent: 100,
   usageMonths: 8,
@@ -13,12 +13,13 @@ const MOCK_GOAL: GoalStatus = {
   thisMonth: { targetManwon: 82, savedManwon: 67, progressPercent: 82, dDay: 12 },
 };
 
-const mutation = { mutate: vi.fn(), isPending: false };
+const savingsMutation = { mutate: vi.fn(), isPending: false };
+const goalMutation = { mutate: vi.fn(), isPending: false };
 
 vi.mock("../queries", () => ({
   useGoalStatus: () => ({ data: MOCK_GOAL, isPending: false, isError: false }),
-  useUpdateSavings: () => mutation,
-  useUpdateGoal: () => mutation,
+  useUpdateSavings: () => savingsMutation,
+  useUpdateGoal: () => goalMutation,
 }));
 
 vi.mock("@/lib/onboarding", () => ({
@@ -65,7 +66,7 @@ describe("GoalDetail", () => {
     expect(screen.getByRole("dialog")).toBeInTheDocument();
   });
 
-  it("목표수정 시트에서 전체 목표금액을 추가 목표액으로 환산해 저장한다", async () => {
+  it("목표수정 시트에서 입력한 목표금액을 그대로 저장한다", async () => {
     render(<GoalDetail />);
 
     fireEvent.click(screen.getByRole("button", { name: /수정/ }));
@@ -84,16 +85,36 @@ describe("GoalDetail", () => {
     });
     fireEvent.click(screen.getByRole("button", { name: "완료" }));
 
-    expect(mutation.mutate).toHaveBeenCalledWith(
-      { targetAmountManwon: 4050, periodMonths: 16 },
+    expect(goalMutation.mutate).toHaveBeenCalledWith(
+      { targetAmountManwon: 6000, periodMonths: 16 },
       expect.objectContaining({ onSuccess: expect.any(Function) }),
     );
 
-    const [, options] = mutation.mutate.mock.calls.at(-1) ?? [];
+    const [, options] = goalMutation.mutate.mock.calls.at(-1) ?? [];
     await options.onSuccess();
     expect(patchOnboardingProfile).toHaveBeenCalledWith({
       goalPeriodMonths: 16,
       monthlySalaryManwon: 650,
     });
+  });
+
+  it("현재저축액 입력은 목표금액을 수정하지 않는다", () => {
+    render(<GoalDetail />);
+
+    fireEvent.click(screen.getByRole("button", { name: "현재 저축액 입력" }));
+    fireEvent.change(screen.getByRole("textbox", { name: "저축액만원" }), {
+      target: { value: "100" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "완료" }));
+
+    expect(savingsMutation.mutate).toHaveBeenCalledWith(
+      { savedAmountManwon: 100 },
+      expect.objectContaining({ onSuccess: expect.any(Function) }),
+    );
+
+    const [, savingsOptions] = savingsMutation.mutate.mock.calls.at(-1) ?? [];
+    savingsOptions.onSuccess();
+
+    expect(goalMutation.mutate).not.toHaveBeenCalled();
   });
 });
