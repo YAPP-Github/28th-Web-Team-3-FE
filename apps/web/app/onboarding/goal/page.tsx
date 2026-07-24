@@ -6,7 +6,7 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { GoalPlanChart } from "@/app/onboarding/goal/_components/goal-plan-chart";
-import { confirmOnboardingGoal, getOnboardingGoalPlans } from "@/lib/onboarding-api";
+import { confirmOnboardingGoal, getOnboardingGoalPlans } from "@/lib/onboarding";
 
 type GoalPlanCode = "PLAN_1" | "PLAN_2";
 

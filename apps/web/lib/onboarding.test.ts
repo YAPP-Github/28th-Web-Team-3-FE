@@ -7,7 +7,7 @@ import {
   getOnboardingProfile,
   getOnboardingReport,
   patchOnboardingProfile,
-} from "@/lib/onboarding-api";
+} from "@/lib/onboarding";
 
 vi.mock("@/lib/api", () => ({
   api: { get: vi.fn(), patch: vi.fn(), post: vi.fn() },

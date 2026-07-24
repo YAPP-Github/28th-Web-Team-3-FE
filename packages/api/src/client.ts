@@ -16,6 +16,11 @@ export type ApiClientOptions = {
   tokenProvider?: TokenProvider;
 };
 
+function normalizeBaseUrl(baseUrl?: string) {
+  const configuredBaseUrl = baseUrl ?? process.env.NEXT_PUBLIC_API_URL ?? "/";
+  return configuredBaseUrl.endsWith("/") ? configuredBaseUrl : `${configuredBaseUrl}/`;
+}
+
 /**
  * Shared HTTP client. tokenProvider가 있으면 모든 요청에 Bearer access token을
  * 붙이고, 401 응답 시 재발급 후 딱 1회 재시도한다.
@@ -24,7 +29,7 @@ export type ApiClientOptions = {
 export function createApiClient({ baseUrl, tokenProvider }: ApiClientOptions = {}): KyInstance {
   return ky.create({
     // ky v2 renamed `prefixUrl` to the web-standard `baseUrl`.
-    baseUrl: baseUrl ?? process.env.NEXT_PUBLIC_API_URL ?? "/",
+    baseUrl: normalizeBaseUrl(baseUrl),
     retry: { limit: 2, methods: ["get"] },
     hooks: {
       beforeRequest: tokenProvider

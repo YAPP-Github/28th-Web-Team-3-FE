@@ -4,7 +4,7 @@ import { Button } from "@repo/ui";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { NativeFeatures } from "@/app/native-features";
-import { getOnboardingProfile } from "@/lib/onboarding-api";
+import { getOnboardingProfile } from "@/lib/onboarding";
 
 export default function HomePage() {
   const router = useRouter();

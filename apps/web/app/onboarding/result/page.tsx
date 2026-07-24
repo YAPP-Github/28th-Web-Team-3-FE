@@ -6,7 +6,7 @@ import AppleIntelIcon from "@repo/ui/svg/apple-intel.svg";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { SavingsComparisonChart } from "@/app/onboarding/_components/savings-comparison-chart";
-import { getOnboardingReport } from "@/lib/onboarding-api";
+import { getOnboardingReport } from "@/lib/onboarding";
 
 function formatAmount(amount: number) {
   return `${amount.toLocaleString("ko-KR")}만원`;

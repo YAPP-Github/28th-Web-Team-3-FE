@@ -9,11 +9,11 @@ vi.mock("next/navigation", () => ({
   useRouter: () => router,
 }));
 
-vi.mock("@/lib/onboarding-api", () => ({
+vi.mock("@/lib/onboarding", () => ({
   getOnboardingProfile: vi.fn(),
 }));
 
-import { getOnboardingProfile } from "@/lib/onboarding-api";
+import { getOnboardingProfile } from "@/lib/onboarding";
 
 describe("HomePage", () => {
   beforeEach(() => {

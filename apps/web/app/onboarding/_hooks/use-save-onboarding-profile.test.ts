@@ -1,9 +1,9 @@
 import { act, renderHook } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { patchOnboardingProfile } from "@/lib/onboarding-api";
+import { patchOnboardingProfile } from "@/lib/onboarding";
 import { useSaveOnboardingProfile } from "./use-save-onboarding-profile";
 
-vi.mock("@/lib/onboarding-api", () => ({ patchOnboardingProfile: vi.fn() }));
+vi.mock("@/lib/onboarding", () => ({ patchOnboardingProfile: vi.fn() }));
 
 describe("useSaveOnboardingProfile", () => {
   beforeEach(() => vi.clearAllMocks());
