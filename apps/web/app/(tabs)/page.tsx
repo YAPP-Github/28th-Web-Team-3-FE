@@ -10,7 +10,6 @@ import { FinancialTipList } from "./_components/financial-tip-list";
 import { GoalTrackerRow } from "./_components/goal-tracker-row";
 import { WeeklyMissionSection } from "./_components/weekly-mission-section";
 import { FINANCIAL_TIPS } from "./benefits/constants";
-import { HOME_MISSIONS } from "./constants/home";
 
 export default function HomePage() {
   const router = useRouter();
@@ -65,7 +64,7 @@ export default function HomePage() {
           targetLabel={GOAL.monthly.targetLabel}
         />
       </section>
-      <WeeklyMissionSection missions={HOME_MISSIONS} />
+      <WeeklyMissionSection />
       <FinancialTipList tips={FINANCIAL_TIPS} />
     </main>
   );

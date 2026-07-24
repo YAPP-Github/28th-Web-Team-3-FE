@@ -6,24 +6,35 @@ import { Check, ChevronDown, ChevronRight, ChevronUp } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
-import {
-  HOME_MISSION_CATEGORIES,
-  type HomeMission,
-  type HomeMissionCategory,
-} from "@/app/(tabs)/constants/home";
+import { HOME_MISSION_CATEGORIES, type HomeMissionCategory } from "@/app/(tabs)/constants/home";
+import { MISSION_CATEGORY_LABELS } from "@/app/(tabs)/mission/constants/mission";
+import { calculateProgressPercent, formatWeekDday } from "@/app/(tabs)/mission/lib/format";
+import { useCompleteMission, useMissions } from "@/app/(tabs)/mission/queries";
 import { SectionHeader } from "./section-header";
 
-interface WeeklyMissionSectionProps {
-  missions: readonly HomeMission[];
-}
-
-export function WeeklyMissionSection({ missions }: WeeklyMissionSectionProps) {
+export function WeeklyMissionSection() {
+  const { data: missions, isPending, isError } = useMissions();
+  const completeMission = useCompleteMission();
   const [category, setCategory] = useState<HomeMissionCategory>("전체");
   const [expandedId, setExpandedId] = useState<string | null>(null);
-  const visibleMissions = missions.filter(
-    (mission) => category === "전체" || mission.category === category,
+
+  if (isPending) {
+    return <p className="px-5 pt-8 text-center text-body-b2-500 text-gray-400">불러오는 중…</p>;
+  }
+
+  if (isError) {
+    return (
+      <p className="px-5 pt-8 text-center text-body-b2-500 text-gray-500">
+        미션을 불러오지 못했어요. 잠시 후 다시 시도해 주세요.
+      </p>
+    );
+  }
+
+  const activeMissions = missions.filter((mission) => mission.status === "ACTIVE");
+  const visibleMissions = activeMissions.filter(
+    (mission) => category === "전체" || MISSION_CATEGORY_LABELS[mission.category] === category,
   );
-  const hasMissions = missions.length > 0;
+  const hasMissions = activeMissions.length > 0;
 
   return (
     <section className="flex flex-col pt-8">
@@ -39,7 +50,11 @@ export function WeeklyMissionSection({ missions }: WeeklyMissionSectionProps) {
         </SectionHeader>
       </div>
 
-      <MissionProgress hasMissions={hasMissions} />
+      <MissionProgress
+        ddayLabel={formatWeekDday(missions[0]?.weekEndsAt)}
+        hasMissions={hasMissions}
+        percent={calculateProgressPercent(missions)}
+      />
 
       {hasMissions ? (
         <div className="flex flex-col gap-4 px-5 pt-6">
@@ -69,32 +84,44 @@ export function WeeklyMissionSection({ missions }: WeeklyMissionSectionProps) {
                   key={mission.id}
                   className="flex flex-col gap-3 rounded-xl bg-gray-50 px-3.5 py-3.5"
                 >
-                  <button
-                    aria-expanded={isExpanded}
-                    className="flex w-full items-center gap-2 rounded-md text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-300"
-                    type="button"
-                    onClick={() =>
-                      setExpandedId((current) => (current === mission.id ? null : mission.id))
-                    }
-                  >
-                    <span className="flex size-5 shrink-0 items-center justify-center rounded-full border border-gray-400">
+                  <div className="flex w-full items-center gap-2">
+                    <button
+                      aria-label="미션 완료"
+                      className="flex size-5 shrink-0 items-center justify-center rounded-full border border-gray-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-300"
+                      type="button"
+                      onClick={() =>
+                        completeMission.mutate({
+                          source: mission.source,
+                          missionId: mission.id,
+                        })
+                      }
+                    >
                       <Check aria-hidden="true" className="size-3 text-gray-400" />
-                    </span>
-                    <span className="min-w-0 flex-1 text-body-b1-700 text-gray-900">
-                      {mission.title}
-                    </span>
-                    {isExpanded ? (
-                      <ChevronUp aria-hidden="true" className="size-5 shrink-0 text-gray-400" />
-                    ) : (
-                      <ChevronDown aria-hidden="true" className="size-5 shrink-0 text-gray-400" />
-                    )}
-                  </button>
-                  {isExpanded && mission.description ? (
+                    </button>
+                    <button
+                      aria-expanded={isExpanded}
+                      className="flex min-w-0 flex-1 items-center gap-2 rounded-md text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-300"
+                      type="button"
+                      onClick={() =>
+                        setExpandedId((current) => (current === mission.id ? null : mission.id))
+                      }
+                    >
+                      <span className="min-w-0 flex-1 text-body-b1-700 text-gray-900">
+                        {mission.title}
+                      </span>
+                      {isExpanded ? (
+                        <ChevronUp aria-hidden="true" className="size-5 shrink-0 text-gray-400" />
+                      ) : (
+                        <ChevronDown aria-hidden="true" className="size-5 shrink-0 text-gray-400" />
+                      )}
+                    </button>
+                  </div>
+                  {isExpanded ? (
                     <p className="pl-7 text-body-b2-500 text-gray-700">
                       <span className="mr-2 rounded bg-blue-100 px-1.5 py-1 text-blue-600">
                         달성 시
                       </span>
-                      {mission.description}
+                      {mission.savingsLabel}
                     </p>
                   ) : null}
                 </div>
@@ -103,7 +130,7 @@ export function WeeklyMissionSection({ missions }: WeeklyMissionSectionProps) {
           </div>
         </div>
       ) : (
-        <div className="flex flex-col gap-5 px-5 py-16 text-center">
+        <div className="flex flex-col gap-12 px-5 pt-8 text-center">
           <p className="text-body-b2-500 text-gray-500">
             미션이 없어요.
             <br />
@@ -118,14 +145,20 @@ export function WeeklyMissionSection({ missions }: WeeklyMissionSectionProps) {
   );
 }
 
-function MissionProgress({ hasMissions }: { hasMissions: boolean }) {
-  const progressLabel = hasMissions ? "10% 달성" : "0% 달성";
+interface MissionProgressProps {
+  ddayLabel: string;
+  hasMissions: boolean;
+  percent: number;
+}
+
+function MissionProgress({ ddayLabel, hasMissions, percent }: MissionProgressProps) {
+  const progressLabel = hasMissions ? `${percent}% 달성` : "0% 달성";
 
   return (
     <div className="flex flex-row justify-between bg-gray-50 px-5 py-[10px]">
       <div className="flex flex-col justify-center gap-2">
         <span className="w-fit rounded bg-gray-100 px-2 py-1 text-body-b2-700 text-gray-700">
-          D-2
+          {ddayLabel}
         </span>
         <div className="flex flex-col gap-[1px]">
           <strong className="text-title-t1-700 text-gray-900">{progressLabel}</strong>

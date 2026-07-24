@@ -1,17 +1,22 @@
 "use client";
 
+import type { MissionSurveyPutRequest } from "@repo/schema/mission-survey";
 import { Button, Toggle } from "@repo/ui";
 import { ChevronLeft } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { useFormContext } from "react-hook-form";
 import {
   buildMissionCreationFormHref,
+  MISSION_CREATION_CATEGORY_CODES,
   MISSION_RECOMMENDATION_CATEGORIES,
   type MissionCreationCategory,
 } from "@/app/mission/constants/mission-creation";
+import { buildDefaultSurveyValues } from "@/app/mission/constants/mission-survey";
 
 export default function NewMissionPage() {
   const router = useRouter();
+  const { reset } = useFormContext<MissionSurveyPutRequest>();
   const [selectedCategories, setSelectedCategories] = useState<MissionCreationCategory[]>([]);
 
   function toggleCategory(category: MissionCreationCategory, pressed: boolean) {
@@ -69,7 +74,14 @@ export default function NewMissionPage() {
         <Button
           disabled={selectedCategories.length === 0}
           size="cta"
-          onClick={() => router.push(buildMissionCreationFormHref(selectedCategories, 0))}
+          onClick={() => {
+            reset(
+              buildDefaultSurveyValues(
+                selectedCategories.map((category) => MISSION_CREATION_CATEGORY_CODES[category]),
+              ),
+            );
+            router.push(buildMissionCreationFormHref(selectedCategories, 0));
+          }}
         >
           다음
         </Button>

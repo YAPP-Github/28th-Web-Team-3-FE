@@ -1,17 +1,59 @@
+import type { Mission } from "@repo/schema/mission";
 import { fireEvent, render, screen } from "@testing-library/react";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
+
+const MOCK_MISSIONS: Mission[] = [
+  {
+    id: "meal-1",
+    source: "RECOMMENDED",
+    category: "MEAL",
+    title: "이번 주 배달음식 2회 이하로 주문",
+    targetCount: 2,
+    targetUnit: "TIMES_PER_WEEK",
+    estimatedSavingsWon: 5000,
+    savingsEstimateVersion: "V1",
+    savingsLabel: "약 5,000원 절약 예상",
+    status: "ACTIVE",
+    weekEndsAt: "2099-01-01T00:00:00Z",
+  },
+  {
+    id: "transport-1",
+    source: "RECOMMENDED",
+    category: "TRANSPORT",
+    title: "가까운 거리 걸어다니기 1회",
+    targetCount: 1,
+    targetUnit: "TIMES_PER_WEEK",
+    estimatedSavingsWon: 3000,
+    savingsEstimateVersion: "V1",
+    savingsLabel: "약 3,000원 절약 예상",
+    status: "ACTIVE",
+    weekEndsAt: "2099-01-01T00:00:00Z",
+  },
+  {
+    id: "living-1",
+    source: "MANUAL",
+    category: "LIVING",
+    title: "불필요한 구독 해지 1회",
+    targetCount: 1,
+    targetUnit: "TIMES_PER_WEEK",
+    estimatedSavingsWon: 15000,
+    savingsEstimateVersion: "V1",
+    savingsLabel: "약 15,000원 절약 예상",
+    status: "COMPLETED",
+    weekEndsAt: "2099-01-01T00:00:00Z",
+  },
+];
+
+const completeMutation = { mutate: vi.fn() };
+
+vi.mock("./queries", () => ({
+  useMissions: () => ({ data: MOCK_MISSIONS, isPending: false, isError: false }),
+  useCompleteMission: () => completeMutation,
+}));
+
 import MissionPage from "./page";
 
 describe("MissionPage", () => {
-  it("결과에서 선택한 미션을 홈 목록에 추가한다", async () => {
-    window.history.replaceState(null, "", "/mission?addedMissionIds=suggestion-life-no-spend");
-
-    render(<MissionPage />);
-
-    expect(await screen.findByText("무지출 데이 1회 만들기")).toBeInTheDocument();
-    expect(window.location.pathname).toBe("/mission");
-  });
-
   it("카테고리를 필터링하고 미션 상세를 펼친다", () => {
     render(<MissionPage />);
 
@@ -20,13 +62,30 @@ describe("MissionPage", () => {
     expect(screen.queryByText("가까운 거리 걸어다니기 1회")).not.toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("button", { name: /이번 주 배달음식/ }));
-    expect(screen.getByText(/배달음식 평균 금액은 약 13,000원/)).toBeInTheDocument();
-
-    fireEvent.click(screen.getByRole("button", { name: "삭제" }));
-    expect(screen.queryByText("이번 주 배달음식 2회 이하로 주문")).not.toBeInTheDocument();
+    expect(screen.getByText("약 5,000원 절약 예상")).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("tab", { name: "교통" }));
     expect(screen.queryByText("불필요한 구독 해지 1회")).not.toBeInTheDocument();
+  });
+
+  it("체크 아이콘으로 미션 완료를 요청한다", () => {
+    render(<MissionPage />);
+
+    fireEvent.click(screen.getByRole("tab", { name: "식비" }));
+    fireEvent.click(screen.getByRole("button", { name: "미션 완료" }));
+    expect(completeMutation.mutate).toHaveBeenCalledWith({
+      source: "RECOMMENDED",
+      missionId: "meal-1",
+    });
+  });
+
+  it("펼친 미션에서 준비 중인 삭제 버튼을 표시한다", () => {
+    render(<MissionPage />);
+
+    fireEvent.click(screen.getByRole("tab", { name: "식비" }));
+    fireEvent.click(screen.getByRole("button", { name: /이번 주 배달음식/ }));
+
+    expect(screen.getByRole("button", { name: "삭제 (준비 중)" })).toBeDisabled();
   });
 
   it("플로팅 버튼으로 미션 추가 메뉴를 연다", () => {
