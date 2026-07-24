@@ -2,7 +2,7 @@
 
 import * as DialogPrimitive from "@radix-ui/react-dialog";
 import type * as React from "react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { cn } from "../lib/utils";
 
 export interface BottomSheetProps extends React.ComponentProps<typeof DialogPrimitive.Root> {
@@ -28,24 +28,47 @@ export function BottomSheet({
   ...rootProps
 }: BottomSheetProps) {
   const [keyboardInset, setKeyboardInset] = useState(0);
+  const keyboardInsetRef = useRef(0);
+  const animationFrameRef = useRef<number | null>(null);
+  const resetTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
+    if (!rootProps.open) {
+      return;
+    }
+
     const viewport = window.visualViewport;
     if (!viewport) return;
 
     function updateKeyboardInset() {
       if (!viewport) return;
-      setKeyboardInset(Math.max(0, window.innerHeight - viewport.height - viewport.offsetTop));
+      if (animationFrameRef.current !== null) cancelAnimationFrame(animationFrameRef.current);
+      animationFrameRef.current = requestAnimationFrame(() => {
+        const nextInset = Math.max(0, window.innerHeight - viewport.height - viewport.offsetTop);
+        if (nextInset === keyboardInsetRef.current) return;
+        if (resetTimeoutRef.current !== null) clearTimeout(resetTimeoutRef.current);
+        if (nextInset < keyboardInsetRef.current) {
+          resetTimeoutRef.current = setTimeout(() => {
+            keyboardInsetRef.current = nextInset;
+            setKeyboardInset(nextInset);
+          }, 120);
+          return;
+        }
+        keyboardInsetRef.current = nextInset;
+        setKeyboardInset(nextInset);
+      });
     }
 
     updateKeyboardInset();
     viewport.addEventListener("resize", updateKeyboardInset);
     viewport.addEventListener("scroll", updateKeyboardInset);
     return () => {
+      if (animationFrameRef.current !== null) cancelAnimationFrame(animationFrameRef.current);
+      if (resetTimeoutRef.current !== null) clearTimeout(resetTimeoutRef.current);
       viewport.removeEventListener("resize", updateKeyboardInset);
       viewport.removeEventListener("scroll", updateKeyboardInset);
     };
-  }, []);
+  }, [rootProps.open]);
 
   return (
     <DialogPrimitive.Root {...rootProps}>
