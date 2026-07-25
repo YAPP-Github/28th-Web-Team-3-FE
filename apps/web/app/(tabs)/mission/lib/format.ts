@@ -9,9 +9,13 @@ export function formatWeekDday(weekEndsAt: string | undefined): string {
   return days === 0 ? "D-DAY" : `D-${days}`;
 }
 
+/** 완료한 미션 수 — 완료 1건당 코인 1개로 표시한다. */
+export function countCompletedMissions(missions: readonly Mission[]): number {
+  return missions.filter((mission) => mission.status === "COMPLETED").length;
+}
+
 /** 이번 주 미션 진행률(%) — 완료/전체 개수 기준. */
 export function calculateProgressPercent(missions: readonly Mission[]): number {
   if (missions.length === 0) return 0;
-  const completedCount = missions.filter((mission) => mission.status === "COMPLETED").length;
-  return Math.round((completedCount / missions.length) * 100);
+  return Math.round((countCompletedMissions(missions) / missions.length) * 100);
 }
