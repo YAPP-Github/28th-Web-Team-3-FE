@@ -10,7 +10,11 @@ import { useState } from "react";
 import { HOME_MISSION_CATEGORIES, type HomeMissionCategory } from "@/app/(tabs)/constants/home";
 import { MissionCompleteDialog } from "@/app/(tabs)/mission/_components/mission-complete-dialog";
 import { MISSION_CATEGORY_LABELS } from "@/app/(tabs)/mission/constants/mission";
-import { calculateProgressPercent, formatWeekDday } from "@/app/(tabs)/mission/lib/format";
+import {
+  calculateProgressPercent,
+  countCompletedMissions,
+  formatWeekDday,
+} from "@/app/(tabs)/mission/lib/format";
 import { useCompleteMission, useMissions } from "@/app/(tabs)/mission/queries";
 import { formatManwon } from "@/app/goal/lib/format";
 import { calculateGoalTotalTargetManwon } from "@/app/goal/lib/progress";
@@ -61,6 +65,7 @@ export function WeeklyMissionSection() {
       </div>
 
       <MissionProgress
+        completedCount={countCompletedMissions(missions)}
         ddayLabel={formatWeekDday(missions[0]?.weekEndsAt)}
         hasMissions={hasMissions}
         percent={calculateProgressPercent(missions)}
@@ -166,9 +171,16 @@ interface MissionProgressProps {
   ddayLabel: string;
   hasMissions: boolean;
   percent: number;
+  /** 완료한 미션 수 — 완료 1건당 코인 1개. */
+  completedCount: number;
 }
 
-function MissionProgress({ ddayLabel, hasMissions, percent }: MissionProgressProps) {
+function MissionProgress({
+  ddayLabel,
+  hasMissions,
+  percent,
+  completedCount,
+}: MissionProgressProps) {
   const progressLabel = hasMissions ? `${percent}% 달성` : "0% 달성";
 
   return (
@@ -182,8 +194,7 @@ function MissionProgress({ ddayLabel, hasMissions, percent }: MissionProgressPro
           <p className="text-caption-c1-500 text-gray-700">미션을 추가하고 달성해보세요!</p>
         </div>
         <span className="flex items-center gap-1 text-body-b2-500 text-gray-800">
-          <CoinIcon aria-hidden="true" />
-          +0
+          <CoinIcon aria-hidden="true" />+{completedCount}
         </span>
       </div>
       <Image

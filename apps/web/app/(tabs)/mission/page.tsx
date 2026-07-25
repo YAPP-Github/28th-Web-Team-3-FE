@@ -8,7 +8,7 @@ import { MissionCompleteDialog } from "./_components/mission-complete-dialog";
 import { MissionHero } from "./_components/mission-hero";
 import { MissionList } from "./_components/mission-list";
 import { MISSION_CATEGORY_LABELS, type MissionCategory } from "./constants/mission";
-import { calculateProgressPercent, formatWeekDday } from "./lib/format";
+import { calculateProgressPercent, countCompletedMissions, formatWeekDday } from "./lib/format";
 import { useCompleteMission, useDeleteRecommendedMission, useMissions } from "./queries";
 
 export default function MissionPage() {
@@ -48,6 +48,7 @@ export default function MissionPage() {
   return (
     <main className="flex flex-1 flex-col bg-gray-0 text-gray-900">
       <MissionHero
+        completedCount={countCompletedMissions(missions)}
         ddayLabel={formatWeekDday(missions[0]?.weekEndsAt)}
         percent={calculateProgressPercent(missions)}
       />
