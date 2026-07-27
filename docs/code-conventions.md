@@ -50,7 +50,7 @@ export async function updateSavings(body: SavingRequest): Promise<void> {
 
 요청 body를 보내기 전에 검증하면 서버 왕복 없이 계약 위반을 잡는다. 그러려면 스키마의 허용 범위를 **서버 검증값과 같게** 맞춰야 한다(아래 참고).
 
-> 예외: `lib/browser-guest-auth.ts`는 토큰을 발급받는 경로라 ky 클라이언트를 쓸 수 없다(순환). raw `fetch` + `schema.parse`를 그대로 둔다.
+> 예외: 토큰을 발급받는 경로는 ky 클라이언트를 쓸 수 없다(인증 헤더를 붙이는 클라이언트가 인증을 호출하는 순환). 네이티브의 `src/auth/guest-auth.ts`가 raw `fetch` + `schema.parse`를 쓰는 이유다.
 
 ### 허용 범위는 서버 검증값을 그대로 옮긴다
 
@@ -71,6 +71,8 @@ access token의 원본은 네이티브(RN) 메모리이고, 웹은 bridge로 당
 그래서 인증이 필요한 조회는 전부 `"use client"` + react-query다. `lib/api.ts`가 `import "client-only"`로 서버 번들 유입을 빌드 타임에 막는다.
 
 인증이 필요 없는 정적 데이터(정책 목록 등)는 서버 컴포넌트로 둬도 된다.
+
+같은 이유로 **네이티브 셸 밖(일반 브라우저)은 지원 대상이 아니다.** 기기 UUID와 refresh token이 네이티브 SecureStore에만 있어 토큰을 얻을 방법이 없다. 브라우저에서 열면 헤더 없이 요청이 나가고 서버가 401을 준다. 데모·QA 때문에 브라우저용 우회 인증을 다시 만들지 마라 — 자격증명이 브라우저 저장소로 내려오는 순간 이 구조의 전제가 깨진다. 화면 확인이 필요하면 MSW나 Playwright 목을 쓴다.
 
 ## 에러 처리
 

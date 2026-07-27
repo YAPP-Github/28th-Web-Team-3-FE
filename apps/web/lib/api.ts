@@ -2,13 +2,15 @@ import "client-only";
 
 import { createApiClient, type TokenProvider } from "@repo/api/client";
 import { bridge, isNativeApp } from "@repo/bridge";
-import { getBrowserAccessToken, refreshBrowserAccessToken } from "@/lib/browser-guest-auth";
 
 /**
- * 웹 앱 전용 API 클라이언트. 네이티브 WebView 안에서는 access token을 bridge로
- * 당겨 와(pull) Authorization 헤더에 싣고, 401이면 네이티브에 재발급을 요청한 뒤
- * 1회 재시도한다. 임시 UT 환경의 일반 브라우저에서는 sessionStorage의 UUID로
- * 백엔드에서 access token을 직접 발급받는다.
+ * 웹 앱 전용 API 클라이언트. access token의 원본은 네이티브(RN) 메모리이고, 웹은
+ * bridge로 당겨 와(pull) Authorization 헤더에 싣는다. 401이면 네이티브에 재발급을
+ * 요청한 뒤 1회 재시도한다.
+ *
+ * 네이티브 셸 밖(일반 브라우저)에는 토큰을 얻을 수단이 없다 — 기기 uuid와 refresh
+ * token이 네이티브 SecureStore에만 있기 때문이다. 이때는 헤더 없이 보내고 서버가
+ * 401로 판단하게 둔다. 이 앱은 네이티브 셸 안에서 동작하는 것을 전제로 한다.
  *
  * bridge는 브라우저 전용이고 서버 컴포넌트(RSC)는 게스트 토큰에 접근할 수 없으므로,
  * "client-only"로 서버 번들 유입을 빌드 타임에 차단한다.
@@ -21,20 +23,17 @@ let cachedToken: string | null = null;
 // 동시 401에 대한 웹 쪽 single-flight. 네이티브도 자체 single-flight를 갖지만,
 // 여기서 묶으면 bridge 왕복 자체가 1회로 줄어든다.
 let refreshInflight: Promise<string | null> | null = null;
-const isUtGuestAuthEnabled = process.env.NEXT_PUBLIC_ENABLE_UT_GUEST_AUTH === "true";
 
 const tokenProvider: TokenProvider = {
   getAccessToken: async () => {
-    if (!isNativeApp()) return isUtGuestAuthEnabled ? getBrowserAccessToken() : null;
+    if (!isNativeApp()) return null;
     if (cachedToken === null) {
       cachedToken = await bridge.getAccessToken().catch(() => null);
     }
     return cachedToken;
   },
   refreshAccessToken: () => {
-    if (!isNativeApp()) {
-      return isUtGuestAuthEnabled ? refreshBrowserAccessToken() : Promise.resolve(null);
-    }
+    if (!isNativeApp()) return Promise.resolve(null);
     refreshInflight ??= bridge
       .refreshAccessToken()
       .then((token) => {
