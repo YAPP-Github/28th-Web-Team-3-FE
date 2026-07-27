@@ -1,6 +1,7 @@
 import "client-only";
 
 import { createApiClient, type TokenProvider } from "@repo/api/client";
+import { createHttp } from "@repo/api/http";
 import { bridge, isNativeApp } from "@repo/bridge";
 
 /**
@@ -51,4 +52,8 @@ const tokenProvider: TokenProvider = {
   },
 };
 
+/** ky 인스턴스. 옵션을 직접 다뤄야 할 때만 쓰고, 평소에는 아래 `http`를 쓴다. */
 export const api = createApiClient({ tokenProvider });
+
+/** 스키마를 아는 HTTP 클라이언트 — 각 기능의 api.ts는 이걸 쓴다. */
+export const http = createHttp(api);

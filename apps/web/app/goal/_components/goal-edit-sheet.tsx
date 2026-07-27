@@ -8,7 +8,7 @@ import {
 } from "@repo/schema/goal";
 import { AmountField, BottomSheet, Button } from "@repo/ui";
 import { useEffect, useState } from "react";
-import { getOnboardingProfile, patchOnboardingProfile } from "@/lib/onboarding";
+import { getOnboardingProfile, patchOnboardingProfile } from "@/lib/onboarding/api";
 import { useUpdateGoal } from "../queries";
 
 interface GoalEditSheetProps {

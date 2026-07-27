@@ -1,13 +1,13 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { confirmOnboardingGoal, getOnboardingGoalPlans } from "@/lib/onboarding";
+import { confirmOnboardingGoal, getOnboardingGoalPlans } from "@/lib/onboarding/api";
 import OnboardingGoalPage from "./page";
 
 const push = vi.fn();
 const replace = vi.fn();
 
 vi.mock("next/navigation", () => ({ useRouter: () => ({ push, replace }) }));
-vi.mock("@/lib/onboarding", () => ({
+vi.mock("@/lib/onboarding/api", () => ({
   confirmOnboardingGoal: vi.fn(),
   getOnboardingGoalPlans: vi.fn(),
 }));

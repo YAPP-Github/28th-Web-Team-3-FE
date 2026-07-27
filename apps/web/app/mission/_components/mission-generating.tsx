@@ -4,8 +4,8 @@ import { Button } from "@repo/ui";
 import { Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
+import { useGenerationJobStatus } from "@/app/mission/_generation/queries";
 import { buildMissionCreationResultHref } from "@/app/mission/constants/mission-creation";
-import { useGenerationJobStatus } from "@/app/mission/generation-queries";
 
 /**
  * AI 미션 초안 생성 job이 끝날 때까지 polling한다. jobId는 설문 제출 단계에서 만들어

@@ -30,7 +30,7 @@ const MOCK_DRAFTS: MissionDraftsResponse = {
 const confirmMutate = vi.fn();
 const confirmIsError = false;
 
-vi.mock("@/app/mission/generation-queries", () => ({
+vi.mock("@/app/mission/_generation/queries", () => ({
   useGenerationDrafts: () => ({ data: MOCK_DRAFTS, isPending: false, isError: false }),
   useConfirmGenerationJob: () => ({ mutate: confirmMutate, isError: confirmIsError }),
 }));

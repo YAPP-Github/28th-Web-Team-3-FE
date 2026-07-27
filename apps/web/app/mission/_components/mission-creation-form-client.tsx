@@ -5,10 +5,10 @@ import type { MissionSurveyPutRequest } from "@repo/schema/mission-survey";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useFormContext } from "react-hook-form";
+import { useRequestGenerationJob } from "@/app/mission/_generation/queries";
+import { useReplaceSurvey, useSurveyQuestions } from "@/app/mission/_survey/queries";
 import type { MissionCreationCategory } from "@/app/mission/constants/mission-creation";
 import { buildMissionGeneratingHref } from "@/app/mission/constants/mission-creation";
-import { useRequestGenerationJob } from "@/app/mission/generation-queries";
-import { useReplaceSurvey, useSurveyQuestions } from "@/app/mission/survey-queries";
 import { MissionCreationIntro } from "./mission-creation-intro";
 import { MissionSurveyQuestions } from "./survey/mission-survey-questions";
 

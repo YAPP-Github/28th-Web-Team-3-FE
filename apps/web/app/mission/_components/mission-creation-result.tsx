@@ -6,7 +6,7 @@ import { ChevronLeft } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { MISSION_CATEGORY_LABELS } from "@/app/(tabs)/mission/constants/mission";
-import { useConfirmGenerationJob, useGenerationDrafts } from "@/app/mission/generation-queries";
+import { useConfirmGenerationJob, useGenerationDrafts } from "@/app/mission/_generation/queries";
 
 interface MissionCreationResultProps {
   jobId: string;

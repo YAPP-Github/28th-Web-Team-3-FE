@@ -1,4 +1,3 @@
-import { parseJson } from "@repo/api/json";
 import {
   type OnboardingGoal,
   type OnboardingGoalConfirm,
@@ -12,7 +11,7 @@ import {
   onboardingReportSchema,
 } from "@repo/schema/onboarding-api";
 import { HTTPError } from "ky";
-import { api } from "@/lib/api";
+import { http } from "@/lib/api";
 
 const ONBOARDING_PATH = "onboarding";
 const EMPTY_ONBOARDING_PROFILE: OnboardingProfile = {
@@ -36,7 +35,7 @@ function isMissingOnboardingProfile(error: unknown): boolean {
 
 export async function getOnboardingProfile(): Promise<OnboardingProfile> {
   try {
-    return await parseJson(api.get(`${ONBOARDING_PATH}/profile`), onboardingProfileSchema);
+    return await http.get(`${ONBOARDING_PATH}/profile`, { response: onboardingProfileSchema });
   } catch (error) {
     if (isMissingOnboardingProfile(error)) return EMPTY_ONBOARDING_PROFILE;
     throw error;
@@ -46,20 +45,20 @@ export async function getOnboardingProfile(): Promise<OnboardingProfile> {
 export function patchOnboardingProfile(
   profile: OnboardingProfilePatch,
 ): Promise<OnboardingProfile> {
-  return parseJson(
-    api.patch(`${ONBOARDING_PATH}/profile`, { json: profile }),
-    onboardingProfileSchema,
-  );
+  return http.patch(`${ONBOARDING_PATH}/profile`, {
+    body: profile,
+    response: onboardingProfileSchema,
+  });
 }
 
 export function getOnboardingReport(): Promise<OnboardingReport> {
-  return parseJson(api.get(`${ONBOARDING_PATH}/report`), onboardingReportSchema);
+  return http.get(`${ONBOARDING_PATH}/report`, { response: onboardingReportSchema });
 }
 
 export function getOnboardingGoalPlans(): Promise<OnboardingGoalPlans> {
-  return parseJson(api.get(`${ONBOARDING_PATH}/goal-plans`), onboardingGoalPlansSchema);
+  return http.get(`${ONBOARDING_PATH}/goal-plans`, { response: onboardingGoalPlansSchema });
 }
 
 export function confirmOnboardingGoal(goal: OnboardingGoalConfirm): Promise<OnboardingGoal> {
-  return parseJson(api.post(`${ONBOARDING_PATH}/goal`, { json: goal }), onboardingGoalSchema);
+  return http.post(`${ONBOARDING_PATH}/goal`, { body: goal, response: onboardingGoalSchema });
 }

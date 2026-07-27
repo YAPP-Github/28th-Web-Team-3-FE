@@ -1,3 +1,3 @@
 export { api, createApiClient } from "./client";
-export { parseJson } from "./json";
+export { createHttp, type Http, type RequestOptions } from "./http";
 export { createQueryClient, QueryProvider } from "./query-client";

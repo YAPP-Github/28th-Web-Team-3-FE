@@ -6,7 +6,7 @@
   "exports": {
     ".": "./src/index.ts",
     "./client": "./src/client.ts",
-    "./json": "./src/json.ts",
+    "./http": "./src/http.ts",
     "./provider": "./src/query-client.tsx"
   },
   "scripts": {

@@ -19,6 +19,8 @@ apps/web/.../<기능>/queries.ts    react-query 훅. queryKey·무효화 정책
 
 `api.ts`는 순수 함수만 둔다. 훅·상태·컴포넌트를 import하지 않는다.
 
+파일명은 항상 `api.ts` / `queries.ts`다 — `<기능>-api.ts`처럼 접두사를 붙이지 말고, 한 디렉터리에 API 표면이 둘 이상이면 디렉터리를 나눈다(라우트로 잡히지 않게 `_이름/`).
+
 ### 경로는 리소스명만
 
 `NEXT_PUBLIC_API_URL`에 `/api`가 포함된다. 경로에 다시 붙이면 `/api/api/goal`이 된다.

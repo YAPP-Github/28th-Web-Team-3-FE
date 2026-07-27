@@ -3,7 +3,7 @@
 import { Button } from "@repo/ui";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { getOnboardingProfile } from "@/lib/onboarding";
+import { getOnboardingProfile } from "@/lib/onboarding/api";
 import { FinancialTipList } from "./_components/financial-tip-list";
 import { HomeGoalSection } from "./_components/home-goal-section";
 import { WeeklyMissionSection } from "./_components/weekly-mission-section";
