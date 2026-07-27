@@ -1,3 +1,4 @@
+import { parseJson } from "@repo/api/json";
 import {
   type GoalStatus,
   type GoalUpdateRequest,
@@ -15,8 +16,8 @@ import { api } from "@/lib/api";
  */
 
 /** GET /api/goal — 목표 현황 조회. */
-export async function fetchGoalStatus(): Promise<GoalStatus> {
-  return goalStatusSchema.parse(await api.get("goal").json());
+export function fetchGoalStatus(): Promise<GoalStatus> {
+  return parseJson(api.get("goal"), goalStatusSchema);
 }
 
 /** PUT /api/goal/savings — 현재 저축액 입력. 전송 전 계약 검증. */

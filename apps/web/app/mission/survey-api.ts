@@ -1,3 +1,4 @@
+import { parseJson } from "@repo/api/json";
 import type { MissionCategory } from "@repo/schema/mission";
 import {
   type MissionSurveyPutRequest,
@@ -15,19 +16,21 @@ import { api } from "@/lib/api";
  */
 
 /** GET /api/missions/surveys/questions — 선택한 카테고리들의 설문 문항 조회. */
-export async function fetchSurveyQuestions(
+export function fetchSurveyQuestions(
   categories: readonly MissionCategory[],
 ): Promise<MissionSurveyQuestionsResponse> {
   const searchParams = new URLSearchParams();
   for (const category of categories) searchParams.append("categories", category);
-  return missionSurveyQuestionsResponseSchema.parse(
-    await api.get("missions/surveys/questions", { searchParams }).json(),
+  return parseJson(
+    api.get("missions/surveys/questions", { searchParams }),
+    missionSurveyQuestionsResponseSchema,
   );
 }
 
 /** PUT /api/missions/surveys — 설문 저장·교체. 전송 전 계약 검증. */
-export async function replaceSurvey(body: MissionSurveyPutRequest): Promise<MissionSurveyResponse> {
-  return missionSurveyResponseSchema.parse(
-    await api.put("missions/surveys", { json: missionSurveyPutRequestSchema.parse(body) }).json(),
+export function replaceSurvey(body: MissionSurveyPutRequest): Promise<MissionSurveyResponse> {
+  return parseJson(
+    api.put("missions/surveys", { json: missionSurveyPutRequestSchema.parse(body) }),
+    missionSurveyResponseSchema,
   );
 }

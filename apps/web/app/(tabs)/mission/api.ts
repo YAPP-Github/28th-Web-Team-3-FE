@@ -1,3 +1,4 @@
+import { parseJson } from "@repo/api/json";
 import { type Mission, type MissionSource, missionsResponseSchema } from "@repo/schema/mission";
 import { api } from "@/lib/api";
 
@@ -9,7 +10,7 @@ import { api } from "@/lib/api";
 
 /** GET /api/missions — 내 미션 전체 조회(active/completed 구분은 호출부에서 status로 나눈다). */
 export async function fetchMissions(): Promise<readonly Mission[]> {
-  const { missions } = missionsResponseSchema.parse(await api.get("missions").json());
+  const { missions } = await parseJson(api.get("missions"), missionsResponseSchema);
   return missions;
 }
 

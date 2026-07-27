@@ -1,3 +1,4 @@
+import { parseJson } from "@repo/api/json";
 import {
   type OnboardingGoal,
   type OnboardingGoalConfirm,
@@ -35,32 +36,30 @@ function isMissingOnboardingProfile(error: unknown): boolean {
 
 export async function getOnboardingProfile(): Promise<OnboardingProfile> {
   try {
-    const response = await api.get(`${ONBOARDING_PATH}/profile`).json();
-    return onboardingProfileSchema.parse(response);
+    return await parseJson(api.get(`${ONBOARDING_PATH}/profile`), onboardingProfileSchema);
   } catch (error) {
     if (isMissingOnboardingProfile(error)) return EMPTY_ONBOARDING_PROFILE;
     throw error;
   }
 }
 
-export async function patchOnboardingProfile(
+export function patchOnboardingProfile(
   profile: OnboardingProfilePatch,
 ): Promise<OnboardingProfile> {
-  const response = await api.patch(`${ONBOARDING_PATH}/profile`, { json: profile }).json();
-  return onboardingProfileSchema.parse(response);
+  return parseJson(
+    api.patch(`${ONBOARDING_PATH}/profile`, { json: profile }),
+    onboardingProfileSchema,
+  );
 }
 
-export async function getOnboardingReport(): Promise<OnboardingReport> {
-  const response = await api.get(`${ONBOARDING_PATH}/report`).json();
-  return onboardingReportSchema.parse(response);
+export function getOnboardingReport(): Promise<OnboardingReport> {
+  return parseJson(api.get(`${ONBOARDING_PATH}/report`), onboardingReportSchema);
 }
 
-export async function getOnboardingGoalPlans(): Promise<OnboardingGoalPlans> {
-  const response = await api.get(`${ONBOARDING_PATH}/goal-plans`).json();
-  return onboardingGoalPlansSchema.parse(response);
+export function getOnboardingGoalPlans(): Promise<OnboardingGoalPlans> {
+  return parseJson(api.get(`${ONBOARDING_PATH}/goal-plans`), onboardingGoalPlansSchema);
 }
 
-export async function confirmOnboardingGoal(goal: OnboardingGoalConfirm): Promise<OnboardingGoal> {
-  const response = await api.post(`${ONBOARDING_PATH}/goal`, { json: goal }).json();
-  return onboardingGoalSchema.parse(response);
+export function confirmOnboardingGoal(goal: OnboardingGoalConfirm): Promise<OnboardingGoal> {
+  return parseJson(api.post(`${ONBOARDING_PATH}/goal`, { json: goal }), onboardingGoalSchema);
 }
