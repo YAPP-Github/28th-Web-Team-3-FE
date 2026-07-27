@@ -26,7 +26,7 @@ vi.mock("next/navigation", () => ({
   useRouter: () => router,
 }));
 
-vi.mock("@/lib/onboarding", () => ({
+vi.mock("@/lib/onboarding/api", () => ({
   getOnboardingProfile: vi.fn(),
 }));
 
@@ -54,7 +54,7 @@ vi.mock("@/app/(tabs)/mission/queries", () => ({
   useCompleteMission: () => ({ mutate: vi.fn() }),
 }));
 
-import { getOnboardingProfile } from "@/lib/onboarding";
+import { getOnboardingProfile } from "@/lib/onboarding/api";
 
 describe("HomePage", () => {
   beforeEach(() => {

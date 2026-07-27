@@ -3,6 +3,7 @@
 AI 코딩 도구가 불필요한 변경과 과설계를 피하도록 돕는 공통 작업 원칙이다. 아래 프로젝트 규칙과 함께 적용한다.
 **우선순위**: 단순한 작업에는 필요한 만큼만 적용하되, 기본적으로 속도보다 정확성을 우선한다.
 **단일 원본**: 공통 AI 작업 지침은 이 파일에서만 관리한다. CLAUDE.md는 이 파일을 불러온다.
+**코드 컨벤션**: API 레이어·에러 처리·테스트 등 코드를 쓰는 규칙은 [`docs/code-conventions.md`](docs/code-conventions.md)에 있다. 코드를 고치기 전에 해당 항목을 확인한다.
 
 ## 작업 원칙
 
@@ -117,7 +118,8 @@ pnpm format      # biome format --write .
 - 커밋 전 lefthook 훅 통과 필수 (`pnpm prepare`로 설치).
 - 워크스페이스 내부 의존성은 `workspace:*`.
 - **인증은 비로그인 게스트 JWT — 쿠키/세션 사용 금지.** 로그인 없음. native가 UUID(expo-secure-store) 기반으로 access/refresh를 발급받고, refresh·UUID는 네이티브 밖으로 내보내지 않는다. 웹은 bridge(토큰 조회/재발급 메서드)로 access만 받아 메모리에서 사용하고 `Authorization: Bearer` 헤더로 API 호출. `credentials: "include"`·세션 쿠키(JSESSIONID) 코드 작성 금지.
-  - **임시 UT(사용자 테스트) 예외:** 네이티브 셸 없이 일반 브라우저에서 백엔드 연동을 검증하는 동안에만 기기 UUID를 `sessionStorage`에 저장할 수 있다. access token은 메모리에만 두고, refresh token은 브라우저에 저장하지 않는다. 401이면 같은 UUID로 access token을 다시 발급한다. 쿠키·`localStorage`는 계속 금지하며, 이 예외는 정식 배포 인증 정책이 아니다.
+  - 기기 UUID는 네이티브가 `expo-secure-store`에 영구 보관한다. 서버가 `hash(uuid)`로 게스트를 식별하므로 refresh token이 만료돼도 같은 UUID로 재발급하면 같은 계정으로 돌아온다.
+  - **네이티브 셸 밖(일반 브라우저)은 지원하지 않는다.** UUID·refresh token이 SecureStore에만 있어 토큰을 얻을 수단이 없다. 이때는 헤더 없이 보내고 서버가 401로 판단하게 둔다. 브라우저용 우회 인증을 다시 만들지 마라.
 - Next 16 / React 19 / Tailwind v4 최신 API 기준 — 학습 데이터의 구버전 패턴 주의.
 
 ### 디자인 토큰 (packages/ui)

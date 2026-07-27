@@ -6,7 +6,7 @@ import GoalUpIcon from "@repo/ui/svg/goal-up.svg";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { GoalPlanChart } from "@/app/onboarding/goal/_components/goal-plan-chart";
-import { confirmOnboardingGoal, getOnboardingGoalPlans } from "@/lib/onboarding";
+import { confirmOnboardingGoal, getOnboardingGoalPlans } from "@/lib/onboarding/api";
 
 type GoalPlanCode = "PLAN_1" | "PLAN_2";
 

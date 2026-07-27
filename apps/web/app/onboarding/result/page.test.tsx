@@ -1,12 +1,12 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { getOnboardingReport } from "@/lib/onboarding";
+import { getOnboardingReport } from "@/lib/onboarding/api";
 import OnboardingResultPage from "./page";
 
 const push = vi.fn();
 
 vi.mock("next/navigation", () => ({ useRouter: () => ({ push }) }));
-vi.mock("@/lib/onboarding", () => ({
+vi.mock("@/lib/onboarding/api", () => ({
   getOnboardingReport: vi.fn(),
 }));
 

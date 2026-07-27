@@ -1,5 +1,5 @@
 import { queryOptions } from "@tanstack/react-query";
-import { fetchGenerationJobStatus } from "../generation-api";
+import { fetchGenerationJobStatus } from "../_generation/api";
 
 export const MISSION_GENERATION_POLLING_INTERVAL_MS = 5000;
 

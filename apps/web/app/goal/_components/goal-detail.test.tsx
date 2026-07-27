@@ -22,7 +22,7 @@ vi.mock("../queries", () => ({
   useUpdateGoal: () => goalMutation,
 }));
 
-vi.mock("@/lib/onboarding", () => ({
+vi.mock("@/lib/onboarding/api", () => ({
   getOnboardingProfile: vi.fn().mockResolvedValue({
     status: "COMPLETED",
     birthDate: "1998-03-01",
@@ -34,7 +34,7 @@ vi.mock("@/lib/onboarding", () => ({
   patchOnboardingProfile: vi.fn().mockResolvedValue({}),
 }));
 
-import { patchOnboardingProfile } from "@/lib/onboarding";
+import { patchOnboardingProfile } from "@/lib/onboarding/api";
 import { GoalDetail } from "./goal-detail";
 
 describe("GoalDetail", () => {

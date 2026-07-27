@@ -1,11 +1,7 @@
 import type { MissionConfirmRequest } from "@repo/schema/mission-generation";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import {
-  confirmGenerationJob,
-  fetchGenerationDrafts,
-  requestGenerationJob,
-} from "./generation-api";
-import { missionGenerationJobOptions } from "./options/mission";
+import { missionGenerationJobOptions } from "../options/mission";
+import { confirmGenerationJob, fetchGenerationDrafts, requestGenerationJob } from "./api";
 
 /** 생성 job 요청(진행 중이면 서버가 같은 job을 반환하므로 여러 번 호출해도 안전하다). */
 export function useRequestGenerationJob() {

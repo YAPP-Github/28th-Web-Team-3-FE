@@ -1,6 +1,6 @@
 import type { MissionCategory } from "@repo/schema/mission";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { fetchSurveyQuestions, replaceSurvey } from "./survey-api";
+import { fetchSurveyQuestions, replaceSurvey } from "./api";
 
 /** 선택한 카테고리들의 설문 문항 조회. */
 export function useSurveyQuestions(categories: readonly MissionCategory[]) {

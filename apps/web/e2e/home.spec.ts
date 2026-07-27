@@ -1,13 +1,8 @@
 import { expect, test } from "@playwright/test";
 
+// 인증은 네이티브 셸(bridge) 몫이라 브라우저 e2e에는 토큰이 없다.
+// API 응답을 목으로 세워 화면 렌더만 검증한다.
 test("home page renders", async ({ page }) => {
-  await page.route("**/api/auth/guest", (route) =>
-    route.fulfill({
-      status: 201,
-      contentType: "application/json",
-      body: JSON.stringify({ accessToken: "e2e-access-token", refreshToken: "e2e-refresh-token" }),
-    }),
-  );
   await page.route("**/api/onboarding/profile", (route) =>
     route.fulfill({
       status: 200,

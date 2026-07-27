@@ -5,13 +5,15 @@ import {
   type OnboardingProfile,
   type OnboardingProfilePatch,
   type OnboardingReport,
+  onboardingGoalConfirmSchema,
   onboardingGoalPlansSchema,
   onboardingGoalSchema,
+  onboardingProfilePatchSchema,
   onboardingProfileSchema,
   onboardingReportSchema,
 } from "@repo/schema/onboarding-api";
 import { HTTPError } from "ky";
-import { api } from "@/lib/api";
+import { http } from "@/lib/api";
 
 const ONBOARDING_PATH = "onboarding";
 const EMPTY_ONBOARDING_PROFILE: OnboardingProfile = {
@@ -35,32 +37,35 @@ function isMissingOnboardingProfile(error: unknown): boolean {
 
 export async function getOnboardingProfile(): Promise<OnboardingProfile> {
   try {
-    const response = await api.get(`${ONBOARDING_PATH}/profile`).json();
-    return onboardingProfileSchema.parse(response);
+    return await http.get(`${ONBOARDING_PATH}/profile`, { response: onboardingProfileSchema });
   } catch (error) {
     if (isMissingOnboardingProfile(error)) return EMPTY_ONBOARDING_PROFILE;
     throw error;
   }
 }
 
-export async function patchOnboardingProfile(
+export function patchOnboardingProfile(
   profile: OnboardingProfilePatch,
 ): Promise<OnboardingProfile> {
-  const response = await api.patch(`${ONBOARDING_PATH}/profile`, { json: profile }).json();
-  return onboardingProfileSchema.parse(response);
+  return http.patch(`${ONBOARDING_PATH}/profile`, {
+    body: profile,
+    request: onboardingProfilePatchSchema,
+    response: onboardingProfileSchema,
+  });
 }
 
-export async function getOnboardingReport(): Promise<OnboardingReport> {
-  const response = await api.get(`${ONBOARDING_PATH}/report`).json();
-  return onboardingReportSchema.parse(response);
+export function getOnboardingReport(): Promise<OnboardingReport> {
+  return http.get(`${ONBOARDING_PATH}/report`, { response: onboardingReportSchema });
 }
 
-export async function getOnboardingGoalPlans(): Promise<OnboardingGoalPlans> {
-  const response = await api.get(`${ONBOARDING_PATH}/goal-plans`).json();
-  return onboardingGoalPlansSchema.parse(response);
+export function getOnboardingGoalPlans(): Promise<OnboardingGoalPlans> {
+  return http.get(`${ONBOARDING_PATH}/goal-plans`, { response: onboardingGoalPlansSchema });
 }
 
-export async function confirmOnboardingGoal(goal: OnboardingGoalConfirm): Promise<OnboardingGoal> {
-  const response = await api.post(`${ONBOARDING_PATH}/goal`, { json: goal }).json();
-  return onboardingGoalSchema.parse(response);
+export function confirmOnboardingGoal(goal: OnboardingGoalConfirm): Promise<OnboardingGoal> {
+  return http.post(`${ONBOARDING_PATH}/goal`, {
+    body: goal,
+    request: onboardingGoalConfirmSchema,
+    response: onboardingGoalSchema,
+  });
 }

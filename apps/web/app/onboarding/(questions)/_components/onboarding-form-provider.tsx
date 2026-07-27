@@ -5,7 +5,7 @@ import { type OnboardingFormValues, onboardingFormSchema } from "@repo/schema";
 import { type ReactNode, useEffect } from "react";
 import { FormProvider, useForm } from "react-hook-form";
 import { DEFAULT_ONBOARDING_FORM_VALUES } from "@/app/onboarding/constants/form";
-import { getOnboardingProfile } from "@/lib/onboarding";
+import { getOnboardingProfile } from "@/lib/onboarding/api";
 
 export function OnboardingFormProvider({ children }: { children: ReactNode }) {
   const formMethods = useForm<OnboardingFormValues>({

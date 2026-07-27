@@ -419,6 +419,9 @@ importers:
       ky:
         specifier: 'catalog:'
         version: 2.0.2
+      zod:
+        specifier: 'catalog:'
+        version: 4.4.3
     devDependencies:
       '@repo/config':
         specifier: workspace:*
