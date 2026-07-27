@@ -5,8 +5,10 @@ import {
   type OnboardingProfile,
   type OnboardingProfilePatch,
   type OnboardingReport,
+  onboardingGoalConfirmSchema,
   onboardingGoalPlansSchema,
   onboardingGoalSchema,
+  onboardingProfilePatchSchema,
   onboardingProfileSchema,
   onboardingReportSchema,
 } from "@repo/schema/onboarding-api";
@@ -47,6 +49,7 @@ export function patchOnboardingProfile(
 ): Promise<OnboardingProfile> {
   return http.patch(`${ONBOARDING_PATH}/profile`, {
     body: profile,
+    request: onboardingProfilePatchSchema,
     response: onboardingProfileSchema,
   });
 }
@@ -60,5 +63,9 @@ export function getOnboardingGoalPlans(): Promise<OnboardingGoalPlans> {
 }
 
 export function confirmOnboardingGoal(goal: OnboardingGoalConfirm): Promise<OnboardingGoal> {
-  return http.post(`${ONBOARDING_PATH}/goal`, { body: goal, response: onboardingGoalSchema });
+  return http.post(`${ONBOARDING_PATH}/goal`, {
+    body: goal,
+    request: onboardingGoalConfirmSchema,
+    response: onboardingGoalSchema,
+  });
 }

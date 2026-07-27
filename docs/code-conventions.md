@@ -8,16 +8,18 @@
 
 ### 파일 구조
 
-기능 하나당 네 겹으로 나눈다. 겹을 건너뛰지 마라.
+서버 상태를 캐시하거나 여러 컴포넌트에서 공유하는 기능은 다음 책임으로 나눈다.
 
 ```
 packages/schema/src/<도메인>.ts   요청·응답 계약(zod). 앱과 무관하게 백엔드 계약만 담는다
 apps/web/.../<기능>/api.ts        HTTP 호출. 요청 검증 → 전송 → 응답 검증
 apps/web/.../<기능>/queries.ts    react-query 훅. queryKey·무효화 정책
-컴포넌트                          훅만 쓴다. fetch·스키마를 직접 만지지 않는다
+컴포넌트                          서버 상태는 훅으로 사용한다
 ```
 
-`api.ts`는 순수 함수만 둔다. 훅·상태·컴포넌트를 import하지 않는다.
+`api.ts`는 순수 함수만 둔다. 훅·상태·컴포넌트를 import하지 않는다. 캐시나 무효화가
+필요 없는 단발성 요청은 컴포넌트에서 API 함수를 직접 호출할 수 있지만, `fetch`·스키마를
+직접 다루지는 않는다.
 
 파일명은 항상 `api.ts` / `queries.ts`다 — `<기능>-api.ts`처럼 접두사를 붙이지 말고, 한 디렉터리에 API 표면이 둘 이상이면 디렉터리를 나눈다(라우트로 잡히지 않게 `_이름/`).
 
@@ -32,23 +34,31 @@ api.get("api/goal");    // X — baseUrl과 중복
 
 MSW 목은 와일드카드(`*/api/goal`)로 잡으므로 이 실수를 가려준다. 목이 통과한다고 실서버가 통과하는 건 아니다.
 
-### 응답은 `parseJson`, 요청 body는 보내기 전에 검증
+### 공통 `http`로 요청·응답을 검증
 
 ```ts
-import { parseJson } from "@repo/api/json";
+import {
+  type GoalStatus,
+  goalStatusSchema,
+  type SavingRequest,
+  savingRequestSchema,
+} from "@repo/schema/goal";
+import { http } from "@/lib/api";
 
 /** GET /api/goal — 목표 현황 조회. */
 export function fetchGoalStatus(): Promise<GoalStatus> {
-  return parseJson(api.get("goal"), goalStatusSchema);
+  return http.get("goal", { response: goalStatusSchema });
 }
 
 /** PUT /api/goal/savings — 전송 전 계약 검증. */
-export async function updateSavings(body: SavingRequest): Promise<void> {
-  await api.put("goal/savings", { json: savingRequestSchema.parse(body) });
+export function updateSavings(body: SavingRequest): Promise<void> {
+  return http.put("goal/savings", { body, request: savingRequestSchema });
 }
 ```
 
-`schema.parse(await api.get(...).json())`처럼 직접 쓰지 마라. 안에서 밖으로 읽히고 `await` 위치가 매번 달라진다.
+`response`를 주면 응답 JSON을 해당 스키마로 검증해 돌려준다. 응답 본문이 없는 204 요청은
+`response`를 생략한다. `request`를 주면 body를 보내기 전에 검증하고, 검증된 값을 ky의
+`json` 옵션으로 전달한다.
 
 요청 body를 보내기 전에 검증하면 서버 왕복 없이 계약 위반을 잡는다. 그러려면 스키마의 허용 범위를 **서버 검증값과 같게** 맞춰야 한다(아래 참고).
 

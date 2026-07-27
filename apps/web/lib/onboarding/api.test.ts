@@ -46,7 +46,10 @@ describe("onboarding API", () => {
     expect(http.get).toHaveBeenCalledWith("onboarding/profile", expect.anything());
     expect(http.patch).toHaveBeenCalledWith(
       "onboarding/profile",
-      expect.objectContaining({ body: { birthDate: "1998-03-01" } }),
+      expect.objectContaining({
+        body: { birthDate: "1998-03-01" },
+        request: expect.anything(),
+      }),
     );
   });
 
@@ -81,7 +84,10 @@ describe("onboarding API", () => {
     expect(http.get).toHaveBeenNthCalledWith(2, "onboarding/goal-plans", expect.anything());
     expect(http.post).toHaveBeenCalledWith(
       "onboarding/goal",
-      expect.objectContaining({ body: { plan: "PLAN_1" } }),
+      expect.objectContaining({
+        body: { plan: "PLAN_1" },
+        request: expect.anything(),
+      }),
     );
   });
 });
