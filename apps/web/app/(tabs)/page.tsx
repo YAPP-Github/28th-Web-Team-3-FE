@@ -1,9 +1,10 @@
 "use client";
 
 import { Button } from "@repo/ui";
+import { useQuery } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
-import { useOnboardingProfile } from "@/lib/onboarding/queries";
+import { onboardingProfileOptions } from "@/lib/onboarding/queries";
 import { FinancialTipList } from "./_components/financial-tip-list";
 import { HomeGoalSection } from "./_components/home-goal-section";
 import { WeeklyMissionSection } from "./_components/weekly-mission-section";
@@ -11,7 +12,7 @@ import { FINANCIAL_TIPS } from "./benefits/constants";
 
 export default function HomePage() {
   const router = useRouter();
-  const { data: profile, isError, refetch } = useOnboardingProfile();
+  const { data: profile, isError, refetch } = useQuery(onboardingProfileOptions());
   const isOnboardingInProgress = profile?.status === "IN_PROGRESS";
 
   useEffect(() => {

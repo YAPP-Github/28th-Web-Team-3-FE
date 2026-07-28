@@ -3,10 +3,11 @@
 import type { OnboardingGoalPlans } from "@repo/schema/onboarding-api";
 import { ButtonGroup, OptionGroup, OptionItem } from "@repo/ui";
 import GoalUpIcon from "@repo/ui/svg/goal-up.svg";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { GoalPlanChart } from "@/app/onboarding/goal/_components/goal-plan-chart";
-import { useConfirmOnboardingGoal, useOnboardingGoalPlans } from "@/lib/onboarding/queries";
+import { confirmOnboardingGoalOptions, onboardingGoalPlansOptions } from "@/lib/onboarding/queries";
 
 type GoalPlanCode = "PLAN_1" | "PLAN_2";
 
@@ -23,8 +24,11 @@ function calculateIncreasePercent(amountManwon: number, goalPlans: OnboardingGoa
 
 export default function OnboardingGoalPage() {
   const router = useRouter();
-  const { data: goalPlans, isError } = useOnboardingGoalPlans();
-  const { mutateAsync: confirmGoal, isPending: isConfirming } = useConfirmOnboardingGoal();
+  const queryClient = useQueryClient();
+  const { data: goalPlans, isError } = useQuery(onboardingGoalPlansOptions());
+  const { mutateAsync: confirmGoal, isPending: isConfirming } = useMutation(
+    confirmOnboardingGoalOptions(queryClient),
+  );
   const [selectedPlan, setSelectedPlan] = useState<GoalPlanCode>();
   const [errorMessage, setErrorMessage] = useState<string>();
 

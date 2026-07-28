@@ -2,17 +2,18 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { type OnboardingFormValues, onboardingFormSchema } from "@repo/schema";
+import { useQuery } from "@tanstack/react-query";
 import { type ReactNode, useEffect } from "react";
 import { FormProvider, useForm } from "react-hook-form";
 import { DEFAULT_ONBOARDING_FORM_VALUES } from "@/app/onboarding/constants/form";
-import { useOnboardingProfile } from "@/lib/onboarding/queries";
+import { onboardingProfileOptions } from "@/lib/onboarding/queries";
 
 export function OnboardingFormProvider({ children }: { children: ReactNode }) {
   const formMethods = useForm<OnboardingFormValues>({
     defaultValues: DEFAULT_ONBOARDING_FORM_VALUES,
     resolver: zodResolver(onboardingFormSchema),
   });
-  const { data: profile } = useOnboardingProfile();
+  const { data: profile } = useQuery(onboardingProfileOptions());
 
   useEffect(
     function syncOnboardingProfile() {

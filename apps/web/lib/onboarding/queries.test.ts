@@ -1,4 +1,5 @@
 import type { OnboardingProfile } from "@repo/schema/onboarding-api";
+import { useMutation } from "@tanstack/react-query";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { act, createTestQueryClient, renderHook } from "@/lib/test/react";
 
@@ -11,7 +12,7 @@ vi.mock("@/lib/onboarding/api", () => ({
 }));
 
 import { confirmOnboardingGoal } from "@/lib/onboarding/api";
-import { ONBOARDING_PROFILE_QUERY_KEY, useConfirmOnboardingGoal } from "./queries";
+import { confirmOnboardingGoalOptions, ONBOARDING_PROFILE_QUERY_KEY } from "./queries";
 
 const IN_PROGRESS_PROFILE: OnboardingProfile = {
   status: "IN_PROGRESS",
@@ -22,7 +23,7 @@ const IN_PROGRESS_PROFILE: OnboardingProfile = {
   goalPeriodMonths: 24,
 };
 
-describe("useConfirmOnboardingGoal", () => {
+describe("confirmOnboardingGoalOptions", () => {
   beforeEach(() => vi.clearAllMocks());
 
   /**
@@ -40,7 +41,9 @@ describe("useConfirmOnboardingGoal", () => {
       status: "COMPLETED",
     });
 
-    const { result } = renderHook(() => useConfirmOnboardingGoal(), { queryClient });
+    const { result } = renderHook(() => useMutation(confirmOnboardingGoalOptions(queryClient)), {
+      queryClient,
+    });
     await act(async () => {
       await result.current.mutateAsync({ plan: "PLAN_1" });
     });
@@ -61,7 +64,9 @@ describe("useConfirmOnboardingGoal", () => {
       status: "COMPLETED",
     });
 
-    const { result } = renderHook(() => useConfirmOnboardingGoal(), { queryClient });
+    const { result } = renderHook(() => useMutation(confirmOnboardingGoalOptions(queryClient)), {
+      queryClient,
+    });
     await act(async () => {
       await result.current.mutateAsync({ plan: "PLAN_1" });
     });

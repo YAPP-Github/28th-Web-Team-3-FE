@@ -2,9 +2,10 @@
 
 import { ButtonGroup } from "@repo/ui";
 import AppleIntelIcon from "@repo/ui/svg/apple-intel.svg";
+import { useQuery } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { SavingsComparisonChart } from "@/app/onboarding/_components/savings-comparison-chart";
-import { useOnboardingReport } from "@/lib/onboarding/queries";
+import { onboardingReportOptions } from "@/lib/onboarding/queries";
 
 function formatAmount(amount: number) {
   return `${amount.toLocaleString("ko-KR")}만원`;
@@ -12,7 +13,7 @@ function formatAmount(amount: number) {
 
 export default function OnboardingResultPage() {
   const router = useRouter();
-  const { data: report, isError } = useOnboardingReport();
+  const { data: report, isError } = useQuery(onboardingReportOptions());
 
   if (isError) {
     return (

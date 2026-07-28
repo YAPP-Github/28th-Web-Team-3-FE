@@ -5,8 +5,9 @@ import {
   MIN_GOAL_PERIOD_MONTHS,
 } from "@repo/schema/goal";
 import { AmountField, BottomSheet, Button } from "@repo/ui";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
-import { useOnboardingProfile, usePatchOnboardingProfile } from "@/lib/onboarding/queries";
+import { onboardingProfileOptions, patchOnboardingProfileOptions } from "@/lib/onboarding/queries";
 import { useUpdateGoal } from "../queries";
 
 interface GoalEditSheetProps {
@@ -45,9 +46,10 @@ export function GoalEditSheet({ open, onOpenChange, initialTargetManwon }: GoalE
   const [period, setPeriod] = useState("");
   const [monthlySalary, setMonthlySalary] = useState("");
   const [submitError, setSubmitError] = useState<string>();
+  const queryClient = useQueryClient();
   const { mutate, isPending } = useUpdateGoal();
-  const { data: profile } = useOnboardingProfile();
-  const { mutateAsync: patchProfile } = usePatchOnboardingProfile();
+  const { data: profile } = useQuery(onboardingProfileOptions());
+  const { mutateAsync: patchProfile } = useMutation(patchOnboardingProfileOptions(queryClient));
 
   // 시트는 항상 마운트 상태(open 제어)라 useState 초기값이 재오픈 시 반영되지 않는다.
   // 열 때마다 목표 금액·기간·월소득을 최신 프로필 값으로 되돌린다.
