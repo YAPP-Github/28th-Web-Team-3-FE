@@ -14,7 +14,7 @@ export function MissionCategoryFilter({ activeCategory, onChange }: MissionCateg
           key={category}
           aria-selected={activeCategory === category}
           className={cn(
-            "rounded-lg px-4 py-[6px] text-body-b2-700 w-fit h-fit focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-300",
+            "rounded-lg px-4 py-[6px] text-body-b2-700 w-fit h-fit focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
             activeCategory === category ? "bg-gray-800 text-gray-0" : "bg-gray-50 text-gray-400",
           )}
           role="tab"

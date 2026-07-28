@@ -1,3 +1,5 @@
+import { Button } from "@repo/ui";
+
 interface MissionCompleteDialogProps {
   open: boolean;
   pending?: boolean;
@@ -28,22 +30,12 @@ export function MissionCompleteDialog({
           미션을 완료할까요?
         </h2>
         <div className="grid w-full grid-cols-2 gap-2.5">
-          <button
-            className="h-[52px] rounded-xl bg-gray-50 text-body-b1-700 text-gray-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-300 disabled:opacity-50"
-            disabled={pending}
-            type="button"
-            onClick={onCancel}
-          >
+          <Button variant="secondary" size="cta" disabled={pending} onClick={onCancel}>
             취소
-          </button>
-          <button
-            className="h-[52px] rounded-xl bg-blue-500 text-body-b1-700 text-gray-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-300 disabled:opacity-50"
-            disabled={pending}
-            type="button"
-            onClick={onConfirm}
-          >
+          </Button>
+          <Button size="cta" disabled={pending} onClick={onConfirm}>
             완료
-          </button>
+          </Button>
         </div>
       </section>
     </div>

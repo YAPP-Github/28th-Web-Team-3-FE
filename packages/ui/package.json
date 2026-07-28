@@ -27,7 +27,6 @@
     "class-variance-authority": "catalog:",
     "clsx": "catalog:",
     "lucide-react": "catalog:",
-    "recharts": "catalog:",
     "tailwind-merge": "catalog:"
   },
   "peerDependencies": {

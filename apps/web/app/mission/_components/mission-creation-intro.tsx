@@ -1,4 +1,4 @@
-import { ButtonGroup } from "@repo/ui";
+import { Button, ButtonGroup } from "@repo/ui";
 import { ChevronLeft } from "lucide-react";
 import { useRouter } from "next/navigation";
 import type { MissionCreationCategory } from "../constants/mission-creation";
@@ -18,14 +18,14 @@ export function MissionCreationIntro({
 
   return (
     <main className="mx-auto flex min-h-dvh w-full max-w-md flex-col bg-gray-0 pb-6">
-      <button
+      <Button
         aria-label="이전 단계로 돌아가기"
-        className="flex size-11 items-center justify-center rounded-full p-2.5 hover:bg-gray-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-300"
-        type="button"
+        size="icon"
+        variant="ghost"
         onClick={() => router.push(previousHref)}
       >
         <ChevronLeft aria-hidden="true" className="size-6" />
-      </button>
+      </Button>
 
       <section className="flex flex-1 flex-col gap-1 px-5 pt-8">
         <h1 className="text-headline-h2-700 text-gray-900">

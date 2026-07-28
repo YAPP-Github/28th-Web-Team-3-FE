@@ -1,7 +1,7 @@
 "use client";
 
 import type { MissionDraft } from "@repo/schema/mission-generation";
-import { ButtonGroup, Toggle } from "@repo/ui";
+import { Button, ButtonGroup, Toggle } from "@repo/ui";
 import { ChevronLeft } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -70,14 +70,14 @@ export function MissionCreationResult({ jobId }: MissionCreationResultProps) {
 
   return (
     <main className="mx-auto flex min-h-dvh w-full max-w-md flex-col bg-gray-0 pb-6">
-      <button
+      <Button
         aria-label="미션 홈으로"
-        className="flex size-11 items-center justify-center rounded-full p-2.5 hover:bg-gray-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-300"
-        type="button"
+        size="icon"
+        variant="ghost"
         onClick={() => router.push("/mission")}
       >
         <ChevronLeft aria-hidden="true" className="size-6" />
-      </button>
+      </Button>
 
       <div className="flex flex-1 flex-col gap-8 px-5 pt-8">
         <h1 className="text-headline-h2-700 text-gray-900">

@@ -44,7 +44,7 @@ export function MissionList({
                   <div className="flex w-full items-center gap-2">
                     <button
                       aria-label="미션 완료"
-                      className="flex size-5 shrink-0 items-center justify-center rounded-full border border-gray-400 bg-gray-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-300"
+                      className="flex size-5 shrink-0 items-center justify-center rounded-full border border-gray-400 bg-gray-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                       type="button"
                       onClick={() => onComplete(mission)}
                     >
@@ -52,7 +52,7 @@ export function MissionList({
                     </button>
                     <button
                       aria-expanded={isExpanded}
-                      className="flex min-w-0 flex-1 items-center gap-2 rounded-md text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-300"
+                      className="flex min-w-0 flex-1 items-center gap-2 rounded-md text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                       type="button"
                       onClick={() => onToggle(mission.id)}
                     >
@@ -76,7 +76,7 @@ export function MissionList({
                       </p>
                       <button
                         aria-label={canDelete ? "미션 삭제" : "삭제 (지원 안 함)"}
-                        className="flex h-11 w-full items-center justify-center rounded-xl bg-gray-100 text-body-b1-700 text-gray-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-300 disabled:opacity-50"
+                        className="flex h-11 w-full items-center justify-center rounded-xl bg-gray-100 text-body-b1-700 text-gray-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-50"
                         disabled={!canDelete || isDeleting}
                         type="button"
                         onClick={() => onDelete(mission)}
