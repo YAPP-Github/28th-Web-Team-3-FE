@@ -1,5 +1,3 @@
-"use client";
-
 import { useState } from "react";
 import { MonthlyGoalCard } from "@/app/goal/_components/monthly-goal-card";
 import { SavingsInputSheet } from "@/app/goal/_components/savings-input-sheet";

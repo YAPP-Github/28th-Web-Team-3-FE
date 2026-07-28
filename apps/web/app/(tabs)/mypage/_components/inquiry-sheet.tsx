@@ -1,5 +1,3 @@
-"use client";
-
 import { bridge, isNativeApp } from "@repo/bridge";
 import { BottomSheet, Button } from "@repo/ui";
 

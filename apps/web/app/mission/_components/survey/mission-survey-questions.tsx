@@ -1,5 +1,3 @@
-"use client";
-
 import type { MissionSurveyPutRequest, MissionSurveyQuestion } from "@repo/schema/mission-survey";
 import { ButtonGroup, Progress } from "@repo/ui";
 import { ChevronLeft } from "lucide-react";
@@ -9,7 +7,7 @@ import {
   MISSION_SURVEY_KEYED_NUMBER_KEY_FIELDS,
   MISSION_SURVEY_QUESTION_FIELDS,
   MISSION_SURVEY_TEXT_RULE_FIELDS,
-} from "../../constants/mission-survey";
+} from "@/app/mission/constants/mission-survey";
 import {
   emptyAnswerValue,
   findNumericRule,
@@ -24,7 +22,7 @@ import {
   numberRangeOptions,
   toggleMultiChoiceOption,
   walkToNextVisible,
-} from "../../lib/survey-answers";
+} from "@/app/mission/lib/survey-answers";
 import { KeyedFrequencyRangeQuestion, KeyedNumberQuestion } from "./keyed-number-question";
 import { OptionPillList } from "./option-pill-list";
 

@@ -1,5 +1,3 @@
-"use client";
-
 import { ButtonGroup } from "@repo/ui";
 import { ChevronLeft } from "lucide-react";
 import { useRouter } from "next/navigation";

@@ -1,5 +1,3 @@
-"use client";
-
 import { bridge, isNativeApp } from "@repo/bridge";
 import { ChevronRight, UserRound } from "lucide-react";
 import type { MouseEvent } from "react";

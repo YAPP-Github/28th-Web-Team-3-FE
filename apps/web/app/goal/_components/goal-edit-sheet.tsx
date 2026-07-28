@@ -1,5 +1,3 @@
-"use client";
-
 import { MAX_MONTHLY_AMOUNT } from "@repo/schema";
 import {
   MAX_GOAL_PERIOD_MONTHS,

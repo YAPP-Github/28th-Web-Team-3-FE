@@ -1,5 +1,3 @@
-"use client";
-
 import { MAX_SAVED_AMOUNT_MANWON } from "@repo/schema/goal";
 import { AmountField, BottomSheet, Button } from "@repo/ui";
 import { useEffect, useState } from "react";
