@@ -1,5 +1,3 @@
-"use client";
-
 interface SavingsComparisonChartProps {
   currentEstimate: number;
   improvedEstimate: number;

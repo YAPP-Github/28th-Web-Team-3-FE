@@ -1,5 +1,3 @@
-"use client";
-
 import { bridge, isNativeApp } from "@repo/bridge";
 import type { MouseEvent } from "react";
 import { BENEFITS } from "@/app/(tabs)/benefits/constants";

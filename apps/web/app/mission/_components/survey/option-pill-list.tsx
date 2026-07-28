@@ -1,5 +1,3 @@
-"use client";
-
 import { Toggle } from "@repo/ui";
 
 interface OptionPillListProps {

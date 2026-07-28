@@ -1,5 +1,3 @@
-"use client";
-
 import { Slider } from "@repo/ui";
 
 interface LabelSliderProps {

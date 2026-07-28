@@ -1,4 +1,6 @@
-"use client";
+// mixpanel-browser는 window에 붙는다 — 서버 번들에 들어가면 빌드 타임에 깨뜨린다.
+// "use client"는 경계 선언일 뿐 서버 사용을 막지 못하므로 client-only를 쓴다.
+import "client-only";
 
 import mixpanel from "mixpanel-browser";
 

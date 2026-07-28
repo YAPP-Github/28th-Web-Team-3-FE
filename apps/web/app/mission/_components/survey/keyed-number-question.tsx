@@ -1,7 +1,9 @@
-"use client";
-
 import type { MissionSurveyFrequencyRangeRule } from "@repo/schema/mission-survey";
-import { findNumericRule, frequencyUnitSuffix, numberRangeOptions } from "../../lib/survey-answers";
+import {
+  findNumericRule,
+  frequencyUnitSuffix,
+  numberRangeOptions,
+} from "@/app/mission/lib/survey-answers";
 import { OptionPillList } from "./option-pill-list";
 
 interface KeyedNumberQuestionProps {

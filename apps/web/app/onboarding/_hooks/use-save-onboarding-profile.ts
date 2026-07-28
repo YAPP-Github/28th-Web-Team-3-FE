@@ -1,5 +1,3 @@
-"use client";
-
 import type { OnboardingProfilePatch } from "@repo/schema/onboarding-api";
 import { useCallback, useRef, useState } from "react";
 import { patchOnboardingProfile } from "@/lib/onboarding/api";

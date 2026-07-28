@@ -1,5 +1,3 @@
-"use client";
-
 import { Slider } from "@repo/ui";
 import { MAX_NET_WORTH_SLIDER_VALUE } from "@/app/onboarding/constants/amounts";
 

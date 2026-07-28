@@ -4,6 +4,49 @@
 
 각 항목은 실제로 겪은 문제에서 나왔다. 이유를 함께 적었으니, 상황이 달라 규칙이 안 맞으면 이유부터 확인하고 판단하라.
 
+## 모듈 경로
+
+`apps/web`·`apps/admin`은 `tsconfig.json`에 앱 루트를 가리키는 `@/*` alias가 있다. 그중 `apps/web`은 Vitest가 tsconfig paths를 읽지 않아 `vitest.config.ts`에도 같은 alias를 따로 선언해 뒀으니 **둘을 함께 갱신한다** — 한쪽만 고치면 테스트만 깨진다. `packages/*`에는 alias가 없으니 내부 상대경로가 정상이다.
+
+```ts
+import { GoalDetail } from "./_components/goal-detail";        // O — 같은 디렉터리 아래
+import { MISSION_CATEGORIES } from "@/app/mission/constants/mission";  // O — 다른 기능
+import { numberRangeOptions } from "../../lib/survey-answers"; // X — `@/`로
+```
+
+같은 디렉터리 아래는 `./`, 그 밖은 `@/`. **`../../` 이상은 쓰지 않는다** — 파일을 옮기면 조용히 깨지고, 읽는 쪽에서 어느 기능의 모듈인지 알 수 없다. `../` 한 단계는 `_components/`에서 기능 루트의 `queries.ts`를 부르는 식으로만 쓴다.
+
+## 컴포넌트
+
+### `@repo/ui` primitive를 먼저 찾는다
+
+버튼·입력·시트·토글·슬라이더는 이미 `@repo/ui`에 있다. 같은 모양을 raw element로 다시 만들면 포커스 링·disabled·타이포 토큰이 화면마다 갈라진다. raw element는 둘 중 하나일 때만 쓴다.
+
+1. `@repo/ui`에 대응 primitive가 없다.
+2. 그 화면에서만 쓰는 일회성 모양이고, primitive로 올리면 variant만 늘어난다.
+
+반복되는 UI를 어디에 둘지는 **도메인을 아느냐**로 가른다.
+
+- 앱·도메인과 무관한 primitive(버튼·입력·시트 같은 것) → `@repo/ui`.
+- 특정 기능의 의미를 담은 컴포넌트(미션 카드, 목표 게이지 등)는 같은 기능 안에서 반복돼도 `@repo/ui`가 아니라 그 기능의 `_components/`로 올린다. 공용 패키지가 도메인을 알기 시작하면 앱을 거꾸로 의존한다.
+
+`@repo/ui`로 올릴 때는 기존 컴포넌트의 variant로 표현되는지 먼저 본다. variant로 의미가 안 맞으면 그때 새 컴포넌트를 만든다 — 안 맞는 variant를 억지로 늘리는 것보다 낫다.
+
+버튼류의 포커스 링은 `focus-visible:ring-2 focus-visible:ring-ring`을 쓴다 — `--color-ring` 한 곳에서 색을 정한다.
+
+입력 필드처럼 **자체 포커스 처리를 가진 컴포넌트**는 예외다(`Input`은 테두리를 진하게 하고 옅은 회색 헤일로를 두르며, 오류일 땐 `aria-invalid`로 붉게 바뀐다). 이때도 색 정의는 `@repo/ui` 컴포넌트 안에 한 번만 두고, **호출부에서는 포커스 색을 지정하지 않는다.** 지켜야 할 것은 "한 색만 쓴다"가 아니라 "색이 한 곳에서만 정의된다"다.
+
+### `"use client"`는 경계에만 붙인다
+
+`"use client"`는 서버 모듈 그래프와 클라이언트 모듈 그래프가 **처음 만나는 진입 파일**을 선언하는 표시다. 이미 클라이언트 경계 아래에서만 import되는 파일에는 반복하지 않는다 — 효과가 없고, 도처에 흩어지면 진짜 경계가 어디인지 눈으로 못 찾는다.
+
+`"use client"`는 **서버에서 쓰는 걸 막아주지 않는다.** 서버 컴포넌트가 그 모듈을 import하면 막히는 대신 조용히 클라이언트 그래프로 끌려 들어갈 뿐이다. 브라우저 전용 API를 감싼 모듈처럼 서버 유입 자체를 막아야 하면 `client-only`를 쓴다 — 이건 서버 번들에 들어가는 순간 빌드가 깨진다.
+
+```ts
+// apps/web/lib/api.ts — 토큰이 브라우저(bridge)에만 있어 서버에서 부르면 안 되는 모듈
+import "client-only";
+```
+
 ## API 레이어
 
 ### 파일 구조
@@ -28,8 +71,8 @@ apps/web/.../<기능>/queries.ts    react-query 훅. queryKey·무효화 정책
 `NEXT_PUBLIC_API_URL`에 `/api`가 포함된다. 경로에 다시 붙이면 `/api/api/goal`이 된다.
 
 ```ts
-api.get("goal");        // O
-api.get("api/goal");    // X — baseUrl과 중복
+http.get("goal");        // O
+http.get("api/goal");    // X — baseUrl과 중복
 ```
 
 MSW 목은 와일드카드(`*/api/goal`)로 잡으므로 이 실수를 가려준다. 목이 통과한다고 실서버가 통과하는 건 아니다.

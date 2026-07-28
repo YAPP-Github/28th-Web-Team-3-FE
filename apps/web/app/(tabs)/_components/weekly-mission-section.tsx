@@ -1,5 +1,3 @@
-"use client";
-
 import type { Mission } from "@repo/schema/mission";
 import { buttonVariants, cn } from "@repo/ui";
 import CoinIcon from "@repo/ui/svg/coin.svg";
