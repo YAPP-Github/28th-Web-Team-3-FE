@@ -32,7 +32,9 @@ import { numberRangeOptions } from "../../lib/survey-answers"; // X — `@/`로
 
 `@repo/ui`로 올릴 때는 기존 컴포넌트의 variant로 표현되는지 먼저 본다. variant로 의미가 안 맞으면 그때 새 컴포넌트를 만든다 — 안 맞는 variant를 억지로 늘리는 것보다 낫다.
 
-포커스 링은 `focus-visible:ring-2 focus-visible:ring-ring`을 쓴다(`--color-ring` 한 곳에서 색을 정한다). 색을 직접 박지 마라.
+버튼류의 포커스 링은 `focus-visible:ring-2 focus-visible:ring-ring`을 쓴다 — `--color-ring` 한 곳에서 색을 정한다.
+
+입력 필드처럼 **자체 포커스 처리를 가진 컴포넌트**는 예외다(`Input`은 테두리를 진하게 하고 옅은 회색 헤일로를 두르며, 오류일 땐 `aria-invalid`로 붉게 바뀐다). 이때도 색 정의는 `@repo/ui` 컴포넌트 안에 한 번만 두고, **호출부에서는 포커스 색을 지정하지 않는다.** 지켜야 할 것은 "한 색만 쓴다"가 아니라 "색이 한 곳에서만 정의된다"다.
 
 ### `"use client"`는 경계에만 붙인다
 
