@@ -29,11 +29,24 @@ export function MissionCompleteDialog({
         >
           미션을 완료할까요?
         </h2>
+        {/* 다이얼로그 버튼은 퍼널 CTA(14px/500·48px)보다 크다 — 디자인 확인 전까지
+            기존 모양(52px·16px/700)을 유지한다. */}
         <div className="grid w-full grid-cols-2 gap-2.5">
-          <Button variant="secondary" size="cta" disabled={pending} onClick={onCancel}>
+          <Button
+            className="h-[52px] text-body-b1-700 text-gray-800"
+            variant="secondary"
+            size="cta"
+            disabled={pending}
+            onClick={onCancel}
+          >
             취소
           </Button>
-          <Button size="cta" disabled={pending} onClick={onConfirm}>
+          <Button
+            className="h-[52px] text-body-b1-700"
+            size="cta"
+            disabled={pending}
+            onClick={onConfirm}
+          >
             완료
           </Button>
         </div>
