@@ -14,24 +14,30 @@ import type { ReactElement, ReactNode } from "react";
  * 클라이언트는 render마다 새로 만든다 — 테스트 간에 캐시가 넘어가면 앞선 테스트의 응답이
  * 뒤 테스트에 그대로 보인다. retry는 끈다. 켜두면 실패 케이스가 재시도를 기다리느라 느려진다.
  */
-function createWrapper() {
-  const client = new QueryClient({
-    defaultOptions: { queries: { retry: false, gcTime: 0 } },
-  });
+/** 캐시 자체를 들여다보는 테스트는 이걸로 클라이언트를 만들어 `queryClient` 옵션으로 넘긴다. */
+export function createTestQueryClient() {
+  return new QueryClient({ defaultOptions: { queries: { retry: false, gcTime: 0 } } });
+}
+
+function wrapperFor(client: QueryClient) {
   return function Wrapper({ children }: { children: ReactNode }) {
     return <QueryClientProvider client={client}>{children}</QueryClientProvider>;
   };
 }
 
-export function render(ui: ReactElement, options?: Omit<RenderOptions, "wrapper">) {
-  return baseRender(ui, { wrapper: createWrapper(), ...options });
+type WithClient<T> = Omit<T, "wrapper"> & { queryClient?: QueryClient };
+
+export function render(ui: ReactElement, options?: WithClient<RenderOptions>) {
+  const { queryClient = createTestQueryClient(), ...rest } = options ?? {};
+  return baseRender(ui, { wrapper: wrapperFor(queryClient), ...rest });
 }
 
 export function renderHook<TResult, TProps>(
   callback: (props: TProps) => TResult,
-  options?: Omit<RenderHookOptions<TProps>, "wrapper">,
+  options?: WithClient<RenderHookOptions<TProps>>,
 ) {
-  return baseRenderHook(callback, { wrapper: createWrapper(), ...options });
+  const { queryClient = createTestQueryClient(), ...rest } = options ?? {};
+  return baseRenderHook(callback, { wrapper: wrapperFor(queryClient), ...rest });
 }
 
 export { act, fireEvent, screen, waitFor, within } from "@testing-library/react";
