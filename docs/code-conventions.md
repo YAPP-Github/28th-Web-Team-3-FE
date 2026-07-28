@@ -6,7 +6,7 @@
 
 ## 모듈 경로
 
-`apps/web`·`apps/admin`은 앱 루트에 `@/*` alias가 걸려 있다(`tsconfig.json` + `vitest.config.ts` 양쪽에 선언 — 한쪽만 고치면 테스트만 깨진다). `packages/*`에는 alias가 없으니 내부 상대경로가 정상이다.
+`apps/web`·`apps/admin`은 `tsconfig.json`에 앱 루트를 가리키는 `@/*` alias가 있다. 그중 `apps/web`은 Vitest가 tsconfig paths를 읽지 않아 `vitest.config.ts`에도 같은 alias를 따로 선언해 뒀으니 **둘을 함께 갱신한다** — 한쪽만 고치면 테스트만 깨진다. `packages/*`에는 alias가 없으니 내부 상대경로가 정상이다.
 
 ```ts
 import { GoalDetail } from "./_components/goal-detail";        // O — 같은 디렉터리 아래
@@ -25,15 +25,25 @@ import { numberRangeOptions } from "../../lib/survey-answers"; // X — `@/`로
 1. `@repo/ui`에 대응 primitive가 없다.
 2. 그 화면에서만 쓰는 일회성 모양이고, primitive로 올리면 variant만 늘어난다.
 
-2번으로 시작한 게 **두 번째 화면에 복사되는 순간** `@repo/ui`로 올린다. 올릴 때는 기존 variant에 얹고, 새 컴포넌트를 만들지 않는다.
+반복되는 UI를 어디에 둘지는 **도메인을 아느냐**로 가른다.
+
+- 앱·도메인과 무관한 primitive(버튼·입력·시트 같은 것) → `@repo/ui`.
+- 특정 기능의 의미를 담은 컴포넌트(미션 카드, 목표 게이지 등)는 같은 기능 안에서 반복돼도 `@repo/ui`가 아니라 그 기능의 `_components/`로 올린다. 공용 패키지가 도메인을 알기 시작하면 앱을 거꾸로 의존한다.
+
+`@repo/ui`로 올릴 때는 기존 컴포넌트의 variant로 표현되는지 먼저 본다. variant로 의미가 안 맞으면 그때 새 컴포넌트를 만든다 — 안 맞는 variant를 억지로 늘리는 것보다 낫다.
 
 포커스 링은 `focus-visible:ring-2 focus-visible:ring-ring`을 쓴다(`--color-ring` 한 곳에서 색을 정한다). 색을 직접 박지 마라.
 
 ### `"use client"`는 경계에만 붙인다
 
-서버 컴포넌트가 **직접 import하는 파일**에만 붙인다. 그 아래로는 이미 클라이언트 번들이라 붙여도 효과가 없고, 도처에 흩어지면 진짜 경계가 어디인지 눈으로 못 찾는다.
+`"use client"`는 서버 모듈 그래프와 클라이언트 모듈 그래프가 **처음 만나는 진입 파일**을 선언하는 표시다. 이미 클라이언트 경계 아래에서만 import되는 파일에는 반복하지 않는다 — 효과가 없고, 도처에 흩어지면 진짜 경계가 어디인지 눈으로 못 찾는다.
 
-예외: 브라우저 전용 API를 감싸는 `lib/` 모듈(`lib/mixpanel.ts` 등)은 어디서 import되든 서버 유입을 막아야 하므로 붙인 채로 둔다.
+`"use client"`는 **서버에서 쓰는 걸 막아주지 않는다.** 서버 컴포넌트가 그 모듈을 import하면 막히는 대신 조용히 클라이언트 그래프로 끌려 들어갈 뿐이다. 브라우저 전용 API를 감싼 모듈처럼 서버 유입 자체를 막아야 하면 `client-only`를 쓴다 — 이건 서버 번들에 들어가는 순간 빌드가 깨진다.
+
+```ts
+// apps/web/lib/api.ts — 토큰이 브라우저(bridge)에만 있어 서버에서 부르면 안 되는 모듈
+import "client-only";
+```
 
 ## API 레이어
 
