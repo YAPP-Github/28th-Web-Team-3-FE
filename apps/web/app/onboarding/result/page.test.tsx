@@ -1,6 +1,6 @@
-import { fireEvent, render, screen } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { getOnboardingReport } from "@/lib/onboarding/api";
+import { fireEvent, render, screen } from "@/lib/test/react";
 import OnboardingResultPage from "./page";
 
 const push = vi.fn();

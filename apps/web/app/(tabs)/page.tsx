@@ -2,8 +2,8 @@
 
 import { Button } from "@repo/ui";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
-import { getOnboardingProfile } from "@/lib/onboarding/api";
+import { useEffect } from "react";
+import { useOnboardingProfile } from "@/lib/onboarding/queries";
 import { FinancialTipList } from "./_components/financial-tip-list";
 import { HomeGoalSection } from "./_components/home-goal-section";
 import { WeeklyMissionSection } from "./_components/weekly-mission-section";
@@ -11,27 +11,14 @@ import { FINANCIAL_TIPS } from "./benefits/constants";
 
 export default function HomePage() {
   const router = useRouter();
-  const [isOnboardingChecked, setIsOnboardingChecked] = useState(false);
-  const [hasProfileError, setHasProfileError] = useState(false);
-  const [retryCount, setRetryCount] = useState(0);
+  const { data: profile, isError, refetch } = useOnboardingProfile();
+  const isOnboardingInProgress = profile?.status === "IN_PROGRESS";
 
   useEffect(() => {
-    setHasProfileError(false);
-    getOnboardingProfile()
-      .then((profile) => {
-        if (profile.status === "IN_PROGRESS") {
-          router.replace("/onboarding/intro");
-          return;
-        }
+    if (isOnboardingInProgress) router.replace("/onboarding/intro");
+  }, [isOnboardingInProgress, router]);
 
-        setIsOnboardingChecked(true);
-      })
-      .catch(() => {
-        setHasProfileError(true);
-      });
-  }, [retryCount, router]);
-
-  if (hasProfileError) {
+  if (isError) {
     return (
       <main className="flex flex-1 flex-col items-center justify-center gap-4 px-5 text-center">
         <p className="text-body-b1-500 text-gray-700">
@@ -39,14 +26,15 @@ export default function HomePage() {
           <br />
           잠시 후 다시 시도해주세요.
         </p>
-        <Button size="cta" className="max-w-52" onClick={() => setRetryCount((count) => count + 1)}>
+        <Button size="cta" className="max-w-52" onClick={() => refetch()}>
           다시 시도
         </Button>
       </main>
     );
   }
 
-  if (!isOnboardingChecked) {
+  // 온보딩 미완료면 리다이렉트가 걸리는 중이라 홈 내용을 잠깐이라도 보여주지 않는다.
+  if (!profile || isOnboardingInProgress) {
     return (
       <main aria-busy="true" className="fixed inset-0 z-[60] bg-gray-0">
         <span className="sr-only">사용자 정보를 확인하는 중</span>

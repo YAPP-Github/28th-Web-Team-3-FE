@@ -6,7 +6,7 @@ import {
 } from "@repo/schema/goal";
 import { AmountField, BottomSheet, Button } from "@repo/ui";
 import { useEffect, useState } from "react";
-import { getOnboardingProfile, patchOnboardingProfile } from "@/lib/onboarding/api";
+import { useOnboardingProfile, usePatchOnboardingProfile } from "@/lib/onboarding/queries";
 import { useUpdateGoal } from "../queries";
 
 interface GoalEditSheetProps {
@@ -46,28 +46,20 @@ export function GoalEditSheet({ open, onOpenChange, initialTargetManwon }: GoalE
   const [monthlySalary, setMonthlySalary] = useState("");
   const [submitError, setSubmitError] = useState<string>();
   const { mutate, isPending } = useUpdateGoal();
+  const { data: profile } = useOnboardingProfile();
+  const { mutateAsync: patchProfile } = usePatchOnboardingProfile();
 
   // 시트는 항상 마운트 상태(open 제어)라 useState 초기값이 재오픈 시 반영되지 않는다.
-  // 열 때마다 목표 금액은 최신값으로, 기간은 빈칸(미변경)으로 되돌린다.
+  // 열 때마다 목표 금액·기간·월소득을 최신 프로필 값으로 되돌린다.
   useEffect(() => {
-    if (open) {
-      setTarget(String(initialTargetManwon));
-      setPeriod("");
-      setMonthlySalary("");
-      setSubmitError(undefined);
-      getOnboardingProfile()
-        .then((profile) => {
-          setPeriod(profile.goalPeriodMonths == null ? "" : String(profile.goalPeriodMonths));
-          setMonthlySalary(
-            profile.monthlySalaryManwon == null ? "" : String(profile.monthlySalaryManwon),
-          );
-        })
-        .catch(() => {
-          setPeriod("");
-          setMonthlySalary("");
-        });
-    }
-  }, [open, initialTargetManwon]);
+    if (!open) return;
+    setTarget(String(initialTargetManwon));
+    setSubmitError(undefined);
+    setPeriod(profile?.goalPeriodMonths == null ? "" : String(profile.goalPeriodMonths));
+    setMonthlySalary(
+      profile?.monthlySalaryManwon == null ? "" : String(profile.monthlySalaryManwon),
+    );
+  }, [open, initialTargetManwon, profile]);
 
   function submit() {
     const totalTargetManwon = toNullableAmount(target);
@@ -90,7 +82,7 @@ export function GoalEditSheet({ open, onOpenChange, initialTargetManwon }: GoalE
         onError: () => setSubmitError("저장하지 못했어요. 잠시 후 다시 시도해주세요."),
         onSuccess: async () => {
           if (monthlySalaryManwon != null || periodMonths != null) {
-            await patchOnboardingProfile({
+            await patchProfile({
               ...(monthlySalaryManwon != null ? { monthlySalaryManwon } : {}),
               ...(periodMonths != null ? { goalPeriodMonths: periodMonths } : {}),
             });

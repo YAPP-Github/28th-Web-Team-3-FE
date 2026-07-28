@@ -1,30 +1,36 @@
 import type { OnboardingProfilePatch } from "@repo/schema/onboarding-api";
 import { useCallback, useRef, useState } from "react";
-import { patchOnboardingProfile } from "@/lib/onboarding/api";
+import { usePatchOnboardingProfile } from "@/lib/onboarding/queries";
 
+/**
+ * 질문 퍼널의 "다음" 저장 — mutation에 화면용 한국어 오류 문구를 얹는다.
+ * 성공 여부를 boolean으로 돌려줘 호출부가 다음 단계로 넘어갈지 정한다.
+ */
 export function useSaveOnboardingProfile() {
+  const { mutateAsync, isPending } = usePatchOnboardingProfile();
+  // isPending은 다음 렌더에야 반영되므로, 같은 틱에 두 번 눌린 경우는 ref로 막는다.
   const savingRef = useRef(false);
-  const [isSaving, setIsSaving] = useState(false);
   const [saveError, setSaveError] = useState<string>();
 
-  const saveProfile = useCallback(async (profile: OnboardingProfilePatch) => {
-    if (savingRef.current) return false;
+  const saveProfile = useCallback(
+    async (profile: OnboardingProfilePatch) => {
+      if (savingRef.current) return false;
 
-    savingRef.current = true;
-    setIsSaving(true);
-    setSaveError(undefined);
+      savingRef.current = true;
+      setSaveError(undefined);
 
-    try {
-      await patchOnboardingProfile(profile);
-      return true;
-    } catch {
-      setSaveError("저장하지 못했어요. 잠시 후 다시 시도해주세요.");
-      return false;
-    } finally {
-      savingRef.current = false;
-      setIsSaving(false);
-    }
-  }, []);
+      try {
+        await mutateAsync(profile);
+        return true;
+      } catch {
+        setSaveError("저장하지 못했어요. 잠시 후 다시 시도해주세요.");
+        return false;
+      } finally {
+        savingRef.current = false;
+      }
+    },
+    [mutateAsync],
+  );
 
-  return { isSaving, saveError, saveProfile };
+  return { isSaving: isPending, saveError, saveProfile };
 }

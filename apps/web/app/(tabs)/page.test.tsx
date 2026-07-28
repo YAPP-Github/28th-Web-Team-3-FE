@@ -1,6 +1,6 @@
 import type { Mission } from "@repo/schema/mission";
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { fireEvent, render, screen, waitFor } from "@/lib/test/react";
 import HomePage from "./page";
 
 const replace = vi.fn();

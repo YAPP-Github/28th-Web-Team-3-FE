@@ -2,7 +2,8 @@ import type { MissionSource } from "@repo/schema/mission";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { completeMission, deleteRecommendedMission, fetchMissions } from "./api";
 
-const MISSIONS_QUERY_KEY = ["missions"] as const;
+/** 미션 목록 캐시 키. 생성 job 확정 등 다른 기능도 이걸 무효화하므로 export한다. */
+export const MISSIONS_QUERY_KEY = ["missions"] as const;
 
 /** 내 미션 전체 조회. */
 export function useMissions() {
