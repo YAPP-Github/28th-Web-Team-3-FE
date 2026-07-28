@@ -1,5 +1,5 @@
 import type { MissionSurveyPutRequest, MissionSurveyQuestion } from "@repo/schema/mission-survey";
-import { ButtonGroup, Progress } from "@repo/ui";
+import { Button, ButtonGroup, Input, Progress } from "@repo/ui";
 import { ChevronLeft } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { type FieldPath, useFormContext, useWatch } from "react-hook-form";
@@ -199,14 +199,14 @@ export function MissionSurveyQuestions({
 
   return (
     <main className="mx-auto flex min-h-dvh w-full max-w-md flex-col bg-gray-0 pb-6">
-      <button
+      <Button
         aria-label="이전 단계로 돌아가기"
-        className="flex size-11 items-center justify-center rounded-full p-2.5 hover:bg-gray-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-300"
-        type="button"
+        size="icon"
+        variant="ghost"
         onClick={() => goTo(-1)}
       >
         <ChevronLeft aria-hidden="true" className="size-6" />
-      </button>
+      </Button>
 
       <div className="px-5 pt-2">
         <Progress aria-label="설문 진행률" value={((index + 1) / questions.length) * 100} />
@@ -236,14 +236,21 @@ export function MissionSurveyQuestions({
               }
             />
             {textRule && textFieldPath ? (
-              <input
-                className="rounded-xl border border-gray-200 px-4 py-3.5 text-body-b1-500 text-gray-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-300"
-                maxLength={textRule.maximumLength}
-                placeholder="기타 취미를 입력해주세요"
-                type="text"
-                value={typeof textValue === "string" ? textValue : ""}
-                onChange={(event) => setField(textFieldPath, event.target.value)}
-              />
+              <>
+                {/* placeholder는 접근 가능한 이름이 아니다 — 입력하는 동안 사라져서
+                    스크린리더가 읽을 게 없어진다. 라벨은 두되 화면에서만 숨긴다. */}
+                <label className="sr-only" htmlFor="survey-other-text">
+                  기타 직접 입력
+                </label>
+                <Input
+                  id="survey-other-text"
+                  maxLength={textRule.maximumLength}
+                  placeholder="기타 취미를 입력해주세요"
+                  type="text"
+                  value={typeof textValue === "string" ? textValue : ""}
+                  onChange={(event) => setField(textFieldPath, event.target.value)}
+                />
+              </>
             ) : null}
           </div>
         )}

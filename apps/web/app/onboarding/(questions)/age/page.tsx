@@ -1,7 +1,7 @@
 "use client";
 
 import type { OnboardingFormValues } from "@repo/schema";
-import { Button } from "@repo/ui";
+import { Button, Input } from "@repo/ui";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { Controller, useFormContext, useWatch } from "react-hook-form";
@@ -71,13 +71,12 @@ export default function AgeOnboardingPage() {
             control={control}
             name="birthDate"
             render={({ field }) => (
-              <input
+              <Input
                 {...field}
                 id="birth-date"
                 aria-describedby={birthDateError ? "birth-date-error" : undefined}
                 aria-invalid={birthDateError ? true : undefined}
                 autoComplete="off"
-                className={`h-[52px] rounded-xl border px-4 text-body-b1-500 text-gray-900 placeholder:text-gray-200 focus-visible:ring-2 focus-visible:outline-none ${birthDateError ? "border-error focus-visible:border-error focus-visible:ring-error-light" : "border-gray-100 focus-visible:border-gray-800 focus-visible:ring-gray-100"}`}
                 inputMode="numeric"
                 maxLength={10}
                 name="birthDate"

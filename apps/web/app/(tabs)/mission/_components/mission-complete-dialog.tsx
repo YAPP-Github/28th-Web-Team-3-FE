@@ -1,3 +1,5 @@
+import { Button } from "@repo/ui";
+
 interface MissionCompleteDialogProps {
   open: boolean;
   pending?: boolean;
@@ -27,23 +29,26 @@ export function MissionCompleteDialog({
         >
           미션을 완료할까요?
         </h2>
+        {/* 다이얼로그 버튼은 퍼널 CTA(14px/500·48px)보다 크다 — 디자인 확인 전까지
+            기존 모양(52px·16px/700)을 유지한다. */}
         <div className="grid w-full grid-cols-2 gap-2.5">
-          <button
-            className="h-[52px] rounded-xl bg-gray-50 text-body-b1-700 text-gray-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-300 disabled:opacity-50"
+          <Button
+            className="h-[52px] text-body-b1-700 text-gray-800"
+            variant="secondary"
+            size="cta"
             disabled={pending}
-            type="button"
             onClick={onCancel}
           >
             취소
-          </button>
-          <button
-            className="h-[52px] rounded-xl bg-blue-500 text-body-b1-700 text-gray-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-300 disabled:opacity-50"
+          </Button>
+          <Button
+            className="h-[52px] text-body-b1-700"
+            size="cta"
             disabled={pending}
-            type="button"
             onClick={onConfirm}
           >
             완료
-          </button>
+          </Button>
         </div>
       </section>
     </div>

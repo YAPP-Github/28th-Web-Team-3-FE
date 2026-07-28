@@ -28,14 +28,14 @@ export default function NewMissionPage() {
   return (
     <main className="mx-auto flex min-h-dvh w-full max-w-md flex-col bg-gray-0 pb-6">
       <div className="flex flex-1 flex-col gap-8">
-        <button
+        <Button
           aria-label="미션 목록으로 돌아가기"
-          className="flex h-fit w-fit items-center justify-center rounded-full p-2.5 hover:bg-gray-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-300"
-          type="button"
+          size="icon"
+          variant="ghost"
           onClick={() => router.push("/mission")}
         >
           <ChevronLeft aria-hidden="true" className="size-6" />
-        </button>
+        </Button>
         <div className="flex flex-1 flex-col gap-8 px-5">
           <section className="flex flex-col gap-1">
             <h1 className="text-headline-h2-700">

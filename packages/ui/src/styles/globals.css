@@ -115,7 +115,9 @@
   --color-destructive: var(--color-error);
   --color-border: var(--color-gray-100);
   --color-input: var(--color-gray-200);
-  --color-ring: var(--color-blue-500);
+  /* 포커스 링. 앱 화면들이 이미 blue-300으로 그리고 있어 여기에 맞춘다 —
+     `focus-visible:ring-ring` 한 곳에서만 색을 바꿀 수 있게 값을 직접 박지 말 것. */
+  --color-ring: var(--color-blue-300);
 }
 
 @utility text-headline-h1-700 {

@@ -54,7 +54,7 @@ export function WeeklyMissionSection() {
         <SectionHeader title="이번 주 미션">
           <Link
             aria-label="미션 전체 보기"
-            className="rounded-md text-gray-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-300"
+            className="rounded-md text-gray-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             href="/mission"
           >
             <ChevronRight aria-hidden="true" className="size-5" />
@@ -78,7 +78,7 @@ export function WeeklyMissionSection() {
                 key={item}
                 aria-pressed={category === item}
                 className={cn(
-                  "rounded-lg px-4 py-1.5 text-body-b2-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-300",
+                  "rounded-lg px-4 py-1.5 text-body-b2-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                   category === item ? "bg-gray-800 text-gray-0" : "bg-gray-50 text-gray-400",
                 )}
                 type="button"
@@ -100,7 +100,7 @@ export function WeeklyMissionSection() {
                   <div className="flex w-full items-center gap-2">
                     <button
                       aria-label="미션 완료"
-                      className="flex size-5 shrink-0 items-center justify-center rounded-full border border-gray-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-300"
+                      className="flex size-5 shrink-0 items-center justify-center rounded-full border border-gray-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                       type="button"
                       onClick={() => setMissionToComplete(mission)}
                     >
@@ -108,7 +108,7 @@ export function WeeklyMissionSection() {
                     </button>
                     <button
                       aria-expanded={isExpanded}
-                      className="flex min-w-0 flex-1 items-center gap-2 rounded-md text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-300"
+                      className="flex min-w-0 flex-1 items-center gap-2 rounded-md text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                       type="button"
                       onClick={() =>
                         setExpandedId((current) => (current === mission.id ? null : mission.id))

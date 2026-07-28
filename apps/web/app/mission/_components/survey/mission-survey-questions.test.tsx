@@ -316,6 +316,46 @@ describe("MissionSurveyQuestions", () => {
     expect(onExitToIntro).toHaveBeenCalledOnce();
   });
 
+  it("기타 옵션을 고르면 라벨이 붙은 직접 입력 칸이 열린다", () => {
+    const otherHobbyQuestion: MissionSurveyQuestion = {
+      code: "HOBBY_TYPES",
+      prompt: "취미를 골라주세요",
+      answerType: "MULTI_CHOICE",
+      options: [
+        { code: "GAME", label: "게임" },
+        { code: "OTHER", label: "기타" },
+      ],
+      minSelections: 1,
+      maxSelections: 2,
+      dependsOnQuestionCode: null,
+      skipWhenOptionCodes: [],
+      numericRules: [],
+      textRules: [{ subjectOptionCode: "OTHER", minimumLength: 1, maximumLength: 20 }],
+      exclusiveOptionCodes: [],
+      conditionalOptionRules: [],
+      impacts: [],
+    };
+
+    render(
+      <CaptureWrapper onValues={vi.fn()}>
+        {(onComplete) => (
+          <MissionSurveyQuestions
+            questions={[otherHobbyQuestion]}
+            onComplete={onComplete}
+            onExitToIntro={vi.fn()}
+          />
+        )}
+      </CaptureWrapper>,
+    );
+
+    expect(screen.queryByLabelText("기타 직접 입력")).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "기타" }));
+
+    // placeholder가 아니라 라벨로 찾을 수 있어야 한다 — 입력 중에는 placeholder가 사라진다.
+    expect(screen.getByLabelText("기타 직접 입력")).toBeInTheDocument();
+  });
+
   it("조건부 선택지 규칙에 맞는 옵션만 보여준다", () => {
     render(
       <CaptureWrapper onValues={vi.fn()}>
