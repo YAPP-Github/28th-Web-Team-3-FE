@@ -3,10 +3,11 @@
 import type { OnboardingGoalPlans } from "@repo/schema/onboarding-api";
 import { ButtonGroup, OptionGroup, OptionItem } from "@repo/ui";
 import GoalUpIcon from "@repo/ui/svg/goal-up.svg";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { GoalPlanChart } from "@/app/onboarding/goal/_components/goal-plan-chart";
-import { confirmOnboardingGoal, getOnboardingGoalPlans } from "@/lib/onboarding/api";
+import { confirmOnboardingGoalOptions, onboardingGoalPlansOptions } from "@/lib/onboarding/queries";
 
 type GoalPlanCode = "PLAN_1" | "PLAN_2";
 
@@ -23,39 +24,36 @@ function calculateIncreasePercent(amountManwon: number, goalPlans: OnboardingGoa
 
 export default function OnboardingGoalPage() {
   const router = useRouter();
-  const [goalPlans, setGoalPlans] = useState<OnboardingGoalPlans>();
+  const queryClient = useQueryClient();
+  const { data: goalPlans, isError } = useQuery(onboardingGoalPlansOptions());
+  const { mutateAsync: confirmGoal, isPending: isConfirming } = useMutation(
+    confirmOnboardingGoalOptions(queryClient),
+  );
   const [selectedPlan, setSelectedPlan] = useState<GoalPlanCode>();
-  const [isConfirming, setIsConfirming] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string>();
 
+  // 서버가 정한 기본 플랜을 선택 상태의 초기값으로 삼는다 — 조회가 끝난 뒤에만 정해진다.
   useEffect(() => {
-    let active = true;
+    if (!goalPlans) return;
+    setSelectedPlan(
+      (previous) =>
+        previous ?? goalPlans.plans.find((plan) => plan.default)?.plan ?? goalPlans.plans[0]?.plan,
+    );
+  }, [goalPlans]);
 
-    getOnboardingGoalPlans()
-      .then((nextGoalPlans) => {
-        if (!active) return;
-        const defaultPlan =
-          nextGoalPlans.plans.find((plan) => plan.default)?.plan ?? nextGoalPlans.plans[0]?.plan;
-        if (!defaultPlan) {
-          setErrorMessage("선택할 수 있는 목표 플랜이 없어요.");
-          return;
-        }
-        setGoalPlans(nextGoalPlans);
-        setSelectedPlan(defaultPlan);
-      })
-      .catch(() => {
-        if (active) setErrorMessage("목표 플랜을 불러오지 못했어요. 잠시 후 다시 열어주세요.");
-      });
-
-    return () => {
-      active = false;
-    };
-  }, []);
-
-  if (errorMessage && !goalPlans) {
+  // 재조회 실패로는 화면을 내리지 않는다 — react-query가 이전 데이터를 유지한 채 isError를 켠다.
+  if (isError && !goalPlans) {
     return (
       <div className="flex min-h-dvh items-center justify-center px-5 text-center text-body-b1-500 text-gray-700">
-        {errorMessage}
+        목표 플랜을 불러오지 못했어요. 잠시 후 다시 열어주세요.
+      </div>
+    );
+  }
+
+  if (goalPlans && goalPlans.plans.length === 0) {
+    return (
+      <div className="flex min-h-dvh items-center justify-center px-5 text-center text-body-b1-500 text-gray-700">
+        선택할 수 있는 목표 플랜이 없어요.
       </div>
     );
   }
@@ -165,15 +163,12 @@ export default function OnboardingGoalPage() {
           nextLabel={isConfirming ? "목표를 설정하고 있어요…" : "이 목표로 시작"}
           prevLabel="다시하기"
           onNext={async () => {
-            setIsConfirming(true);
             setErrorMessage(undefined);
             try {
-              await confirmOnboardingGoal({ plan: selectedPlan });
+              await confirmGoal({ plan: selectedPlan });
               router.replace("/");
             } catch {
               setErrorMessage("목표를 저장하지 못했어요. 잠시 후 다시 시도해주세요.");
-            } finally {
-              setIsConfirming(false);
             }
           }}
           onPrev={() => router.push("/onboarding/age")}

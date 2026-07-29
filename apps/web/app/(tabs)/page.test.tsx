@@ -1,6 +1,7 @@
 import type { Mission } from "@repo/schema/mission";
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { ONBOARDING_PROFILE_QUERY_KEY } from "@/lib/onboarding/queries";
+import { createTestQueryClient, fireEvent, render, screen, waitFor } from "@/lib/test/react";
 import HomePage from "./page";
 
 const replace = vi.fn();
@@ -115,5 +116,31 @@ describe("HomePage", () => {
     fireEvent.click(await screen.findByRole("button", { name: "다시 시도" }));
     expect(await screen.findByRole("heading", { name: "홈" })).toBeInTheDocument();
     expect(replace).not.toHaveBeenCalled();
+  });
+
+  it("캐시된 프로필이 있으면 재조회가 실패해도 홈을 계속 보여준다", async () => {
+    // react-query는 재조회가 실패해도 이전 데이터를 버리지 않고 isError만 켠다.
+    // 그 상태에서 오류 화면으로 갈아치우면 멀쩡히 그릴 수 있는 화면이 사라진다.
+    const queryClient = createTestQueryClient();
+    queryClient.setQueryData(ONBOARDING_PROFILE_QUERY_KEY, {
+      status: "COMPLETED",
+      birthDate: "1998-03-01",
+      monthlySalaryManwon: 300,
+      monthlySavingManwon: 100,
+      netWorthManwon: 1000,
+      goalPeriodMonths: 24,
+    });
+    vi.mocked(getOnboardingProfile).mockRejectedValue(new Error("network error"));
+
+    render(<HomePage />, { queryClient });
+
+    // 마운트 직후 stale 재조회가 나가 실패한다(테스트 클라이언트는 retry를 끈다).
+    // 오류가 실제로 정착한 뒤에 봐야 한다 — 안 그러면 검사가 헛돈다.
+    await waitFor(() =>
+      expect(queryClient.getQueryState(ONBOARDING_PROFILE_QUERY_KEY)?.status).toBe("error"),
+    );
+    expect(queryClient.getQueryData(ONBOARDING_PROFILE_QUERY_KEY)).toBeDefined();
+    expect(screen.getByRole("heading", { name: "홈" })).toBeInTheDocument();
+    expect(screen.queryByText("사용자 정보를 불러오지 못했어요.")).not.toBeInTheDocument();
   });
 });

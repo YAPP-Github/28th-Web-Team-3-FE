@@ -66,5 +66,3 @@ export function createApiClient({ baseUrl, tokenProvider }: ApiClientOptions = {
     },
   });
 }
-
-export const api = createApiClient();

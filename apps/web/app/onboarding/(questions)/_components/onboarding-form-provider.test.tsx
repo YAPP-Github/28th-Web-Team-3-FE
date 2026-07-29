@@ -1,8 +1,8 @@
 import type { OnboardingFormValues } from "@repo/schema";
-import { act, fireEvent, render, screen } from "@testing-library/react";
 import { useFormContext } from "react-hook-form";
 import { describe, expect, it, vi } from "vitest";
 import { getOnboardingProfile } from "@/lib/onboarding/api";
+import { act, fireEvent, render, screen } from "@/lib/test/react";
 import { OnboardingFormProvider } from "./onboarding-form-provider";
 
 vi.mock("@/lib/onboarding/api", () => ({ getOnboardingProfile: vi.fn() }));

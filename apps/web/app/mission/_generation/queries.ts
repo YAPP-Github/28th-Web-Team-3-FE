@@ -1,5 +1,6 @@
 import type { MissionConfirmRequest } from "@repo/schema/mission-generation";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { MISSIONS_QUERY_KEY } from "@/app/(tabs)/mission/queries";
 import { missionGenerationJobOptions } from "../options/mission";
 import { confirmGenerationJob, fetchGenerationDrafts, requestGenerationJob } from "./api";
 
@@ -26,6 +27,6 @@ export function useConfirmGenerationJob(jobId: string) {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (body: MissionConfirmRequest) => confirmGenerationJob(jobId, body),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["missions"] }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: MISSIONS_QUERY_KEY }),
   });
 }

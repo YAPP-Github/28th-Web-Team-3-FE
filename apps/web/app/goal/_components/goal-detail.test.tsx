@@ -1,6 +1,6 @@
 import type { GoalStatus } from "@repo/schema/goal";
-import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { act, fireEvent, render, screen, waitFor } from "@/lib/test/react";
 
 // 조회/변경 훅을 목으로 대체한다 — 데이터 주입 후 렌더·인터랙션 로직을 검증한다.
 // (API 연동 자체는 브라우저 MSW로 별도 확인. vitest jsdom은 msw/node fetch를 가로채지 못한다.)
@@ -34,7 +34,7 @@ vi.mock("@/lib/onboarding/api", () => ({
   patchOnboardingProfile: vi.fn().mockResolvedValue({}),
 }));
 
-import { patchOnboardingProfile } from "@/lib/onboarding/api";
+import { getOnboardingProfile, patchOnboardingProfile } from "@/lib/onboarding/api";
 import { GoalDetail } from "./goal-detail";
 
 describe("GoalDetail", () => {
@@ -96,6 +96,23 @@ describe("GoalDetail", () => {
       goalPeriodMonths: 16,
       monthlySalaryManwon: 650,
     });
+  });
+
+  it("시트를 다시 열어도 프로필을 다시 조회하지 않는다", async () => {
+    render(<GoalDetail />);
+
+    fireEvent.click(screen.getByRole("button", { name: /수정/ }));
+    await waitFor(() =>
+      expect(screen.getByRole("textbox", { name: "목표 기간개월" })).toHaveValue("16"),
+    );
+    fireEvent.keyDown(document, { key: "Escape" });
+    await waitFor(() =>
+      expect(screen.queryByRole("dialog", { name: "수정" })).not.toBeInTheDocument(),
+    );
+    fireEvent.click(screen.getByRole("button", { name: /수정/ }));
+
+    expect(screen.getByRole("textbox", { name: "목표 기간개월" })).toHaveValue("16");
+    expect(getOnboardingProfile).toHaveBeenCalledTimes(1);
   });
 
   it("목표 기간이 하한 미만이면 보내지 않고 오류를 표시한다", async () => {

@@ -1,6 +1,6 @@
-import { act, renderHook } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { patchOnboardingProfile } from "@/lib/onboarding/api";
+import { act, renderHook } from "@/lib/test/react";
 import { useSaveOnboardingProfile } from "./use-save-onboarding-profile";
 
 vi.mock("@/lib/onboarding/api", () => ({ patchOnboardingProfile: vi.fn() }));

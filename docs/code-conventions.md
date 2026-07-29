@@ -56,13 +56,18 @@ import "client-only";
 ```
 packages/schema/src/<도메인>.ts   요청·응답 계약(zod). 앱과 무관하게 백엔드 계약만 담는다
 apps/web/.../<기능>/api.ts        HTTP 호출. 요청 검증 → 전송 → 응답 검증
-apps/web/.../<기능>/queries.ts    react-query 훅. queryKey·무효화 정책
-컴포넌트                          서버 상태는 훅으로 사용한다
+apps/web/.../<기능>/queries.ts    TanStack Query options. queryKey·queryFn·mutationFn·캐시 갱신 정책
+컴포넌트                          useQuery/useMutation에 options를 주입해 서버 상태를 사용한다
 ```
 
 `api.ts`는 순수 함수만 둔다. 훅·상태·컴포넌트를 import하지 않는다. 캐시나 무효화가
 필요 없는 단발성 요청은 컴포넌트에서 API 함수를 직접 호출할 수 있지만, `fetch`·스키마를
 직접 다루지는 않는다.
+
+`queries.ts`는 `queryOptions()` / `mutationOptions()` 팩토리만 둔다. 훅은 여기서 감싸지
+않고, 클라이언트 컴포넌트나 커스텀 훅에서 `useQuery(options())`,
+`useMutation(options(queryClient))`처럼 TanStack Query 훅에 options를 주입한다. mutation
+성공 후 캐시 갱신이 필요하면 options 함수가 `QueryClient`를 인자로 받는다.
 
 파일명은 항상 `api.ts` / `queries.ts`다 — `<기능>-api.ts`처럼 접두사를 붙이지 말고, 한 디렉터리에 API 표면이 둘 이상이면 디렉터리를 나눈다(라우트로 잡히지 않게 `_이름/`).
 

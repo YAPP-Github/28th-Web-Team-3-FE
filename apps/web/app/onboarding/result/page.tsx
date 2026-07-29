@@ -1,12 +1,11 @@
 "use client";
 
-import type { OnboardingReport } from "@repo/schema/onboarding-api";
 import { ButtonGroup } from "@repo/ui";
 import AppleIntelIcon from "@repo/ui/svg/apple-intel.svg";
+import { useQuery } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
 import { SavingsComparisonChart } from "@/app/onboarding/_components/savings-comparison-chart";
-import { getOnboardingReport } from "@/lib/onboarding/api";
+import { onboardingReportOptions } from "@/lib/onboarding/queries";
 
 function formatAmount(amount: number) {
   return `${amount.toLocaleString("ko-KR")}만원`;
@@ -14,27 +13,10 @@ function formatAmount(amount: number) {
 
 export default function OnboardingResultPage() {
   const router = useRouter();
-  const [report, setReport] = useState<OnboardingReport>();
-  const [hasError, setHasError] = useState(false);
+  const { data: report, isError } = useQuery(onboardingReportOptions());
 
-  useEffect(() => {
-    let active = true;
-
-    getOnboardingReport()
-      .then((nextReport) => {
-        if (!active) return;
-        setReport(nextReport);
-      })
-      .catch(() => {
-        if (active) setHasError(true);
-      });
-
-    return () => {
-      active = false;
-    };
-  }, []);
-
-  if (hasError) {
+  // 재조회 실패로는 화면을 내리지 않는다 — react-query가 이전 데이터를 유지한 채 isError를 켠다.
+  if (isError && !report) {
     return (
       <div className="flex min-h-dvh items-center justify-center px-5 text-body-b1-500 text-gray-700">
         결과를 불러오지 못했어요. 잠시 후 페이지를 다시 열어주세요.

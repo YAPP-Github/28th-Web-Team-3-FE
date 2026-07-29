@@ -1,6 +1,6 @@
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { patchOnboardingProfile } from "@/lib/onboarding/api";
+import { fireEvent, render, screen, waitFor } from "@/lib/test/react";
 import { OnboardingFormProvider } from "./_components/onboarding-form-provider";
 import InvestmentPeriodOnboardingPage from "./period/page";
 
