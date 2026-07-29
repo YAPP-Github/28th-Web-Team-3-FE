@@ -31,9 +31,9 @@ vi.mock("@/api/onboarding", () => ({
   patchOnboardingProfile: vi.fn().mockResolvedValue({}),
 }));
 
-import { SAVE_FAILED_TEXT } from "@/lib/messages";
 import { fetchGoalStatus, updateGoal, updateSavings } from "@/api/goal";
 import { getOnboardingProfile, patchOnboardingProfile } from "@/api/onboarding";
+import { SAVE_FAILED_TEXT } from "@/lib/messages";
 import { GoalDetail } from "./goal-detail";
 
 describe("GoalDetail", () => {

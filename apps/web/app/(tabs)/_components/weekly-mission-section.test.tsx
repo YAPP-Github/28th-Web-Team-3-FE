@@ -2,6 +2,7 @@ import type { Mission } from "@repo/schema/mission";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { fetchGoalStatus } from "@/api/goal";
 import { completeMission, fetchMissions } from "@/api/mission";
+import { MOCK_GOAL_STATUS } from "@/lib/test/fixtures/goal-status";
 import { fireEvent, render, screen, waitFor } from "@/lib/test/react";
 
 const MOCK_MISSIONS: Mission[] = [
@@ -67,14 +68,7 @@ describe("WeeklyMissionSection", () => {
     vi.clearAllMocks();
     vi.mocked(fetchMissions).mockImplementation(() => Promise.resolve(mockData));
     vi.mocked(completeMission).mockResolvedValue(undefined);
-    vi.mocked(fetchGoalStatus).mockResolvedValue({
-      targetAmountManwon: 5000,
-      totalSavedManwon: 1950,
-      progressPercent: 100,
-      usageMonths: 8,
-      deadlineDDay: 486,
-      thisMonth: { targetManwon: 82, savedManwon: 67, progressPercent: 82, dDay: 12 },
-    });
+    vi.mocked(fetchGoalStatus).mockResolvedValue(MOCK_GOAL_STATUS);
   });
 
   it("조회한 미션을 그리고 카테고리로 필터링한다", async () => {

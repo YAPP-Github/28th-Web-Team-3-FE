@@ -12,7 +12,7 @@ export default function RouteError({
   reset: () => void;
 }) {
   useEffect(() => {
-    if (process.env.NODE_ENV === "development") {
+    if (process.env.NODE_ENV !== "production") {
       return;
     }
 

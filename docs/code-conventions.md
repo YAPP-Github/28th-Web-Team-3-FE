@@ -191,7 +191,7 @@ function handleClick(event: MouseEvent<HTMLAnchorElement>) {
 
 ### 단위 테스트는 API 함수를 목으로 갈아끼운다
 
-vitest(jsdom)는 `msw/node`의 fetch를 가로채지 못한다. API 연동 자체는 브라우저 MSW나 e2e로 확인하고, 단위 테스트는 데이터를 주입해 렌더·인터랙션만 본다.
+vitest(jsdom)에서도 `msw/node`의 `setupServer`를 사용할 수 있다. 다만 이 프로젝트의 컴포넌트 단위 테스트는 API 연동보다 렌더·인터랙션과 Query options 연결을 좁게 검증하므로 데이터를 주입한다.
 컴포넌트는 실제 `queryOptions` / `mutationOptions` 경로를 타게 두고, `@/api/<도메인>` 함수만 목으로 대체한다.
 
 ```ts

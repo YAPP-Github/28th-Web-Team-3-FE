@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { fetchGoalStatus } from "@/api/goal";
 import { completeMission, fetchMissions } from "@/api/mission";
 import { ONBOARDING_PROFILE_QUERY_KEY } from "@/lib/queries/onboarding";
+import { MOCK_GOAL_STATUS } from "@/lib/test/fixtures/goal-status";
 import { createTestQueryClient, fireEvent, render, screen, waitFor } from "@/lib/test/react";
 import HomePage from "./page";
 
@@ -50,14 +51,7 @@ import { getOnboardingProfile } from "@/api/onboarding";
 describe("HomePage", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    vi.mocked(fetchGoalStatus).mockResolvedValue({
-      targetAmountManwon: 5000,
-      totalSavedManwon: 1950,
-      progressPercent: 100,
-      usageMonths: 8,
-      deadlineDDay: 486,
-      thisMonth: { targetManwon: 82, savedManwon: 67, progressPercent: 82, dDay: 12 },
-    });
+    vi.mocked(fetchGoalStatus).mockResolvedValue(MOCK_GOAL_STATUS);
     vi.mocked(fetchMissions).mockResolvedValue(MOCK_MISSIONS);
     vi.mocked(completeMission).mockResolvedValue(undefined);
   });

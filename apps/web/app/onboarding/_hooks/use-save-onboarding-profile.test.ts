@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { SAVE_FAILED_TEXT } from "@/lib/messages";
 import { patchOnboardingProfile } from "@/api/onboarding";
+import { SAVE_FAILED_TEXT } from "@/lib/messages";
 import { act, renderHook } from "@/lib/test/react";
 import { useSaveOnboardingProfile } from "./use-save-onboarding-profile";
 
