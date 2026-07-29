@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { render } from "@testing-library/react";
+import { render, screen } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const fetchGenerationJobStatus = vi.fn();
@@ -58,6 +58,33 @@ describe("MissionGenerating", () => {
 
     await vi.advanceTimersByTimeAsync(5000);
     await vi.waitFor(() => expect(fetchGenerationJobStatus).toHaveBeenCalledTimes(3));
+  });
+
+  it("폴링 중 일시적인 조회 실패를 생성 실패로 표시하지 않는다", async () => {
+    // 5초마다 조회하므로 네트워크가 한 번 끊긴 것으로 "미션 생성에 실패했어요"를 띄우면
+    // 사용자는 멀쩡히 진행 중인 생성을 포기한다.
+    fetchGenerationJobStatus
+      .mockResolvedValueOnce(PENDING_JOB)
+      .mockRejectedValueOnce(new Error("network error"))
+      .mockResolvedValue(PENDING_JOB);
+
+    renderWithClient();
+
+    await vi.waitFor(() => expect(screen.getByText(/맞춤 미션을 만들고 있어요/)).toBeTruthy());
+
+    await vi.advanceTimersByTimeAsync(5000);
+    await vi.waitFor(() => expect(fetchGenerationJobStatus).toHaveBeenCalledTimes(2));
+
+    expect(screen.queryByText(/미션 생성에 실패했어요/)).toBeNull();
+    expect(screen.getByText(/맞춤 미션을 만들고 있어요/)).toBeTruthy();
+  });
+
+  it("첫 조회부터 실패하면 생성 실패로 안내한다", async () => {
+    fetchGenerationJobStatus.mockRejectedValue(new Error("network error"));
+
+    renderWithClient();
+
+    await vi.waitFor(() => expect(screen.getByText(/미션 생성에 실패했어요/)).toBeTruthy());
   });
 
   it("완료되면 폴링을 멈추고 결과 화면으로 이동한다", async () => {

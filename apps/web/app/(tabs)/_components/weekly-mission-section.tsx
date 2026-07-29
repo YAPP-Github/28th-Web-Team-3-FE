@@ -31,7 +31,8 @@ export function WeeklyMissionSection() {
     return <p className="px-5 pt-8 text-center text-body-b2-500 text-gray-400">불러오는 중…</p>;
   }
 
-  if (isError) {
+  // 재조회 실패로는 화면을 내리지 않는다 — react-query가 이전 데이터를 유지한 채 isError를 켠다.
+  if (isError && !missions) {
     return (
       <p className="px-5 pt-8 text-center text-body-b2-500 text-gray-500">
         미션을 불러오지 못했어요. 잠시 후 다시 시도해 주세요.
