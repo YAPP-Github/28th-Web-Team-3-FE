@@ -2,15 +2,14 @@
 
 import * as Sentry from "@sentry/nextjs";
 import { useEffect } from "react";
-
 import { ErrorState, RetryButton } from "./_components/error-state";
 
-export default function GlobalError({
+export default function RouteError({
   error,
-  unstable_retry,
+  reset,
 }: {
   error: Error & { digest?: string };
-  unstable_retry: () => void;
+  reset: () => void;
 }) {
   useEffect(() => {
     if (process.env.NODE_ENV === "development") {
@@ -21,14 +20,10 @@ export default function GlobalError({
   }, [error]);
 
   return (
-    <html lang="ko">
-      <body>
-        <ErrorState
-          title="문제가 생겼어요"
-          description="앱을 불러오지 못했어요. 다시 시도해 주세요."
-          action={<RetryButton onClick={unstable_retry} />}
-        />
-      </body>
-    </html>
+    <ErrorState
+      title="문제가 생겼어요"
+      description="화면을 불러오지 못했어요. 다시 시도해 주세요."
+      action={<RetryButton onClick={reset} />}
+    />
   );
 }
