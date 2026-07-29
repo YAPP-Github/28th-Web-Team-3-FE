@@ -19,7 +19,8 @@ export function HomeGoalSection() {
     return <div aria-busy="true" className="h-64" />;
   }
 
-  if (isError) {
+  // 재조회 실패로는 화면을 내리지 않는다 — react-query가 이전 데이터를 유지한 채 isError를 켠다.
+  if (isError && !goal) {
     return (
       <p className="text-body-b2-500 text-gray-500">
         목표를 불러오지 못했어요. 잠시 후 다시 시도해 주세요.

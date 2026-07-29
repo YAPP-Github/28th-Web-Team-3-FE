@@ -22,7 +22,9 @@ export function MissionGenerating({ jobId }: { jobId: string }) {
     }
   }, [job, router]);
 
-  const failed = isError || job?.status === "FAILED";
+  // 5초마다 폴링하므로 일시적인 조회 실패로 "생성 실패"를 띄우면 안 된다 — 다음 폴링이
+  // 성공할 수 있다. 서버가 FAILED를 주거나, 첫 조회부터 실패해 상태를 아예 못 받은 경우만 실패다.
+  const failed = job?.status === "FAILED" || (isError && !job);
 
   return (
     <main className="mx-auto flex min-h-dvh w-full max-w-md flex-col items-center justify-center gap-4 bg-gray-0 px-5 text-center">
