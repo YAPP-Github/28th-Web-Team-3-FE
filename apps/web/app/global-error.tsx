@@ -4,6 +4,7 @@ import * as Sentry from "@sentry/nextjs";
 import { useEffect } from "react";
 
 import { ErrorState, RetryButton } from "./_components/error-state";
+import "./globals.css";
 
 export default function GlobalError({
   error,
