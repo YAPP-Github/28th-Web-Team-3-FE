@@ -26,7 +26,7 @@ vi.mock("@repo/bridge", () => ({
 
 async function loadTokenProvider(isNativeApp: boolean) {
   mocks.state.isNativeApp = isNativeApp;
-  await import("./api");
+  await import("./client");
   return mocks.state.tokenProvider;
 }
 
