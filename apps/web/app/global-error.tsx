@@ -1,10 +1,22 @@
 "use client";
 
 import * as Sentry from "@sentry/nextjs";
-import NextError from "next/error";
 import { useEffect } from "react";
 
-export default function GlobalError({ error }: { error: Error & { digest?: string } }) {
+import { ErrorState, RetryButton } from "./_components/error-state";
+import "./globals.css";
+
+export default function GlobalError({
+  error,
+  reset,
+  retry,
+  unstable_retry,
+}: {
+  error: Error & { digest?: string };
+  reset?: () => void;
+  retry?: () => void;
+  unstable_retry?: () => void;
+}) {
   useEffect(() => {
     if (process.env.NODE_ENV === "development") {
       return;
@@ -16,8 +28,11 @@ export default function GlobalError({ error }: { error: Error & { digest?: strin
   return (
     <html lang="ko">
       <body>
-        {/* NextError needs a statusCode; 0 renders a generic client-side message. */}
-        <NextError statusCode={0} />
+        <ErrorState
+          title="문제가 생겼어요"
+          description="앱을 불러오지 못했어요. 다시 시도해 주세요."
+          action={<RetryButton onClick={retry ?? unstable_retry ?? reset ?? (() => {})} />}
+        />
       </body>
     </html>
   );

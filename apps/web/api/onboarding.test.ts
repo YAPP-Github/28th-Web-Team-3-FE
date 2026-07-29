@@ -1,15 +1,15 @@
 import { HTTPError } from "ky";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { http } from "@/lib/api";
+import { http } from "@/api/client";
 import {
   confirmOnboardingGoal,
   getOnboardingGoalPlans,
   getOnboardingProfile,
   getOnboardingReport,
   patchOnboardingProfile,
-} from "@/lib/onboarding/api";
+} from "@/api/onboarding";
 
-vi.mock("@/lib/api", () => ({
+vi.mock("@/api/client", () => ({
   http: { get: vi.fn(), patch: vi.fn(), post: vi.fn() },
 }));
 

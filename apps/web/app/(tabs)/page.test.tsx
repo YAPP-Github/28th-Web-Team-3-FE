@@ -1,6 +1,9 @@
 import type { Mission } from "@repo/schema/mission";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { ONBOARDING_PROFILE_QUERY_KEY } from "@/lib/onboarding/queries";
+import { fetchGoalStatus } from "@/api/goal";
+import { completeMission, fetchMissions } from "@/api/mission";
+import { ONBOARDING_PROFILE_QUERY_KEY } from "@/lib/queries/onboarding";
+import { MOCK_GOAL_STATUS } from "@/lib/test/fixtures/goal-status";
 import { createTestQueryClient, fireEvent, render, screen, waitFor } from "@/lib/test/react";
 import HomePage from "./page";
 
@@ -27,39 +30,30 @@ vi.mock("next/navigation", () => ({
   useRouter: () => router,
 }));
 
-vi.mock("@/lib/onboarding/api", () => ({
+vi.mock("@/api/onboarding", () => ({
   getOnboardingProfile: vi.fn(),
 }));
 
-// 홈 목표 섹션은 목표 상세와 같은 `useGoalStatus`로 실데이터를 조회한다.
-// jsdom은 msw/node fetch를 가로채지 못하므로 훅을 목으로 대체해 데이터를 주입한다.
-vi.mock("@/app/goal/queries", () => ({
-  useGoalStatus: () => ({
-    data: {
-      targetAmountManwon: 5000,
-      totalSavedManwon: 1950,
-      progressPercent: 100,
-      usageMonths: 8,
-      deadlineDDay: 486,
-      thisMonth: { targetManwon: 82, savedManwon: 67, progressPercent: 82, dDay: 12 },
-    },
-    isPending: false,
-    isError: false,
-  }),
-  useUpdateSavings: () => ({ isPending: false, mutate: vi.fn() }),
-  useUpdateGoal: () => ({ isPending: false, mutate: vi.fn() }),
+vi.mock("@/api/goal", () => ({
+  fetchGoalStatus: vi.fn(),
+  updateGoal: vi.fn(),
+  updateSavings: vi.fn(),
 }));
 
-vi.mock("@/app/(tabs)/mission/queries", () => ({
-  useMissions: () => ({ data: MOCK_MISSIONS, isPending: false, isError: false }),
-  useCompleteMission: () => ({ mutate: vi.fn() }),
+vi.mock("@/api/mission", () => ({
+  completeMission: vi.fn(),
+  deleteRecommendedMission: vi.fn(),
+  fetchMissions: vi.fn(),
 }));
 
-import { getOnboardingProfile } from "@/lib/onboarding/api";
+import { getOnboardingProfile } from "@/api/onboarding";
 
 describe("HomePage", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.mocked(fetchGoalStatus).mockResolvedValue(MOCK_GOAL_STATUS);
+    vi.mocked(fetchMissions).mockResolvedValue(MOCK_MISSIONS);
+    vi.mocked(completeMission).mockResolvedValue(undefined);
   });
 
   it("온보딩을 완료했다면 Figma 홈의 목표·미션·팁 섹션을 렌더한다", async () => {
@@ -77,7 +71,10 @@ describe("HomePage", () => {
     expect(screen.getByRole("main")).toHaveAttribute("aria-busy", "true");
     expect(screen.queryByRole("heading", { name: "홈" })).not.toBeInTheDocument();
     expect(await screen.findByRole("heading", { name: "홈" })).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: /5,000만원 모으기/ })).toHaveAttribute("href", "/goal");
+    expect(await screen.findByRole("link", { name: /5,000만원 모으기/ })).toHaveAttribute(
+      "href",
+      "/goal",
+    );
     expect(screen.getByRole("heading", { name: "이번 주 미션" })).toBeInTheDocument();
     expect(screen.getByText("이번 주 배달음식 2회 이하로 주문")).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "재테크 선배의 팁" })).toBeInTheDocument();

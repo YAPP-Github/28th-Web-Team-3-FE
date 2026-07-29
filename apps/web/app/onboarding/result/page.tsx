@@ -6,7 +6,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { SavingsComparisonChart } from "@/app/onboarding/_components/savings-comparison-chart";
 import { formatManwon } from "@/lib/format";
-import { onboardingReportOptions } from "@/lib/onboarding/queries";
+import { onboardingReportOptions } from "@/lib/queries/onboarding";
 
 export default function OnboardingResultPage() {
   const router = useRouter();

@@ -8,7 +8,7 @@ import {
   missionDraftsResponseSchema,
   missionGenerationJobSchema,
 } from "@repo/schema/mission-generation";
-import { http } from "@/lib/api";
+import { http } from "@/api/client";
 
 /**
  * 미션 초안 생성(비동기 job) API — 백엔드 OpenAPI(`/api/missions/generation-jobs`) 연동.

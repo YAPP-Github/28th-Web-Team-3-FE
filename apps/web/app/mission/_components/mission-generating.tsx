@@ -1,11 +1,12 @@
 "use client";
 
 import { Button } from "@repo/ui";
+import { useQuery } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
-import { useGenerationJobStatus } from "@/app/mission/_generation/queries";
 import { buildMissionCreationResultHref } from "@/app/mission/constants/mission-creation";
+import { generationJobStatusOptions } from "@/lib/queries/mission-generation";
 
 /**
  * AI 미션 초안 생성 job이 끝날 때까지 polling한다. jobId는 설문 제출 단계에서 만들어
@@ -14,7 +15,7 @@ import { buildMissionCreationResultHref } from "@/app/mission/constants/mission-
  */
 export function MissionGenerating({ jobId }: { jobId: string }) {
   const router = useRouter();
-  const { data: job, isError } = useGenerationJobStatus(jobId);
+  const { data: job, isError } = useQuery(generationJobStatusOptions(jobId));
 
   useEffect(() => {
     if (job?.status === "SUCCEEDED" && job.draftsAvailable) {

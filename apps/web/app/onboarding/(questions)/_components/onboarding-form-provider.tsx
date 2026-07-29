@@ -6,7 +6,7 @@ import { useQuery } from "@tanstack/react-query";
 import { type ReactNode, useEffect } from "react";
 import { FormProvider, useForm } from "react-hook-form";
 import { DEFAULT_ONBOARDING_FORM_VALUES } from "@/app/onboarding/constants/form";
-import { onboardingProfileOptions } from "@/lib/onboarding/queries";
+import { onboardingProfileOptions } from "@/lib/queries/onboarding";
 
 export function OnboardingFormProvider({ children }: { children: ReactNode }) {
   const formMethods = useForm<OnboardingFormValues>({

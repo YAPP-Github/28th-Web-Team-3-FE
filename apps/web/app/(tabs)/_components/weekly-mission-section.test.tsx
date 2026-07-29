@@ -1,6 +1,9 @@
 import type { Mission } from "@repo/schema/mission";
-import { fireEvent, render, screen } from "@testing-library/react";
-import { describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import { fetchGoalStatus } from "@/api/goal";
+import { completeMission, fetchMissions } from "@/api/mission";
+import { MOCK_GOAL_STATUS } from "@/lib/test/fixtures/goal-status";
+import { fireEvent, render, screen, waitFor } from "@/lib/test/react";
 
 const MOCK_MISSIONS: Mission[] = [
   {
@@ -44,35 +47,35 @@ const MOCK_MISSIONS: Mission[] = [
   },
 ];
 
-const mutation = { isPending: false, mutate: vi.fn() };
 let mockData: Mission[] = MOCK_MISSIONS;
 
-vi.mock("@/app/(tabs)/mission/queries", () => ({
-  useMissions: () => ({ data: mockData, isPending: false, isError: false }),
-  useCompleteMission: () => mutation,
+vi.mock("@/api/mission", () => ({
+  completeMission: vi.fn(),
+  deleteRecommendedMission: vi.fn(),
+  fetchMissions: vi.fn(),
 }));
 
-vi.mock("@/app/goal/queries", () => ({
-  useGoalStatus: () => ({
-    data: {
-      targetAmountManwon: 5000,
-      totalSavedManwon: 1950,
-      progressPercent: 100,
-      usageMonths: 8,
-      deadlineDDay: 486,
-      thisMonth: { targetManwon: 82, savedManwon: 67, progressPercent: 82, dDay: 12 },
-    },
-  }),
+vi.mock("@/api/goal", () => ({
+  fetchGoalStatus: vi.fn(),
+  updateGoal: vi.fn(),
+  updateSavings: vi.fn(),
 }));
 
 import { WeeklyMissionSection } from "./weekly-mission-section";
 
 describe("WeeklyMissionSection", () => {
-  it("조회한 미션을 그리고 카테고리로 필터링한다", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    vi.mocked(fetchMissions).mockImplementation(() => Promise.resolve(mockData));
+    vi.mocked(completeMission).mockResolvedValue(undefined);
+    vi.mocked(fetchGoalStatus).mockResolvedValue(MOCK_GOAL_STATUS);
+  });
+
+  it("조회한 미션을 그리고 카테고리로 필터링한다", async () => {
     mockData = MOCK_MISSIONS;
     render(<WeeklyMissionSection />);
 
-    expect(screen.getByText(/\d+% 달성/)).toBeInTheDocument();
+    expect(await screen.findByText(/\d+% 달성/)).toBeInTheDocument();
     expect(screen.getByText("이번 주 배달음식 2회 이하로 주문")).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("button", { name: "교통" }));
@@ -83,30 +86,28 @@ describe("WeeklyMissionSection", () => {
     expect(screen.getByText("취미 구독 점검하기")).toBeInTheDocument();
   });
 
-  it("미션이 없으면 추가 CTA를 표시한다", () => {
+  it("미션이 없으면 추가 CTA를 표시한다", async () => {
     mockData = [];
     render(<WeeklyMissionSection />);
 
-    expect(screen.getByText("0% 달성")).toBeInTheDocument();
+    expect(await screen.findByText("0% 달성")).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "5,000만원 달성을 위한 미션 추가" })).toHaveAttribute(
       "href",
       "/mission/new",
     );
   });
 
-  it("체크 아이콘 확인 모달에서 완료를 요청한다", () => {
+  it("체크 아이콘 확인 모달에서 완료를 요청한다", async () => {
     mockData = MOCK_MISSIONS;
     render(<WeeklyMissionSection />);
 
+    await screen.findByText(/\d+% 달성/);
     const [completeButton] = screen.getAllByRole("button", { name: "미션 완료" });
     if (!completeButton) throw new Error("미션 완료 버튼을 찾을 수 없습니다.");
     fireEvent.click(completeButton);
     expect(screen.getByRole("dialog", { name: "미션을 완료할까요?" })).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("button", { name: "완료" }));
-    expect(mutation.mutate).toHaveBeenCalledWith(
-      { source: "RECOMMENDED", missionId: "m1" },
-      expect.objectContaining({ onSuccess: expect.any(Function) }),
-    );
+    await waitFor(() => expect(completeMission).toHaveBeenCalledWith("RECOMMENDED", "m1"));
   });
 });

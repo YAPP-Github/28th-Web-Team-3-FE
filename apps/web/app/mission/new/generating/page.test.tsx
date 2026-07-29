@@ -5,7 +5,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 const fetchGenerationJobStatus = vi.fn();
 const replaceMock = vi.fn();
 
-vi.mock("@/app/mission/_generation/api", () => ({
+vi.mock("@/api/mission-generation", () => ({
   requestGenerationJob: vi.fn(),
   fetchGenerationJobStatus: (...args: unknown[]) => fetchGenerationJobStatus(...args),
   fetchGenerationDrafts: vi.fn(),

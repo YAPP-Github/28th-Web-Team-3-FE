@@ -10,7 +10,7 @@ import {
   getOnboardingProfile,
   getOnboardingReport,
   patchOnboardingProfile,
-} from "@/lib/onboarding/api";
+} from "@/api/onboarding";
 
 export const ONBOARDING_PROFILE_QUERY_KEY = ["onboarding", "profile"] as const;
 const ONBOARDING_REPORT_QUERY_KEY = ["onboarding", "report"] as const;

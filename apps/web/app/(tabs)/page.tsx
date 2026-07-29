@@ -4,7 +4,7 @@ import { Button } from "@repo/ui";
 import { useQuery } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
-import { onboardingProfileOptions } from "@/lib/onboarding/queries";
+import { onboardingProfileOptions } from "@/lib/queries/onboarding";
 import { FinancialTipList } from "./_components/financial-tip-list";
 import { HomeGoalSection } from "./_components/home-goal-section";
 import { WeeklyMissionSection } from "./_components/weekly-mission-section";

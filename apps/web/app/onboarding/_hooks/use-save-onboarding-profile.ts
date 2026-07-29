@@ -2,7 +2,7 @@ import type { OnboardingProfilePatch } from "@repo/schema/onboarding-api";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useCallback, useRef, useState } from "react";
 import { SAVE_FAILED_TEXT } from "@/lib/messages";
-import { patchOnboardingProfileOptions } from "@/lib/onboarding/queries";
+import { patchOnboardingProfileOptions } from "@/lib/queries/onboarding";
 
 /**
  * 질문 퍼널의 "다음" 저장 — mutation에 화면용 한국어 오류 문구를 얹는다.

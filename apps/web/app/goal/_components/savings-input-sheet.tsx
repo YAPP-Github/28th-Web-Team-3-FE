@@ -1,9 +1,10 @@
 import { MAX_SAVED_AMOUNT_MANWON } from "@repo/schema/goal";
 import { AmountField, BottomSheet, Button } from "@repo/ui";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { SAVE_FAILED_TEXT } from "@/lib/messages";
 import { clampDigits, onlyDigits } from "@/lib/number";
-import { useUpdateSavings } from "../queries";
+import { updateSavingsOptions } from "@/lib/queries/goal";
 
 interface SavingsInputSheetProps {
   open: boolean;
@@ -16,7 +17,8 @@ interface SavingsInputSheetProps {
 export function SavingsInputSheet({ open, onOpenChange, initialManwon }: SavingsInputSheetProps) {
   const [value, setValue] = useState(String(initialManwon));
   const [submitError, setSubmitError] = useState<string>();
-  const { mutate, isPending } = useUpdateSavings();
+  const queryClient = useQueryClient();
+  const { mutate, isPending } = useMutation(updateSavingsOptions(queryClient));
 
   // 시트는 항상 마운트 상태(open 제어)라 useState 초기값이 재오픈 시 반영되지 않는다.
   // 열 때마다 최신 프리필로 되돌린다.

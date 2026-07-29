@@ -3,7 +3,7 @@ import { useMutation } from "@tanstack/react-query";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { act, createTestQueryClient, renderHook } from "@/lib/test/react";
 
-vi.mock("@/lib/onboarding/api", () => ({
+vi.mock("@/api/onboarding", () => ({
   confirmOnboardingGoal: vi.fn(),
   getOnboardingGoalPlans: vi.fn(),
   getOnboardingProfile: vi.fn(),
@@ -11,8 +11,8 @@ vi.mock("@/lib/onboarding/api", () => ({
   patchOnboardingProfile: vi.fn(),
 }));
 
-import { confirmOnboardingGoal } from "@/lib/onboarding/api";
-import { confirmOnboardingGoalOptions, ONBOARDING_PROFILE_QUERY_KEY } from "./queries";
+import { confirmOnboardingGoal } from "@/api/onboarding";
+import { confirmOnboardingGoalOptions, ONBOARDING_PROFILE_QUERY_KEY } from "./onboarding";
 
 const IN_PROGRESS_PROFILE: OnboardingProfile = {
   status: "IN_PROGRESS",

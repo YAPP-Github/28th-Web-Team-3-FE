@@ -9,8 +9,8 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { SAVE_FAILED_TEXT } from "@/lib/messages";
 import { clampDigits, onlyDigits } from "@/lib/number";
-import { onboardingProfileOptions, patchOnboardingProfileOptions } from "@/lib/onboarding/queries";
-import { useUpdateGoal } from "../queries";
+import { updateGoalOptions } from "@/lib/queries/goal";
+import { onboardingProfileOptions, patchOnboardingProfileOptions } from "@/lib/queries/onboarding";
 
 interface GoalEditSheetProps {
   open: boolean;
@@ -37,7 +37,9 @@ export function GoalEditSheet({ open, onOpenChange, initialTargetManwon }: GoalE
   const [monthlySalary, setMonthlySalary] = useState("");
   const [submitError, setSubmitError] = useState<string>();
   const queryClient = useQueryClient();
-  const { mutateAsync: updateGoal, isPending: isUpdatingGoal } = useUpdateGoal();
+  const { mutateAsync: updateGoal, isPending: isUpdatingGoal } = useMutation(
+    updateGoalOptions(queryClient),
+  );
   const { data: profile } = useQuery(onboardingProfileOptions());
   const { mutateAsync: patchProfile, isPending: isPatchingProfile } = useMutation(
     patchOnboardingProfileOptions(queryClient),
