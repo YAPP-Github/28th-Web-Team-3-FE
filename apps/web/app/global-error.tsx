@@ -7,10 +7,14 @@ import { ErrorState, RetryButton } from "./_components/error-state";
 
 export default function GlobalError({
   error,
+  reset,
+  retry,
   unstable_retry,
 }: {
   error: Error & { digest?: string };
-  unstable_retry: () => void;
+  reset?: () => void;
+  retry?: () => void;
+  unstable_retry?: () => void;
 }) {
   useEffect(() => {
     if (process.env.NODE_ENV === "development") {
@@ -26,7 +30,7 @@ export default function GlobalError({
         <ErrorState
           title="문제가 생겼어요"
           description="앱을 불러오지 못했어요. 다시 시도해 주세요."
-          action={<RetryButton onClick={unstable_retry} />}
+          action={<RetryButton onClick={retry ?? unstable_retry ?? reset ?? (() => {})} />}
         />
       </body>
     </html>
