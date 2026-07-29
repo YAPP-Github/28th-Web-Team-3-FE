@@ -4,6 +4,13 @@
 
 각 항목은 실제로 겪은 문제에서 나왔다. 이유를 함께 적었으니, 상황이 달라 규칙이 안 맞으면 이유부터 확인하고 판단하라.
 
+## 이번 변경 핵심 요약
+
+- `apps/web`의 API 호출은 `apps/web/api/<도메인>.ts`에 둔다. `app/` 라우트 디렉터리나 `lib/<도메인>/api.ts`에 새 API 파일을 만들지 않는다.
+- TanStack Query 설정은 `apps/web/lib/queries/<도메인>.ts`에 둔다. 여기에는 `queryOptions()` / `mutationOptions()` 팩토리만 두고 `useQuery` / `useMutation`을 감싼 커스텀 훅은 만들지 않는다.
+- 컴포넌트는 `@/lib/queries/<도메인>`에서 options를 가져와 `useQuery(options())` 또는 `useMutation(options(queryClient))` 형태로 사용한다.
+- 단위 테스트는 query 훅을 목으로 갈아끼우지 않고 `@/api/<도메인>` 함수만 목 처리해 실제 options 경로를 검증한다.
+
 ## 모듈 경로
 
 `apps/web`·`apps/admin`은 `tsconfig.json`에 앱 루트를 가리키는 `@/*` alias가 있다. 그중 `apps/web`은 Vitest가 tsconfig paths를 읽지 않아 `vitest.config.ts`에도 같은 alias를 따로 선언해 뒀으니 **둘을 함께 갱신한다** — 한쪽만 고치면 테스트만 깨진다. `packages/*`에는 alias가 없으니 내부 상대경로가 정상이다.
@@ -14,7 +21,7 @@ import { MISSION_CATEGORIES } from "@/app/mission/constants/mission";  // O — 
 import { numberRangeOptions } from "../../lib/survey-answers"; // X — `@/`로
 ```
 
-같은 디렉터리 아래는 `./`, 그 밖은 `@/`. **`../../` 이상은 쓰지 않는다** — 파일을 옮기면 조용히 깨지고, 읽는 쪽에서 어느 기능의 모듈인지 알 수 없다. `../` 한 단계는 `_components/`에서 기능 루트의 `queries.ts`를 부르는 식으로만 쓴다.
+같은 디렉터리 아래는 `./`, 그 밖은 `@/`. **`../../` 이상은 쓰지 않는다** — 파일을 옮기면 조용히 깨지고, 읽는 쪽에서 어느 기능의 모듈인지 알 수 없다. API 함수는 `@/api/<도메인>`, TanStack Query option은 `@/lib/queries/<도메인>`에서 가져온다.
 
 ## 컴포넌트
 
@@ -43,7 +50,7 @@ import { numberRangeOptions } from "../../lib/survey-answers"; // X — `@/`로
 `"use client"`는 **서버에서 쓰는 걸 막아주지 않는다.** 서버 컴포넌트가 그 모듈을 import하면 막히는 대신 조용히 클라이언트 그래프로 끌려 들어갈 뿐이다. 브라우저 전용 API를 감싼 모듈처럼 서버 유입 자체를 막아야 하면 `client-only`를 쓴다 — 이건 서버 번들에 들어가는 순간 빌드가 깨진다.
 
 ```ts
-// apps/web/lib/api.ts — 토큰이 브라우저(bridge)에만 있어 서버에서 부르면 안 되는 모듈
+// apps/web/api/client.ts — 토큰이 브라우저(bridge)에만 있어 서버에서 부르면 안 되는 모듈
 import "client-only";
 ```
 
@@ -54,9 +61,9 @@ import "client-only";
 서버 상태를 캐시하거나 여러 컴포넌트에서 공유하는 기능은 다음 책임으로 나눈다.
 
 ```
-packages/schema/src/<도메인>.ts   요청·응답 계약(zod). 앱과 무관하게 백엔드 계약만 담는다
-apps/web/.../<기능>/api.ts        HTTP 호출. 요청 검증 → 전송 → 응답 검증
-apps/web/.../<기능>/queries.ts    TanStack Query options. queryKey·queryFn·mutationFn·캐시 갱신 정책
+packages/schema/src/<도메인>.ts      요청·응답 계약(zod). 앱과 무관하게 백엔드 계약만 담는다
+apps/web/api/<도메인>.ts             HTTP 호출. 요청 검증 → 전송 → 응답 검증
+apps/web/lib/queries/<도메인>.ts     TanStack Query options. queryKey·queryFn·mutationFn·캐시 갱신 정책
 컴포넌트                          useQuery/useMutation에 options를 주입해 서버 상태를 사용한다
 ```
 
@@ -69,7 +76,7 @@ apps/web/.../<기능>/queries.ts    TanStack Query options. queryKey·queryFn·m
 `useMutation(options(queryClient))`처럼 TanStack Query 훅에 options를 주입한다. mutation
 성공 후 캐시 갱신이 필요하면 options 함수가 `QueryClient`를 인자로 받는다.
 
-파일명은 항상 `api.ts` / `queries.ts`다 — `<기능>-api.ts`처럼 접두사를 붙이지 말고, 한 디렉터리에 API 표면이 둘 이상이면 디렉터리를 나눈다(라우트로 잡히지 않게 `_이름/`).
+도메인 파일명은 `goal.ts`, `mission-generation.ts`처럼 리소스명을 쓴다. `app/` 아래 라우트 디렉터리에 API·query 레이어를 섞지 않는다.
 
 ### 경로는 리소스명만
 
@@ -91,7 +98,7 @@ import {
   type SavingRequest,
   savingRequestSchema,
 } from "@repo/schema/goal";
-import { http } from "@/lib/api";
+import { http } from "@/api/client";
 
 /** GET /api/goal — 목표 현황 조회. */
 export function fetchGoalStatus(): Promise<GoalStatus> {
@@ -128,7 +135,7 @@ export const MAX_GOAL_PERIOD_MONTHS = 36;
 
 access token의 원본은 네이티브(RN) 메모리이고, 웹은 bridge로 당겨 온다. bridge는 WebView 안에서만 열리는 클라이언트 채널이라 **서버 컴포넌트는 토큰을 얻을 수 없다**. 렌더가 일어나는 Vercel은 그 채널 밖이다.
 
-그래서 인증이 필요한 조회는 전부 `"use client"` + react-query다. `lib/api.ts`가 `import "client-only"`로 서버 번들 유입을 빌드 타임에 막는다.
+그래서 인증이 필요한 조회는 전부 `"use client"` + react-query다. `api/client.ts`가 `import "client-only"`로 서버 번들 유입을 빌드 타임에 막는다.
 
 인증이 필요 없는 정적 데이터(정책 목록 등)는 서버 컴포넌트로 둬도 된다.
 
@@ -182,13 +189,15 @@ function handleClick(event: MouseEvent<HTMLAnchorElement>) {
 
 ## 테스트
 
-### 단위 테스트는 훅을 목으로 갈아끼운다
+### 단위 테스트는 API 함수를 목으로 갈아끼운다
 
 vitest(jsdom)는 `msw/node`의 fetch를 가로채지 못한다. API 연동 자체는 브라우저 MSW나 e2e로 확인하고, 단위 테스트는 데이터를 주입해 렌더·인터랙션만 본다.
+컴포넌트는 실제 `queryOptions` / `mutationOptions` 경로를 타게 두고, `@/api/<도메인>` 함수만 목으로 대체한다.
 
 ```ts
-vi.mock("../queries", () => ({
-  useGoalStatus: () => ({ data: MOCK_GOAL, isPending: false, isError: false }),
+vi.mock("@/api/goal", () => ({
+  fetchGoalStatus: vi.fn().mockResolvedValue(MOCK_GOAL),
+  updateSavings: vi.fn(),
 }));
 ```
 
