@@ -1,15 +1,16 @@
 "use client";
 
-import { MAX_NET_WORTH_AMOUNT, type OnboardingFormValues } from "@repo/schema";
+import { MAX_NET_WORTH_AMOUNT, type OnboardingFormValues } from "@repo/schema/onboarding";
 import { AmountField, BottomSheet, ButtonGroup, TextButton } from "@repo/ui";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Controller, useFormContext, useWatch } from "react-hook-form";
 import { NetWorthSlider } from "@/app/onboarding/_components/net-worth-slider";
 import { useSaveOnboardingProfile } from "@/app/onboarding/_hooks/use-save-onboarding-profile";
+import { onlyDigits } from "@/lib/number";
 
 function parseNetWorthInput(inputValue: string) {
-  return Math.min(Number(inputValue.replace(/\D/g, "")), MAX_NET_WORTH_AMOUNT);
+  return Math.min(Number(onlyDigits(inputValue)), MAX_NET_WORTH_AMOUNT);
 }
 
 export default function NetWorthOnboardingPage() {

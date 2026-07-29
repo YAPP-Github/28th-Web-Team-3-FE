@@ -7,15 +7,10 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { GoalPlanChart } from "@/app/onboarding/goal/_components/goal-plan-chart";
+import { formatManwon, formatNumber } from "@/lib/format";
 import { confirmOnboardingGoalOptions, onboardingGoalPlansOptions } from "@/lib/onboarding/queries";
 
 type GoalPlanCode = "PLAN_1" | "PLAN_2";
-
-const amountFormatter = new Intl.NumberFormat("ko-KR");
-
-function formatAmount(amountManwon: number) {
-  return `${amountFormatter.format(amountManwon)}만원`;
-}
 
 function calculateIncreasePercent(amountManwon: number, goalPlans: OnboardingGoalPlans) {
   const baseline = goalPlans.monthlySavingManwon * goalPlans.periodMonths;
@@ -61,7 +56,7 @@ export default function OnboardingGoalPage() {
   if (!goalPlans || !selectedPlan) {
     return (
       <div className="flex min-h-dvh items-center justify-center text-body-b1-500 text-gray-500">
-        목표 플랜을 불러오고 있어요…
+        목표 플랜을 불러오는 중…
       </div>
     );
   }
@@ -120,7 +115,7 @@ export default function OnboardingGoalPage() {
                 목표기간동안
                 <br />
                 <span className="text-blue-500">
-                  {formatAmount(plan.increaseMinManwon)}~{formatAmount(plan.increaseMaxManwon)}
+                  {formatManwon(plan.increaseMinManwon)}~{formatManwon(plan.increaseMaxManwon)}
                 </span>
                 <br />더 모으기에 도전해요
               </h2>
@@ -134,15 +129,14 @@ export default function OnboardingGoalPage() {
                 기간별 목표 예상 금액
               </h2>
               <p className="text-body-b1-400 text-gray-700">
-                월 {amountFormatter.format(goalPlans.monthlySavingManwon * 10_000)}원 기준으로
-                계산했어요
+                월 {formatNumber(goalPlans.monthlySavingManwon * 10_000)}원 기준으로 계산했어요
               </p>
             </div>
             <div className="flex flex-col gap-4">
               <GoalPlanChart plan={plan} />
               <div className="mx-5 rounded-2xl bg-[#f2f5fa] px-5 py-5 text-center">
                 <p className="text-title-t1-700 text-gray-900 tabular-nums">
-                  {plan.card.month}개월 뒤 {formatAmount(plan.card.amountManwon)} 예상
+                  {plan.card.month}개월 뒤 {formatManwon(plan.card.amountManwon)} 예상
                 </p>
                 <p className="text-body-b1-500 text-gray-600">이 목표로 시작할까요?</p>
               </div>
@@ -168,7 +162,7 @@ export default function OnboardingGoalPage() {
               await confirmGoal({ plan: selectedPlan });
               router.replace("/");
             } catch {
-              setErrorMessage("목표를 저장하지 못했어요. 잠시 후 다시 시도해주세요.");
+              setErrorMessage("목표를 저장하지 못했어요. 잠시 후 다시 시도해 주세요.");
             }
           }}
           onPrev={() => router.push("/onboarding/age")}

@@ -1,9 +1,10 @@
 import { useState } from "react";
 import { MonthlyGoalCard } from "@/app/goal/_components/monthly-goal-card";
 import { SavingsInputSheet } from "@/app/goal/_components/savings-input-sheet";
-import { formatDday, formatManwon } from "@/app/goal/lib/format";
+import { formatDday } from "@/app/goal/lib/format";
 import { calculateGoalTotalTargetManwon } from "@/app/goal/lib/progress";
 import { useGoalStatus } from "@/app/goal/queries";
+import { formatManwon } from "@/lib/format";
 import { GoalTrackerRow } from "./goal-tracker-row";
 
 /**

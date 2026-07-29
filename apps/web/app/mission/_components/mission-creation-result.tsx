@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { MISSION_CATEGORY_LABELS } from "@/app/(tabs)/mission/constants/mission";
 import { useConfirmGenerationJob, useGenerationDrafts } from "@/app/mission/_generation/queries";
+import { LOADING_TEXT } from "@/lib/messages";
 
 interface MissionCreationResultProps {
   jobId: string;
@@ -57,7 +58,7 @@ export function MissionCreationResult({ jobId }: MissionCreationResultProps) {
   }
 
   if (isPending) {
-    return <p className="px-5 pt-20 text-center text-body-b2-500 text-gray-400">불러오는 중…</p>;
+    return <p className="px-5 pt-20 text-center text-body-b2-500 text-gray-400">{LOADING_TEXT}</p>;
   }
 
   if (isError) {

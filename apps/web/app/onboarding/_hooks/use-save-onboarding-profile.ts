@@ -1,6 +1,7 @@
 import type { OnboardingProfilePatch } from "@repo/schema/onboarding-api";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useCallback, useRef, useState } from "react";
+import { SAVE_FAILED_TEXT } from "@/lib/messages";
 import { patchOnboardingProfileOptions } from "@/lib/onboarding/queries";
 
 /**
@@ -25,7 +26,7 @@ export function useSaveOnboardingProfile() {
         await mutateAsync(profile);
         return true;
       } catch {
-        setSaveError("저장하지 못했어요. 잠시 후 다시 시도해주세요.");
+        setSaveError(SAVE_FAILED_TEXT);
         return false;
       } finally {
         savingRef.current = false;

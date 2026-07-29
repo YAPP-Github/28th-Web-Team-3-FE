@@ -5,11 +5,8 @@ import AppleIntelIcon from "@repo/ui/svg/apple-intel.svg";
 import { useQuery } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { SavingsComparisonChart } from "@/app/onboarding/_components/savings-comparison-chart";
+import { formatManwon } from "@/lib/format";
 import { onboardingReportOptions } from "@/lib/onboarding/queries";
-
-function formatAmount(amount: number) {
-  return `${amount.toLocaleString("ko-KR")}만원`;
-}
 
 export default function OnboardingResultPage() {
   const router = useRouter();
@@ -27,7 +24,7 @@ export default function OnboardingResultPage() {
   if (!report) {
     return (
       <div className="flex min-h-dvh items-center justify-center text-body-b1-500 text-gray-500">
-        결과를 불러오고 있어요…
+        결과를 불러오는 중…
       </div>
     );
   }
@@ -41,10 +38,10 @@ export default function OnboardingResultPage() {
       <section className="mt-7 rounded-2xl bg-[#F3F9FE] px-6 py-8 text-center">
         <p className="text-title-t2-700 text-blue-600">저축 계획을 조정하면</p>
         <p className="mt-1 text-headline-h1-700 text-gray-900">
-          {formatAmount(simulation.simulationManwon)} 예상
+          {formatManwon(simulation.simulationManwon)} 예상
         </p>
         <p className="mt-2 text-body-b1-500 text-gray-500">
-          지금 그대로면 {simulation.periodMonths}개월 뒤 {formatAmount(simulation.baselineManwon)}{" "}
+          지금 그대로면 {simulation.periodMonths}개월 뒤 {formatManwon(simulation.baselineManwon)}{" "}
           예상
         </p>
       </section>
@@ -55,7 +52,7 @@ export default function OnboardingResultPage() {
           className="text-center text-headline-h2-700 text-gray-800"
         >
           {simulation.periodMonths}개월간{" "}
-          <span className="text-blue-500">{formatAmount(simulation.diffManwon)}</span>
+          <span className="text-blue-500">{formatManwon(simulation.diffManwon)}</span>
           <br />더 모을 수 있어요
         </h2>
         <SavingsComparisonChart

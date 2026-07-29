@@ -1,14 +1,15 @@
 "use client";
 
-import type { OnboardingFormValues } from "@repo/schema";
+import type { OnboardingFormValues } from "@repo/schema/onboarding";
 import { Button, Input } from "@repo/ui";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { Controller, useFormContext, useWatch } from "react-hook-form";
 import { useSaveOnboardingProfile } from "@/app/onboarding/_hooks/use-save-onboarding-profile";
+import { onlyDigits } from "@/lib/number";
 
 function formatBirthDateInput(value: string) {
-  const digits = value.replace(/\D/g, "").slice(0, 8);
+  const digits = onlyDigits(value).slice(0, 8);
   return [digits.slice(0, 4), digits.slice(4, 6), digits.slice(6, 8)].filter(Boolean).join(".");
 }
 

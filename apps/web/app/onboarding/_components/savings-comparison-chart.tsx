@@ -1,3 +1,5 @@
+import { formatManwon } from "@/lib/format";
+
 interface SavingsComparisonChartProps {
   currentEstimate: number;
   improvedEstimate: number;
@@ -6,10 +8,6 @@ interface SavingsComparisonChartProps {
 const MAX_BAR_HEIGHT = 108;
 const MIN_VISUAL_GAP = 27;
 const MAX_VISUAL_GAP = 54;
-
-function formatAmount(amount: number) {
-  return `${Math.round(amount).toLocaleString("ko-KR")}만원`;
-}
 
 function getVisualHeights(currentEstimate: number, improvedEstimate: number) {
   const maxEstimate = Math.max(currentEstimate, improvedEstimate, 1);
@@ -28,10 +26,13 @@ export function SavingsComparisonChart({
   improvedEstimate,
 }: SavingsComparisonChartProps) {
   const { currentHeight, improvedHeight } = getVisualHeights(currentEstimate, improvedEstimate);
+  // 서버가 소수점을 줄 수 있어 표시 직전에 한 번만 반올림한다 — 막대 높이는 원값으로 계산한다.
+  const currentLabel = formatManwon(Math.round(currentEstimate));
+  const improvedLabel = formatManwon(Math.round(improvedEstimate));
 
   return (
     <div
-      aria-label={`예상 자산 비교: 예상 금액 ${formatAmount(currentEstimate)}, 서비스 이용 시 ${formatAmount(improvedEstimate)}`}
+      aria-label={`예상 자산 비교: 예상 금액 ${currentLabel}, 서비스 이용 시 ${improvedLabel}`}
       className="relative mt-5 h-44 w-full"
       role="img"
     >
@@ -45,7 +46,7 @@ export function SavingsComparisonChart({
         <div className="absolute inset-0 flex items-end justify-center gap-8">
           <div className="flex h-full w-[55px] flex-col items-center justify-end">
             <span className="mb-1 shrink-0 whitespace-nowrap text-body-b1-500 text-gray-600 tabular-nums">
-              {formatAmount(currentEstimate)}
+              {currentLabel}
             </span>
             <div
               className="w-[55px] shrink-0 rounded-t-md bg-gradient-to-b from-gray-200 to-gray-100"
@@ -56,7 +57,7 @@ export function SavingsComparisonChart({
 
           <div className="flex h-full w-[55px] flex-col items-center justify-end">
             <span className="mb-1 shrink-0 whitespace-nowrap text-body-b1-700 text-gray-600 tabular-nums">
-              {formatAmount(improvedEstimate)}
+              {improvedLabel}
             </span>
             <div
               className="w-[55px] shrink-0 rounded-t-md bg-gray-900"

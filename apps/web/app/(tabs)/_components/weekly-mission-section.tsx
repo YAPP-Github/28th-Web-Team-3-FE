@@ -14,9 +14,10 @@ import {
   formatWeekDday,
 } from "@/app/(tabs)/mission/lib/format";
 import { useCompleteMission, useMissions } from "@/app/(tabs)/mission/queries";
-import { formatManwon } from "@/app/goal/lib/format";
 import { calculateGoalTotalTargetManwon } from "@/app/goal/lib/progress";
 import { useGoalStatus } from "@/app/goal/queries";
+import { formatManwon } from "@/lib/format";
+import { LOADING_TEXT } from "@/lib/messages";
 import { SectionHeader } from "./section-header";
 
 export function WeeklyMissionSection() {
@@ -29,7 +30,7 @@ export function WeeklyMissionSection() {
   const [completeError, setCompleteError] = useState<string>();
 
   if (isPending) {
-    return <p className="px-5 pt-8 text-center text-body-b2-500 text-gray-400">불러오는 중…</p>;
+    return <p className="px-5 pt-8 text-center text-body-b2-500 text-gray-400">{LOADING_TEXT}</p>;
   }
 
   // 재조회 실패로는 화면을 내리지 않는다 — react-query가 이전 데이터를 유지한 채 isError를 켠다.
