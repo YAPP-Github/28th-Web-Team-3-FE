@@ -1,7 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { type OnboardingFormValues, onboardingFormSchema } from "@repo/schema";
+import { type OnboardingFormValues, onboardingFormSchema } from "@repo/schema/onboarding";
 import { useQuery } from "@tanstack/react-query";
 import { type ReactNode, useEffect } from "react";
 import { FormProvider, useForm } from "react-hook-form";

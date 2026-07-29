@@ -1,6 +1,6 @@
 "use client";
 
-import type { OnboardingFormValues } from "@repo/schema";
+import type { OnboardingFormValues } from "@repo/schema/onboarding";
 import { ButtonGroup, Slider } from "@repo/ui";
 import { useRouter } from "next/navigation";
 import { Controller, useFormContext, useWatch } from "react-hook-form";

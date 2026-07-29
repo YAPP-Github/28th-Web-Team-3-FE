@@ -3,8 +3,10 @@
 import Bill from "@repo/ui/svg/bill.svg";
 import { Pencil } from "lucide-react";
 import { useState } from "react";
+import { formatManwon } from "@/lib/format";
+import { LOADING_TEXT } from "@/lib/messages";
 import { GOAL_TITLE_SUFFIX } from "../constants";
-import { formatDday, formatManwon } from "../lib/format";
+import { formatDday } from "../lib/format";
 import { calculateGoalProgressPercent, calculateGoalTotalTargetManwon } from "../lib/progress";
 import { useGoalStatus } from "../queries";
 import { GoalEditSheet } from "./goal-edit-sheet";
@@ -19,7 +21,7 @@ export function GoalDetail() {
   const [editOpen, setEditOpen] = useState(false);
 
   if (isPending) {
-    return <p className="px-5 pt-20 text-center text-body-b2-500 text-gray-400">불러오는 중…</p>;
+    return <p className="px-5 pt-20 text-center text-body-b2-500 text-gray-400">{LOADING_TEXT}</p>;
   }
 
   // 재조회 실패로는 화면을 내리지 않는다 — react-query가 이전 데이터를 유지한 채 isError를 켠다.

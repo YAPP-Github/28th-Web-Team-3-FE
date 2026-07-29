@@ -1,6 +1,6 @@
 "use client";
 
-import { MAX_MONTHLY_AMOUNT, type OnboardingFormValues } from "@repo/schema";
+import { MAX_MONTHLY_AMOUNT, type OnboardingFormValues } from "@repo/schema/onboarding";
 import { AmountField, BottomSheet, ButtonGroup, TextButton } from "@repo/ui";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -8,9 +8,10 @@ import { Controller, useFormContext, useWatch } from "react-hook-form";
 import { LabelSlider } from "@/app/onboarding/_components/label-slider";
 import { useSaveOnboardingProfile } from "@/app/onboarding/_hooks/use-save-onboarding-profile";
 import { MAX_MONTHLY_AMOUNT_SLIDER_VALUE } from "@/app/onboarding/constants/amounts";
+import { onlyDigits } from "@/lib/number";
 
 function parseMonthlyAmountInput(inputValue: string) {
-  return Math.min(Number(inputValue.replace(/\D/g, "")), MAX_MONTHLY_AMOUNT);
+  return Math.min(Number(onlyDigits(inputValue)), MAX_MONTHLY_AMOUNT);
 }
 
 export default function MonthlyIncomeAndSavingsOnboardingPage() {

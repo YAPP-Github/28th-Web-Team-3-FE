@@ -28,7 +28,7 @@ export default function HomePage() {
         <p className="text-body-b1-500 text-gray-700">
           사용자 정보를 불러오지 못했어요.
           <br />
-          잠시 후 다시 시도해주세요.
+          잠시 후 다시 시도해 주세요.
         </p>
         <Button size="cta" className="max-w-52" onClick={() => refetch()}>
           다시 시도

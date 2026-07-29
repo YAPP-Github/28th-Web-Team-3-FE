@@ -2,6 +2,7 @@
 
 import type { Mission } from "@repo/schema/mission";
 import { useState } from "react";
+import { LOADING_TEXT } from "@/lib/messages";
 import { MissionAddMenu } from "./_components/mission-add-menu";
 import { MissionCategoryFilter } from "./_components/mission-category-filter";
 import { MissionCompleteDialog } from "./_components/mission-complete-dialog";
@@ -23,7 +24,7 @@ export default function MissionPage() {
   const [deleteError, setDeleteError] = useState<string>();
 
   if (isPending) {
-    return <p className="px-5 pt-20 text-center text-body-b2-500 text-gray-400">불러오는 중…</p>;
+    return <p className="px-5 pt-20 text-center text-body-b2-500 text-gray-400">{LOADING_TEXT}</p>;
   }
 
   // 재조회 실패로는 화면을 내리지 않는다 — react-query가 이전 데이터를 유지한 채 isError를 켠다.

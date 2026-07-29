@@ -1,4 +1,4 @@
-import type { OnboardingFormValues } from "@repo/schema";
+import type { OnboardingFormValues } from "@repo/schema/onboarding";
 
 export const DEFAULT_ONBOARDING_FORM_VALUES: OnboardingFormValues = {
   birthDate: "",

@@ -34,6 +34,7 @@ vi.mock("@/lib/onboarding/api", () => ({
   patchOnboardingProfile: vi.fn().mockResolvedValue({}),
 }));
 
+import { SAVE_FAILED_TEXT } from "@/lib/messages";
 import { getOnboardingProfile, patchOnboardingProfile } from "@/lib/onboarding/api";
 import { GoalDetail } from "./goal-detail";
 
@@ -119,9 +120,7 @@ describe("GoalDetail", () => {
     );
     fireEvent.click(screen.getByRole("button", { name: "완료" }));
 
-    expect(
-      await screen.findByText("저장하지 못했어요. 잠시 후 다시 시도해주세요."),
-    ).toBeInTheDocument();
+    expect(await screen.findByText(SAVE_FAILED_TEXT)).toBeInTheDocument();
     expect(patchOnboardingProfile).not.toHaveBeenCalled();
     expect(screen.getByRole("dialog", { name: "수정" })).toBeInTheDocument();
   });
@@ -139,7 +138,7 @@ describe("GoalDetail", () => {
 
     expect(
       await screen.findByText(
-        "목표는 저장했지만 일부 정보를 저장하지 못했어요. 잠시 후 다시 시도해주세요.",
+        "목표는 저장했지만 일부 정보를 저장하지 못했어요. 잠시 후 다시 시도해 주세요.",
       ),
     ).toBeInTheDocument();
     expect(goalMutation.mutateAsync).toHaveBeenCalled();
@@ -204,7 +203,7 @@ describe("GoalDetail", () => {
     const [, options] = savingsMutation.mutate.mock.calls.at(-1) ?? [];
     act(() => options.onError(new Error("bad request")));
 
-    expect(screen.getByText("저장하지 못했어요. 잠시 후 다시 시도해주세요.")).toBeInTheDocument();
+    expect(screen.getByText(SAVE_FAILED_TEXT)).toBeInTheDocument();
   });
 
   it("현재저축액 입력은 목표금액을 수정하지 않는다", () => {

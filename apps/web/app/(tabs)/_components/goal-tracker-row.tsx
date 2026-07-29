@@ -2,7 +2,7 @@ import Bill from "@repo/ui/svg/bill.svg";
 import { ChevronRight } from "lucide-react";
 import Link from "next/link";
 import { GOAL_TITLE_SUFFIX } from "@/app/goal/constants";
-import { formatManwon } from "@/app/goal/lib/format";
+import { formatManwon } from "@/lib/format";
 
 interface GoalTrackerRowProps {
   /** 목표 금액(만원) — API 응답값. `"5,000만원 모으기"` 라인 제목을 파생한다. */

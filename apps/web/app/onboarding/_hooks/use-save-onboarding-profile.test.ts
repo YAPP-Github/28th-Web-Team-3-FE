@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { SAVE_FAILED_TEXT } from "@/lib/messages";
 import { patchOnboardingProfile } from "@/lib/onboarding/api";
 import { act, renderHook } from "@/lib/test/react";
 import { useSaveOnboardingProfile } from "./use-save-onboarding-profile";
@@ -18,7 +19,7 @@ describe("useSaveOnboardingProfile", () => {
     });
 
     expect(saved).toBe(false);
-    expect(result.current.saveError).toBe("저장하지 못했어요. 잠시 후 다시 시도해주세요.");
+    expect(result.current.saveError).toBe(SAVE_FAILED_TEXT);
     expect(result.current.isSaving).toBe(false);
   });
 });

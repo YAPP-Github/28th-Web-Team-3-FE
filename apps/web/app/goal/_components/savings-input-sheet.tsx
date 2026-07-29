@@ -1,6 +1,8 @@
 import { MAX_SAVED_AMOUNT_MANWON } from "@repo/schema/goal";
 import { AmountField, BottomSheet, Button } from "@repo/ui";
 import { useEffect, useState } from "react";
+import { SAVE_FAILED_TEXT } from "@/lib/messages";
+import { clampDigits, onlyDigits } from "@/lib/number";
 import { useUpdateSavings } from "../queries";
 
 interface SavingsInputSheetProps {
@@ -9,14 +11,6 @@ interface SavingsInputSheetProps {
   /** 시트를 열 때 채워둘 현재 저축액(만원). */
   initialManwon: number;
 }
-
-const onlyDigits = (value: string) => value.replace(/\D/g, "");
-/** 서버 상한을 넘기면 400이라 입력 단계에서 잘라둔다. */
-const clampSavedAmountInput = (value: string) => {
-  const digits = onlyDigits(value);
-  if (digits === "") return "";
-  return String(Math.min(Number(digits), MAX_SAVED_AMOUNT_MANWON));
-};
 
 /** 현재 저축액 입력 바텀시트 — PUT /api/goal/savings. */
 export function SavingsInputSheet({ open, onOpenChange, initialManwon }: SavingsInputSheetProps) {
@@ -39,7 +33,7 @@ export function SavingsInputSheet({ open, onOpenChange, initialManwon }: Savings
     mutate(
       { savedAmountManwon },
       {
-        onError: () => setSubmitError("저장하지 못했어요. 잠시 후 다시 시도해주세요."),
+        onError: () => setSubmitError(SAVE_FAILED_TEXT),
         onSuccess: () => onOpenChange(false),
       },
     );
@@ -53,7 +47,7 @@ export function SavingsInputSheet({ open, onOpenChange, initialManwon }: Savings
           inputMode="numeric"
           value={value}
           maxLength={String(MAX_SAVED_AMOUNT_MANWON).length}
-          onChange={(event) => setValue(clampSavedAmountInput(event.target.value))}
+          onChange={(event) => setValue(clampDigits(event.target.value, MAX_SAVED_AMOUNT_MANWON))}
         />
         {submitError ? (
           <p aria-live="polite" className="text-body-b2-500 text-error">

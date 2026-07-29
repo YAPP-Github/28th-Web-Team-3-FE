@@ -1,12 +1,7 @@
 import type { OnboardingGoalPlans } from "@repo/schema/onboarding-api";
+import { formatManwon } from "@/lib/format";
 
 type GoalPlan = OnboardingGoalPlans["plans"][number];
-
-const amountFormatter = new Intl.NumberFormat("ko-KR");
-
-function formatAmount(amountManwon: number) {
-  return `${amountFormatter.format(amountManwon)}만원`;
-}
 
 export function GoalPlanChart({ plan }: { plan: GoalPlan }) {
   const maxAmount = Math.max(...plan.checkpoints.map((point) => point.amountManwon), 1);
@@ -14,7 +9,7 @@ export function GoalPlanChart({ plan }: { plan: GoalPlan }) {
   return (
     <div
       aria-label={`기간별 목표 예상 금액: ${plan.checkpoints
-        .map((point) => `${point.month}개월 ${formatAmount(point.amountManwon)}`)
+        .map((point) => `${point.month}개월 ${formatManwon(point.amountManwon)}`)
         .join(", ")}`}
       className="flex h-[249px] items-end justify-center gap-[18px]"
       role="img"
@@ -32,7 +27,7 @@ export function GoalPlanChart({ plan }: { plan: GoalPlan }) {
                   : "whitespace-nowrap text-body-b2-500 text-gray-400 tabular-nums"
               }
             >
-              {formatAmount(point.amountManwon)}
+              {formatManwon(point.amountManwon)}
             </span>
             <div className="flex flex-col items-center gap-[13px]">
               <div

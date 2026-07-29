@@ -1,4 +1,4 @@
-import type { OnboardingFormValues } from "@repo/schema";
+import type { OnboardingFormValues } from "@repo/schema/onboarding";
 import { useFormContext } from "react-hook-form";
 import { describe, expect, it, vi } from "vitest";
 import { getOnboardingProfile } from "@/lib/onboarding/api";

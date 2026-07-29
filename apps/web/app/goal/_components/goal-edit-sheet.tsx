@@ -1,12 +1,14 @@
-import { MAX_MONTHLY_AMOUNT } from "@repo/schema";
 import {
   MAX_GOAL_PERIOD_MONTHS,
   MAX_GOAL_TARGET_MANWON,
   MIN_GOAL_PERIOD_MONTHS,
 } from "@repo/schema/goal";
+import { MAX_MONTHLY_AMOUNT } from "@repo/schema/onboarding";
 import { AmountField, BottomSheet, Button } from "@repo/ui";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
+import { SAVE_FAILED_TEXT } from "@/lib/messages";
+import { clampDigits, onlyDigits } from "@/lib/number";
 import { onboardingProfileOptions, patchOnboardingProfileOptions } from "@/lib/onboarding/queries";
 import { useUpdateGoal } from "../queries";
 
@@ -16,7 +18,6 @@ interface GoalEditSheetProps {
   initialTargetManwon: number;
 }
 
-const onlyDigits = (value: string) => value.replace(/\D/g, "");
 /** 빈 입력·0은 "미변경"(null)으로 본다. PATCH 계약이 목표액/기간에 양수만 허용하기 때문. */
 const toNullableAmount = (value: string): number | null => {
   const n = Number(onlyDigits(value));
@@ -25,17 +26,6 @@ const toNullableAmount = (value: string): number | null => {
 const toMonthlySalary = (value: string): number | null => {
   const amount = toNullableAmount(value);
   return amount == null ? null : Math.min(amount, MAX_MONTHLY_AMOUNT);
-};
-const clampMonthlySalaryInput = (value: string) => {
-  const digits = onlyDigits(value);
-  if (digits === "") return "";
-  return String(Math.min(Number(digits), MAX_MONTHLY_AMOUNT));
-};
-/** 상한만 입력 단계에서 막는다 — 하한은 타이핑 도중 값이 튀지 않게 제출 시 검사한다. */
-const clampToMax = (value: string, max: number) => {
-  const digits = onlyDigits(value);
-  if (digits === "") return "";
-  return String(Math.min(Number(digits), max));
 };
 
 /**
@@ -81,7 +71,7 @@ export function GoalEditSheet({ open, onOpenChange, initialTargetManwon }: GoalE
     try {
       await updateGoal({ targetAmountManwon: totalTargetManwon, periodMonths });
     } catch {
-      setSubmitError("저장하지 못했어요. 잠시 후 다시 시도해주세요.");
+      setSubmitError(SAVE_FAILED_TEXT);
       return;
     }
 
@@ -97,7 +87,7 @@ export function GoalEditSheet({ open, onOpenChange, initialTargetManwon }: GoalE
         await patchProfile(profilePatch);
       } catch {
         setSubmitError(
-          "목표는 저장했지만 일부 정보를 저장하지 못했어요. 잠시 후 다시 시도해주세요.",
+          "목표는 저장했지만 일부 정보를 저장하지 못했어요. 잠시 후 다시 시도해 주세요.",
         );
         return;
       }
@@ -113,7 +103,7 @@ export function GoalEditSheet({ open, onOpenChange, initialTargetManwon }: GoalE
           label="목표 금액"
           inputMode="numeric"
           value={target}
-          onChange={(event) => setTarget(clampToMax(event.target.value, MAX_GOAL_TARGET_MANWON))}
+          onChange={(event) => setTarget(clampDigits(event.target.value, MAX_GOAL_TARGET_MANWON))}
         />
         <div className="grid grid-cols-2 gap-2.5">
           <AmountField
@@ -122,7 +112,7 @@ export function GoalEditSheet({ open, onOpenChange, initialTargetManwon }: GoalE
             inputMode="numeric"
             value={period}
             maxLength={String(MAX_GOAL_PERIOD_MONTHS).length}
-            onChange={(event) => setPeriod(clampToMax(event.target.value, MAX_GOAL_PERIOD_MONTHS))}
+            onChange={(event) => setPeriod(clampDigits(event.target.value, MAX_GOAL_PERIOD_MONTHS))}
           />
           <AmountField
             label="월소득"
@@ -130,7 +120,9 @@ export function GoalEditSheet({ open, onOpenChange, initialTargetManwon }: GoalE
             inputMode="numeric"
             value={monthlySalary}
             maxLength={String(MAX_MONTHLY_AMOUNT).length}
-            onChange={(event) => setMonthlySalary(clampMonthlySalaryInput(event.target.value))}
+            onChange={(event) =>
+              setMonthlySalary(clampDigits(event.target.value, MAX_MONTHLY_AMOUNT))
+            }
           />
         </div>
         {submitError ? (
