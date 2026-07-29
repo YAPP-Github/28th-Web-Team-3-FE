@@ -25,19 +25,19 @@
     "native#start": {
       "cache": false,
       "persistent": true,
-      "env": ["EXPO_PUBLIC_WEB_URL", "EXPO_PUBLIC_API_URL"]
+      "env": ["EXPO_PUBLIC_WEB_URL", "EXPO_PUBLIC_API_URL", "EXPO_PUBLIC_ANDROID_EMULATOR"]
     },
     "native#prebuild": {
       "cache": false,
-      "env": ["EXPO_PUBLIC_WEB_URL", "EXPO_PUBLIC_API_URL"]
+      "env": ["EXPO_PUBLIC_WEB_URL", "EXPO_PUBLIC_API_URL", "EXPO_PUBLIC_ANDROID_EMULATOR"]
     },
     "native#ios": {
       "cache": false,
-      "env": ["EXPO_PUBLIC_WEB_URL", "EXPO_PUBLIC_API_URL"]
+      "env": ["EXPO_PUBLIC_WEB_URL", "EXPO_PUBLIC_API_URL", "EXPO_PUBLIC_ANDROID_EMULATOR"]
     },
     "native#android": {
       "cache": false,
-      "env": ["EXPO_PUBLIC_WEB_URL", "EXPO_PUBLIC_API_URL"]
+      "env": ["EXPO_PUBLIC_WEB_URL", "EXPO_PUBLIC_API_URL", "EXPO_PUBLIC_ANDROID_EMULATOR"]
     },
     "lint": {},
     "typecheck": {

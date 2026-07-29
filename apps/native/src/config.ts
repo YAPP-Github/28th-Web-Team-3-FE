@@ -7,9 +7,10 @@ const extra = (Constants.expoConfig?.extra ?? {}) as {
   apiUrl?: string;
 };
 
+const androidEmulatorEnv = process.env.EXPO_PUBLIC_ANDROID_EMULATOR;
 // Dev-only defaults: 10.0.2.2 is the Android emulator's loopback alias for the
-// host machine. Physical devices must override via EXPO_PUBLIC_WEB_URL.
-const isAndroidEmulator = __DEV__ && Platform.OS === "android";
+// host machine. Physical devices should keep this unset/false and use a LAN URL.
+const isAndroidEmulator = __DEV__ && Platform.OS === "android" && androidEmulatorEnv === "true";
 const DEFAULT_WEB_URL = isAndroidEmulator ? "http://10.0.2.2:3000" : "http://localhost:3000";
 // Spring 로컬 기본 포트. 배포 환경은 EXPO_PUBLIC_API_URL로 지정.
 const DEFAULT_API_URL = isAndroidEmulator ? "http://10.0.2.2:8080" : "http://localhost:8080";
