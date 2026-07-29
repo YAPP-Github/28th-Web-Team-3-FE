@@ -22,17 +22,32 @@ function requireInProd(value: string | undefined, fallback: string, envName: str
   return fallback;
 }
 
+function resolveDevHostUrl(url: string): string {
+  if (!isAndroidEmulator) return url;
+  return url.replace("://localhost", "://10.0.2.2").replace("://127.0.0.1", "://10.0.2.2");
+}
+
+function ensureTrailingSlash(url: string): string {
+  return url.endsWith("/") ? url : `${url}/`;
+}
+
 // Prefer the Metro-inlined env var: a dev build's embedded `extra` is frozen at
 // native build time, so .env changes only take effect through process.env here.
-export const WEB_URL = requireInProd(
-  process.env.EXPO_PUBLIC_WEB_URL ?? extra.webUrl,
-  DEFAULT_WEB_URL,
-  "EXPO_PUBLIC_WEB_URL",
+export const WEB_URL = resolveDevHostUrl(
+  requireInProd(
+    process.env.EXPO_PUBLIC_WEB_URL ?? extra.webUrl,
+    DEFAULT_WEB_URL,
+    "EXPO_PUBLIC_WEB_URL",
+  ),
 );
-export const API_URL = requireInProd(
-  process.env.EXPO_PUBLIC_API_URL ?? extra.apiUrl,
-  DEFAULT_API_URL,
-  "EXPO_PUBLIC_API_URL",
+export const API_URL = ensureTrailingSlash(
+  resolveDevHostUrl(
+    requireInProd(
+      process.env.EXPO_PUBLIC_API_URL ?? extra.apiUrl,
+      DEFAULT_API_URL,
+      "EXPO_PUBLIC_API_URL",
+    ),
+  ),
 );
 
 /** Origins the WebView is allowed to load. Anything else opens externally. */

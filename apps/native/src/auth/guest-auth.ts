@@ -5,8 +5,8 @@ import { API_URL } from "../config";
 
 /**
  * 게스트 인증 관리자. 서버 계약:
- *   POST /api/auth/guest          { uuid }         → { accessToken, refreshToken }
- *   POST /api/auth/guest/refresh  { refreshToken } → { accessToken, refreshToken } (rotation)
+ *   POST auth/guest          { uuid }         → { accessToken, refreshToken }
+ *   POST auth/guest/refresh  { refreshToken } → { accessToken, refreshToken } (rotation)
  *
  * 원칙:
  *  - 기기 uuid는 최초 1회 생성해 SecureStore에 영구 보관. 서버가 hash(uuid)로 게스트를
@@ -38,7 +38,7 @@ async function getOrCreateDeviceUuid(): Promise<string> {
 const AUTH_FETCH_TIMEOUT_MS = 10_000;
 
 async function postAuth(
-  path: "/api/auth/guest" | "/api/auth/guest/refresh",
+  path: "auth/guest" | "auth/guest/refresh",
   body: Record<string, string>,
 ): Promise<AuthTokens | "rejected" | null> {
   const controller = new AbortController();
@@ -70,14 +70,14 @@ async function postAuth(
 async function reissue(): Promise<string | null> {
   const refreshToken = await SecureStore.getItemAsync(REFRESH_TOKEN_KEY);
   let result = refreshToken
-    ? await postAuth("/api/auth/guest/refresh", { refreshToken })
+    ? await postAuth("auth/guest/refresh", { refreshToken })
     : ("rejected" as const);
   // refresh가 거부됐을 때(만료·무효·부재)만 같은 uuid로 신규 발급해 계정 복귀.
   // 5xx·네트워크·파싱 실패는 같은 서버라 fallback이 무의미 — null로 끝내고
   // 다음 요청에서 자연 재시도한다.
   if (result === "rejected") {
     const uuid = await getOrCreateDeviceUuid();
-    result = await postAuth("/api/auth/guest", { uuid });
+    result = await postAuth("auth/guest", { uuid });
   }
   if (result === "rejected" || result === null) return null;
   const tokens = result;
