@@ -2,12 +2,16 @@
 
 import type { MissionDraft } from "@repo/schema/mission-generation";
 import { Button, ButtonGroup, Toggle } from "@repo/ui";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ChevronLeft } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { MISSION_CATEGORY_LABELS } from "@/app/(tabs)/mission/constants/mission";
-import { useConfirmGenerationJob, useGenerationDrafts } from "@/app/mission/_generation/queries";
 import { LOADING_TEXT } from "@/lib/messages";
+import {
+  confirmGenerationJobOptions,
+  generationDraftsOptions,
+} from "@/lib/queries/mission-generation";
 
 interface MissionCreationResultProps {
   jobId: string;
@@ -45,8 +49,9 @@ function MissionDraftCard({
 
 export function MissionCreationResult({ jobId }: MissionCreationResultProps) {
   const router = useRouter();
-  const { data, isPending, isError } = useGenerationDrafts(jobId);
-  const confirmJob = useConfirmGenerationJob(jobId);
+  const queryClient = useQueryClient();
+  const { data, isPending, isError } = useQuery(generationDraftsOptions(jobId));
+  const confirmJob = useMutation(confirmGenerationJobOptions(jobId, queryClient));
   const [selectedDraftIds, setSelectedDraftIds] = useState<string[]>([]);
 
   function toggleDraft(id: string, pressed: boolean) {

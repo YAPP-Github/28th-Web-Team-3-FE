@@ -7,7 +7,7 @@ import {
   missionSurveyQuestionsResponseSchema,
   missionSurveyResponseSchema,
 } from "@repo/schema/mission-survey";
-import { http } from "@/lib/api";
+import { http } from "@/api/client";
 
 /**
  * 미션 생성 사전 설문 API — 백엔드 OpenAPI(`/api/missions/surveys`) 연동. 공유 클라이언트를

@@ -8,7 +8,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { GoalPlanChart } from "@/app/onboarding/goal/_components/goal-plan-chart";
 import { formatManwon, formatNumber } from "@/lib/format";
-import { confirmOnboardingGoalOptions, onboardingGoalPlansOptions } from "@/lib/onboarding/queries";
+import { confirmOnboardingGoalOptions, onboardingGoalPlansOptions } from "@/lib/queries/onboarding";
 
 type GoalPlanCode = "PLAN_1" | "PLAN_2";
 

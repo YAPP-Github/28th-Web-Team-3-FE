@@ -1,8 +1,14 @@
 "use client";
 
 import type { Mission } from "@repo/schema/mission";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { LOADING_TEXT } from "@/lib/messages";
+import {
+  completeMissionOptions,
+  deleteRecommendedMissionOptions,
+  missionsOptions,
+} from "@/lib/queries/mission";
 import { MissionAddMenu } from "./_components/mission-add-menu";
 import { MissionCategoryFilter } from "./_components/mission-category-filter";
 import { MissionCompleteDialog } from "./_components/mission-complete-dialog";
@@ -10,12 +16,12 @@ import { MissionHero } from "./_components/mission-hero";
 import { MissionList } from "./_components/mission-list";
 import { MISSION_CATEGORY_LABELS, type MissionCategory } from "./constants/mission";
 import { calculateProgressPercent, countCompletedMissions, formatWeekDday } from "./lib/format";
-import { useCompleteMission, useDeleteRecommendedMission, useMissions } from "./queries";
 
 export default function MissionPage() {
-  const { data: missions, isPending, isError } = useMissions();
-  const completeMission = useCompleteMission();
-  const deleteMission = useDeleteRecommendedMission();
+  const queryClient = useQueryClient();
+  const { data: missions, isPending, isError } = useQuery(missionsOptions());
+  const completeMission = useMutation(completeMissionOptions(queryClient));
+  const deleteMission = useMutation(deleteRecommendedMissionOptions(queryClient));
   const [activeCategory, setActiveCategory] = useState<MissionCategory>("전체");
   const [expandedMissionId, setExpandedMissionId] = useState<string | null>(null);
   const [isAddMenuOpen, setIsAddMenuOpen] = useState(false);

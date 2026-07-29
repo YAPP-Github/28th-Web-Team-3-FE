@@ -1,14 +1,15 @@
 "use client";
 
 import Bill from "@repo/ui/svg/bill.svg";
+import { useQuery } from "@tanstack/react-query";
 import { Pencil } from "lucide-react";
 import { useState } from "react";
 import { formatManwon } from "@/lib/format";
 import { LOADING_TEXT } from "@/lib/messages";
+import { goalStatusOptions } from "@/lib/queries/goal";
 import { GOAL_TITLE_SUFFIX } from "../constants";
 import { formatDday } from "../lib/format";
 import { calculateGoalProgressPercent, calculateGoalTotalTargetManwon } from "../lib/progress";
-import { useGoalStatus } from "../queries";
 import { GoalEditSheet } from "./goal-edit-sheet";
 import { MonthlyGoalCard } from "./monthly-goal-card";
 import { SavingsInputSheet } from "./savings-input-sheet";
@@ -16,7 +17,7 @@ import { SemicircleGauge } from "./semicircle-gauge";
 
 /** 목표 상세 본문 — 목표 현황을 조회해 게이지·카드로 그리고, 저축 입력/수정 시트를 연다. */
 export function GoalDetail() {
-  const { data: goal, isPending, isError } = useGoalStatus();
+  const { data: goal, isPending, isError } = useQuery(goalStatusOptions());
   const [savingsOpen, setSavingsOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
 

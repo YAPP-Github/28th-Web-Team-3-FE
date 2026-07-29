@@ -2,13 +2,14 @@
 
 import type { MissionCategory } from "@repo/schema/mission";
 import type { MissionSurveyPutRequest } from "@repo/schema/mission-survey";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useFormContext } from "react-hook-form";
-import { useRequestGenerationJob } from "@/app/mission/_generation/queries";
-import { useReplaceSurvey, useSurveyQuestions } from "@/app/mission/_survey/queries";
 import type { MissionCreationCategory } from "@/app/mission/constants/mission-creation";
 import { buildMissionGeneratingHref } from "@/app/mission/constants/mission-creation";
+import { requestGenerationJobOptions } from "@/lib/queries/mission-generation";
+import { replaceSurveyOptions, surveyQuestionsOptions } from "@/lib/queries/mission-survey";
 import { MissionCreationIntro } from "./mission-creation-intro";
 import { MissionSurveyQuestions } from "./survey/mission-survey-questions";
 
@@ -32,9 +33,9 @@ export function MissionCreationFormClient({
   previousHref,
 }: MissionCreationFormClientProps) {
   const router = useRouter();
-  const { data } = useSurveyQuestions([categoryCode]);
-  const replaceSurvey = useReplaceSurvey();
-  const requestJob = useRequestGenerationJob();
+  const { data } = useQuery(surveyQuestionsOptions([categoryCode]));
+  const replaceSurvey = useMutation(replaceSurveyOptions());
+  const requestJob = useMutation(requestGenerationJobOptions());
   const { getValues } = useFormContext<MissionSurveyPutRequest>();
   const [phase, setPhase] = useState<"intro" | "questions">("intro");
   const questions = data?.categories[0]?.questions ?? [];

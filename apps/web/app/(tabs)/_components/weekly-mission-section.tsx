@@ -1,6 +1,7 @@
 import type { Mission } from "@repo/schema/mission";
 import { buttonVariants, cn } from "@repo/ui";
 import CoinIcon from "@repo/ui/svg/coin.svg";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Check, ChevronDown, ChevronRight, ChevronUp } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -13,17 +14,18 @@ import {
   countCompletedMissions,
   formatWeekDday,
 } from "@/app/(tabs)/mission/lib/format";
-import { useCompleteMission, useMissions } from "@/app/(tabs)/mission/queries";
 import { calculateGoalTotalTargetManwon } from "@/app/goal/lib/progress";
-import { useGoalStatus } from "@/app/goal/queries";
 import { formatManwon } from "@/lib/format";
 import { LOADING_TEXT } from "@/lib/messages";
+import { goalStatusOptions } from "@/lib/queries/goal";
+import { completeMissionOptions, missionsOptions } from "@/lib/queries/mission";
 import { SectionHeader } from "./section-header";
 
 export function WeeklyMissionSection() {
-  const { data: missions, isPending, isError } = useMissions();
-  const { data: goal } = useGoalStatus();
-  const completeMission = useCompleteMission();
+  const queryClient = useQueryClient();
+  const { data: missions, isPending, isError } = useQuery(missionsOptions());
+  const { data: goal } = useQuery(goalStatusOptions());
+  const completeMission = useMutation(completeMissionOptions(queryClient));
   const [category, setCategory] = useState<HomeMissionCategory>("전체");
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [missionToComplete, setMissionToComplete] = useState<Mission | null>(null);

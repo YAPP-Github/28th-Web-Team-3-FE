@@ -1,6 +1,6 @@
 import type { GoalStatus } from "@repo/schema/goal";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { act, fireEvent, render, screen, waitFor } from "@/lib/test/react";
+import { fireEvent, render, screen, waitFor } from "@/lib/test/react";
 
 // 조회/변경 훅을 목으로 대체한다 — 데이터 주입 후 렌더·인터랙션 로직을 검증한다.
 // (API 연동 자체는 브라우저 MSW로 별도 확인. vitest jsdom은 msw/node fetch를 가로채지 못한다.)
@@ -13,16 +13,13 @@ const MOCK_GOAL: GoalStatus = {
   thisMonth: { targetManwon: 82, savedManwon: 67, progressPercent: 82, dDay: 12 },
 };
 
-const savingsMutation = { mutate: vi.fn(), isPending: false };
-const goalMutation = { mutateAsync: vi.fn(), isPending: false };
-
-vi.mock("../queries", () => ({
-  useGoalStatus: () => ({ data: MOCK_GOAL, isPending: false, isError: false }),
-  useUpdateSavings: () => savingsMutation,
-  useUpdateGoal: () => goalMutation,
+vi.mock("@/api/goal", () => ({
+  fetchGoalStatus: vi.fn(),
+  updateGoal: vi.fn(),
+  updateSavings: vi.fn(),
 }));
 
-vi.mock("@/lib/onboarding/api", () => ({
+vi.mock("@/api/onboarding", () => ({
   getOnboardingProfile: vi.fn().mockResolvedValue({
     status: "COMPLETED",
     birthDate: "1998-03-01",
@@ -35,13 +32,16 @@ vi.mock("@/lib/onboarding/api", () => ({
 }));
 
 import { SAVE_FAILED_TEXT } from "@/lib/messages";
-import { getOnboardingProfile, patchOnboardingProfile } from "@/lib/onboarding/api";
+import { fetchGoalStatus, updateGoal, updateSavings } from "@/api/goal";
+import { getOnboardingProfile, patchOnboardingProfile } from "@/api/onboarding";
 import { GoalDetail } from "./goal-detail";
 
 describe("GoalDetail", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    goalMutation.mutateAsync.mockResolvedValue(undefined);
+    vi.mocked(fetchGoalStatus).mockResolvedValue(MOCK_GOAL);
+    vi.mocked(updateGoal).mockResolvedValue(undefined);
+    vi.mocked(updateSavings).mockResolvedValue(undefined);
     // clearAllMocks는 호출 기록만 지우고 구현은 남긴다 — 실패 케이스가 뒤 테스트로 새지 않게 되돌린다.
     vi.mocked(patchOnboardingProfile).mockResolvedValue({
       status: "COMPLETED",
@@ -53,26 +53,27 @@ describe("GoalDetail", () => {
     });
   });
 
-  it("목표 현황을 제목·게이지·스탯 카드로 렌더한다", () => {
+  it("목표 현황을 제목·게이지·스탯 카드로 렌더한다", async () => {
     render(<GoalDetail />);
 
-    expect(screen.getByText("5,000만원 모으기")).toBeInTheDocument();
+    expect(await screen.findByText("5,000만원 모으기")).toBeInTheDocument();
     expect(screen.getByText("1,950만원")).toBeInTheDocument();
     expect(screen.getByText("39%")).toBeInTheDocument();
     expect(screen.getByText("8개월째")).toBeInTheDocument();
     expect(screen.getByText("D-486")).toBeInTheDocument();
   });
 
-  it("서버 달성률이 100이어도 전체 목표금액 기준으로 달성률을 다시 계산한다", () => {
+  it("서버 달성률이 100이어도 전체 목표금액 기준으로 달성률을 다시 계산한다", async () => {
     render(<GoalDetail />);
 
-    expect(screen.getByText("5,000만원 모으기")).toBeInTheDocument();
+    expect(await screen.findByText("5,000만원 모으기")).toBeInTheDocument();
     expect(screen.getByText("39%")).toBeInTheDocument();
   });
 
-  it("현재 저축액 입력 버튼이 시트를 연다", () => {
+  it("현재 저축액 입력 버튼이 시트를 연다", async () => {
     render(<GoalDetail />);
 
+    await screen.findByText("5,000만원 모으기");
     fireEvent.click(screen.getByRole("button", { name: "현재 저축액 입력" }));
     expect(screen.getByRole("dialog")).toBeInTheDocument();
   });
@@ -80,6 +81,7 @@ describe("GoalDetail", () => {
   it("목표수정 시트에서 입력한 목표금액을 그대로 저장한다", async () => {
     render(<GoalDetail />);
 
+    await screen.findByText("5,000만원 모으기");
     fireEvent.click(screen.getByRole("button", { name: /수정/ }));
     expect(screen.getByRole("dialog", { name: "수정" })).toBeInTheDocument();
     expect(screen.getByRole("textbox", { name: "목표 금액만원" })).toHaveValue("5000");
@@ -97,7 +99,7 @@ describe("GoalDetail", () => {
     fireEvent.click(screen.getByRole("button", { name: "완료" }));
 
     await waitFor(() =>
-      expect(goalMutation.mutateAsync).toHaveBeenCalledWith({
+      expect(updateGoal).toHaveBeenCalledWith({
         targetAmountManwon: 6000,
         periodMonths: 16,
       }),
@@ -111,9 +113,10 @@ describe("GoalDetail", () => {
   });
 
   it("목표 저장이 실패하면 프로필을 건드리지 않고 오류를 보여준다", async () => {
-    goalMutation.mutateAsync.mockRejectedValue(new Error("network error"));
+    vi.mocked(updateGoal).mockRejectedValue(new Error("network error"));
     render(<GoalDetail />);
 
+    await screen.findByText("5,000만원 모으기");
     fireEvent.click(screen.getByRole("button", { name: /수정/ }));
     await waitFor(() =>
       expect(screen.getByRole("textbox", { name: "목표 기간개월" })).toHaveValue("16"),
@@ -130,6 +133,7 @@ describe("GoalDetail", () => {
     vi.mocked(patchOnboardingProfile).mockRejectedValue(new Error("network error"));
     render(<GoalDetail />);
 
+    await screen.findByText("5,000만원 모으기");
     fireEvent.click(screen.getByRole("button", { name: /수정/ }));
     await waitFor(() =>
       expect(screen.getByRole("textbox", { name: "목표 기간개월" })).toHaveValue("16"),
@@ -141,13 +145,14 @@ describe("GoalDetail", () => {
         "목표는 저장했지만 일부 정보를 저장하지 못했어요. 잠시 후 다시 시도해 주세요.",
       ),
     ).toBeInTheDocument();
-    expect(goalMutation.mutateAsync).toHaveBeenCalled();
+    expect(updateGoal).toHaveBeenCalled();
     expect(screen.getByRole("dialog", { name: "수정" })).toBeInTheDocument();
   });
 
   it("시트를 다시 열어도 프로필을 다시 조회하지 않는다", async () => {
     render(<GoalDetail />);
 
+    await screen.findByText("5,000만원 모으기");
     fireEvent.click(screen.getByRole("button", { name: /수정/ }));
     await waitFor(() =>
       expect(screen.getByRole("textbox", { name: "목표 기간개월" })).toHaveValue("16"),
@@ -165,6 +170,7 @@ describe("GoalDetail", () => {
   it("목표 기간이 하한 미만이면 보내지 않고 오류를 표시한다", async () => {
     render(<GoalDetail />);
 
+    await screen.findByText("5,000만원 모으기");
     fireEvent.click(screen.getByRole("button", { name: /수정/ }));
     await waitFor(() =>
       expect(screen.getByRole("textbox", { name: "목표 기간개월" })).toHaveValue("16"),
@@ -176,12 +182,13 @@ describe("GoalDetail", () => {
     fireEvent.click(screen.getByRole("button", { name: "완료" }));
 
     expect(screen.getByText("목표 기간은 3개월 이상으로 입력해주세요.")).toBeInTheDocument();
-    expect(goalMutation.mutateAsync).not.toHaveBeenCalled();
+    expect(updateGoal).not.toHaveBeenCalled();
   });
 
   it("목표 기간 상한을 넘겨 입력하면 최대값으로 제한한다", async () => {
     render(<GoalDetail />);
 
+    await screen.findByText("5,000만원 모으기");
     fireEvent.click(screen.getByRole("button", { name: /수정/ }));
     await waitFor(() =>
       expect(screen.getByRole("textbox", { name: "목표 기간개월" })).toHaveValue("16"),
@@ -194,35 +201,28 @@ describe("GoalDetail", () => {
     expect(screen.getByRole("textbox", { name: "목표 기간개월" })).toHaveValue("36");
   });
 
-  it("저장에 실패하면 시트에 오류를 표시한다", () => {
+  it("저장에 실패하면 시트에 오류를 표시한다", async () => {
+    vi.mocked(updateSavings).mockRejectedValue(new Error("bad request"));
     render(<GoalDetail />);
 
+    await screen.findByText("5,000만원 모으기");
     fireEvent.click(screen.getByRole("button", { name: "현재 저축액 입력" }));
     fireEvent.click(screen.getByRole("button", { name: "완료" }));
 
-    const [, options] = savingsMutation.mutate.mock.calls.at(-1) ?? [];
-    act(() => options.onError(new Error("bad request")));
-
-    expect(screen.getByText(SAVE_FAILED_TEXT)).toBeInTheDocument();
+    expect(await screen.findByText(SAVE_FAILED_TEXT)).toBeInTheDocument();
   });
 
-  it("현재저축액 입력은 목표금액을 수정하지 않는다", () => {
+  it("현재저축액 입력은 목표금액을 수정하지 않는다", async () => {
     render(<GoalDetail />);
 
+    await screen.findByText("5,000만원 모으기");
     fireEvent.click(screen.getByRole("button", { name: "현재 저축액 입력" }));
     fireEvent.change(screen.getByRole("textbox", { name: "저축액만원" }), {
       target: { value: "100" },
     });
     fireEvent.click(screen.getByRole("button", { name: "완료" }));
 
-    expect(savingsMutation.mutate).toHaveBeenCalledWith(
-      { savedAmountManwon: 100 },
-      expect.objectContaining({ onSuccess: expect.any(Function) }),
-    );
-
-    const [, savingsOptions] = savingsMutation.mutate.mock.calls.at(-1) ?? [];
-    savingsOptions.onSuccess();
-
-    expect(goalMutation.mutateAsync).not.toHaveBeenCalled();
+    await waitFor(() => expect(updateSavings).toHaveBeenCalledWith({ savedAmountManwon: 100 }));
+    expect(updateGoal).not.toHaveBeenCalled();
   });
 });

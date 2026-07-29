@@ -13,7 +13,7 @@ import {
   onboardingReportSchema,
 } from "@repo/schema/onboarding-api";
 import { HTTPError } from "ky";
-import { http } from "@/lib/api";
+import { http } from "@/api/client";
 
 const ONBOARDING_PATH = "onboarding";
 const EMPTY_ONBOARDING_PROFILE: OnboardingProfile = {

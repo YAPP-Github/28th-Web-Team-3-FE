@@ -1,5 +1,5 @@
 import { type Mission, type MissionSource, missionsResponseSchema } from "@repo/schema/mission";
-import { http } from "@/lib/api";
+import { http } from "@/api/client";
 
 /**
  * 미션 API — 백엔드 OpenAPI(`/api/missions`) 연동. 공유 클라이언트를 쓰므로

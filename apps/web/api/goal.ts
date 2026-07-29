@@ -6,7 +6,7 @@ import {
   type SavingRequest,
   savingRequestSchema,
 } from "@repo/schema/goal";
-import { http } from "@/lib/api";
+import { http } from "@/api/client";
 
 /**
  * 목표 API — 백엔드 OpenAPI(`/api/goal`) 연동. 공유 클라이언트를 쓰므로

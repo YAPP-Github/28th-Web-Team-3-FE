@@ -1,10 +1,10 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { SAVE_FAILED_TEXT } from "@/lib/messages";
-import { patchOnboardingProfile } from "@/lib/onboarding/api";
+import { patchOnboardingProfile } from "@/api/onboarding";
 import { act, renderHook } from "@/lib/test/react";
 import { useSaveOnboardingProfile } from "./use-save-onboarding-profile";
 
-vi.mock("@/lib/onboarding/api", () => ({ patchOnboardingProfile: vi.fn() }));
+vi.mock("@/api/onboarding", () => ({ patchOnboardingProfile: vi.fn() }));
 
 describe("useSaveOnboardingProfile", () => {
   beforeEach(() => vi.clearAllMocks());

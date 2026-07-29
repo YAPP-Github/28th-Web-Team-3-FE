@@ -1,13 +1,13 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { patchOnboardingProfile } from "@/api/onboarding";
 import { OnboardingFormProvider } from "@/app/onboarding/(questions)/_components/onboarding-form-provider";
-import { patchOnboardingProfile } from "@/lib/onboarding/api";
 import { fireEvent, render, screen, waitFor } from "@/lib/test/react";
 import AgeOnboardingPage from "./page";
 
 const pushMock = vi.fn();
 
 vi.mock("next/navigation", () => ({ useRouter: () => ({ prefetch: vi.fn(), push: pushMock }) }));
-vi.mock("@/lib/onboarding/api", () => ({
+vi.mock("@/api/onboarding", () => ({
   getOnboardingProfile: vi.fn().mockRejectedValue(new Error("test")),
   patchOnboardingProfile: vi.fn().mockResolvedValue({}),
 }));
