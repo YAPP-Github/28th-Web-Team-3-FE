@@ -14,7 +14,7 @@ const MOCK_GOAL: GoalStatus = {
 };
 
 const savingsMutation = { mutate: vi.fn(), isPending: false };
-const goalMutation = { mutate: vi.fn(), isPending: false };
+const goalMutation = { mutateAsync: vi.fn(), isPending: false };
 
 vi.mock("../queries", () => ({
   useGoalStatus: () => ({ data: MOCK_GOAL, isPending: false, isError: false }),
@@ -40,6 +40,16 @@ import { GoalDetail } from "./goal-detail";
 describe("GoalDetail", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    goalMutation.mutateAsync.mockResolvedValue(undefined);
+    // clearAllMocks는 호출 기록만 지우고 구현은 남긴다 — 실패 케이스가 뒤 테스트로 새지 않게 되돌린다.
+    vi.mocked(patchOnboardingProfile).mockResolvedValue({
+      status: "COMPLETED",
+      birthDate: "1998-03-01",
+      monthlySalaryManwon: 250,
+      monthlySavingManwon: 100,
+      netWorthManwon: 1950,
+      goalPeriodMonths: 16,
+    });
   });
 
   it("목표 현황을 제목·게이지·스탯 카드로 렌더한다", () => {
@@ -85,17 +95,55 @@ describe("GoalDetail", () => {
     });
     fireEvent.click(screen.getByRole("button", { name: "완료" }));
 
-    expect(goalMutation.mutate).toHaveBeenCalledWith(
-      { targetAmountManwon: 6000, periodMonths: 16 },
-      expect.objectContaining({ onSuccess: expect.any(Function) }),
+    await waitFor(() =>
+      expect(goalMutation.mutateAsync).toHaveBeenCalledWith({
+        targetAmountManwon: 6000,
+        periodMonths: 16,
+      }),
     );
+    await waitFor(() =>
+      expect(patchOnboardingProfile).toHaveBeenCalledWith({
+        goalPeriodMonths: 16,
+        monthlySalaryManwon: 650,
+      }),
+    );
+  });
 
-    const [, options] = goalMutation.mutate.mock.calls.at(-1) ?? [];
-    await options.onSuccess();
-    expect(patchOnboardingProfile).toHaveBeenCalledWith({
-      goalPeriodMonths: 16,
-      monthlySalaryManwon: 650,
-    });
+  it("목표 저장이 실패하면 프로필을 건드리지 않고 오류를 보여준다", async () => {
+    goalMutation.mutateAsync.mockRejectedValue(new Error("network error"));
+    render(<GoalDetail />);
+
+    fireEvent.click(screen.getByRole("button", { name: /수정/ }));
+    await waitFor(() =>
+      expect(screen.getByRole("textbox", { name: "목표 기간개월" })).toHaveValue("16"),
+    );
+    fireEvent.click(screen.getByRole("button", { name: "완료" }));
+
+    expect(
+      await screen.findByText("저장하지 못했어요. 잠시 후 다시 시도해주세요."),
+    ).toBeInTheDocument();
+    expect(patchOnboardingProfile).not.toHaveBeenCalled();
+    expect(screen.getByRole("dialog", { name: "수정" })).toBeInTheDocument();
+  });
+
+  it("목표는 저장됐는데 프로필만 실패하면 그 사실을 구분해 알린다", async () => {
+    // 목표 저장은 되돌릴 수 없다 — "전부 실패"로 안내하면 사용자가 처음부터 다시 입력한다.
+    vi.mocked(patchOnboardingProfile).mockRejectedValue(new Error("network error"));
+    render(<GoalDetail />);
+
+    fireEvent.click(screen.getByRole("button", { name: /수정/ }));
+    await waitFor(() =>
+      expect(screen.getByRole("textbox", { name: "목표 기간개월" })).toHaveValue("16"),
+    );
+    fireEvent.click(screen.getByRole("button", { name: "완료" }));
+
+    expect(
+      await screen.findByText(
+        "목표는 저장했지만 일부 정보를 저장하지 못했어요. 잠시 후 다시 시도해주세요.",
+      ),
+    ).toBeInTheDocument();
+    expect(goalMutation.mutateAsync).toHaveBeenCalled();
+    expect(screen.getByRole("dialog", { name: "수정" })).toBeInTheDocument();
   });
 
   it("시트를 다시 열어도 프로필을 다시 조회하지 않는다", async () => {
@@ -129,7 +177,7 @@ describe("GoalDetail", () => {
     fireEvent.click(screen.getByRole("button", { name: "완료" }));
 
     expect(screen.getByText("목표 기간은 3개월 이상으로 입력해주세요.")).toBeInTheDocument();
-    expect(goalMutation.mutate).not.toHaveBeenCalled();
+    expect(goalMutation.mutateAsync).not.toHaveBeenCalled();
   });
 
   it("목표 기간 상한을 넘겨 입력하면 최대값으로 제한한다", async () => {
@@ -176,6 +224,6 @@ describe("GoalDetail", () => {
     const [, savingsOptions] = savingsMutation.mutate.mock.calls.at(-1) ?? [];
     savingsOptions.onSuccess();
 
-    expect(goalMutation.mutate).not.toHaveBeenCalled();
+    expect(goalMutation.mutateAsync).not.toHaveBeenCalled();
   });
 });

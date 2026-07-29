@@ -26,6 +26,7 @@ export function WeeklyMissionSection() {
   const [category, setCategory] = useState<HomeMissionCategory>("전체");
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [missionToComplete, setMissionToComplete] = useState<Mission | null>(null);
+  const [completeError, setCompleteError] = useState<string>();
 
   if (isPending) {
     return <p className="px-5 pt-8 text-center text-body-b2-500 text-gray-400">불러오는 중…</p>;
@@ -150,14 +151,23 @@ export function WeeklyMissionSection() {
         </div>
       )}
       <MissionCompleteDialog
+        error={completeError}
         open={missionToComplete != null}
         pending={completeMission.isPending}
-        onCancel={() => setMissionToComplete(null)}
+        onCancel={() => {
+          setCompleteError(undefined);
+          setMissionToComplete(null);
+        }}
         onConfirm={() => {
           if (!missionToComplete) return;
+          setCompleteError(undefined);
           completeMission.mutate(
             { source: missionToComplete.source, missionId: missionToComplete.id },
-            { onSuccess: () => setMissionToComplete(null) },
+            {
+              onError: () =>
+                setCompleteError("완료 처리하지 못했어요. 잠시 후 다시 시도해 주세요."),
+              onSuccess: () => setMissionToComplete(null),
+            },
           );
         }}
       />
