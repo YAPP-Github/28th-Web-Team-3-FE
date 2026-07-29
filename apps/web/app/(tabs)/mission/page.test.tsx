@@ -1,6 +1,6 @@
 import type { Mission } from "@repo/schema/mission";
-import { fireEvent, render, screen } from "@testing-library/react";
-import { describe, expect, it, vi } from "vitest";
+import { act, fireEvent, render, screen } from "@testing-library/react";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const MOCK_MISSIONS: Mission[] = [
   {
@@ -56,6 +56,8 @@ vi.mock("./queries", () => ({
 import MissionPage from "./page";
 
 describe("MissionPage", () => {
+  beforeEach(() => vi.clearAllMocks());
+
   it("코인 수는 완료한 미션 개수를 따른다", () => {
     render(<MissionPage />);
 
@@ -91,7 +93,7 @@ describe("MissionPage", () => {
         source: "RECOMMENDED",
         missionId: "meal-1",
       },
-      expect.objectContaining({ onSuccess: expect.any(Function) }),
+      expect.objectContaining({ onError: expect.any(Function), onSuccess: expect.any(Function) }),
     );
   });
 
@@ -104,8 +106,40 @@ describe("MissionPage", () => {
 
     expect(deleteMutation.mutate).toHaveBeenCalledWith(
       { missionId: "meal-1" },
-      expect.objectContaining({ onSuccess: expect.any(Function) }),
+      expect.objectContaining({ onError: expect.any(Function), onSuccess: expect.any(Function) }),
     );
+  });
+
+  it("완료 요청이 실패하면 다이얼로그를 열어둔 채 오류를 보여준다", () => {
+    render(<MissionPage />);
+
+    fireEvent.click(screen.getByRole("tab", { name: "식비" }));
+    fireEvent.click(screen.getByRole("button", { name: "미션 완료" }));
+    fireEvent.click(screen.getByRole("button", { name: "완료" }));
+
+    const [, options] = completeMutation.mutate.mock.calls.at(-1) ?? [];
+    act(() => options.onError(new Error("network error")));
+
+    // 실패했는데 다이얼로그가 닫히면 사용자는 완료된 줄 안다.
+    expect(screen.getByRole("dialog", { name: "미션을 완료할까요?" })).toBeInTheDocument();
+    expect(
+      screen.getByText("완료 처리하지 못했어요. 잠시 후 다시 시도해 주세요."),
+    ).toBeInTheDocument();
+  });
+
+  it("삭제 요청이 실패하면 오류를 보여준다", () => {
+    render(<MissionPage />);
+
+    fireEvent.click(screen.getByRole("tab", { name: "식비" }));
+    fireEvent.click(screen.getByRole("button", { name: /이번 주 배달음식/ }));
+    fireEvent.click(screen.getByRole("button", { name: "미션 삭제" }));
+
+    const [, options] = deleteMutation.mutate.mock.calls.at(-1) ?? [];
+    act(() => options.onError(new Error("network error")));
+
+    expect(
+      screen.getByText("미션을 삭제하지 못했어요. 잠시 후 다시 시도해 주세요."),
+    ).toBeInTheDocument();
   });
 
   it("플로팅 버튼으로 미션 추가 메뉴를 연다", () => {

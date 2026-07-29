@@ -19,6 +19,8 @@ export default function MissionPage() {
   const [expandedMissionId, setExpandedMissionId] = useState<string | null>(null);
   const [isAddMenuOpen, setIsAddMenuOpen] = useState(false);
   const [missionToComplete, setMissionToComplete] = useState<Mission | null>(null);
+  const [completeError, setCompleteError] = useState<string>();
+  const [deleteError, setDeleteError] = useState<string>();
 
   if (isPending) {
     return <p className="px-5 pt-20 text-center text-body-b2-500 text-gray-400">불러오는 중…</p>;
@@ -61,28 +63,47 @@ export default function MissionPage() {
           deletingMissionId={deleteMission.isPending ? deleteMission.variables?.missionId : null}
           missions={visibleActiveMissions}
           onComplete={setMissionToComplete}
-          onDelete={(mission) =>
+          onDelete={(mission) => {
+            setDeleteError(undefined);
             deleteMission.mutate(
               { missionId: mission.id },
-              { onSuccess: () => setExpandedMissionId(null) },
-            )
-          }
+              {
+                onError: () =>
+                  setDeleteError("미션을 삭제하지 못했어요. 잠시 후 다시 시도해 주세요."),
+                onSuccess: () => setExpandedMissionId(null),
+              },
+            );
+          }}
           onToggle={(id) => setExpandedMissionId((expandedId) => (expandedId === id ? null : id))}
         />
+        {deleteError ? (
+          <p aria-live="polite" className="text-body-b2-500 text-error">
+            {deleteError}
+          </p>
+        ) : null}
       </section>
       <MissionAddMenu
         isOpen={isAddMenuOpen}
         onToggle={() => setIsAddMenuOpen((isOpen) => !isOpen)}
       />
       <MissionCompleteDialog
+        error={completeError}
         open={missionToComplete != null}
         pending={completeMission.isPending}
-        onCancel={() => setMissionToComplete(null)}
+        onCancel={() => {
+          setCompleteError(undefined);
+          setMissionToComplete(null);
+        }}
         onConfirm={() => {
           if (!missionToComplete) return;
+          setCompleteError(undefined);
           completeMission.mutate(
             { source: missionToComplete.source, missionId: missionToComplete.id },
-            { onSuccess: () => setMissionToComplete(null) },
+            {
+              onError: () =>
+                setCompleteError("완료 처리하지 못했어요. 잠시 후 다시 시도해 주세요."),
+              onSuccess: () => setMissionToComplete(null),
+            },
           );
         }}
       />

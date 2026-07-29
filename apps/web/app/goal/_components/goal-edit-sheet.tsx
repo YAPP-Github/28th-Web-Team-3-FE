@@ -47,9 +47,11 @@ export function GoalEditSheet({ open, onOpenChange, initialTargetManwon }: GoalE
   const [monthlySalary, setMonthlySalary] = useState("");
   const [submitError, setSubmitError] = useState<string>();
   const queryClient = useQueryClient();
-  const { mutate, isPending } = useUpdateGoal();
+  const { mutateAsync: updateGoal, isPending: isUpdatingGoal } = useUpdateGoal();
   const { data: profile } = useQuery(onboardingProfileOptions());
-  const { mutateAsync: patchProfile } = useMutation(patchOnboardingProfileOptions(queryClient));
+  const { mutateAsync: patchProfile, isPending: isPatchingProfile } = useMutation(
+    patchOnboardingProfileOptions(queryClient),
+  );
 
   // 시트는 항상 마운트 상태(open 제어)라 useState 초기값이 재오픈 시 반영되지 않는다.
   // 열 때마다 목표 금액·기간·월소득을 최신 프로필 값으로 되돌린다.
@@ -63,7 +65,7 @@ export function GoalEditSheet({ open, onOpenChange, initialTargetManwon }: GoalE
     );
   }, [open, initialTargetManwon, profile]);
 
-  function submit() {
+  async function submit() {
     const totalTargetManwon = toNullableAmount(target);
     const periodMonths = toNullableAmount(period);
     const monthlySalaryManwon = toMonthlySalary(monthlySalary);
@@ -75,24 +77,33 @@ export function GoalEditSheet({ open, onOpenChange, initialTargetManwon }: GoalE
     }
 
     setSubmitError(undefined);
-    mutate(
-      {
-        targetAmountManwon: totalTargetManwon,
-        periodMonths,
-      },
-      {
-        onError: () => setSubmitError("저장하지 못했어요. 잠시 후 다시 시도해주세요."),
-        onSuccess: async () => {
-          if (monthlySalaryManwon != null || periodMonths != null) {
-            await patchProfile({
-              ...(monthlySalaryManwon != null ? { monthlySalaryManwon } : {}),
-              ...(periodMonths != null ? { goalPeriodMonths: periodMonths } : {}),
-            });
-          }
-          onOpenChange(false);
-        },
-      },
-    );
+
+    try {
+      await updateGoal({ targetAmountManwon: totalTargetManwon, periodMonths });
+    } catch {
+      setSubmitError("저장하지 못했어요. 잠시 후 다시 시도해주세요.");
+      return;
+    }
+
+    // 여기부터는 목표가 이미 저장된 뒤다. 프로필 저장이 실패해도 되돌릴 수 없으므로
+    // "전부 실패"처럼 안내하면 사용자가 목표를 처음부터 다시 입력한다. 무엇이 남았는지 알린다.
+    const profilePatch = {
+      ...(monthlySalaryManwon != null ? { monthlySalaryManwon } : {}),
+      ...(periodMonths != null ? { goalPeriodMonths: periodMonths } : {}),
+    };
+
+    if (Object.keys(profilePatch).length > 0) {
+      try {
+        await patchProfile(profilePatch);
+      } catch {
+        setSubmitError(
+          "목표는 저장했지만 일부 정보를 저장하지 못했어요. 잠시 후 다시 시도해주세요.",
+        );
+        return;
+      }
+    }
+
+    onOpenChange(false);
   }
 
   return (
@@ -127,7 +138,7 @@ export function GoalEditSheet({ open, onOpenChange, initialTargetManwon }: GoalE
             {submitError}
           </p>
         ) : null}
-        <Button size="cta" disabled={isPending} onClick={submit}>
+        <Button size="cta" disabled={isUpdatingGoal || isPatchingProfile} onClick={submit}>
           완료
         </Button>
       </div>

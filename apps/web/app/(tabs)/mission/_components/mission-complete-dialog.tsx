@@ -3,6 +3,8 @@ import { Button } from "@repo/ui";
 interface MissionCompleteDialogProps {
   open: boolean;
   pending?: boolean;
+  /** 완료 처리에 실패했을 때 보여줄 문구. 다이얼로그는 열린 채로 남아 재시도할 수 있다. */
+  error?: string;
   onCancel: () => void;
   onConfirm: () => void;
 }
@@ -10,6 +12,7 @@ interface MissionCompleteDialogProps {
 export function MissionCompleteDialog({
   open,
   pending = false,
+  error,
   onCancel,
   onConfirm,
 }: MissionCompleteDialogProps) {
@@ -29,6 +32,11 @@ export function MissionCompleteDialog({
         >
           미션을 완료할까요?
         </h2>
+        {error ? (
+          <p aria-live="polite" className="text-center text-body-b2-500 text-error">
+            {error}
+          </p>
+        ) : null}
         {/* 다이얼로그 버튼은 퍼널 CTA(14px/500·48px)보다 크다 — 디자인 확인 전까지
             기존 모양(52px·16px/700)을 유지한다. */}
         <div className="grid w-full grid-cols-2 gap-2.5">

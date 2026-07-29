@@ -68,13 +68,17 @@ export function MissionCreationFormClient({
     );
   }
 
+  // 두 단계를 구분해 알린다 — 설문 저장이 끝난 뒤 생성 요청만 실패했다면 답변은
+  // 이미 서버에 있으므로, 뭉뚱그리면 사용자가 설문을 처음부터 다시 채운다.
   return (
     <MissionSurveyQuestions
       questions={questions}
       submitError={
-        replaceSurvey.isError || requestJob.isError
-          ? "제출에 실패했어요. 다시 시도해 주세요."
-          : undefined
+        replaceSurvey.isError
+          ? "설문을 저장하지 못했어요. 잠시 후 다시 시도해 주세요."
+          : requestJob.isError
+            ? "미션 생성을 시작하지 못했어요. 잠시 후 다시 시도해 주세요."
+            : undefined
       }
       onComplete={proceed}
       onExitToIntro={() => setPhase("intro")}
