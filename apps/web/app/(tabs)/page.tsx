@@ -19,7 +19,10 @@ export default function HomePage() {
     if (isOnboardingInProgress) router.replace("/onboarding/intro");
   }, [isOnboardingInProgress, router]);
 
-  if (isError) {
+  // 캐시된 프로필이 있으면 재조회가 실패해도 화면을 내리지 않는다 — react-query는 재조회
+  // 실패 시 이전 데이터를 유지한 채 isError를 켜므로, isError만 보면 멀쩡히 그릴 수 있는
+  // 화면이 오류 화면으로 바뀐다.
+  if (isError && !profile) {
     return (
       <main className="flex flex-1 flex-col items-center justify-center gap-4 px-5 text-center">
         <p className="text-body-b1-500 text-gray-700">

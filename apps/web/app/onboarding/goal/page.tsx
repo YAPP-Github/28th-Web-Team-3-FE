@@ -41,7 +41,8 @@ export default function OnboardingGoalPage() {
     );
   }, [goalPlans]);
 
-  if (isError) {
+  // 재조회 실패로는 화면을 내리지 않는다 — react-query가 이전 데이터를 유지한 채 isError를 켠다.
+  if (isError && !goalPlans) {
     return (
       <div className="flex min-h-dvh items-center justify-center px-5 text-center text-body-b1-500 text-gray-700">
         목표 플랜을 불러오지 못했어요. 잠시 후 다시 열어주세요.
