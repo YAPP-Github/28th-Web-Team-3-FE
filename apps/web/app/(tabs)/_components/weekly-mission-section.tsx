@@ -211,7 +211,7 @@ function MissionProgress({
         aria-hidden="true"
         className="pointer-events-none h-32 w-auto object-contain"
         height={256}
-        src="/images/mission-home.webp"
+        src="/images/mission/mission-home.webp"
         width={384}
       />
     </div>

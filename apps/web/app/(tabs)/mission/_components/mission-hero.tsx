@@ -31,7 +31,7 @@ export function MissionHero({ ddayLabel, percent, completedCount }: MissionHeroP
           className="object-contain"
           preload
           sizes="208px"
-          src="/images/mission-home.webp"
+          src="/images/mission/mission-home.webp"
         />
       </div>
     </section>
