@@ -1,7 +1,7 @@
 import type { MissionDraftsResponse } from "@repo/schema/mission-generation";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { confirmGenerationJob, fetchGenerationDrafts } from "@/api/mission-generation";
-import { fireEvent, render, screen, waitFor } from "@/lib/test/react";
+import { createTestQueryClient, fireEvent, render, screen, waitFor } from "@/lib/test/react";
 
 const pushMock = vi.fn();
 
@@ -74,5 +74,25 @@ describe("MissionCreationResult", () => {
         selectedDraftIds: ["draft-1", "draft-2", "draft-3", "draft-4", "draft-5"],
       }),
     );
+  });
+
+  it("캐시된 초안이 있으면 재조회가 실패해도 화면을 계속 보여준다", async () => {
+    // react-query는 재조회가 실패해도 이전 데이터를 버리지 않고 isError만 켠다.
+    // 그 상태에서 오류 화면으로 갈아치우면 멀쩡히 그릴 수 있는 화면이 사라진다.
+    const queryClient = createTestQueryClient();
+    queryClient.setQueryData(["mission-generation-drafts", "job-1"], MOCK_DRAFTS);
+    vi.mocked(fetchGenerationDrafts).mockRejectedValue(new Error("network error"));
+
+    render(<MissionCreationResult jobId="job-1" />, { queryClient });
+
+    // 마운트 직후 stale 재조회가 나가 실패한다(테스트 클라이언트는 retry를 끈다).
+    await waitFor(() =>
+      expect(queryClient.getQueryState(["mission-generation-drafts", "job-1"])?.status).toBe(
+        "error",
+      ),
+    );
+    expect(
+      screen.getByRole("button", { name: "이번 주 배달음식 2회 이하로 주문" }),
+    ).toBeInTheDocument();
   });
 });
