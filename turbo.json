@@ -42,7 +42,7 @@
     "lint": {},
     "typecheck": {
       "dependsOn": ["^typecheck"],
-      "outputs": ["**/*.tsbuildinfo"]
+      "outputs": ["**/*.tsbuildinfo", ".next/types/**"]
     },
     "test": {
       "dependsOn": ["^build"],

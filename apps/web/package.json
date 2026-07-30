@@ -8,7 +8,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "biome check .",
-    "typecheck": "tsc --noEmit && tsc --noEmit -p e2e/tsconfig.json",
+    "typecheck": "next typegen && tsc --noEmit && tsc --noEmit -p e2e/tsconfig.json",
     "test": "vitest run",
     "test:e2e": "playwright test"
   },
