@@ -76,5 +76,4 @@ export type AppBridge = BridgeStore<AppBridgeMethods>;
  */
 export type BridgeEvents = {
   pushNotificationOpened: { data: Record<string, unknown> };
-  sessionInvalidated: { reason: string };
 };

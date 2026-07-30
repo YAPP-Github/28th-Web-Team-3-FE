@@ -79,7 +79,11 @@ async function reissue(): Promise<string | null> {
     const uuid = await getOrCreateDeviceUuid();
     result = await postAuth("auth/guest", { uuid });
   }
-  if (result === "rejected" || result === null) return null;
+  if (result === "rejected" || result === null) {
+    // 재발급 실패 — 만료된 토큰을 계속 내주면 401 → 재발급 실패가 반복되니 비운다.
+    accessToken = null;
+    return null;
+  }
   const tokens = result;
 
   // 새 accessToken을 내주기 전에 rotation된 refreshToken 저장을 반드시 끝낸다 —
