@@ -1,8 +1,20 @@
 import { withSentryConfig } from "@sentry/nextjs";
 import type { NextConfig } from "next";
 
+const backendApiUrl = process.env.BACKEND_API_URL?.replace(/\/$/, "");
+
 const nextConfig: NextConfig = {
   reactStrictMode: true,
+  allowedDevOrigins: ["10.0.2.2"],
+  async rewrites() {
+    if (process.env.NODE_ENV !== "development" || !backendApiUrl) return [];
+    return [
+      {
+        source: "/api/:path*",
+        destination: `${backendApiUrl}/api/:path*`,
+      },
+    ];
+  },
   // Internal packages ship TS/TSX source; Next compiles them here.
   transpilePackages: ["@repo/ui", "@repo/api", "@repo/schema", "@repo/bridge"],
   reactCompiler: true,
