@@ -7,7 +7,7 @@ const nextConfig: NextConfig = {
   reactStrictMode: true,
   allowedDevOrigins: ["10.0.2.2"],
   async rewrites() {
-    if (!backendApiUrl) return [];
+    if (process.env.NODE_ENV !== "development" || !backendApiUrl) return [];
     return [
       {
         source: "/api/:path*",
