@@ -13,12 +13,14 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   const app = (
-    <QueryProvider>
-      {children}
-      <Suspense fallback={null}>
-        <MixpanelPageTracker />
-      </Suspense>
-    </QueryProvider>
+    <Suspense fallback={null}>
+      <QueryProvider>
+        {children}
+        <Suspense fallback={null}>
+          <MixpanelPageTracker />
+        </Suspense>
+      </QueryProvider>
+    </Suspense>
   );
   return (
     <html lang="ko">
