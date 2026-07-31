@@ -1,15 +1,17 @@
-import { LegalDraftNotice, LegalSection } from "@/app/(tabs)/mypage/_components/legal-content";
+import {
+  LegalSection,
+  POLICY_EFFECTIVE_DATE,
+  SERVICE_NAME,
+} from "@/app/(tabs)/mypage/_components/legal-content";
 import { LegalPageLayout } from "@/app/(tabs)/mypage/_components/legal-page-layout";
 
 export default function TermsPage() {
   return (
     <LegalPageLayout title="이용약관">
-      <LegalDraftNotice />
-
       <LegalSection heading="제1조 (목적)">
         <p>
-          본 약관은 `[운영자명]`이 제공하는 `[서비스명]`의 이용 조건과 운영자 및 이용자의 권리와
-          의무를 정하는 것을 목적으로 합니다.
+          본 약관은 {SERVICE_NAME}의 이용 조건과 운영자 및 이용자의 권리와 의무를 정하는 것을
+          목적으로 합니다.
         </p>
       </LegalSection>
 
@@ -63,7 +65,7 @@ export default function TermsPage() {
           서비스 관련 문의는 마이페이지의 문의하기(카카오톡 오픈채팅)로 접수할 수 있습니다. 분쟁이
           발생하면 대한민국 법률을 적용하며, 관할법원은 민사소송법에 따릅니다.
         </p>
-        <p>시행일: `[시행일]`</p>
+        <p>시행일: {POLICY_EFFECTIVE_DATE}</p>
       </LegalSection>
     </LegalPageLayout>
   );

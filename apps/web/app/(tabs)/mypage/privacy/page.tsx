@@ -1,19 +1,17 @@
 import {
-  LegalDraftNotice,
   LegalList,
   LegalSection,
+  POLICY_EFFECTIVE_DATE,
+  PRIVACY_CONTACT_TEAM,
+  SERVICE_NAME,
 } from "@/app/(tabs)/mypage/_components/legal-content";
 import { LegalPageLayout } from "@/app/(tabs)/mypage/_components/legal-page-layout";
 
 export default function PrivacyPage() {
   return (
     <LegalPageLayout title="개인정보처리방침">
-      <LegalDraftNotice />
-
       <LegalSection heading="개요">
-        <p>
-          `[운영자명]`은 `[서비스명]` 이용자의 개인정보를 중요하게 생각하며 관련 법령을 준수합니다.
-        </p>
+        <p>{SERVICE_NAME}는 이용자의 개인정보를 중요하게 생각하며 관련 법령을 준수합니다.</p>
       </LegalSection>
 
       <LegalSection heading="1. 처리하는 개인정보">
@@ -57,13 +55,22 @@ export default function PrivacyPage() {
       </LegalSection>
 
       <LegalSection heading="4. 외부 서비스 이용">
+        <p>서비스는 운영, 오류 분석, 이용 통계를 위해 다음 외부 서비스를 이용합니다.</p>
+        <LegalList
+          items={[
+            "Vercel — 서비스 배포 및 운영 (접속 정보, 기기 정보)",
+            "Sentry — 오류 수집 및 성능 분석 (오류 기록, 접속 정보, 기기 정보, 화면 조작 기록)",
+            "Mixpanel — 서비스 이용 통계 분석 (화면 이동 기록, 접속 정보, 기기 정보, 화면 조작 기록)",
+          ]}
+        />
         <p>
-          서비스는 운영과 오류 분석을 위해 Vercel 및 Sentry 등의 외부 서비스를 이용할 수 있습니다.
-          이 과정에서 접속 정보, 기기 정보, 오류 기록 및 화면 조작 기록이 처리될 수 있습니다.
+          Sentry와 Mixpanel은 오류 원인 파악과 서비스 개선을 위해 이용자의 화면 조작 기록(세션
+          리플레이)을 수집합니다. 이때 입력한 값과 화면에 표시된 문자는 자동으로 가려진 상태로
+          기록됩니다.
         </p>
         <p>
-          운영자는 인증 토큰과 설문 입력값이 오류 기록에 포함되지 않도록 필요한 보호조치를
-          적용합니다.
+          운영자는 인증 토큰과 설문 입력값이 오류 기록과 화면 조작 기록에 포함되지 않도록 필요한
+          보호조치를 적용합니다.
         </p>
       </LegalSection>
 
@@ -98,7 +105,10 @@ export default function PrivacyPage() {
 
       <LegalSection heading="9. 방침 변경">
         <p>개인정보처리방침이 변경되는 경우 시행 전에 서비스 내에서 안내합니다.</p>
-        <p>운영자: `[운영자명]` · 문의: 마이페이지 문의하기 · 시행일: `[시행일]`</p>
+        <p>
+          운영자: {SERVICE_NAME} · 개인정보 보호 담당: {PRIVACY_CONTACT_TEAM}
+        </p>
+        <p>문의: 마이페이지 문의하기(카카오톡 오픈채팅) · 시행일: {POLICY_EFFECTIVE_DATE}</p>
       </LegalSection>
     </LegalPageLayout>
   );
