@@ -2,6 +2,7 @@ import {
   LegalList,
   LegalSection,
   POLICY_EFFECTIVE_DATE,
+  PRIVACY_CONTACT_TEAM,
   SERVICE_NAME,
 } from "@/app/(tabs)/mypage/_components/legal-content";
 import { LegalPageLayout } from "@/app/(tabs)/mypage/_components/legal-page-layout";
@@ -105,8 +106,9 @@ export default function PrivacyPage() {
       <LegalSection heading="9. 방침 변경">
         <p>개인정보처리방침이 변경되는 경우 시행 전에 서비스 내에서 안내합니다.</p>
         <p>
-          운영자: {SERVICE_NAME} · 문의: 마이페이지 문의하기 · 시행일: {POLICY_EFFECTIVE_DATE}
+          운영자: {SERVICE_NAME} · 개인정보 보호 담당: {PRIVACY_CONTACT_TEAM}
         </p>
+        <p>문의: 마이페이지 문의하기(카카오톡 오픈채팅) · 시행일: {POLICY_EFFECTIVE_DATE}</p>
       </LegalSection>
     </LegalPageLayout>
   );

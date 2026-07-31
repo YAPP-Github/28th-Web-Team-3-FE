@@ -29,5 +29,11 @@ export function LegalList({ items }: { items: string[] }) {
 /** 서비스명 — 약관·방침 양쪽이 갈리지 않게 한 곳에서 정한다. */
 export const SERVICE_NAME = "아끼모";
 
+/**
+ * 개인정보 보호업무 담당 주체. 개인정보보호법 제30조는 보호책임자 "성명" 또는
+ * "담당부서의 명칭과 연락처" 중 하나를 요구하므로 팀 명칭으로 갈음한다.
+ */
+export const PRIVACY_CONTACT_TEAM = "아끼모 운영팀";
+
 /** 약관·방침 공통 시행일. 문서를 고치면 이 값도 함께 올린다. */
 export const POLICY_EFFECTIVE_DATE = "2026년 7월 31일";
