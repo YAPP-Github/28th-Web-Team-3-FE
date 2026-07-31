@@ -1,5 +1,5 @@
 import { StatusBar } from "expo-status-bar";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ActivityIndicator, Platform, Pressable, StyleSheet, Text, View } from "react-native";
 import { initGuestAuth } from "./src/auth/guest-auth";
 import { ORIGIN_WHITELIST, WEB_URL } from "./src/config";
@@ -33,6 +33,15 @@ export default function App() {
   const [loadFailed, setLoadFailed] = useState(false);
   // WebView를 remount해 재시도한다 — ref.reload()는 로드 자체가 실패한 상태에서 안 먹는다.
   const [reloadKey, setReloadKey] = useState(0);
+  // 5xx는 본문(Next 에러 페이지)이 함께 오므로 onHttpError 뒤에 onLoad까지 발화한다.
+  // 둘의 발화 순서는 보장되지 않아, onLoad에서 무조건 걷으면 오버레이가 도로 사라진다.
+  // 이번 내비게이션에서 실패가 있었는지를 따로 들고 있다가 성공한 로드에서만 걷는다.
+  const navigationFailedRef = useRef(false);
+
+  function markLoadFailed() {
+    navigationFailedRef.current = true;
+    setLoadFailed(true);
+  }
 
   function retryLoad() {
     setLoadFailed(false);
@@ -67,14 +76,20 @@ export default function App() {
         source={{ uri: WEB_URL }}
         originWhitelist={ORIGIN_WHITELIST}
         style={styles.webview}
-        // 로드가 다시 성공하면 오버레이를 스스로 걷는다 — 안 그러면 화면이 멀쩡해진
-        // 뒤에도 사용자가 "다시 시도"를 눌러 경로를 초기화해야만 빠져나올 수 있다.
-        onLoad={() => setLoadFailed(false)}
-        onError={() => setLoadFailed(true)}
+        // 응답보다 먼저 도는 시점이라 여기서 이번 내비게이션의 실패 여부를 초기화한다.
+        onLoadStart={() => {
+          navigationFailedRef.current = false;
+        }}
+        // 실패 없이 끝난 로드만 오버레이를 걷는다 — 안 그러면 화면이 멀쩡해진 뒤에도
+        // 사용자가 "다시 시도"를 눌러 경로를 초기화해야만 빠져나올 수 있다.
+        onLoad={() => {
+          if (!navigationFailedRef.current) setLoadFailed(false);
+        }}
+        onError={markLoadFailed}
         onHttpError={({ nativeEvent }) => {
           // onHttpError는 메인 프레임 응답만 올라온다. 4xx는 Next의 404 페이지처럼
           // 그려야 할 화면인 경우가 있으니, 페이지 자체를 못 그리는 5xx만 실패로 본다.
-          if (nativeEvent.statusCode >= 500) setLoadFailed(true);
+          if (nativeEvent.statusCode >= 500) markLoadFailed();
         }}
       />
       {loadFailed ? <LoadErrorView onRetry={retryLoad} /> : null}
