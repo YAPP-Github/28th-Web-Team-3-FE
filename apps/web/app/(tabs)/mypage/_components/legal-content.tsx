@@ -26,12 +26,8 @@ export function LegalList({ items }: { items: string[] }) {
   );
 }
 
-/** 대괄호 항목·법무 검토가 남았음을 알리는 안내 배너. */
-export function LegalDraftNotice() {
-  return (
-    <p className="rounded-[12px] bg-gray-50 px-4 py-3 text-body-b2-500 text-gray-500">
-      ※ `[운영자명]`·`[서비스명]`·`[시행일]` 등 대괄호 항목은 확정 후 채워야 하며, 시행 전 법무
-      검토가 필요합니다.
-    </p>
-  );
-}
+/** 서비스명 — 약관·방침 양쪽이 갈리지 않게 한 곳에서 정한다. */
+export const SERVICE_NAME = "아끼모";
+
+/** 약관·방침 공통 시행일. 문서를 고치면 이 값도 함께 올린다. */
+export const POLICY_EFFECTIVE_DATE = "2026년 8월 1일";
