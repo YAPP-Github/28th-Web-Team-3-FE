@@ -1,4 +1,4 @@
-// Server (Node.js runtime) Sentry init. Loaded via instrumentation.ts.
+// 서버(Node.js 런타임) Sentry 초기화. instrumentation.ts가 불러온다.
 import * as Sentry from "@sentry/nextjs";
 
 Sentry.init({
@@ -8,6 +8,6 @@ Sentry.init({
 
   enableLogs: true,
 
-  // Verbose SDK logging in dev only.
+  // dev에서만 SDK 로그를 자세히 남긴다.
   debug: process.env.NODE_ENV === "development",
 });

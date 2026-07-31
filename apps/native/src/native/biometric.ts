@@ -1,6 +1,6 @@
 import * as LocalAuthentication from "expo-local-authentication";
 
-/** Biometric unlock (Face ID / fingerprint). Implemented. */
+/** 생체인증 잠금 해제(Face ID / 지문). 구현 완료. */
 export async function isBiometricAvailable(): Promise<boolean> {
   const hasHardware = await LocalAuthentication.hasHardwareAsync();
   const isEnrolled = await LocalAuthentication.isEnrolledAsync();

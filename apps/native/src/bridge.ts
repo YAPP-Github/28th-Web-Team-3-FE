@@ -11,15 +11,15 @@ import * as share from "./native/share";
 async function getNativeInfo(): Promise<NativeInfo> {
   return {
     platform: Platform.OS === "ios" ? "ios" : "android",
-    // Source of truth is app.config.ts (expo.version), surfaced via Constants.
+    // 원본은 app.config.ts(expo.version)이고, Constants로 가져온다.
     appVersion: Constants.expoConfig?.version ?? "unknown",
     biometricAvailable: await biometric.isBiometricAvailable(),
   };
 }
 
 /**
- * Native implementation of the shared bridge contract. `satisfies AppBridge` makes
- * the compiler enforce that this matches exactly what the web app expects to call.
+ * 공유 브릿지 계약의 네이티브 구현. `satisfies AppBridge`로 웹이 기대하는 모양과
+ * 정확히 맞는지 컴파일러가 강제하게 한다.
  */
 const handlers = {
   authenticate: (reason?: string) => biometric.authenticate(reason),

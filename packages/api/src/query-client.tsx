@@ -3,7 +3,7 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { type ReactNode, useState } from "react";
 
-/** Sensible defaults shared by web + WebView clients. */
+/** web + WebView 클라이언트가 함께 쓰는 무난한 기본값. */
 export function createQueryClient(): QueryClient {
   return new QueryClient({
     defaultOptions: {
@@ -20,7 +20,7 @@ export function createQueryClient(): QueryClient {
   });
 }
 
-/** Wrap the app once. Keeps a stable client across re-renders. */
+/** 앱을 한 번만 감싼다. 리렌더링 사이에도 같은 클라이언트를 유지한다. */
 export function QueryProvider({ children }: { children: ReactNode }) {
   const [client] = useState(createQueryClient);
   return <QueryClientProvider client={client}>{children}</QueryClientProvider>;

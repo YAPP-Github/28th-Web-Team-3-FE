@@ -1,9 +1,9 @@
 import type { ExpoConfig } from "expo/config";
 
 /**
- * Expo config. Native capability plugins are declared up-front (App Store 4.2):
- * biometric + sharing are implemented; notifications is wired but stubbed.
- * `extra.webUrl` is the WebView target, overridable per environment.
+ * Expo 설정. 네이티브 기능 플러그인은 미리 선언해둔다(App Store 4.2) — 생체인증·공유는
+ * 구현돼 있고, 알림은 연결만 해두고 스텁 상태다. `extra.webUrl`은 WebView 대상이고
+ * 환경별로 덮어쓸 수 있다.
  */
 const config: ExpoConfig = {
   name: "아끼모",
@@ -18,7 +18,7 @@ const config: ExpoConfig = {
     supportsTablet: true,
     bundleIdentifier: "com.webteam3.app",
     infoPlist: {
-      // Required so iOS shows a reason string when biometric auth is invoked.
+      // 생체인증을 호출할 때 iOS가 이유 문구를 보여주려면 필요하다.
       NSFaceIDUsageDescription: "앱 잠금 해제를 위해 Face ID를 사용합니다.",
     },
   },
@@ -39,8 +39,8 @@ const config: ExpoConfig = {
     reactCompiler: true,
   },
   extra: {
-    // dev: Metro host serving the Next.js app; prod: the deployed web origin.
-    // Intentionally no fallback — config.ts provides platform-aware defaults.
+    // dev는 Next.js 앱을 서빙하는 Metro 호스트, prod는 배포된 웹 origin.
+    // 폴백은 일부러 안 둔다 — 기본값은 config.ts가 플랫폼별로 챙긴다.
     webUrl: process.env.EXPO_PUBLIC_WEB_URL,
     // 게스트 인증 API(Spring) origin.
     apiUrl: process.env.EXPO_PUBLIC_API_URL,

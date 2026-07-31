@@ -3,15 +3,15 @@ import * as Sharing from "expo-sharing";
 import { Share } from "react-native";
 
 /**
- * Native share sheet. Implemented. expo-sharing only shares local files, so for
- * url/text payloads we use RN's built-in Share API (which presents the OS sheet).
+ * 네이티브 공유 시트. 구현 완료. expo-sharing은 로컬 파일만 공유하므로, url/text
+ * payload는 RN 내장 Share API(OS 시트를 띄운다)를 쓴다.
  */
 export async function open(payload: SharePayload): Promise<boolean> {
-  // RN's ShareContent requires a non-optional `message` string.
+  // RN의 ShareContent는 `message` 문자열이 필수(옵셔널 아님)다.
   const message = payload.message ?? payload.url ?? "";
   if (!message) return false;
 
-  // RN Share handles url/text and shows the system share sheet on both platforms.
+  // RN Share가 url/text를 처리하고, 양쪽 플랫폼 모두 시스템 공유 시트를 띄운다.
   const result = await Share.share(
     { message, url: payload.url, title: payload.title },
     { dialogTitle: payload.title },
@@ -19,7 +19,7 @@ export async function open(payload: SharePayload): Promise<boolean> {
   return result.action !== Share.dismissedAction;
 }
 
-/** Exposed for callers that specifically need file sharing. */
+/** 파일 공유가 따로 필요한 호출부를 위해 노출해둔다. */
 export async function isAvailable(): Promise<boolean> {
   return Sharing.isAvailableAsync();
 }

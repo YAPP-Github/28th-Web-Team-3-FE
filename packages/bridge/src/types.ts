@@ -1,41 +1,41 @@
 /**
- * THE BRIDGE CONTRACT — single source of truth, shared by web and native.
+ * 브릿지 계약 — 웹과 네이티브가 공유하는 단일 원본.
  *
- * This file has ZERO Expo / React Native imports, so both sides can depend on it:
- *  - native (apps/native) IMPLEMENTS this with `bridge({...}) satisfies AppBridge`
- *  - web (apps/web)       CONSUMES this via `linkBridge<AppBridge>()`
+ * 이 파일은 Expo·React Native import가 전혀 없어서 양쪽 다 의존할 수 있다:
+ *  - 네이티브(apps/native)는 `bridge({...}) satisfies AppBridge`로 구현한다
+ *  - 웹(apps/web)은 `linkBridge<AppBridge>()`로 소비한다
  *
- * Every method is async (calls are proxied across the WebView boundary).
- * Keep return types serializable (no class instances, Dates as ISO strings, etc.).
+ * 모든 메서드는 async다(호출이 WebView 경계를 건너 프록시된다).
+ * 반환 타입은 직렬화 가능하게 유지한다(클래스 인스턴스 금지, Date는 ISO 문자열로 등).
  */
 
 export interface SharePayload {
-  /** Plain text / message body. */
+  /** 순수 텍스트 / 메시지 본문. */
   message?: string;
-  /** A URL to share (App Store 4.2: native share sheet). */
+  /** 공유할 URL(App Store 4.2: 네이티브 공유 시트). */
   url?: string;
-  /** Optional dialog title (Android). */
+  /** 다이얼로그 제목, 선택(Android). */
   title?: string;
 }
 
 export interface NativeInfo {
   platform: "ios" | "android";
   appVersion: string;
-  /** Whether biometric hardware is enrolled & available. */
+  /** 생체인증 하드웨어가 등록·사용 가능한지. */
   biometricAvailable: boolean;
 }
 
 import type { BridgeStore } from "@webview-bridge/types";
 
 /**
- * The bridge METHODS. `type` (not `interface`) so it structurally satisfies
- * @webview-bridge's `Bridge` constraint (an index-signature record of async fns).
- * Native implements this; web calls it.
+ * 브릿지 메서드 목록. @webview-bridge의 `Bridge` 제약(async 함수의 인덱스 시그니처
+ * 레코드)을 구조적으로 만족시키려고 `interface`가 아니라 `type`을 쓴다. 네이티브가
+ * 구현하고 웹이 호출한다.
  */
 export type AppBridgeMethods = {
-  /** Biometric unlock (Face ID / fingerprint). Resolves true on success. */
+  /** 생체인증 잠금 해제(Face ID / 지문). 성공하면 true. */
   authenticate(reason?: string): Promise<boolean>;
-  /** Open the OS native share sheet. Resolves true if the user completed/dismissed. */
+  /** OS 네이티브 공유 시트를 연다. 사용자가 완료·취소하면 true. */
   share(payload: SharePayload): Promise<boolean>;
   /**
    * Open a URL outside the WebView — the OS browser or the matching app (카카오톡 등).
@@ -43,11 +43,11 @@ export type AppBridgeMethods = {
    * Resolves true if the OS accepted the open request.
    */
   openExternal(url: string): Promise<boolean>;
-  /** Push: get the device push token. STUB for now (returns null). */
+  /** 푸시: 기기 푸시 토큰을 가져온다. 지금은 스텁(null 반환). */
   getPushToken(): Promise<string | null>;
-  /** Push: request permission + register. STUB for now (returns false). */
+  /** 푸시: 권한 요청 + 등록. 지금은 스텁(false 반환). */
   registerPush(): Promise<boolean>;
-  /** Platform / capability probe for feature-gating in the web UI. */
+  /** 웹 UI에서 기능을 게이팅할 때 쓰는 플랫폼/기능 probe. */
   getNativeInfo(): Promise<NativeInfo>;
   /**
    * Guest auth: RN 메모리에 있는 access token을 반환한다 (pull 모델).
@@ -65,14 +65,14 @@ export type AppBridgeMethods = {
 };
 
 /**
- * Store-wrapped contract — what the native `bridge()` returns and what the web
- * `linkBridge<T>()` consumes. This is the type both sides share.
+ * store로 감싼 계약 — 네이티브 `bridge()`가 반환하고 웹 `linkBridge<T>()`가 소비하는
+ * 값. 양쪽이 공유하는 타입이다.
  */
 export type AppBridge = BridgeStore<AppBridgeMethods>;
 
 /**
- * Native -> web events (emitted via the bridge's postMessage channel).
- * Web subscribes; native publishes (e.g. when a push notification is tapped).
+ * 네이티브 -> 웹 이벤트(브릿지의 postMessage 채널로 발행한다).
+ * 웹이 구독하고 네이티브가 발행한다(예: 푸시 알림을 탭했을 때).
  */
 export type BridgeEvents = {
   pushNotificationOpened: { data: Record<string, unknown> };
