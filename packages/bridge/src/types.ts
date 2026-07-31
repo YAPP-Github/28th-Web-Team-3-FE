@@ -35,7 +35,7 @@ import type { BridgeStore } from "@webview-bridge/types";
 export type AppBridgeMethods = {
   /** 생체인증 잠금 해제(Face ID / 지문). 성공하면 true. */
   authenticate(reason?: string): Promise<boolean>;
-  /** OS 네이티브 공유 시트를 연다. 사용자가 완료·취소하면 true. */
+  /** OS 네이티브 공유 시트를 연다. 공유를 완료하면 true, 취소하면 false. */
   share(payload: SharePayload): Promise<boolean>;
   /**
    * WebView 밖에서 URL을 연다 — OS 브라우저나 맞는 앱(카카오톡 등)으로 열린다.
