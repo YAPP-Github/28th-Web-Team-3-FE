@@ -16,9 +16,13 @@ export type ApiClientOptions = {
   tokenProvider?: TokenProvider;
 };
 
+/**
+ * baseUrl은 반드시 `/`로 끝나야 한다 — 웹 표준 URL 해석은 끝 슬래시가 없으면 마지막
+ * 경로 조각을 대체한다(`.../api` + `goal` → `.../goal`). 미용이 아니라 없으면 깨진다.
+ */
 function normalizeBaseUrl(baseUrl?: string) {
-  const configuredBaseUrl = baseUrl ?? process.env.NEXT_PUBLIC_API_URL ?? "/";
-  return configuredBaseUrl.endsWith("/") ? configuredBaseUrl : `${configuredBaseUrl}/`;
+  const resolved = baseUrl ?? process.env.NEXT_PUBLIC_API_URL ?? "/";
+  return resolved.endsWith("/") ? resolved : `${resolved}/`;
 }
 
 /**
@@ -35,8 +39,8 @@ export function createApiClient({ baseUrl, tokenProvider }: ApiClientOptions = {
       beforeRequest: tokenProvider
         ? [
             async ({ request }) => {
-              const token = await tokenProvider.getAccessToken();
-              if (token) request.headers.set("Authorization", `Bearer ${token}`);
+              const accessToken = await tokenProvider.getAccessToken();
+              if (accessToken) request.headers.set("Authorization", `Bearer ${accessToken}`);
             },
           ]
         : [],
@@ -44,9 +48,11 @@ export function createApiClient({ baseUrl, tokenProvider }: ApiClientOptions = {
         ? [
             async ({ request, response }) => {
               if (response.status !== 401) return;
-              const token = await tokenProvider.refreshAccessToken();
-              if (!token) return; // 재발급 실패 — 401을 그대로 두면 아래 beforeError로 떨어진다.
-              request.headers.set("Authorization", `Bearer ${token}`);
+              // refreshAccessToken은 "access token을 갱신한다"는 뜻 — 돌려주는 값도 access
+              // token이다. refresh token은 네이티브 밖으로 나오지 않는다.
+              const accessToken = await tokenProvider.refreshAccessToken();
+              if (!accessToken) return; // 재발급 실패 — 401을 그대로 두면 아래 beforeError로 떨어진다.
+              request.headers.set("Authorization", `Bearer ${accessToken}`);
               // 인스턴스가 아닌 순정 ky로 재요청해야 이 훅이 다시 붙지 않는다(재시도 1회 보장).
               // throwHttpErrors:false — 여기서 받은 응답을 최종 응답으로 돌려주고,
               // 여전히 401이면 인스턴스 쪽 에러 처리로 일관되게 흘려보낸다.
