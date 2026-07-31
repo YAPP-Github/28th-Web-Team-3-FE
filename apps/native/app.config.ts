@@ -6,7 +6,9 @@ import type { ExpoConfig } from "expo/config";
  * `extra.webUrl` is the WebView target, overridable per environment.
  */
 const config: ExpoConfig = {
-  name: "Web Team 3",
+  name: "아끼모",
+  // slug·scheme·bundleIdentifier는 EAS 프로젝트와 스토어 등록에 묶인 식별자다.
+  // 표시 이름(name)만 바꾸고 이쪽은 건드리지 않는다.
   slug: "web-team-3",
   version: "1.0.0",
   orientation: "portrait",

@@ -7,8 +7,8 @@ import "./globals.css";
 import { MSWProvider } from "./msw-provider";
 
 export const metadata: Metadata = {
-  title: "Web Team 3",
-  description: "Next.js + Expo WebView monorepo",
+  title: "아끼모",
+  description: "목표 금액을 정하고 주간 절약 미션으로 모아가는 서비스",
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {
