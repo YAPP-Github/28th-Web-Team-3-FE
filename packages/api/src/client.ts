@@ -1,13 +1,13 @@
 import ky, { type KyInstance } from "ky";
 
 /**
- * 토큰 공급자 — 게스트 인증에서 access token의 원본은 네이티브(RN) 메모리이고,
- * 웹은 bridge로 당겨 온다(pull). 공급자가 없으면(일반 브라우저, 서버) 헤더를 생략한다.
+ * 토큰 공급자. access token은 네이티브(RN) 메모리에 있고 웹은 bridge로 받아 온다.
+ * 공급자가 없으면(일반 브라우저, 서버) 헤더 없이 보낸다.
  */
 export type TokenProvider = {
-  /** 현재 access token. null이면 Authorization 헤더 생략. */
+  /** 현재 access token. null이면 Authorization 헤더를 붙이지 않는다. */
   getAccessToken(): Promise<string | null>;
-  /** 401 이후 재발급. 새 access token, 실패 시 null(401이 그대로 전파된다). */
+  /** 401 이후 재발급. 실패하면 null을 돌려주고 401은 그대로 나간다. */
   refreshAccessToken(): Promise<string | null>;
 };
 
@@ -16,27 +16,28 @@ export type ApiClientOptions = {
   tokenProvider?: TokenProvider;
 };
 
+/** 끝 슬래시가 없으면 마지막 경로 조각이 잘린다: `.../api` + `goal` → `.../goal`. */
 function normalizeBaseUrl(baseUrl?: string) {
-  const configuredBaseUrl = baseUrl ?? process.env.NEXT_PUBLIC_API_URL ?? "/";
-  return configuredBaseUrl.endsWith("/") ? configuredBaseUrl : `${configuredBaseUrl}/`;
+  const resolved = baseUrl ?? process.env.NEXT_PUBLIC_API_URL ?? "/";
+  return resolved.endsWith("/") ? resolved : `${resolved}/`;
 }
 
 /**
- * Shared HTTP client. tokenProvider가 있으면 모든 요청에 Bearer access token을
- * 붙이고, 401 응답 시 재발급 후 딱 1회 재시도한다.
- * 쿠키/세션은 쓰지 않으므로 credentials 옵션을 켜지 않는다 (기본 same-origin).
+ * 전송 계층. baseUrl과 인증 헤더, 재시도, 에러 이름을 맡는다. 요청·응답 스키마 검증은
+ * 이 인스턴스를 감싸는 `./http.ts`가 한다. 쿠키를 쓰지 않으니 credentials는 켜지 않는다.
  */
 export function createApiClient({ baseUrl, tokenProvider }: ApiClientOptions = {}): KyInstance {
   return ky.create({
-    // ky v2 renamed `prefixUrl` to the web-standard `baseUrl`.
     baseUrl: normalizeBaseUrl(baseUrl),
+    // 재시도는 여기서만 한다. react-query(`./query-client.tsx`)에서도 켜면 두 레이어가
+    // 곱해져 GET 한 번이 최대 6요청이 된다.
     retry: { limit: 2, methods: ["get"] },
     hooks: {
       beforeRequest: tokenProvider
         ? [
             async ({ request }) => {
-              const token = await tokenProvider.getAccessToken();
-              if (token) request.headers.set("Authorization", `Bearer ${token}`);
+              const accessToken = await tokenProvider.getAccessToken();
+              if (accessToken) request.headers.set("Authorization", `Bearer ${accessToken}`);
             },
           ]
         : [],
@@ -44,22 +45,23 @@ export function createApiClient({ baseUrl, tokenProvider }: ApiClientOptions = {
         ? [
             async ({ request, response }) => {
               if (response.status !== 401) return;
-              const token = await tokenProvider.refreshAccessToken();
-              if (!token) return; // 재발급 실패 — 401을 그대로 두면 아래 beforeError로 떨어진다.
-              request.headers.set("Authorization", `Bearer ${token}`);
-              // 인스턴스가 아닌 순정 ky로 재요청해야 이 훅이 다시 붙지 않는다(재시도 1회 보장).
-              // throwHttpErrors:false — 여기서 받은 응답을 최종 응답으로 돌려주고,
-              // 여전히 401이면 인스턴스 쪽 에러 처리로 일관되게 흘려보낸다.
-              // retry limit 0 — 순정 ky의 기본 retry 정책이 끼어들지 않게 재시도를 여기 1회로 고정.
+              const accessToken = await tokenProvider.refreshAccessToken();
+              // 재발급 실패. 401을 그대로 흘려보내 beforeError로 넘긴다.
+              if (!accessToken) return;
+              request.headers.set("Authorization", `Bearer ${accessToken}`);
+              // 순정 ky로 보낸다. 인스턴스로 보내면 이 훅이 다시 붙어 401과 재발급이 무한
+              // 반복된다. throwHttpErrors를 끄면 이 응답이 그대로 최종 결과가 되고, 여전히
+              // 401이면 아래 beforeError로 간다.
               return ky(request, { throwHttpErrors: false, retry: { limit: 0 } });
             },
           ]
         : [],
       beforeError: [
         ({ error }) => {
-          // Normalize so React Query / callers get a consistent message.
-          // ky v2 passes a state object and expects the Error to be returned.
+          // 로그와 Sentry에서 이 클라이언트의 에러를 한 이름으로 묶는다. 분기가 필요하면
+          // 호출부가 HTTPError와 error.data를 본다.
           error.name = "ApiError";
+          // ky v2는 state 객체를 넘기고 수정한 Error를 돌려받는다.
           return error;
         },
       ],
