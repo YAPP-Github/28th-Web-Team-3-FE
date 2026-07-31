@@ -67,13 +67,14 @@ export default function App() {
         source={{ uri: WEB_URL }}
         originWhitelist={ORIGIN_WHITELIST}
         style={styles.webview}
+        // 로드가 다시 성공하면 오버레이를 스스로 걷는다 — 안 그러면 화면이 멀쩡해진
+        // 뒤에도 사용자가 "다시 시도"를 눌러 경로를 초기화해야만 빠져나올 수 있다.
+        onLoad={() => setLoadFailed(false)}
         onError={() => setLoadFailed(true)}
         onHttpError={({ nativeEvent }) => {
-          // 4xx는 특정 리소스 하나가 없는 경우가 대부분이라 화면을 덮지 않는다.
-          // 웹 오리진에서 5xx가 오면 페이지 자체를 못 그리는 상태다.
-          if (nativeEvent.statusCode >= 500 && nativeEvent.url.startsWith(WEB_URL)) {
-            setLoadFailed(true);
-          }
+          // onHttpError는 메인 프레임 응답만 올라온다. 4xx는 Next의 404 페이지처럼
+          // 그려야 할 화면인 경우가 있으니, 페이지 자체를 못 그리는 5xx만 실패로 본다.
+          if (nativeEvent.statusCode >= 500) setLoadFailed(true);
         }}
       />
       {loadFailed ? <LoadErrorView onRetry={retryLoad} /> : null}

@@ -30,4 +30,4 @@ export function LegalList({ items }: { items: string[] }) {
 export const SERVICE_NAME = "아끼모";
 
 /** 약관·방침 공통 시행일. 문서를 고치면 이 값도 함께 올린다. */
-export const POLICY_EFFECTIVE_DATE = "2026년 8월 1일";
+export const POLICY_EFFECTIVE_DATE = "2026년 7월 31일";

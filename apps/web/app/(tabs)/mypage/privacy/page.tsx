@@ -63,7 +63,7 @@ export default function PrivacyPage() {
           ]}
         />
         <p>
-          Sentry와 Mixpanel은 오류 원인 파악과 서비스 개선을 위해 일부 이용자의 화면 조작 기록(세션
+          Sentry와 Mixpanel은 오류 원인 파악과 서비스 개선을 위해 이용자의 화면 조작 기록(세션
           리플레이)을 수집합니다. 이때 입력한 값과 화면에 표시된 문자는 자동으로 가려진 상태로
           기록됩니다.
         </p>
