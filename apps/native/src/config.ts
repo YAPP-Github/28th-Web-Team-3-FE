@@ -53,5 +53,5 @@ export const API_URL = ensureTrailingSlash(
   ),
 );
 
-/** WebView가 로드를 허용하는 origin. 그 외는 외부로 연다. */
+/** WebView가 로드할 수 있는 origin. 그 외는 외부로 연다. */
 export const ORIGIN_WHITELIST = [WEB_URL];

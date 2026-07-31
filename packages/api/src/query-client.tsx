@@ -3,7 +3,7 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { type ReactNode, useState } from "react";
 
-/** web + WebView 클라이언트가 함께 쓰는 무난한 기본값. */
+/** 웹과 WebView 클라이언트가 함께 쓰는 무난한 기본값. */
 export function createQueryClient(): QueryClient {
   return new QueryClient({
     defaultOptions: {

@@ -7,7 +7,7 @@ import { Share } from "react-native";
  * payload는 RN 내장 Share API(OS 시트를 띄운다)를 쓴다.
  */
 export async function open(payload: SharePayload): Promise<boolean> {
-  // RN의 ShareContent는 `message` 문자열이 필수(옵셔널 아님)다.
+  // RN의 ShareContent는 `message` 문자열이 필수다.
   const message = payload.message ?? payload.url ?? "";
   if (!message) return false;
 

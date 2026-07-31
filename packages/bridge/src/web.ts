@@ -19,7 +19,7 @@ export const bridge = linkBridge<AppBridge>({
 
 /**
  * 네이티브 WebView 셸 안에서 실행 중일 때만 true. 네이티브 전용 UI(공유 버튼, 생체인증
- * 잠금)를 게이팅해서 같은 웹 앱이 일반 브라우저에서도 자연스럽게 동작하게 한다.
+ * 잠금)를 게이팅해서, 일반 브라우저에서는 그 기능만 빠진 채 나머지 화면은 그대로 동작하게 한다.
  */
 export function isNativeApp(): boolean {
   return typeof window !== "undefined" && "ReactNativeWebView" in window;

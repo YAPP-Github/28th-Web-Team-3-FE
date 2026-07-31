@@ -15,7 +15,7 @@ const nextConfig: NextConfig = {
       },
     ];
   },
-  // 내부 패키지가 TS/TSX 소스 그대로 배포되므로 Next가 여기서 컴파일한다.
+  // 내부 패키지는 빌드 없이 TS/TSX 소스를 그대로 내보내므로 Next가 여기서 컴파일한다.
   transpilePackages: ["@repo/ui", "@repo/api", "@repo/schema", "@repo/bridge"],
   reactCompiler: true,
   // .svg import를 SVGR로 React 컴포넌트화 (fill=currentColor로 색상 제어).
