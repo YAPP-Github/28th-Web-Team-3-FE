@@ -26,14 +26,17 @@ function normalizeBaseUrl(baseUrl?: string) {
 }
 
 /**
- * Shared HTTP client. tokenProvider가 있으면 모든 요청에 Bearer access token을
- * 붙이고, 401 응답 시 재발급 후 딱 1회 재시도한다.
- * 쿠키/세션은 쓰지 않으므로 credentials 옵션을 켜지 않는다 (기본 same-origin).
+ * 전송 계층 — baseUrl·인증 헤더·재시도·에러 이름까지가 여기 책임이고, 요청·응답
+ * 스키마 검증은 `./http.ts`가 이 인스턴스를 감싸서 맡는다.
+ *
+ * tokenProvider를 주면 모든 요청에 Bearer access token을 싣고, 401이면 재발급 후
+ * 1회 재시도한다. 쿠키·세션은 쓰지 않으므로 credentials를 켜지 않는다(기본 same-origin).
  */
 export function createApiClient({ baseUrl, tokenProvider }: ApiClientOptions = {}): KyInstance {
   return ky.create({
-    // ky v2 renamed `prefixUrl` to the web-standard `baseUrl`.
     baseUrl: normalizeBaseUrl(baseUrl),
+    // 재시도의 단일 소유자 — react-query 기본값(`./query-client.tsx`)은 retry를 끄고
+    // 여기에 맡긴다. 양쪽 다 켜면 두 레이어가 곱해져 GET 한 번이 최대 6요청이 된다.
     retry: { limit: 2, methods: ["get"] },
     hooks: {
       beforeRequest: tokenProvider
@@ -48,24 +51,24 @@ export function createApiClient({ baseUrl, tokenProvider }: ApiClientOptions = {
         ? [
             async ({ request, response }) => {
               if (response.status !== 401) return;
-              // refreshAccessToken은 "access token을 갱신한다"는 뜻 — 돌려주는 값도 access
-              // token이다. refresh token은 네이티브 밖으로 나오지 않는다.
               const accessToken = await tokenProvider.refreshAccessToken();
-              if (!accessToken) return; // 재발급 실패 — 401을 그대로 두면 아래 beforeError로 떨어진다.
+              // 재발급 실패 — 401을 손대지 않고 흘려보내 beforeError로 떨어뜨린다.
+              if (!accessToken) return;
               request.headers.set("Authorization", `Bearer ${accessToken}`);
-              // 인스턴스가 아닌 순정 ky로 재요청해야 이 훅이 다시 붙지 않는다(재시도 1회 보장).
-              // throwHttpErrors:false — 여기서 받은 응답을 최종 응답으로 돌려주고,
-              // 여전히 401이면 인스턴스 쪽 에러 처리로 일관되게 흘려보낸다.
-              // retry limit 0 — 순정 ky의 기본 retry 정책이 끼어들지 않게 재시도를 여기 1회로 고정.
+              // 인스턴스가 아닌 순정 ky로 보낸다. 인스턴스로 보내면 이 훅이 다시 붙어
+              // 401 → 재발급 → 401이 무한히 돈다. retry 0까지 더해 재시도를 정확히 1회로 묶는다.
+              // throwHttpErrors:false — 이 응답을 최종 응답으로 돌려주고, 여전히 401이면
+              // 인스턴스의 평소 에러 경로로 일관되게 흘려보낸다.
               return ky(request, { throwHttpErrors: false, retry: { limit: 0 } });
             },
           ]
         : [],
       beforeError: [
         ({ error }) => {
-          // Normalize so React Query / callers get a consistent message.
-          // ky v2 passes a state object and expects the Error to be returned.
+          // 이 클라이언트에서 나온 에러를 로그·Sentry에서 한 이름으로 묶는다. 상태 코드나
+          // 서버 에러 코드로 분기할 때는 호출부가 HTTPError와 error.data를 본다.
           error.name = "ApiError";
+          // ky v2의 beforeError는 state 객체를 넘기고 수정한 Error를 되돌려받길 기대한다.
           return error;
         },
       ],
