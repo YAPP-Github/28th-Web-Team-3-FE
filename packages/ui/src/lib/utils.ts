@@ -13,7 +13,7 @@ const twMerge = extendTailwindMerge({
   extend: { classGroups: { "font-size": [{ text: [isTypographyToken] }] } },
 });
 
-/** Merge conditional + conflicting Tailwind classes. Standard shadcn helper. */
+/** 조건부·충돌 Tailwind 클래스를 병합한다. shadcn 표준 헬퍼. */
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }

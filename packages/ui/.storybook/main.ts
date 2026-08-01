@@ -4,7 +4,7 @@ import type { StorybookConfig } from "@storybook/react-vite";
 
 const require = createRequire(import.meta.url);
 
-// Resolve framework path through the package (monorepo-safe).
+// 프레임워크 경로를 패키지를 통해 찾는다(모노레포에서도 안전하게).
 function getAbsolutePath(value: string): string {
   return dirname(require.resolve(join(value, "package.json")));
 }

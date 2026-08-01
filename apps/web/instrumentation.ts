@@ -14,6 +14,6 @@ export async function register() {
   }
 }
 
-// Capture errors from nested React Server Components.
+// 중첩된 React Server Component에서 난 에러를 잡는다.
 export const onRequestError =
   process.env.NODE_ENV === "development" ? () => {} : Sentry.captureRequestError;

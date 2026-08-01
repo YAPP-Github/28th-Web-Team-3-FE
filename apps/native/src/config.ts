@@ -1,15 +1,15 @@
 import Constants from "expo-constants";
 import { Platform } from "react-native";
 
-/** WebView target + API origin, resolved from app.config.ts `extra`. */
+/** WebView 대상과 API origin. app.config.ts의 `extra`에서 가져온다. */
 const extra = (Constants.expoConfig?.extra ?? {}) as {
   webUrl?: string;
   apiUrl?: string;
 };
 
 const androidEmulatorEnv = process.env.EXPO_PUBLIC_ANDROID_EMULATOR;
-// Android emulator: set EXPO_PUBLIC_ANDROID_EMULATOR=true to map host localhost
-// to 10.0.2.2. Physical devices should keep it unset/false and use a LAN URL.
+// Android 에뮬레이터에서 호스트 localhost를 10.0.2.2로 매핑하려면
+// EXPO_PUBLIC_ANDROID_EMULATOR=true. 실기기는 비워두거나 false로 두고 LAN 주소를 쓴다.
 const isAndroidEmulator = __DEV__ && Platform.OS === "android" && androidEmulatorEnv === "true";
 const DEFAULT_WEB_URL = isAndroidEmulator ? "http://10.0.2.2:3000" : "http://localhost:3000";
 // Spring 로컬 기본 포트. 배포 환경은 EXPO_PUBLIC_API_URL로 지정.
@@ -34,8 +34,8 @@ function ensureTrailingSlash(url: string): string {
   return url.endsWith("/") ? url : `${url}/`;
 }
 
-// Prefer the Metro-inlined env var: a dev build's embedded `extra` is frozen at
-// native build time, so .env changes only take effect through process.env here.
+// Metro가 인라인한 env 변수를 우선한다 — dev 빌드에 박힌 `extra`는 네이티브 빌드
+// 시점에 고정되므로, .env를 바꿔도 여기 process.env로만 반영된다.
 export const WEB_URL = resolveDevHostUrl(
   requireInProd(
     process.env.EXPO_PUBLIC_WEB_URL ?? extra.webUrl,
@@ -53,5 +53,5 @@ export const API_URL = ensureTrailingSlash(
   ),
 );
 
-/** Origins the WebView is allowed to load. Anything else opens externally. */
+/** WebView가 로드할 수 있는 origin. 그 외는 외부로 연다. */
 export const ORIGIN_WHITELIST = [WEB_URL];
