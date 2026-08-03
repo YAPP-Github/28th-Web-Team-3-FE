@@ -4,9 +4,11 @@ import { OnboardingFormProvider } from "@/app/onboarding/(questions)/_components
 import { fireEvent, render, screen, waitFor } from "@/lib/test/react";
 import AgeOnboardingPage from "./page";
 
-const pushMock = vi.fn();
+const replaceMock = vi.fn();
 
-vi.mock("next/navigation", () => ({ useRouter: () => ({ prefetch: vi.fn(), push: pushMock }) }));
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({ prefetch: vi.fn(), replace: replaceMock }),
+}));
 vi.mock("@/api/onboarding", () => ({
   getOnboardingProfile: vi.fn().mockRejectedValue(new Error("test")),
   patchOnboardingProfile: vi.fn().mockResolvedValue({}),
@@ -33,7 +35,7 @@ describe("AgeOnboardingPage", () => {
 
     await waitFor(() => {
       expect(patchOnboardingProfile).toHaveBeenCalledWith({ birthDate: "1998-03-01" });
-      expect(pushMock).toHaveBeenCalledWith("/onboarding/month");
+      expect(replaceMock).toHaveBeenCalledWith("/onboarding/month");
     });
   });
 

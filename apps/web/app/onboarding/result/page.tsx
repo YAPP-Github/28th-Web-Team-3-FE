@@ -71,8 +71,8 @@ export default function OnboardingResultPage() {
       <div className="mt-auto pt-8 pb-6">
         <ButtonGroup
           nextLabel="목표금액 설정하기"
-          onNext={() => router.push("/onboarding/goal")}
-          onPrev={() => router.push("/onboarding/period")}
+          onNext={() => router.replace("/onboarding/goal")}
+          onPrev={() => router.replace("/onboarding/period")}
         />
       </div>
     </div>

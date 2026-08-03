@@ -107,7 +107,7 @@ export default function AgeOnboardingPage() {
         size="cta"
         onClick={async () => {
           if (await trigger("birthDate", { shouldFocus: true })) {
-            if (await saveProfile({ birthDate })) router.push("/onboarding/month");
+            if (await saveProfile({ birthDate })) router.replace("/onboarding/month");
           }
         }}
       >

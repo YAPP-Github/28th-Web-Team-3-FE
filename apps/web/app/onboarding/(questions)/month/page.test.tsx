@@ -4,9 +4,9 @@ import { OnboardingFormProvider } from "@/app/onboarding/(questions)/_components
 import { fireEvent, render, screen, waitFor } from "@/lib/test/react";
 import MonthlyIncomeAndSavingsOnboardingPage from "./page";
 
-const pushMock = vi.fn();
+const replaceMock = vi.fn();
 
-vi.mock("next/navigation", () => ({ useRouter: () => ({ push: pushMock }) }));
+vi.mock("next/navigation", () => ({ useRouter: () => ({ replace: replaceMock }) }));
 vi.mock("@/api/onboarding", () => ({
   getOnboardingProfile: vi.fn().mockRejectedValue(new Error("test")),
   patchOnboardingProfile: vi.fn().mockResolvedValue({}),
@@ -46,14 +46,14 @@ describe("MonthlyIncomeAndSavingsOnboardingPage", () => {
     fireEvent.click(screen.getByRole("button", { name: "완료" }));
 
     await waitFor(() => expect(screen.queryByRole("dialog")).not.toBeInTheDocument());
-    expect(pushMock).not.toHaveBeenCalled();
+    expect(replaceMock).not.toHaveBeenCalled();
   });
 
   it("이전 버튼이 이전 질문 경로로 이동한다", () => {
     renderMonthOnboardingPage();
 
     fireEvent.click(screen.getByRole("button", { name: "이전" }));
-    expect(pushMock).toHaveBeenCalledWith("/onboarding/age");
+    expect(replaceMock).toHaveBeenCalledWith("/onboarding/age");
   });
 
   it("직접 입력 금액은 백엔드 상한 650만원을 넘을 수 없다", () => {

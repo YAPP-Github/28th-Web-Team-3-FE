@@ -4,9 +4,9 @@ import { OnboardingFormProvider } from "@/app/onboarding/(questions)/_components
 import { fireEvent, render, screen, waitFor } from "@/lib/test/react";
 import NetWorthOnboardingPage from "./page";
 
-const pushMock = vi.fn();
+const replaceMock = vi.fn();
 
-vi.mock("next/navigation", () => ({ useRouter: () => ({ push: pushMock }) }));
+vi.mock("next/navigation", () => ({ useRouter: () => ({ replace: replaceMock }) }));
 vi.mock("@/api/onboarding", () => ({
   getOnboardingProfile: vi.fn().mockRejectedValue(new Error("test")),
   patchOnboardingProfile: vi.fn().mockResolvedValue({}),
@@ -52,7 +52,7 @@ describe("NetWorthOnboardingPage", () => {
     fireEvent.click(screen.getByRole("button", { name: "완료" }));
     fireEvent.click(screen.getByRole("button", { name: "다음" }));
 
-    await waitFor(() => expect(pushMock).toHaveBeenCalledWith("/onboarding/period"));
+    await waitFor(() => expect(replaceMock).toHaveBeenCalledWith("/onboarding/period"));
     expect(patchOnboardingProfile).toHaveBeenCalledWith({ netWorthManwon: 10000 });
   });
 
@@ -66,7 +66,7 @@ describe("NetWorthOnboardingPage", () => {
     fireEvent.click(screen.getByRole("button", { name: "완료" }));
     fireEvent.click(screen.getByRole("button", { name: "다음" }));
 
-    await waitFor(() => expect(pushMock).toHaveBeenCalledWith("/onboarding/period"));
+    await waitFor(() => expect(replaceMock).toHaveBeenCalledWith("/onboarding/period"));
     expect(patchOnboardingProfile).toHaveBeenCalledWith({ netWorthManwon: 0 });
   });
 
@@ -74,6 +74,6 @@ describe("NetWorthOnboardingPage", () => {
     renderNetWorthOnboardingPage();
 
     fireEvent.click(screen.getByRole("button", { name: "이전" }));
-    expect(pushMock).toHaveBeenCalledWith("/onboarding/month");
+    expect(replaceMock).toHaveBeenCalledWith("/onboarding/month");
   });
 });

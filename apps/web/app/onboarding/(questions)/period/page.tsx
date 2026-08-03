@@ -82,11 +82,11 @@ export default function InvestmentPeriodOnboardingPage() {
           onNext={async () => {
             if (periodMonths !== "" && (await trigger("goalPeriodMonths"))) {
               if (await saveProfile({ goalPeriodMonths: periodMonths })) {
-                router.push("/onboarding/result");
+                router.replace("/onboarding/result");
               }
             }
           }}
-          onPrev={() => router.push("/onboarding/net")}
+          onPrev={() => router.replace("/onboarding/net")}
         />
       </div>
     </div>
