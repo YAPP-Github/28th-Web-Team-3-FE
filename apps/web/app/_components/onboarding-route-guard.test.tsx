@@ -1,3 +1,4 @@
+import { Component, type ReactNode } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { render, screen, waitFor } from "@/lib/test/react";
 
@@ -15,6 +16,19 @@ vi.mock("@/api/auth", () => ({ getCurrentUser: vi.fn() }));
 
 import { getCurrentUser } from "@/api/auth";
 import { OnboardingRouteGuard } from "./onboarding-route-guard";
+
+class TestErrorBoundary extends Component<{ children: ReactNode }, { error: Error | null }> {
+  override state: { error: Error | null } = { error: null };
+
+  static getDerivedStateFromError(error: Error) {
+    return { error };
+  }
+
+  override render() {
+    if (this.state.error) return <p>{this.state.error.message}</p>;
+    return this.props.children;
+  }
+}
 
 describe("OnboardingRouteGuard", () => {
   beforeEach(() => {
@@ -59,5 +73,19 @@ describe("OnboardingRouteGuard", () => {
 
     expect(await screen.findByText("온보딩 질문")).toBeInTheDocument();
     expect(navigation.redirect).not.toHaveBeenCalled();
+  });
+
+  it("현재 사용자 조회 실패를 에러 바운더리에 전파한다", async () => {
+    vi.mocked(getCurrentUser).mockRejectedValue(new Error("network error"));
+
+    render(
+      <TestErrorBoundary>
+        <OnboardingRouteGuard>
+          <p>홈</p>
+        </OnboardingRouteGuard>
+      </TestErrorBoundary>,
+    );
+
+    expect(await screen.findByText("network error")).toBeInTheDocument();
   });
 });
