@@ -2,7 +2,8 @@ import type { GoalUpdateRequest, SavingRequest } from "@repo/schema/goal";
 import { mutationOptions, type QueryClient, queryOptions } from "@tanstack/react-query";
 import { fetchGoalStatus, updateGoal, updateSavings } from "@/api/goal";
 
-export const GOAL_QUERY_KEY = ["goal"] as const;
+/** 목표 현황 캐시 키. 밖에서는 `goalStatusOptions().queryKey`로 꺼낸다. */
+const GOAL_QUERY_KEY = ["goal"] as const;
 
 /** 목표 현황 조회. */
 export function goalStatusOptions() {

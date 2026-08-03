@@ -78,6 +78,30 @@ apps/web/lib/queries/<도메인>.ts     TanStack Query options. queryKey·queryF
 
 도메인 파일명은 `goal.ts`, `mission-generation.ts`처럼 리소스명을 쓴다. `app/` 아래 라우트 디렉터리에 API·query 레이어를 섞지 않는다.
 
+### 쿼리키는 options에서 파생한다
+
+`queryKey` 상수는 `lib/queries/<도메인>.ts` 안에서만 쓰고 밖으로 내보내지 않는다. 키가
+필요한 곳은 options에서 꺼낸다.
+
+```ts
+// O — 키의 단일 원본은 options다
+queryClient.setQueryData(goalStatusOptions().queryKey, goal);
+queryClient.invalidateQueries({ queryKey: missionsOptions().queryKey });
+
+// X — 상수를 직접 가져오면 정의가 두 곳으로 흩어진다
+import { GOAL_QUERY_KEY } from "@/lib/queries/goal";
+queryClient.setQueryData(GOAL_QUERY_KEY, goal);
+```
+
+상수와 options 두 곳에 키가 흩어지면 한쪽만 바꿨을 때 조용히 어긋난다. 캐시가 안 맞는
+버그는 타입으로도 테스트로도 잘 잡히지 않는다.
+
+options가 반환하는 `queryKey`는 `queryOptions()`가 데이터 타입을 실어 둔 값이라
+`setQueryData`가 값의 타입까지 검사해 준다. 상수를 쓰면 그 검사가 사라진다.
+
+`.key()` 같은 메서드는 없다. `@tanstack/react-query` v5는 options 객체의 `queryKey`
+프로퍼티만 제공한다.
+
 ### 경로는 리소스명만
 
 `NEXT_PUBLIC_API_URL`에 `/api`가 포함된다. 경로에 다시 붙이면 `/api/api/goal`이 된다.

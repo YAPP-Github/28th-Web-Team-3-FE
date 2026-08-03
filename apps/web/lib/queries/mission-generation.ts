@@ -6,7 +6,7 @@ import {
   fetchGenerationJobStatus,
   requestGenerationJob,
 } from "@/api/mission-generation";
-import { MISSIONS_QUERY_KEY } from "@/lib/queries/mission";
+import { missionsOptions } from "@/lib/queries/mission";
 
 export const MISSION_GENERATION_POLLING_INTERVAL_MS = 5000;
 
@@ -48,6 +48,6 @@ export function generationDraftsOptions(jobId: string) {
 export function confirmGenerationJobOptions(jobId: string, queryClient: QueryClient) {
   return mutationOptions({
     mutationFn: (body: MissionConfirmRequest) => confirmGenerationJob(jobId, body),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: MISSIONS_QUERY_KEY }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: missionsOptions().queryKey }),
   });
 }

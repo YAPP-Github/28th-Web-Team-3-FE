@@ -15,19 +15,21 @@ interface SavingsInputSheetProps {
 
 /** 현재 저축액 입력 바텀시트 — PUT /api/goal/savings. */
 export function SavingsInputSheet({ open, onOpenChange, initialManwon }: SavingsInputSheetProps) {
-  const [value, setValue] = useState(String(initialManwon));
+  // 사용자가 고치기 전에는 null이다. 그동안 프리필을 그대로 보여주므로 뒤늦게 도착한
+  // 최신 값도 저절로 반영되고, 고친 뒤에는 백그라운드 재조회가 입력을 덮지 못한다.
+  const [draft, setDraft] = useState<string | null>(null);
   const [submitError, setSubmitError] = useState<string>();
   const queryClient = useQueryClient();
   const { mutate, isPending } = useMutation(updateSavingsOptions(queryClient));
+  const value = draft ?? String(initialManwon);
 
-  // 시트는 항상 마운트 상태(open 제어)라 useState 초기값이 재오픈 시 반영되지 않는다.
-  // 열 때마다 최신 프리필로 되돌린다.
+  // 시트는 항상 마운트 상태(open 제어)라 다시 열어도 이전 입력이 남는다. 닫힐 때
+  // 버려서 다음에 열 때 최신 값으로 시작하게 한다 — 열릴 때 지우면 한 프레임 깜빡인다.
   useEffect(() => {
-    if (open) {
-      setValue(String(initialManwon));
-      setSubmitError(undefined);
-    }
-  }, [open, initialManwon]);
+    if (open) return;
+    setDraft(null);
+    setSubmitError(undefined);
+  }, [open]);
 
   function submit() {
     const savedAmountManwon = Number(onlyDigits(value));
@@ -49,7 +51,7 @@ export function SavingsInputSheet({ open, onOpenChange, initialManwon }: Savings
           inputMode="numeric"
           value={value}
           maxLength={String(MAX_SAVED_AMOUNT_MANWON).length}
-          onChange={(event) => setValue(clampDigits(event.target.value, MAX_SAVED_AMOUNT_MANWON))}
+          onChange={(event) => setDraft(clampDigits(event.target.value, MAX_SAVED_AMOUNT_MANWON))}
         />
         {submitError ? (
           <p aria-live="polite" className="text-body-b2-500 text-error">

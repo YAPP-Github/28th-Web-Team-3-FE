@@ -1,6 +1,6 @@
 import type { GoalStatus } from "@repo/schema/goal";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { fireEvent, render, screen, waitFor } from "@/lib/test/react";
+import { act, createTestQueryClient, fireEvent, render, screen, waitFor } from "@/lib/test/react";
 
 // 조회/변경 훅을 목으로 대체한다 — 데이터 주입 후 렌더·인터랙션 로직을 검증한다.
 // (API 연동 자체는 브라우저 MSW로 별도 확인. vitest jsdom은 msw/node fetch를 가로채지 못한다.)
@@ -34,7 +34,18 @@ vi.mock("@/api/onboarding", () => ({
 import { fetchGoalStatus, updateGoal, updateSavings } from "@/api/goal";
 import { getOnboardingProfile, patchOnboardingProfile } from "@/api/onboarding";
 import { SAVE_FAILED_TEXT } from "@/lib/messages";
+import { goalStatusOptions } from "@/lib/queries/goal";
+import { onboardingProfileOptions } from "@/lib/queries/onboarding";
 import { GoalDetail } from "./goal-detail";
+
+const MOCK_PROFILE = {
+  status: "COMPLETED",
+  birthDate: "1998-03-01",
+  monthlySalaryManwon: 250,
+  monthlySavingManwon: 100,
+  netWorthManwon: 1950,
+  goalPeriodMonths: 16,
+} as const;
 
 describe("GoalDetail", () => {
   beforeEach(() => {
@@ -224,5 +235,169 @@ describe("GoalDetail", () => {
 
     await waitFor(() => expect(updateSavings).toHaveBeenCalledWith({ savedAmountManwon: 100 }));
     expect(updateGoal).not.toHaveBeenCalled();
+  });
+
+  // 시트는 열려 있는 동안에도 서버 값이 바뀔 수 있다 — 재접속 재조회, 다른 화면의 갱신 등.
+  // 입력을 아직 안 했으면 최신 값을 따라가야 하고, 입력한 뒤에는 그 값을 덮으면 안 된다.
+  describe("시트 입력 보존", () => {
+    /** 백그라운드 재조회로 목표 현황이 바뀐 상황. 화면에 도달한 것까지 확인하고 돌아온다. */
+    async function refetchGoal(
+      queryClient: ReturnType<typeof createTestQueryClient>,
+      goal: GoalStatus,
+    ) {
+      await act(async () => {
+        queryClient.setQueryData(goalStatusOptions().queryKey, goal);
+      });
+      // 갱신이 닿기 전에 단언하면 통과해도 아무것도 증명하지 못한다.
+      await waitFor(() =>
+        expect(
+          screen.getByText(`${goal.targetAmountManwon.toLocaleString()}만원 모으기`),
+        ).toBeInTheDocument(),
+      );
+    }
+
+    it("저축액을 입력한 뒤 목표 현황이 갱신돼도 입력을 유지한다", async () => {
+      const queryClient = createTestQueryClient();
+      render(<GoalDetail />, { queryClient });
+
+      await screen.findByText("5,000만원 모으기");
+      fireEvent.click(screen.getByRole("button", { name: "현재 저축액 입력" }));
+      fireEvent.change(screen.getByRole("textbox", { name: "저축액만원" }), {
+        target: { value: "100" },
+      });
+
+      await refetchGoal(queryClient, {
+        ...MOCK_GOAL,
+        targetAmountManwon: 7000,
+        thisMonth: { ...MOCK_GOAL.thisMonth, savedManwon: 70 },
+      });
+
+      expect(screen.getByRole("textbox", { name: "저축액만원" })).toHaveValue("100");
+    });
+
+    it("재조회로 값이 바뀌어도 사용자가 입력한 값을 저장한다", async () => {
+      const queryClient = createTestQueryClient();
+      render(<GoalDetail />, { queryClient });
+
+      await screen.findByText("5,000만원 모으기");
+      fireEvent.click(screen.getByRole("button", { name: "현재 저축액 입력" }));
+      fireEvent.change(screen.getByRole("textbox", { name: "저축액만원" }), {
+        target: { value: "100" },
+      });
+
+      await refetchGoal(queryClient, {
+        ...MOCK_GOAL,
+        targetAmountManwon: 7000,
+        thisMonth: { ...MOCK_GOAL.thisMonth, savedManwon: 70 },
+      });
+      fireEvent.click(screen.getByRole("button", { name: "완료" }));
+
+      // 화면에 남은 값만 맞고 페이로드가 재조회 값으로 가면 사용자는 저장한 줄 알고 속는다.
+      await waitFor(() => expect(updateSavings).toHaveBeenCalledWith({ savedAmountManwon: 100 }));
+    });
+
+    it("저축액 시트를 다시 열면 최신 저축액으로 되돌린다", async () => {
+      const queryClient = createTestQueryClient();
+      render(<GoalDetail />, { queryClient });
+
+      await screen.findByText("5,000만원 모으기");
+      fireEvent.click(screen.getByRole("button", { name: "현재 저축액 입력" }));
+      fireEvent.change(screen.getByRole("textbox", { name: "저축액만원" }), {
+        target: { value: "100" },
+      });
+      fireEvent.keyDown(document, { key: "Escape" });
+      await waitFor(() => expect(screen.queryByRole("dialog")).not.toBeInTheDocument());
+
+      await refetchGoal(queryClient, {
+        ...MOCK_GOAL,
+        targetAmountManwon: 7000,
+        thisMonth: { ...MOCK_GOAL.thisMonth, savedManwon: 70 },
+      });
+      fireEvent.click(screen.getByRole("button", { name: "현재 저축액 입력" }));
+
+      expect(screen.getByRole("textbox", { name: "저축액만원" })).toHaveValue("70");
+    });
+
+    it("목표 금액을 고친 뒤 목표 현황이 갱신돼도 입력을 유지한다", async () => {
+      const queryClient = createTestQueryClient();
+      render(<GoalDetail />, { queryClient });
+
+      await screen.findByText("5,000만원 모으기");
+      fireEvent.click(screen.getByRole("button", { name: /수정/ }));
+      await waitFor(() =>
+        expect(screen.getByRole("textbox", { name: "목표 기간개월" })).toHaveValue("16"),
+      );
+      fireEvent.change(screen.getByRole("textbox", { name: "목표 금액만원" }), {
+        target: { value: "6000" },
+      });
+
+      await refetchGoal(queryClient, { ...MOCK_GOAL, targetAmountManwon: 7000 });
+
+      expect(screen.getByRole("textbox", { name: "목표 금액만원" })).toHaveValue("6000");
+    });
+
+    it("월소득을 고친 뒤 프로필이 갱신돼도 입력을 유지한다", async () => {
+      const queryClient = createTestQueryClient();
+      render(<GoalDetail />, { queryClient });
+
+      await screen.findByText("5,000만원 모으기");
+      fireEvent.click(screen.getByRole("button", { name: /수정/ }));
+      await waitFor(() =>
+        expect(screen.getByRole("textbox", { name: "월소득만원" })).toHaveValue("250"),
+      );
+      // 상한(650)에 걸리지 않는 값으로 고친다 — 클램프까지 섞이면 무엇을 보는 테스트인지 흐려진다.
+      fireEvent.change(screen.getByRole("textbox", { name: "월소득만원" }), {
+        target: { value: "600" },
+      });
+
+      await act(async () => {
+        queryClient.setQueryData(onboardingProfileOptions().queryKey, {
+          ...MOCK_PROFILE,
+          monthlySalaryManwon: 300,
+          goalPeriodMonths: 24,
+        });
+      });
+
+      // 손대지 않은 목표 기간은 최신 값을 따라간다 — 갱신이 닿았다는 신호이기도 하다.
+      await waitFor(() =>
+        expect(screen.getByRole("textbox", { name: "목표 기간개월" })).toHaveValue("24"),
+      );
+      expect(screen.getByRole("textbox", { name: "월소득만원" })).toHaveValue("600");
+    });
+
+    it("목표수정 시트를 다시 열면 최신 값으로 되돌린다", async () => {
+      const queryClient = createTestQueryClient();
+      render(<GoalDetail />, { queryClient });
+
+      await screen.findByText("5,000만원 모으기");
+      fireEvent.click(screen.getByRole("button", { name: /수정/ }));
+      await waitFor(() =>
+        expect(screen.getByRole("textbox", { name: "목표 기간개월" })).toHaveValue("16"),
+      );
+      fireEvent.change(screen.getByRole("textbox", { name: "목표 금액만원" }), {
+        target: { value: "6000" },
+      });
+      fireEvent.change(screen.getByRole("textbox", { name: "월소득만원" }), {
+        target: { value: "700" },
+      });
+      fireEvent.keyDown(document, { key: "Escape" });
+      await waitFor(() =>
+        expect(screen.queryByRole("dialog", { name: "수정" })).not.toBeInTheDocument(),
+      );
+
+      await act(async () => {
+        queryClient.setQueryData(onboardingProfileOptions().queryKey, {
+          ...MOCK_PROFILE,
+          monthlySalaryManwon: 300,
+        });
+      });
+      await refetchGoal(queryClient, { ...MOCK_GOAL, targetAmountManwon: 7000 });
+      fireEvent.click(screen.getByRole("button", { name: /수정/ }));
+
+      expect(screen.getByRole("textbox", { name: "목표 금액만원" })).toHaveValue("7000");
+      await waitFor(() =>
+        expect(screen.getByRole("textbox", { name: "월소득만원" })).toHaveValue("300"),
+      );
+    });
   });
 });
