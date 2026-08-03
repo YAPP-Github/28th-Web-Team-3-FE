@@ -1,4 +1,5 @@
 import { BenefitsExplorer } from "./_components/benefits-explorer";
+import { BENEFITS } from "./constants";
 import { parseBenefitCategory } from "./lib/filter-benefits";
 
 interface BenefitsPageProps {
@@ -9,18 +10,24 @@ export default async function BenefitsPage({ searchParams }: BenefitsPageProps) 
   const initialCategory = parseBenefitCategory((await searchParams).category);
 
   return (
-    <main className="flex-1 bg-gray-0 px-5 py-2">
-      <header className="mb-5 flex flex-col gap-1">
-        <h1 className="text-title-t1-700 text-gray-900">정책 혜택</h1>
-        <p className="text-body-b2-400 text-gray-600">
-          저축부터 주거비, 세금 환급까지 받을 수 있는
-          <br /> 혜택을 확인해 보세요.
-        </p>
-      </header>
+    <main className="flex flex-1 flex-col bg-gray-0">
+      {/* 히어로는 탭 제목까지 감싼다 — 디자인에서 파란 면이 상단 바 뒤까지 이어진다. */}
+      <section className="bg-blue-50 px-5 pb-[46px]">
+        <h1 className="py-2 text-title-t1-700 text-gray-900">혜택</h1>
+        <div className="mt-[22px] flex flex-col items-start gap-2">
+          <p className="text-headline-h2-700 text-gray-900">
+            지금 바로 신청할
+            <br />수 있는 혜택
+          </p>
+          <a href="#benefits-list" className="text-body-b2-500 text-gray-900 underline-offset-4">
+            {BENEFITS.length}개 보러가기
+          </a>
+        </div>
+      </section>
 
       <BenefitsExplorer initialCategory={initialCategory} />
 
-      <p className="mt-6 text-center text-caption-c1-500 text-gray-400">
+      <p className="mt-6 px-5 text-center text-caption-c1-500 text-gray-400">
         정책 내용은 변동될 수 있어요. 공식 페이지 기준으로 확인해 주세요.
       </p>
     </main>

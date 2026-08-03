@@ -10,6 +10,9 @@ interface CategoryFilterProps {
 /**
  * 카테고리 필터. `<a href>`로 실제 URL을 유지해 딥링크·JS 미동작 시에도 서버 필터로
  * 동작하고, 클릭은 가로채 브라우저에서 즉시 필터링한다.
+ *
+ * 좌우 여백은 스크롤 영역 밖이 아니라 안(`px-5`)에 둔다 — 밖에 두면 마지막 칩이
+ * 여백 경계에서 잘린 채 멈춘다.
  */
 export function CategoryFilter({ selected, onSelect }: CategoryFilterProps) {
   return (
@@ -17,7 +20,7 @@ export function CategoryFilter({ selected, onSelect }: CategoryFilterProps) {
       aria-label="혜택 카테고리"
       className="overflow-x-auto [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
     >
-      <ul className="flex min-w-max gap-2">
+      <ul className="flex min-w-max gap-1.5 px-5">
         {BENEFIT_CATEGORIES.map((category) => {
           const isSelected = selected === category.value;
           return (
@@ -32,10 +35,8 @@ export function CategoryFilter({ selected, onSelect }: CategoryFilterProps) {
                   event.preventDefault();
                   onSelect(category.value);
                 }}
-                className={`inline-flex h-9 items-center whitespace-nowrap rounded-full border px-4 text-body-b2-500 ${
-                  isSelected
-                    ? "border-primary bg-blue-50 text-primary"
-                    : "border-gray-200 bg-gray-0 text-gray-700"
+                className={`inline-flex items-center whitespace-nowrap rounded-lg px-4 py-1.5 text-body-b2-700 ${
+                  isSelected ? "bg-gray-800 text-gray-0" : "bg-gray-50 text-gray-300"
                 }`}
               >
                 {category.label}

@@ -9,4 +9,11 @@ export const authTokensSchema = z.object({
   refreshToken: z.string().min(1),
 });
 
+/** GET /api/auth/me 응답. */
+export const currentUserSchema = z.object({
+  userId: z.number().int(),
+  onboardingCompleted: z.boolean(),
+});
+
 export type AuthTokens = z.infer<typeof authTokensSchema>;
+export type CurrentUser = z.infer<typeof currentUserSchema>;
