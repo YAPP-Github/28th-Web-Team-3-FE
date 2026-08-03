@@ -27,14 +27,19 @@ const toMonthlySalary = (value: string): number | null => {
   const amount = toNullableAmount(value);
   return amount == null ? null : Math.min(amount, MAX_MONTHLY_AMOUNT);
 };
+/** 아직 없는 프로필 값은 빈 칸으로 둔다. */
+const toPrefill = (value: number | null | undefined): string =>
+  value == null ? "" : String(value);
 
 /**
  * 목표 금액·기간·월소득 수정 바텀시트.
  */
 export function GoalEditSheet({ open, onOpenChange, initialTargetManwon }: GoalEditSheetProps) {
-  const [target, setTarget] = useState(String(initialTargetManwon));
-  const [period, setPeriod] = useState("");
-  const [monthlySalary, setMonthlySalary] = useState("");
+  // 각 칸은 사용자가 고치기 전에는 null이다. 그동안 프리필을 그대로 보여주므로 뒤늦게
+  // 도착한 프로필도 저절로 반영되고, 고친 뒤에는 백그라운드 재조회가 입력을 덮지 못한다.
+  const [targetDraft, setTargetDraft] = useState<string | null>(null);
+  const [periodDraft, setPeriodDraft] = useState<string | null>(null);
+  const [monthlySalaryDraft, setMonthlySalaryDraft] = useState<string | null>(null);
   const [submitError, setSubmitError] = useState<string>();
   const queryClient = useQueryClient();
   const { mutateAsync: updateGoal, isPending: isUpdatingGoal } = useMutation(
@@ -45,17 +50,19 @@ export function GoalEditSheet({ open, onOpenChange, initialTargetManwon }: GoalE
     patchOnboardingProfileOptions(queryClient),
   );
 
-  // 시트는 항상 마운트 상태(open 제어)라 useState 초기값이 재오픈 시 반영되지 않는다.
-  // 열 때마다 목표 금액·기간·월소득을 최신 프로필 값으로 되돌린다.
+  const target = targetDraft ?? String(initialTargetManwon);
+  const period = periodDraft ?? toPrefill(profile?.goalPeriodMonths);
+  const monthlySalary = monthlySalaryDraft ?? toPrefill(profile?.monthlySalaryManwon);
+
+  // 시트는 항상 마운트 상태(open 제어)라 다시 열어도 이전 입력이 남는다. 닫힐 때
+  // 버려서 다음에 열 때 최신 값으로 시작하게 한다 — 열릴 때 지우면 한 프레임 깜빡인다.
   useEffect(() => {
-    if (!open) return;
-    setTarget(String(initialTargetManwon));
+    if (open) return;
+    setTargetDraft(null);
+    setPeriodDraft(null);
+    setMonthlySalaryDraft(null);
     setSubmitError(undefined);
-    setPeriod(profile?.goalPeriodMonths == null ? "" : String(profile.goalPeriodMonths));
-    setMonthlySalary(
-      profile?.monthlySalaryManwon == null ? "" : String(profile.monthlySalaryManwon),
-    );
-  }, [open, initialTargetManwon, profile]);
+  }, [open]);
 
   async function submit() {
     const totalTargetManwon = toNullableAmount(target);
@@ -105,7 +112,9 @@ export function GoalEditSheet({ open, onOpenChange, initialTargetManwon }: GoalE
           label="목표 금액"
           inputMode="numeric"
           value={target}
-          onChange={(event) => setTarget(clampDigits(event.target.value, MAX_GOAL_TARGET_MANWON))}
+          onChange={(event) =>
+            setTargetDraft(clampDigits(event.target.value, MAX_GOAL_TARGET_MANWON))
+          }
         />
         <div className="grid grid-cols-2 gap-2.5">
           <AmountField
@@ -114,7 +123,9 @@ export function GoalEditSheet({ open, onOpenChange, initialTargetManwon }: GoalE
             inputMode="numeric"
             value={period}
             maxLength={String(MAX_GOAL_PERIOD_MONTHS).length}
-            onChange={(event) => setPeriod(clampDigits(event.target.value, MAX_GOAL_PERIOD_MONTHS))}
+            onChange={(event) =>
+              setPeriodDraft(clampDigits(event.target.value, MAX_GOAL_PERIOD_MONTHS))
+            }
           />
           <AmountField
             label="월소득"
@@ -123,7 +134,7 @@ export function GoalEditSheet({ open, onOpenChange, initialTargetManwon }: GoalE
             value={monthlySalary}
             maxLength={String(MAX_MONTHLY_AMOUNT).length}
             onChange={(event) =>
-              setMonthlySalary(clampDigits(event.target.value, MAX_MONTHLY_AMOUNT))
+              setMonthlySalaryDraft(clampDigits(event.target.value, MAX_MONTHLY_AMOUNT))
             }
           />
         </div>
