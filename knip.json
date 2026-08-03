@@ -6,11 +6,11 @@
     },
     "apps/admin": {
       "project": ["**/*.{ts,tsx}"],
-      "ignoreDependencies": ["postcss-load-config", "tailwindcss"]
+      "ignoreDependencies": ["postcss-load-config", "tailwindcss", "@repo/ui"]
     },
     "apps/web": {
       "project": ["**/*.{ts,tsx}"],
-      "ignoreDependencies": ["server-only", "postcss-load-config", "tailwindcss"]
+      "ignoreDependencies": ["server-only", "postcss-load-config", "tailwindcss", "@svgr/webpack"]
     },
     "apps/native": {
       "entry": ["index.ts", "App.tsx"],

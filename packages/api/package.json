@@ -15,7 +15,6 @@
     "test": "vitest run --passWithNoTests"
   },
   "dependencies": {
-    "@repo/schema": "workspace:*",
     "@tanstack/react-query": "catalog:",
     "ky": "catalog:",
     "zod": "catalog:"
