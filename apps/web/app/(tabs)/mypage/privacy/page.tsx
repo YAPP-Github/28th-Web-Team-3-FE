@@ -4,7 +4,7 @@ import {
   LegalSection,
   OPERATOR_NAME,
   POLICY_EFFECTIVE_DATE,
-  PRIVACY_CONTACT_TEAM,
+  PRIVACY_CONTACT_EMAIL,
   SERVICE_NAME,
 } from "@/app/(tabs)/mypage/_components/legal-content";
 import { LegalPageLayout } from "@/app/(tabs)/mypage/_components/legal-page-layout";
@@ -149,7 +149,7 @@ export default function PrivacyPage() {
         <LegalOrderedList
           items={[
             "이용자는 언제든지 자신의 개인정보에 대한 열람, 정정, 삭제를 요청할 수 있습니다.",
-            "권리 행사는 앱 내 마이페이지의 '문의하기(카카오톡 오픈채팅)'를 통해 요청하실 수 있으며, 운영팀은 요청 확인 후 지체 없이 필요한 조치를 취합니다.",
+            `권리 행사는 앱 내 마이페이지의 '문의하기(카카오톡 오픈채팅)' 또는 ${PRIVACY_CONTACT_EMAIL}로 요청하실 수 있으며, 운영팀은 요청 확인 후 지체 없이 필요한 조치를 취합니다.`,
           ]}
         />
       </LegalSection>
@@ -180,8 +180,8 @@ export default function PrivacyPage() {
         </p>
         <LegalList
           items={[
-            `담당: ${PRIVACY_CONTACT_TEAM}`,
-            "연락처: 마이페이지 내 문의하기(카카오톡 오픈채팅)",
+            `담당: ${OPERATOR_NAME}`,
+            `연락처: ${PRIVACY_CONTACT_EMAIL}, 마이페이지 내 문의하기(카카오톡 오픈채팅)`,
           ]}
         />
       </LegalSection>

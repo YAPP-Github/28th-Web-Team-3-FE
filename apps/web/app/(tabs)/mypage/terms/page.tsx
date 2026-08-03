@@ -3,6 +3,7 @@ import {
   LegalSection,
   OPERATOR_NAME,
   POLICY_EFFECTIVE_DATE,
+  PRIVACY_CONTACT_EMAIL,
   SERVICE_NAME,
 } from "@/app/(tabs)/mypage/_components/legal-content";
 import { LegalPageLayout } from "@/app/(tabs)/mypage/_components/legal-page-layout";
@@ -59,7 +60,7 @@ export default function TermsPage() {
       <LegalSection heading="제4조 (약관 외 준칙)">
         <p>
           ① 운영팀은 필요한 경우 개별 서비스에 관하여 적용될 사항을 위해 개별약관이나 이용정책을
-          정하여 운영할 수 있으며, 해당 내용은 서비스 내 공지사항을 통해 안내합니다.
+          정하여 운영할 수 있으며, 해당 내용은 제15조의 방법으로 안내합니다.
         </p>
         <p>
           ② 본 약관에서 정하지 아니한 사항은 관련 법령, 개별약관 및 이용정책에서 정한 바에 따릅니다.
@@ -85,8 +86,9 @@ export default function TermsPage() {
           이용할 수 있습니다.
         </p>
         <p>
-          ③ 이용자는 서비스 이용 중 입력한 재무상태 정보, 목표 금액, 목표 기간 등을 애플리케이션 내
-          설정 화면을 통해 언제든지 수정할 수 있습니다.
+          ③ 이용자는 목표 금액, 목표 기간, 월소득, 저축액을 애플리케이션 내 수정 화면을 통해
+          언제든지 변경할 수 있습니다. 그 밖의 입력값 정정이 필요한 경우 제15조의 문의 창구를 통해
+          요청할 수 있습니다.
         </p>
       </LegalSection>
 
@@ -258,8 +260,8 @@ export default function TermsPage() {
       <LegalSection heading="제14조 (이용계약의 해지 및 데이터 삭제)">
         <p>
           ① 이용자는 애플리케이션을 삭제함으로써 언제든지 서비스 이용을 중단할 수 있습니다. 서버에
-          저장된 데이터의 삭제를 원하는 경우 마이페이지의 문의하기(카카오톡 오픈채팅)를 통해 요청할
-          수 있으며, 운영팀은 요청 확인 후 지체 없이 처리합니다.
+          저장된 데이터의 삭제를 원하는 경우 마이페이지의 문의하기(카카오톡 오픈채팅) 또는{" "}
+          {PRIVACY_CONTACT_EMAIL}로 요청할 수 있으며, 운영팀은 요청 확인 후 지체 없이 처리합니다.
         </p>
         <p>
           ② 전항에 따라 데이터 삭제가 이루어지는 경우 운영팀은 관련 법령 및 개인정보처리방침에 따라
@@ -285,11 +287,11 @@ export default function TermsPage() {
 
       <LegalSection heading="제15조 (통지)">
         <p>
-          ① 운영팀은 본 약관과 관련한 통지 시 애플리케이션 내 공지사항 또는 알림 등을 통하여
-          통지합니다.
+          ① 운영팀은 본 약관과 관련한 통지 시 애플리케이션 내 게시 또는 마이페이지의
+          문의하기(카카오톡 오픈채팅)를 통하여 통지합니다.
         </p>
         <p>
-          ② 운영팀은 전체 또는 다수의 이용자에 대한 통지의 경우 애플리케이션 내 공지사항에
+          ② 운영팀은 전체 또는 다수의 이용자에 대한 통지의 경우 애플리케이션 내 해당 화면에
           게시함으로써 개별 통지를 갈음할 수 있습니다.
         </p>
         <p>

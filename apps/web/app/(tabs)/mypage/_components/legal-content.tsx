@@ -44,15 +44,18 @@ export function LegalOrderedList({ items }: { items: string[] }) {
 export const SERVICE_NAME = "아끼모";
 
 /**
- * 약관·방침에서 서비스를 운영하는 주체를 부르는 이름. 두 문서가 갈리지 않게 한 곳에서 정한다.
+ * 서비스를 운영하는 주체. 약관·방침이 갈리지 않게 한 곳에서 정한다.
+ *
+ * 개인정보 보호책임자 표기도 이 값을 쓴다. 개인정보 보호법 시행령 제31조는 보호책임자
+ * "성명" 또는 "담당부서의 명칭과 연락처" 중 하나를 요구하므로 팀 명칭으로 갈음한다.
  */
 export const OPERATOR_NAME = "아끼모 운영팀";
 
 /**
- * 개인정보 보호업무 담당 주체. 개인정보보호법 제30조는 보호책임자 "성명" 또는
- * "담당부서의 명칭과 연락처" 중 하나를 요구하므로 팀 명칭으로 갈음한다.
+ * 개인정보 관련 문의 창구. 시행령 제31조가 "전화번호 등 연락처"를 요구하는데
+ * 오픈채팅만 두면 연락처로 인정되는지 다툴 여지가 있어 이메일을 함께 둔다.
  */
-export const PRIVACY_CONTACT_TEAM = OPERATOR_NAME;
+export const PRIVACY_CONTACT_EMAIL = "yappweb3@gmail.com";
 
 /** 약관·방침 공통 시행일. 문서를 고치면 이 값도 함께 올린다. */
 export const POLICY_EFFECTIVE_DATE = "2026년 8월 10일";
