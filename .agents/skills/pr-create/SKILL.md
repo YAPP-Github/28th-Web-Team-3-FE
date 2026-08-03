@@ -5,12 +5,51 @@ argument-hint: [브랜치] [리뷰어]
 ---
 
 빌드·테스트(vitest → Playwright) → next16-rn AI 리뷰 → 푸시 → PR 생성을 한번에 처리한다.
+`develop -> main` PR은 릴리즈 모드로 처리한다.
 **셸 스크립트 없음** — 각 단계를 도구 호출로 실행한다.
 
 ## 인자
 
 - `$0`: PR을 올릴 **브랜치**(head). 생략 시 현재 브랜치 사용.
 - `$1`: **리뷰어** 이름/핸들 (한글·영문). 없으면 팀원 자동 지정 규칙(Step 7 참고) 적용, 그래도 못 정하면 사용자에게 물어볼 것.
+
+## 릴리즈 모드 (`develop -> main`)
+
+`head=develop`, `base=main`인 PR은 릴리즈 모드다. 사용자가 "dev -> main", "develop -> main",
+"main 배포 PR", "릴리즈 PR"처럼 요청하면 이 모드로 진행한다.
+
+- 베이스는 `main`, 헤드는 `develop`으로 고정한다. 임의 릴리즈 브랜치를 만들지 않는다.
+- PR 제목은 `release: vX.Y.Z` 형식으로 한다.
+- `vX.Y.Z`는 현재 최신 tag를 확인한 뒤 사용자에게 제안한다. 자동 결정 기준은 다음 순서다:
+  1. breaking change 또는 마이그레이션이 있으면 major
+  2. `feat` 커밋이 있으면 minor
+  3. 그 외 `fix`/`perf`/`chore`/`docs`/`ci` 등은 patch
+- 최신 tag가 없으면 `v0.1.0`을 제안한다. 이미 `apps/native/app.config.ts`의 `version`처럼 앱 버전이
+  더 크면 그 버전을 우선 제안한다.
+- release note는 `git log origin/main..origin/develop --oneline`과 diff를 기준으로 한국어 bullet로
+  작성하고, PR 본문 `## 💬 기타 코멘트`에 아래 형식으로 넣는다.
+- merge 후 tag는 PR merge commit 또는 main의 merge 결과 커밋에 `vX.Y.Z`로 생성한다. PR 생성 단계에서는
+  tag를 만들지 않고, PR 본문에 `Merge 후 tag: vX.Y.Z`를 명시한다.
+- Expo/WebView 확인을 release note에 포함한다:
+  - `apps/native/.env.production`에 `EXPO_PUBLIC_WEB_URL`이 Vercel production URL인지 확인
+  - `apps/native/.env.production`에 `EXPO_PUBLIC_API_URL`이 `/api/`까지 포함하는지 확인
+  - EAS production 환경에 반영할 명령: `cd apps/native && eas env:push production --path .env.production`
+
+릴리즈 PR의 `## 💬 기타 코멘트` 형식:
+
+```md
+### Release Notes
+
+- <사용자 영향이 있는 변경>
+- <버그 수정 또는 내부 개선>
+
+### Release Checklist
+
+- [ ] Vercel production 배포 URL 확인: `<EXPO_PUBLIC_WEB_URL>`
+- [ ] EAS production env 반영: `cd apps/native && eas env:push production --path .env.production`
+- [ ] WebView production URL smoke test
+- [ ] Merge 후 tag 생성: `vX.Y.Z`
+```
 
 ## 강제 사용 규칙
 
@@ -42,17 +81,20 @@ argument-hint: [브랜치] [리뷰어]
 6. 컨텍스트 확보:
    - 레포 = `gh repo view --json nameWithOwner -q .nameWithOwner`
    - 현재 로그인 = `gh api user -q .login` → `ME`로 저장 (assignee 및 리뷰어 제외용)
-   - 베이스 = `develop` (`.github/PULL_REQUEST_TEMPLATE.md` 기준). 원격에 없으면 `gh repo view --json defaultBranchRef -q .defaultBranchRef.name`로 폴백.
+   - 베이스 = 일반 PR은 `develop` (`.github/PULL_REQUEST_TEMPLATE.md` 기준), 릴리즈 모드는 `main`.
+     원격에 없으면 `gh repo view --json defaultBranchRef -q .defaultBranchRef.name`로 폴백.
 
 ### Step 1: 브랜치 확정
 
 1. `$0`이 주어졌으면 그대로, 없으면 현재 브랜치 사용.
 2. `git fetch origin --prune`.
 3. 대상 브랜치로 전환(`git switch <브랜치>`, 없으면 `git switch -c <브랜치>`).
+4. 릴리즈 모드면 head가 `develop`, base가 `main`인지 확인한다. 다르면 사용자에게 알리고 중단한다.
 
 ### Step 2: 변경사항 확인 (더티 트리 게이트)
 
 1. `git status --short`로 커밋 안 된 변경 확인 — **있으면 사용자에게 알리고 중단**(먼저 커밋/스태시).
+   릴리즈 모드는 특히 `develop` 워킹트리가 깨끗해야 한다.
 2. 포함될 커밋 목록: `git log origin/<base>..HEAD --oneline`.
 3. 변경 파일 표시 — **lockfile 제외**로 컨텍스트 경량 유지:
 
@@ -61,8 +103,19 @@ git diff --stat --merge-base origin/<base> HEAD -- ':!pnpm-lock.yaml' ':!package
 ```
 
 4. 베이스보다 앞선 커밋이 없으면 중단 — PR할 게 없음.
+5. 릴리즈 모드면 최신 tag와 버전 후보를 확인한다:
+
+```bash
+git tag --sort=-v:refname | head -20
+git log origin/main..origin/develop --oneline
+```
+
+   후보 버전을 사용자에게 보여주고 승인받는다. 승인 전 PR 제목에 버전을 확정하지 않는다.
 
 ### Step 2.5: 대형 PR 분할 판단
+
+릴리즈 모드(`develop -> main`)는 이 단계를 건너뛴다. 릴리즈 PR은 단일 `develop -> main` PR로만
+진행하며, 분할 브랜치 생성이나 cherry-pick을 하지 않는다.
 
 1. 분할 후보 조건(하나라도 해당하면 분할 검토):
    - Step 2에서 확인한 변경 파일(lockfile 제외) 수가 **20개 초과**
@@ -153,6 +206,7 @@ git diff --stat --merge-base origin/<base> HEAD -- ':!pnpm-lock.yaml' ':!package
 
 1. `.github/PULL_REQUEST_TEMPLATE.md`를 읽어 **그 섹션 구조 그대로** 플레이스홀더만 채운다.
    템플릿에 없는 섹션은 본문에 추가하지 말 것. (현재 템플릿 = 요약·체크리스트·AI 리뷰·기타 4섹션)
+   릴리즈 모드의 release note와 release checklist는 템플릿의 `## 💬 기타 코멘트` 안에 넣는다.
 
 ```
 ## 📝 작업 내용 요약
@@ -176,7 +230,7 @@ Step 5의 언어 정규화를 거친 한국어 버전을 붙인다(영어 원문
 
 ## 💬 기타 코멘트
 
-<후속 작업·리뷰어에게 남길 메모, 없으면 비움>
+<후속 작업·리뷰어에게 남길 메모, 없으면 비움. 릴리즈 모드면 Release Notes/Release Checklist 포함>
 ```
 
 2. **PR 생성 전 사용자 승인을 받을 것.** 본문을 임시 파일에 쓰고 `--body-file`로 전달:
@@ -185,7 +239,7 @@ Step 5의 언어 정규화를 거친 한국어 버전을 붙인다(영어 원문
 gh pr create \
   --base <base> \
   --head <브랜치> \
-  --title "<요약에서 뽑은 간결한 제목>" \
+  --title "<요약에서 뽑은 간결한 제목. 릴리즈 모드면 release: vX.Y.Z>" \
   --assignee "@me" \
   --reviewer "<매칭된 리뷰어 login>" \
   --body-file <tmp> \
@@ -205,4 +259,5 @@ gh pr create \
 - assignee는 본인(`@me`), 리뷰어 목록에서 본인 제외.
 - pnpm 사용(npm/yarn 금지).
 - PR 제목은 커밋 컨벤션 prefix(feat/fix/chore 등) 영어, subject는 한글/영문 모두 가능, 50자 이내.
+  릴리즈 모드는 예외적으로 `release: vX.Y.Z` 형식을 사용한다.
 - 리뷰어 없는 PR은 생성하지 않을 것(사용자의 명시적 오버라이드가 있으면 예외, Step 7.5 참고).
