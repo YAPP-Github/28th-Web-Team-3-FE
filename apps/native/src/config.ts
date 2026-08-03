@@ -53,5 +53,11 @@ export const API_URL = ensureTrailingSlash(
   ),
 );
 
-/** WebView가 로드할 수 있는 origin. 그 외는 외부로 연다. */
-export const ORIGIN_WHITELIST = [WEB_URL];
+/**
+ * WebView가 로드할 수 있는 단일 origin. `new URL().origin`으로 정규화해 경로·쿼리·끝
+ * 슬래시 차이를 없앤다. 실제 차단은 App.tsx의 `onShouldStartLoadWithRequest`가 한다.
+ */
+export const WEB_ORIGIN = new URL(WEB_URL).origin;
+
+/** 1차 필터. 접두사만 맞아도 통과시키므로 이것만 믿지 않는다. */
+export const ORIGIN_WHITELIST = [WEB_ORIGIN];

@@ -1,9 +1,10 @@
 import { StatusBar } from "expo-status-bar";
 import { useEffect, useRef, useState } from "react";
-import { ActivityIndicator, Pressable, StyleSheet, Text, View } from "react-native";
+import { ActivityIndicator, Linking, Pressable, StyleSheet, Text, View } from "react-native";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import { initGuestAuth } from "./src/auth/guest-auth";
-import { ORIGIN_WHITELIST, WEB_URL } from "./src/config";
+import { ORIGIN_WHITELIST, WEB_ORIGIN, WEB_URL } from "./src/config";
+import { isTrustedWebViewUrl } from "./src/lib/trusted-url";
 import { authenticate, isBiometricAvailable } from "./src/native/biometric";
 import { WebView } from "./src/webview";
 
@@ -72,6 +73,15 @@ export default function App() {
               source={{ uri: WEB_URL }}
               originWhitelist={ORIGIN_WHITELIST}
               style={styles.webview}
+              // originWhitelist는 접두사만 맞아도 통과시키므로 여기서 origin 완전 일치를
+              // 강제한다. 이 검사를 통과한 페이지에만 브릿지가 주입된다 — 느슨하면
+              // getAccessToken/refreshAccessToken으로 토큰이 샌다.
+              onShouldStartLoadWithRequest={(request) => {
+                if (isTrustedWebViewUrl(request.url, WEB_ORIGIN)) return true;
+                // 우리 origin이 아니면 WebView에 띄우지 않고 OS에 넘긴다.
+                void Linking.openURL(request.url).catch(() => {});
+                return false;
+              }}
               // 응답보다 먼저 도는 시점이라 여기서 이번 내비게이션의 실패 여부를 초기화한다.
               onLoadStart={() => {
                 navigationFailedRef.current = false;
