@@ -1,3 +1,4 @@
+import type { CurrentUser } from "@repo/schema/auth";
 import type { OnboardingProfile } from "@repo/schema/onboarding-api";
 import { useMutation } from "@tanstack/react-query";
 import { beforeEach, describe, expect, it, vi } from "vitest";
@@ -12,6 +13,7 @@ vi.mock("@/api/onboarding", () => ({
 }));
 
 import { confirmOnboardingGoal } from "@/api/onboarding";
+import { currentUserOptions } from "@/lib/queries/auth";
 import { confirmOnboardingGoalOptions, ONBOARDING_PROFILE_QUERY_KEY } from "./onboarding";
 
 const IN_PROGRESS_PROFILE: OnboardingProfile = {
@@ -23,6 +25,8 @@ const IN_PROGRESS_PROFILE: OnboardingProfile = {
   goalPeriodMonths: 24,
 };
 
+const INCOMPLETE_CURRENT_USER: CurrentUser = { userId: 1, onboardingCompleted: false };
+
 describe("confirmOnboardingGoalOptions", () => {
   beforeEach(() => vi.clearAllMocks());
 
@@ -33,6 +37,7 @@ describe("confirmOnboardingGoalOptions", () => {
   it("목표를 확정하면 프로필 캐시의 status를 COMPLETED로 올린다", async () => {
     const queryClient = createTestQueryClient();
     queryClient.setQueryData(ONBOARDING_PROFILE_QUERY_KEY, IN_PROGRESS_PROFILE);
+    queryClient.setQueryData(currentUserOptions.key(), INCOMPLETE_CURRENT_USER);
     vi.mocked(confirmOnboardingGoal).mockResolvedValue({
       goalId: 1,
       plan: "PLAN_1",
@@ -51,6 +56,10 @@ describe("confirmOnboardingGoalOptions", () => {
     expect(queryClient.getQueryData(ONBOARDING_PROFILE_QUERY_KEY)).toEqual({
       ...IN_PROGRESS_PROFILE,
       status: "COMPLETED",
+    });
+    expect(queryClient.getQueryData(currentUserOptions.key())).toEqual({
+      ...INCOMPLETE_CURRENT_USER,
+      onboardingCompleted: true,
     });
   });
 

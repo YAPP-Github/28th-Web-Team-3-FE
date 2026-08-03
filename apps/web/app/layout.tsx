@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import { Suspense } from "react";
 import { MixpanelPageTracker } from "./_components/mixpanel-page-tracker";
+import { OnboardingRouteGuard } from "./_components/onboarding-route-guard";
 import "./globals.css";
 import { MSWProvider } from "./msw-provider";
 
@@ -14,7 +15,7 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: ReactNode }) {
   const app = (
     <QueryProvider>
-      {children}
+      <OnboardingRouteGuard>{children}</OnboardingRouteGuard>
       <Suspense fallback={null}>
         <MixpanelPageTracker />
       </Suspense>
