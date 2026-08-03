@@ -25,7 +25,7 @@ export default function NetWorthOnboardingPage() {
   async function navigateToInvestmentPeriodQuestion() {
     if (await trigger("netWorthManwon", { shouldFocus: true })) {
       if (await saveProfile({ netWorthManwon: netWorthAmount })) {
-        router.replace("/onboarding/period");
+        router.push("/onboarding/period");
       }
     }
   }
@@ -100,7 +100,7 @@ export default function NetWorthOnboardingPage() {
           nextDisabled={!hasAnswered || isSaving}
           nextLabel={isSaving ? "저장 중…" : "다음"}
           onNext={navigateToInvestmentPeriodQuestion}
-          onPrev={() => router.replace("/onboarding/month")}
+          onPrev={() => router.push("/onboarding/month")}
         />
       </div>
     </div>

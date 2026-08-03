@@ -165,7 +165,7 @@ export default function OnboardingGoalPage() {
               setErrorMessage("목표를 저장하지 못했어요. 잠시 후 다시 시도해 주세요.");
             }
           }}
-          onPrev={() => router.replace("/onboarding/age")}
+          onPrev={() => router.push("/onboarding/age")}
         />
       </div>
     </div>

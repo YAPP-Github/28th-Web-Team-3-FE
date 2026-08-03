@@ -3,9 +3,10 @@ import { confirmOnboardingGoal, getOnboardingGoalPlans } from "@/api/onboarding"
 import { fireEvent, render, screen, waitFor } from "@/lib/test/react";
 import OnboardingGoalPage from "./page";
 
+const push = vi.fn();
 const replace = vi.fn();
 
-vi.mock("next/navigation", () => ({ useRouter: () => ({ replace }) }));
+vi.mock("next/navigation", () => ({ useRouter: () => ({ push, replace }) }));
 vi.mock("@/api/onboarding", () => ({
   confirmOnboardingGoal: vi.fn(),
   getOnboardingGoalPlans: vi.fn(),
@@ -82,6 +83,6 @@ describe("OnboardingGoalPage", () => {
     render(<OnboardingGoalPage />);
     fireEvent.click(await screen.findByRole("button", { name: "다시하기" }));
 
-    expect(replace).toHaveBeenCalledWith("/onboarding/age");
+    expect(push).toHaveBeenCalledWith("/onboarding/age");
   });
 });

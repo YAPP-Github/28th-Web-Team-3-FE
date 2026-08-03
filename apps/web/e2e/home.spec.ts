@@ -67,18 +67,6 @@ test("onboarding status redirects to the allowed route", async ({ page }) => {
   await expect(page).toHaveURL("/onboarding/intro");
 });
 
-test("온보딩 시작은 현재 히스토리 엔트리를 교체한다", async ({ page }) => {
-  await mockCurrentUser(page, false);
-  await mockOnboardingProfile(page);
-  await page.goto("/onboarding/intro");
-  const historyLength = await page.evaluate(() => window.history.length);
-
-  await page.getByRole("link", { name: "시작" }).click();
-
-  await expect(page).toHaveURL("/onboarding/age");
-  await expect.poll(() => page.evaluate(() => window.history.length)).toBe(historyLength);
-});
-
 test("온보딩 완료 후 홈 이동은 히스토리를 남기지 않는다", async ({ page }) => {
   let onboardingCompleted = false;
   await mockCurrentUser(page, () => onboardingCompleted);

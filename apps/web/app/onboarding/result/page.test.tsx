@@ -3,9 +3,9 @@ import { getOnboardingReport } from "@/api/onboarding";
 import { fireEvent, render, screen } from "@/lib/test/react";
 import OnboardingResultPage from "./page";
 
-const replace = vi.fn();
+const push = vi.fn();
 
-vi.mock("next/navigation", () => ({ useRouter: () => ({ replace }) }));
+vi.mock("next/navigation", () => ({ useRouter: () => ({ push }) }));
 vi.mock("@/api/onboarding", () => ({
   getOnboardingReport: vi.fn(),
 }));
@@ -45,6 +45,6 @@ describe("OnboardingResultPage", () => {
     render(<OnboardingResultPage />);
     fireEvent.click(await screen.findByRole("button", { name: "목표금액 설정하기" }));
 
-    expect(replace).toHaveBeenCalledWith("/onboarding/goal");
+    expect(push).toHaveBeenCalledWith("/onboarding/goal");
   });
 });

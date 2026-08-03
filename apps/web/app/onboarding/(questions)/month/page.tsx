@@ -35,7 +35,7 @@ export default function MonthlyIncomeAndSavingsOnboardingPage() {
         monthlySalaryManwon: income,
         monthlySavingManwon: savings,
       });
-      if (saved) router.replace("/onboarding/net");
+      if (saved) router.push("/onboarding/net");
     }
   }
 
@@ -148,7 +148,7 @@ export default function MonthlyIncomeAndSavingsOnboardingPage() {
           nextDisabled={!hasRequiredMonthlyAmounts || Boolean(amountError) || isSaving}
           nextLabel={isSaving ? "저장 중…" : "다음"}
           onNext={navigateToNetWorthQuestion}
-          onPrev={() => router.replace("/onboarding/age")}
+          onPrev={() => router.push("/onboarding/age")}
         />
       </div>
     </div>

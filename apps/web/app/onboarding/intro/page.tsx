@@ -13,7 +13,6 @@ export default function IntroOnboardingPage() {
       <Link
         className={cn(buttonVariants({ size: "cta", variant: "onboardingNext" }), "mt-auto mb-6")}
         href="/onboarding/age"
-        replace
       >
         시작
       </Link>
