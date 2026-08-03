@@ -1,6 +1,7 @@
 import { StatusBar } from "expo-status-bar";
 import { useEffect, useRef, useState } from "react";
-import { ActivityIndicator, Platform, Pressable, StyleSheet, Text, View } from "react-native";
+import { ActivityIndicator, Pressable, StyleSheet, Text, View } from "react-native";
+import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import { initGuestAuth } from "./src/auth/guest-auth";
 import { ORIGIN_WHITELIST, WEB_URL } from "./src/config";
 import { authenticate, isBiometricAvailable } from "./src/native/biometric";
@@ -60,47 +61,49 @@ export default function App() {
     })();
   }, []);
 
-  if (!ready) {
-    return (
-      <View style={styles.center}>
-        <ActivityIndicator size="large" />
-      </View>
-    );
-  }
-
   return (
-    <View style={styles.flex}>
+    <SafeAreaProvider>
       <StatusBar style="auto" />
-      <WebView
-        key={reloadKey}
-        source={{ uri: WEB_URL }}
-        originWhitelist={ORIGIN_WHITELIST}
-        style={styles.webview}
-        // 응답보다 먼저 도는 시점이라 여기서 이번 내비게이션의 실패 여부를 초기화한다.
-        onLoadStart={() => {
-          navigationFailedRef.current = false;
-        }}
-        // 실패 없이 끝난 로드만 오버레이를 걷는다 — 안 그러면 화면이 멀쩡해진 뒤에도
-        // 사용자가 "다시 시도"를 눌러 경로를 초기화해야만 빠져나올 수 있다.
-        onLoad={() => {
-          if (!navigationFailedRef.current) setLoadFailed(false);
-        }}
-        onError={markLoadFailed}
-        onHttpError={({ nativeEvent }) => {
-          // onHttpError는 메인 프레임 응답만 올라온다. 4xx는 Next의 404 페이지처럼
-          // 그려야 할 화면인 경우가 있으니, 페이지 자체를 못 그리는 5xx만 실패로 본다.
-          if (nativeEvent.statusCode >= 500) markLoadFailed();
-        }}
-      />
-      {loadFailed ? <LoadErrorView onRetry={retryLoad} /> : null}
-    </View>
+      <SafeAreaView edges={["top"]} style={styles.flex}>
+        {ready ? (
+          <>
+            <WebView
+              key={reloadKey}
+              source={{ uri: WEB_URL }}
+              originWhitelist={ORIGIN_WHITELIST}
+              style={styles.webview}
+              // 응답보다 먼저 도는 시점이라 여기서 이번 내비게이션의 실패 여부를 초기화한다.
+              onLoadStart={() => {
+                navigationFailedRef.current = false;
+              }}
+              // 실패 없이 끝난 로드만 오버레이를 걷는다 — 안 그러면 화면이 멀쩡해진 뒤에도
+              // 사용자가 "다시 시도"를 눌러 경로를 초기화해야만 빠져나올 수 있다.
+              onLoad={() => {
+                if (!navigationFailedRef.current) setLoadFailed(false);
+              }}
+              onError={markLoadFailed}
+              onHttpError={({ nativeEvent }) => {
+                // onHttpError는 메인 프레임 응답만 올라온다. 4xx는 Next의 404 페이지처럼
+                // 그려야 할 화면인 경우가 있으니, 페이지 자체를 못 그리는 5xx만 실패로 본다.
+                if (nativeEvent.statusCode >= 500) markLoadFailed();
+              }}
+            />
+            {loadFailed ? <LoadErrorView onRetry={retryLoad} /> : null}
+          </>
+        ) : (
+          <View style={styles.center}>
+            <ActivityIndicator size="large" />
+          </View>
+        )}
+      </SafeAreaView>
+    </SafeAreaProvider>
   );
 }
 
 const styles = StyleSheet.create({
   flex: { flex: 1 },
   center: { flex: 1, alignItems: "center", justifyContent: "center" },
-  webview: { flex: 1, marginTop: Platform.OS === "android" ? 0 : 44 },
+  webview: { flex: 1 },
   errorSurface: { backgroundColor: "#ffffff", gap: 8, paddingHorizontal: 24 },
   errorTitle: { fontSize: 18, fontWeight: "700", color: "#111827" },
   errorBody: { fontSize: 14, color: "#6b7280", textAlign: "center" },
