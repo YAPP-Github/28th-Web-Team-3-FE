@@ -1,12 +1,28 @@
+import type { BridgeWebView } from "@webview-bridge/react-native";
 import { StatusBar } from "expo-status-bar";
 import { useEffect, useRef, useState } from "react";
-import { ActivityIndicator, Linking, Pressable, StyleSheet, Text, View } from "react-native";
+import {
+  ActivityIndicator,
+  BackHandler,
+  Linking,
+  Platform,
+  Pressable,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import { initGuestAuth } from "./src/auth/guest-auth";
 import { ORIGIN_WHITELIST, WEB_ORIGIN, WEB_URL } from "./src/config";
 import { isTrustedWebViewUrl } from "./src/lib/trusted-url";
 import { authenticate, isBiometricAvailable } from "./src/native/biometric";
 import { WebView } from "./src/webview";
+
+/**
+ * 렌더러 사망을 앱 실행당 몇 번까지 조용히 되살릴지. 계속 죽는 기기에서 remount를
+ * 무한 반복하며 배터리를 태우는 대신, 넘어가면 오버레이를 띄워 사용자가 판단하게 한다.
+ */
+const MAX_AUTO_RECOVERY = 3;
 
 /**
  * 웹을 못 불러왔을 때 덮는 화면. 없으면 흰 화면만 남아 사용자도, 심사자도
@@ -39,6 +55,10 @@ export default function App() {
   // 둘의 발화 순서는 보장되지 않아, onLoad에서 무조건 걷으면 오버레이가 도로 사라진다.
   // 이번 내비게이션에서 실패가 있었는지를 따로 들고 있다가 성공한 로드에서만 걷는다.
   const navigationFailedRef = useRef(false);
+  const webViewRef = useRef<BridgeWebView>(null);
+  // 되돌릴 웹 히스토리가 있는지. 화면을 다시 그릴 필요가 없어 state가 아니라 ref다.
+  const canGoBackRef = useRef(false);
+  const autoRecoveryCountRef = useRef(0);
 
   function markLoadFailed() {
     navigationFailedRef.current = true;
@@ -47,8 +67,36 @@ export default function App() {
 
   function retryLoad() {
     setLoadFailed(false);
+    // 뷰를 새로 만들면 히스토리도 함께 비워진다.
+    canGoBackRef.current = false;
     setReloadKey((key) => key + 1);
   }
+
+  /**
+   * 렌더러 프로세스가 죽으면 WebView는 스스로 되살아나지 못한다. 라이브러리도
+   * 이벤트만 넘겨줄 뿐 아무것도 하지 않아, 두면 죽은 뷰가 흰 화면으로 남는다.
+   * 사용자 잘못이 아니므로 조용히 뷰를 새로 만들되 횟수는 제한한다.
+   */
+  function recoverFromRendererLoss() {
+    if (autoRecoveryCountRef.current >= MAX_AUTO_RECOVERY) {
+      markLoadFailed();
+      return;
+    }
+    autoRecoveryCountRef.current += 1;
+    retryLoad();
+  }
+
+  // Android 뒤로가기. 핸들러가 없으면 어느 화면에서 눌러도 앱이 그대로 종료된다.
+  useEffect(() => {
+    if (Platform.OS !== "android") return;
+    const subscription = BackHandler.addEventListener("hardwareBackPress", () => {
+      // 되돌릴 곳이 없을 때만 false를 넘겨 기본 동작(앱 종료)에 맡긴다.
+      if (!canGoBackRef.current) return false;
+      webViewRef.current?.goBack();
+      return true;
+    });
+    return () => subscription.remove();
+  }, []);
 
   useEffect(() => {
     (async () => {
@@ -70,6 +118,7 @@ export default function App() {
           <>
             <WebView
               key={reloadKey}
+              ref={webViewRef}
               source={{ uri: WEB_URL }}
               originWhitelist={ORIGIN_WHITELIST}
               style={styles.webview}
@@ -91,7 +140,15 @@ export default function App() {
               onLoad={() => {
                 if (!navigationFailedRef.current) setLoadFailed(false);
               }}
+              // Next.js의 pushState 이동에도 발화한다 — Android는 방문 기록이 바뀔 때마다
+              // 이 이벤트를 쏘므로 SPA 화면 이동이 canGoBack에 그대로 반영된다.
+              onNavigationStateChange={({ canGoBack }) => {
+                canGoBackRef.current = canGoBack;
+              }}
               onError={markLoadFailed}
+              // Android 렌더러 종료 / iOS 콘텐츠 프로세스 종료. 앱은 살아있지만 WebView만 죽는다.
+              onRenderProcessGone={recoverFromRendererLoss}
+              onContentProcessDidTerminate={recoverFromRendererLoss}
               onHttpError={({ nativeEvent }) => {
                 // onHttpError는 메인 프레임 응답만 올라온다. 4xx는 Next의 404 페이지처럼
                 // 그려야 할 화면인 경우가 있으니, 페이지 자체를 못 그리는 5xx만 실패로 본다.
