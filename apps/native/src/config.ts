@@ -1,4 +1,5 @@
 import Constants from "expo-constants";
+import * as Device from "expo-device";
 import { Platform } from "react-native";
 
 /** WebView 대상과 API origin. app.config.ts의 `extra`에서 가져온다. */
@@ -7,10 +8,9 @@ const extra = (Constants.expoConfig?.extra ?? {}) as {
   apiUrl?: string;
 };
 
-const androidEmulatorEnv = process.env.EXPO_PUBLIC_ANDROID_EMULATOR;
-// Android 에뮬레이터에서 호스트 localhost를 10.0.2.2로 매핑하려면
-// EXPO_PUBLIC_ANDROID_EMULATOR=true. 실기기는 비워두거나 false로 두고 LAN 주소를 쓴다.
-const isAndroidEmulator = __DEV__ && Platform.OS === "android" && androidEmulatorEnv === "true";
+// iOS 시뮬레이터는 호스트 localhost를 그대로 보지만 Android 에뮬레이터는
+// 10.0.2.2로 접근해야 한다. 실기기는 LAN 주소를 명시하므로 바꾸지 않는다.
+const isAndroidEmulator = __DEV__ && Platform.OS === "android" && !Device.isDevice;
 const DEFAULT_WEB_URL = isAndroidEmulator ? "http://10.0.2.2:3000" : "http://localhost:3000";
 // Spring 로컬 기본 포트. 배포 환경은 EXPO_PUBLIC_API_URL로 지정.
 const DEFAULT_API_URL = isAndroidEmulator
