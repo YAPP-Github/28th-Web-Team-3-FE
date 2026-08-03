@@ -12,7 +12,8 @@ import {
   patchOnboardingProfile,
 } from "@/api/onboarding";
 
-export const ONBOARDING_PROFILE_QUERY_KEY = ["onboarding", "profile"] as const;
+/** 프로필 캐시 키. 밖에서는 `onboardingProfileOptions().queryKey`로 꺼낸다. */
+const ONBOARDING_PROFILE_QUERY_KEY = ["onboarding", "profile"] as const;
 const ONBOARDING_REPORT_QUERY_KEY = ["onboarding", "report"] as const;
 const ONBOARDING_GOAL_PLANS_QUERY_KEY = ["onboarding", "goal-plans"] as const;
 

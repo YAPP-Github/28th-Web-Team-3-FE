@@ -12,7 +12,7 @@ vi.mock("@/api/onboarding", () => ({
 }));
 
 import { confirmOnboardingGoal } from "@/api/onboarding";
-import { confirmOnboardingGoalOptions, ONBOARDING_PROFILE_QUERY_KEY } from "./onboarding";
+import { confirmOnboardingGoalOptions, onboardingProfileOptions } from "./onboarding";
 
 const IN_PROGRESS_PROFILE: OnboardingProfile = {
   status: "IN_PROGRESS",
@@ -32,7 +32,7 @@ describe("confirmOnboardingGoalOptions", () => {
    */
   it("목표를 확정하면 프로필 캐시의 status를 COMPLETED로 올린다", async () => {
     const queryClient = createTestQueryClient();
-    queryClient.setQueryData(ONBOARDING_PROFILE_QUERY_KEY, IN_PROGRESS_PROFILE);
+    queryClient.setQueryData(onboardingProfileOptions().queryKey, IN_PROGRESS_PROFILE);
     vi.mocked(confirmOnboardingGoal).mockResolvedValue({
       goalId: 1,
       plan: "PLAN_1",
@@ -48,7 +48,7 @@ describe("confirmOnboardingGoalOptions", () => {
       await result.current.mutateAsync({ plan: "PLAN_1" });
     });
 
-    expect(queryClient.getQueryData(ONBOARDING_PROFILE_QUERY_KEY)).toEqual({
+    expect(queryClient.getQueryData(onboardingProfileOptions().queryKey)).toEqual({
       ...IN_PROGRESS_PROFILE,
       status: "COMPLETED",
     });
@@ -71,6 +71,6 @@ describe("confirmOnboardingGoalOptions", () => {
       await result.current.mutateAsync({ plan: "PLAN_1" });
     });
 
-    expect(queryClient.getQueryData(ONBOARDING_PROFILE_QUERY_KEY)).toBeUndefined();
+    expect(queryClient.getQueryData(onboardingProfileOptions().queryKey)).toBeUndefined();
   });
 });

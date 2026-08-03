@@ -34,8 +34,8 @@ vi.mock("@/api/onboarding", () => ({
 import { fetchGoalStatus, updateGoal, updateSavings } from "@/api/goal";
 import { getOnboardingProfile, patchOnboardingProfile } from "@/api/onboarding";
 import { SAVE_FAILED_TEXT } from "@/lib/messages";
-import { GOAL_QUERY_KEY } from "@/lib/queries/goal";
-import { ONBOARDING_PROFILE_QUERY_KEY } from "@/lib/queries/onboarding";
+import { goalStatusOptions } from "@/lib/queries/goal";
+import { onboardingProfileOptions } from "@/lib/queries/onboarding";
 import { GoalDetail } from "./goal-detail";
 
 const MOCK_PROFILE = {
@@ -246,7 +246,7 @@ describe("GoalDetail", () => {
       goal: GoalStatus,
     ) {
       await act(async () => {
-        queryClient.setQueryData(GOAL_QUERY_KEY, goal);
+        queryClient.setQueryData(goalStatusOptions().queryKey, goal);
       });
       // 갱신이 닿기 전에 단언하면 통과해도 아무것도 증명하지 못한다.
       await waitFor(() =>
@@ -351,7 +351,7 @@ describe("GoalDetail", () => {
       });
 
       await act(async () => {
-        queryClient.setQueryData(ONBOARDING_PROFILE_QUERY_KEY, {
+        queryClient.setQueryData(onboardingProfileOptions().queryKey, {
           ...MOCK_PROFILE,
           monthlySalaryManwon: 300,
           goalPeriodMonths: 24,
@@ -386,7 +386,7 @@ describe("GoalDetail", () => {
       );
 
       await act(async () => {
-        queryClient.setQueryData(ONBOARDING_PROFILE_QUERY_KEY, {
+        queryClient.setQueryData(onboardingProfileOptions().queryKey, {
           ...MOCK_PROFILE,
           monthlySalaryManwon: 300,
         });
