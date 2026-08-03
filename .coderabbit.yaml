@@ -42,6 +42,7 @@ reviews:
         - 네이티브 브릿지: @webview-bridge/react-native
         - 빌드: expo prebuild (ios/android 폴더는 gitignore)
         - 스타일: StyleSheet (Tailwind 없음)
+        - 의존성: Expo SDK가 호환 버전을 관리하는 패키지는 `pnpm expo install`로 설치하고 이 앱에 직접 핀한다. `expo`·`expo-*`, `react-native`, `react-native-webview`, `react-native-safe-area-context`, `expo-device`에 `catalog:` 이전을 요구하지 않는다.
         - 구버전 패턴 주의: expo-router 미사용, 클래스형 컴포넌트 없음
     - path: "packages/ui/**"
       instructions: |
