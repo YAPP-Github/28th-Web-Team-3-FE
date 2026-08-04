@@ -148,8 +148,17 @@ export default function App() {
 
   return (
     <SafeAreaProvider>
-      <StatusBar style="auto" />
-      <SafeAreaView edges={["top"]} style={styles.flex}>
+      {/* 웹은 라이트 전용이다(@repo/ui globals.css에 prefers-color-scheme 분기 없음).
+          "auto"면 다크모드 기기에서 밝은 글자로 그려져 웹의 흰 헤더 위에서 안 보인다.
+          웹이 다크모드를 지원하면 "auto"로 되돌린다. */}
+      <StatusBar style="dark" />
+      {/* 상·하 인셋의 주인은 여기 한 곳이다. Expo 57(RN 0.86)은 Android edge-to-edge가
+          강제라(prebuild가 statusBar/navigationBarColor를 transparent로 박는다) 하단을
+          비워 두면 시스템 제스처바가 웹의 고정 탭바를 덮는다. 웹은 그래서 자기 쪽에
+          safe-area 여백을 두지 않는다 — 양쪽이 넣으면 여백이 이중으로 들어간다.
+          backgroundColor가 없으면 인셋 밴드에 DayNight 루트 배경이 드러나 다크모드에서
+          흰 웹 화면 위아래로 회색 띠가 생긴다. 값은 웹의 --color-gray-0과 같다. */}
+      <SafeAreaView edges={["top", "bottom"]} style={styles.safeArea}>
         {ready ? (
           <>
             <WebView
@@ -223,7 +232,7 @@ export default function App() {
 }
 
 const styles = StyleSheet.create({
-  flex: { flex: 1 },
+  safeArea: { flex: 1, backgroundColor: "#ffffff" },
   center: { flex: 1, alignItems: "center", justifyContent: "center" },
   webview: { flex: 1 },
   errorSurface: { backgroundColor: "#ffffff", gap: 8, paddingHorizontal: 24 },

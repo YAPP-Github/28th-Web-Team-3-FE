@@ -20,7 +20,9 @@ export function BottomNav() {
   const pathname = usePathname() ?? "";
 
   return (
-    <nav className="fixed inset-x-0 bottom-0 mx-auto max-w-md border-gray-100 border-t bg-gray-0 pb-[env(safe-area-inset-bottom)]">
+    // 하단 인셋(홈 인디케이터·제스처바)은 네이티브 셸의 `SafeAreaView`가 잡는다. 여기서
+    // `env(safe-area-inset-bottom)`을 더하면 여백이 이중으로 들어간다.
+    <nav className="fixed inset-x-0 bottom-0 mx-auto max-w-md border-gray-100 border-t bg-gray-0">
       <ul className="flex">
         {TABS.map(({ label, href, Icon }) => {
           const active =

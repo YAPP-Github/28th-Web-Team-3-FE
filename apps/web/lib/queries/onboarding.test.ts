@@ -37,7 +37,7 @@ describe("confirmOnboardingGoalOptions", () => {
   it("목표를 확정하면 프로필 캐시의 status를 COMPLETED로 올린다", async () => {
     const queryClient = createTestQueryClient();
     queryClient.setQueryData(onboardingProfileOptions().queryKey, IN_PROGRESS_PROFILE);
-    queryClient.setQueryData(currentUserOptions.key(), INCOMPLETE_CURRENT_USER);
+    queryClient.setQueryData(currentUserOptions().queryKey, INCOMPLETE_CURRENT_USER);
     vi.mocked(confirmOnboardingGoal).mockResolvedValue({
       goalId: 1,
       plan: "PLAN_1",
@@ -57,7 +57,7 @@ describe("confirmOnboardingGoalOptions", () => {
       ...IN_PROGRESS_PROFILE,
       status: "COMPLETED",
     });
-    expect(queryClient.getQueryData(currentUserOptions.key())).toEqual({
+    expect(queryClient.getQueryData(currentUserOptions().queryKey)).toEqual({
       ...INCOMPLETE_CURRENT_USER,
       onboardingCompleted: true,
     });
