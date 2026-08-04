@@ -69,9 +69,10 @@ async function postAuth(
 
 async function reissue(): Promise<string | null> {
   const refreshToken = await SecureStore.getItemAsync(REFRESH_TOKEN_KEY);
-  let result = refreshToken
+  const refreshResult = refreshToken
     ? await postAuth("auth/guest/refresh", { refreshToken })
     : ("rejected" as const);
+  let result = refreshResult;
   // refresh가 거부됐을 때(만료·무효·부재)만 같은 uuid로 신규 발급해 계정 복귀.
   // 5xx·네트워크·파싱 실패는 같은 서버라 fallback이 무의미 — null로 끝내고
   // 다음 요청에서 자연 재시도한다.
@@ -82,6 +83,14 @@ async function reissue(): Promise<string | null> {
   if (result === "rejected" || result === null) {
     // 재발급 실패 — 만료된 토큰을 계속 내주면 401 → 재발급 실패가 반복되니 비운다.
     accessToken = null;
+    // 서버가 4xx로 거부한 refreshToken은 다시 성공할 수 없다. 신규 발급까지 실패해
+    // 새 토큰으로 덮어쓰지 못하는 이 경로에서만 지운다 — 남겨 두면 이후 모든 reissue가
+    // 실패가 확정된 토큰으로 왕복 한 번을 버리고 시작한다.
+    // 일시 장애(null: 5xx·네트워크·타임아웃·429·408)는 토큰이 무효라는 근거가 아니므로
+    // 절대 지우지 않는다 — 서버 장애 한 번에 모든 기기가 refresh 토큰을 잃는다.
+    if (refreshToken && refreshResult === "rejected") {
+      await SecureStore.deleteItemAsync(REFRESH_TOKEN_KEY);
+    }
     return null;
   }
   const tokens = result;
