@@ -33,5 +33,3 @@ const handlers = {
 } satisfies AppBridgeMethods;
 
 export const appBridge = bridge(handlers);
-
-export type NativeAppBridge = typeof appBridge;

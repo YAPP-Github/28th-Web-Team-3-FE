@@ -40,4 +40,4 @@ export function renderHook<TResult, TProps>(
   return baseRenderHook(callback, { wrapper: wrapperFor(queryClient), ...rest });
 }
 
-export { act, fireEvent, screen, waitFor, within } from "@testing-library/react";
+export { act, fireEvent, screen, waitFor } from "@testing-library/react";
