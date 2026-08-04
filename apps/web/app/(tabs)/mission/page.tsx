@@ -15,7 +15,7 @@ import { MissionCompleteDialog } from "./_components/mission-complete-dialog";
 import { MissionHero } from "./_components/mission-hero";
 import { MissionList } from "./_components/mission-list";
 import { MISSION_CATEGORY_LABELS, type MissionCategory } from "./constants/mission";
-import { calculateProgressPercent, countCompletedMissions, formatWeekDday } from "./lib/format";
+import { calculateProgressPercent, formatSavedAmount, formatWeekDday } from "./lib/format";
 
 export default function MissionPage() {
   const queryClient = useQueryClient();
@@ -58,9 +58,9 @@ export default function MissionPage() {
   return (
     <main className="flex flex-1 flex-col bg-gray-0 text-gray-900">
       <MissionHero
-        completedCount={countCompletedMissions(missions)}
         ddayLabel={formatWeekDday(missions[0]?.weekEndsAt)}
         percent={calculateProgressPercent(missions)}
+        savedLabel={formatSavedAmount(missions)}
       />
       <section className="flex flex-col gap-5 px-5 pt-6">
         <MissionCategoryFilter activeCategory={activeCategory} onChange={setActiveCategory} />

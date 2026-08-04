@@ -61,12 +61,12 @@ describe("MissionPage", () => {
     vi.mocked(deleteRecommendedMission).mockResolvedValue(undefined);
   });
 
-  it("코인 수는 완료한 미션 개수를 따른다", async () => {
+  it("절약 금액은 완료한 미션에서만 나온다", async () => {
     render(<MissionPage />);
 
-    // 목 데이터는 3건 중 1건 완료 — 진행률과 코인이 같은 데이터에서 나온다.
+    // 목 데이터는 3건 중 15,000원짜리 1건만 완료 — 진행률과 절약 금액이 같은 데이터에서 나온다.
     expect(await screen.findByText("33% 달성")).toBeInTheDocument();
-    expect(screen.getByText("+1")).toBeInTheDocument();
+    expect(screen.getByText("약 2만원 절약했어요")).toBeInTheDocument();
   });
 
   it("카테고리를 필터링하고 미션 상세를 펼친다", async () => {
