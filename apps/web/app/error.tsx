@@ -7,7 +7,7 @@ import { ErrorState, RetryButton } from "./_components/error-state";
 
 export default function RouteError({ error, unstable_retry }: ErrorInfo) {
   useEffect(() => {
-    // dev만 건너뛴다 — sentry.server.config.ts·instrumentation-client.ts와 같은 조건이다.
+    // dev만 건너뛴다 — instrumentation-client.ts가 debug를 켜는 조건과 같다.
     // `next build`가 NODE_ENV를 production으로 고정하므로 preview 배포도 여기 포함된다.
     if (process.env.NODE_ENV === "development") {
       return;
