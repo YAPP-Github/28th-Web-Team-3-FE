@@ -11,7 +11,7 @@ import { MissionCompleteDialog } from "@/app/(tabs)/mission/_components/mission-
 import { MISSION_CATEGORY_LABELS } from "@/app/(tabs)/mission/constants/mission";
 import {
   calculateProgressPercent,
-  countCompletedMissions,
+  formatSavedAmount,
   formatWeekDday,
 } from "@/app/(tabs)/mission/lib/format";
 import { calculateGoalTotalTargetManwon } from "@/app/goal/lib/progress";
@@ -68,10 +68,10 @@ export function WeeklyMissionSection() {
       </div>
 
       <MissionProgress
-        completedCount={countCompletedMissions(missions)}
         ddayLabel={formatWeekDday(missions[0]?.weekEndsAt)}
         hasMissions={hasMissions}
         percent={calculateProgressPercent(missions)}
+        savedLabel={formatSavedAmount(missions)}
       />
 
       {hasMissions ? (
@@ -183,16 +183,11 @@ interface MissionProgressProps {
   ddayLabel: string;
   hasMissions: boolean;
   percent: number;
-  /** 완료한 미션 수 — 완료 1건당 코인 1개. */
-  completedCount: number;
+  /** 완료한 미션으로 아낀 금액 — "약 3만원" 형태. */
+  savedLabel: string;
 }
 
-function MissionProgress({
-  ddayLabel,
-  hasMissions,
-  percent,
-  completedCount,
-}: MissionProgressProps) {
+function MissionProgress({ ddayLabel, hasMissions, percent, savedLabel }: MissionProgressProps) {
   const progressLabel = hasMissions ? `${percent}% 달성` : "0% 달성";
 
   return (
@@ -206,7 +201,8 @@ function MissionProgress({
           <p className="text-caption-c1-500 text-gray-700">미션을 추가하고 달성해보세요!</p>
         </div>
         <span className="flex items-center gap-1 text-body-b2-500 text-gray-800">
-          <CoinIcon aria-hidden="true" />+{completedCount}
+          <CoinIcon aria-hidden="true" />
+          {savedLabel} 절약했어요
         </span>
       </div>
       <Image

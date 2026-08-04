@@ -91,6 +91,7 @@ describe("WeeklyMissionSection", () => {
     render(<WeeklyMissionSection />);
 
     expect(await screen.findByText("0% 달성")).toBeInTheDocument();
+    expect(screen.getByText("약 0원 절약했어요")).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "5,000만원 달성을 위한 미션 추가" })).toHaveAttribute(
       "href",
       "/mission/new",
