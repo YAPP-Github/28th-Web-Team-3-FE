@@ -151,7 +151,7 @@ export default function OnboardingGoalPage() {
         ) : null}
       </div>
 
-      <div className="flex flex-col border-gray-400 border-t border-dashed px-5 pt-2 pb-[calc(24px+env(safe-area-inset-bottom))]">
+      <div className="flex flex-col border-gray-400 border-t border-dashed px-5 pt-2 pb-6">
         <ButtonGroup
           nextDisabled={isConfirming}
           nextLabel={isConfirming ? "목표를 설정하고 있어요…" : "이 목표로 시작"}
