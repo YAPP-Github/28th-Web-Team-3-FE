@@ -1,4 +1,3 @@
-import type { CurrentUser } from "@repo/schema/auth";
 import type {
   OnboardingGoalConfirm,
   OnboardingProfile,
@@ -70,7 +69,8 @@ export function confirmOnboardingGoalOptions(queryClient: QueryClient) {
       queryClient.setQueryData<OnboardingProfile>(ONBOARDING_PROFILE_QUERY_KEY, (profile) =>
         profile ? { ...profile, status } : profile,
       );
-      queryClient.setQueryData<CurrentUser>(currentUserOptions.key(), (currentUser) =>
+      // queryKey에 DataTag가 붙어 있어 데이터 타입이 options에서 추론된다 — 제네릭 불필요.
+      queryClient.setQueryData(currentUserOptions().queryKey, (currentUser) =>
         currentUser ? { ...currentUser, onboardingCompleted: status === "COMPLETED" } : currentUser,
       );
     },
