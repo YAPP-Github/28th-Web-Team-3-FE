@@ -70,7 +70,7 @@ export function confirmOnboardingGoalOptions(queryClient: QueryClient) {
       queryClient.setQueryData<OnboardingProfile>(ONBOARDING_PROFILE_QUERY_KEY, (profile) =>
         profile ? { ...profile, status } : profile,
       );
-      queryClient.setQueryData<CurrentUser>(currentUserOptions.key(), (currentUser) =>
+      queryClient.setQueryData<CurrentUser>(currentUserOptions().queryKey, (currentUser) =>
         currentUser ? { ...currentUser, onboardingCompleted: status === "COMPLETED" } : currentUser,
       );
     },
