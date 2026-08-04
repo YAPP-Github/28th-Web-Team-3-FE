@@ -1,7 +1,17 @@
 import { expect, test } from "@playwright/test";
 
-// 인증은 네이티브 셸(bridge) 몫이라 브라우저 e2e에는 토큰이 없다. 미션 목록만 목으로 세운다.
+// 인증은 네이티브 셸(bridge) 몫이라 브라우저 e2e에는 토큰이 없다. 화면이 뜨는 데 필요한
+// 응답만 목으로 세운다.
 test.beforeEach(async ({ page }) => {
+  // 온보딩 상태 라우팅이 이 응답을 보고 미완료면 온보딩으로 되돌려 보낸다.
+  await page.route("**/api/auth/me", (route) =>
+    route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({ userId: 1, onboardingCompleted: true }),
+    }),
+  );
+
   await page.route("**/api/missions", (route) =>
     route.fulfill({
       status: 200,
