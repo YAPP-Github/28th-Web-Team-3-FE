@@ -83,6 +83,10 @@ export default function App() {
     setLoadFailed(false);
     // 뷰를 새로 만들면 히스토리도 함께 비워진다.
     canGoBackRef.current = false;
+    // 새 주소를 여기서 바로 반영한다 — onNavigationStateChange를 기다리면, 그 전에
+    // 렌더러가 또 죽었을 때 이미 떠난 주소로 되살린다. 재시도로 첫 화면을 연 직후
+    // 죽으면 방금 실패한 화면으로 돌아가는 식이다.
+    currentUrlRef.current = uri;
     setSource({ uri });
     setReloadKey((key) => key + 1);
   }
