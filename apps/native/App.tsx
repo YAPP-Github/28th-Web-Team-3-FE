@@ -1,6 +1,6 @@
 import type { BridgeWebView } from "@webview-bridge/react-native";
 import { StatusBar } from "expo-status-bar";
-import { useEffect, useRef, useState } from "react";
+import { type ReactNode, useEffect, useRef, useState, useSyncExternalStore } from "react";
 import {
   ActivityIndicator,
   BackHandler,
@@ -11,11 +11,12 @@ import {
   Text,
   View,
 } from "react-native";
-import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
+import { SafeAreaProvider, useSafeAreaInsets } from "react-native-safe-area-context";
 import { initGuestAuth } from "./src/auth/guest-auth";
 import { WEB_ORIGIN, WEB_URL } from "./src/config";
 import { isAllowedExternalUrl, isTrustedWebViewUrl } from "./src/lib/trusted-url";
 import { authenticate, isBiometricAvailable } from "./src/native/biometric";
+import { getSafeAreaColors, subscribeSafeAreaColors } from "./src/native/safe-area";
 import { WebView } from "./src/webview";
 
 /**
@@ -152,13 +153,7 @@ export default function App() {
           "auto"면 다크모드 기기에서 밝은 글자로 그려져 웹의 흰 헤더 위에서 안 보인다.
           웹이 다크모드를 지원하면 "auto"로 되돌린다. */}
       <StatusBar style="dark" />
-      {/* 상·하 인셋의 주인은 여기 한 곳이다. Expo 57(RN 0.86)은 Android edge-to-edge가
-          강제라(prebuild가 statusBar/navigationBarColor를 transparent로 박는다) 하단을
-          비워 두면 시스템 제스처바가 웹의 고정 탭바를 덮는다. 웹은 그래서 자기 쪽에
-          safe-area 여백을 두지 않는다 — 양쪽이 넣으면 여백이 이중으로 들어간다.
-          backgroundColor가 없으면 인셋 밴드에 DayNight 루트 배경이 드러나 다크모드에서
-          흰 웹 화면 위아래로 회색 띠가 생긴다. 값은 웹의 --color-gray-0과 같다. */}
-      <SafeAreaView edges={["top", "bottom"]} style={styles.safeArea}>
+      <SafeAreaBands>
         {ready ? (
           <>
             <WebView
@@ -226,13 +221,41 @@ export default function App() {
             <ActivityIndicator size="large" />
           </View>
         )}
-      </SafeAreaView>
+      </SafeAreaBands>
     </SafeAreaProvider>
   );
 }
 
+/**
+ * 상·하 인셋의 주인은 여기 한 곳이다. Expo 57(RN 0.86)은 Android edge-to-edge가 강제라
+ * (prebuild가 statusBar/navigationBarColor를 transparent로 박는다) 하단을 비워 두면 시스템
+ * 제스처바가 웹의 고정 탭바를 덮는다. 웹은 그래서 자기 쪽에 safe-area 여백을 두지 않는다 —
+ * 양쪽이 넣으면 여백이 이중으로 들어간다.
+ *
+ * `SafeAreaView` 하나로 감싸면 상·하가 같은 색이 된다. 시안은 화면마다 상단 밴드가 히어로
+ * 배경을 이어받으므로(혜택은 blue-50, 미션은 gray-50) 밴드를 따로 그려 색을 나눈다. 색이
+ * 없으면 인셋 밴드에 DayNight 루트 배경이 드러나 다크모드에서 흰 웹 화면 위아래로 회색 띠가
+ * 생긴다.
+ *
+ * 색만 이 컴포넌트에서 구독한다 — `children`은 App이 만든 엘리먼트 그대로라 색이 바뀌어도
+ * WebView가 리렌더되지 않는다.
+ */
+function SafeAreaBands({ children }: { children: ReactNode }) {
+  const insets = useSafeAreaInsets();
+  const colors = useSyncExternalStore(subscribeSafeAreaColors, getSafeAreaColors);
+
+  return (
+    <View style={styles.root}>
+      <View style={{ height: insets.top, backgroundColor: colors.top }} />
+      <View style={styles.content}>{children}</View>
+      <View style={{ height: insets.bottom, backgroundColor: colors.bottom }} />
+    </View>
+  );
+}
+
 const styles = StyleSheet.create({
-  safeArea: { flex: 1, backgroundColor: "#ffffff" },
+  root: { flex: 1 },
+  content: { flex: 1 },
   center: { flex: 1, alignItems: "center", justifyContent: "center" },
   webview: { flex: 1 },
   errorSurface: { backgroundColor: "#ffffff", gap: 8, paddingHorizontal: 24 },

@@ -1,0 +1,44 @@
+/**
+ * safe-area 밴드 색 저장소. 인셋의 주인이 네이티브 셸이라(`App.tsx`) 웹 CSS로는 이 영역을
+ * 칠할 수 없는데, 화면마다 히어로 배경이 달라 밴드도 따라가야 한다. 웹이 브릿지로 색을
+ * 통보하면 여기 담고 셸이 `useSyncExternalStore`로 구독한다.
+ *
+ * 브릿지 계약(`AppBridgeMethods`)은 async 함수만 담는 레코드라 상태를 브릿지 store에 넣지
+ * 않고 이 모듈에 둔다.
+ */
+
+export interface SafeAreaColors {
+  top: string;
+  bottom: string;
+}
+
+/** 웹이 색을 통보하기 전까지 쓰는 값. 웹 `--color-gray-0`과 같다. */
+export const DEFAULT_SAFE_AREA_COLORS: SafeAreaColors = { top: "#ffffff", bottom: "#ffffff" };
+
+const HEX_COLOR = /^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/;
+
+let colors: SafeAreaColors = DEFAULT_SAFE_AREA_COLORS;
+const listeners = new Set<() => void>();
+
+/**
+ * 밴드 색을 바꾼다. 웹이 넘긴 값이 그대로 RN `backgroundColor`에 들어가므로 16진수 색만
+ * 받아들이고, 형식이 어긋나면 직전 색을 유지한다.
+ */
+export function setColors(top: string, bottom: string): void {
+  if (!HEX_COLOR.test(top) || !HEX_COLOR.test(bottom)) return;
+  // 같은 값이면 스냅샷 참조를 유지한다 — 바꾸면 useSyncExternalStore가 매번 리렌더한다.
+  if (top === colors.top && bottom === colors.bottom) return;
+  colors = { top, bottom };
+  for (const listener of listeners) listener();
+}
+
+export function subscribeSafeAreaColors(listener: () => void): () => void {
+  listeners.add(listener);
+  return () => {
+    listeners.delete(listener);
+  };
+}
+
+export function getSafeAreaColors(): SafeAreaColors {
+  return colors;
+}
