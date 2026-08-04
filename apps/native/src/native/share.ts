@@ -1,5 +1,4 @@
 import type { SharePayload } from "@repo/bridge/types";
-import * as Sharing from "expo-sharing";
 import { Share } from "react-native";
 
 /**
@@ -17,9 +16,4 @@ export async function open(payload: SharePayload): Promise<boolean> {
     { dialogTitle: payload.title },
   );
   return result.action !== Share.dismissedAction;
-}
-
-/** 파일 공유가 따로 필요한 호출부를 위해 노출해둔다. */
-export async function isAvailable(): Promise<boolean> {
-  return Sharing.isAvailableAsync();
 }
