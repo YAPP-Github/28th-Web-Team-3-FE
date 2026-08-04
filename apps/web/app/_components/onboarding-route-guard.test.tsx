@@ -1,6 +1,7 @@
 import { Component, type ReactNode } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { render, screen, waitFor } from "@/lib/test/react";
+import { currentUserOptions } from "@/lib/queries/auth";
+import { createTestQueryClient, render, screen, waitFor } from "@/lib/test/react";
 
 const navigation = vi.hoisted(() => ({
   pathname: "/",
@@ -87,5 +88,23 @@ describe("OnboardingRouteGuard", () => {
     );
 
     expect(await screen.findByText("network error")).toBeInTheDocument();
+  });
+
+  it("캐시된 사용자가 있으면 재조회 실패에도 현재 화면을 유지한다", async () => {
+    const queryClient = createTestQueryClient();
+    queryClient.setQueryData(currentUserOptions.key(), { userId: 1, onboardingCompleted: true });
+    vi.mocked(getCurrentUser).mockRejectedValue(new Error("network error"));
+
+    render(
+      <OnboardingRouteGuard>
+        <p>홈</p>
+      </OnboardingRouteGuard>,
+      { queryClient },
+    );
+
+    await waitFor(() =>
+      expect(queryClient.getQueryState(currentUserOptions.key())?.status).toBe("error"),
+    );
+    expect(screen.getByText("홈")).toBeInTheDocument();
   });
 });

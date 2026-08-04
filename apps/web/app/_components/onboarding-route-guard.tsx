@@ -28,7 +28,7 @@ export function OnboardingRouteGuard({ children }: { children: ReactNode }) {
     return <p className="px-5 pt-20 text-center text-body-b2-500 text-gray-400">{LOADING_TEXT}</p>;
   }
 
-  if (error) throw error;
+  if (error && !currentUser) throw error;
   if (!currentUser) throw new Error("현재 사용자 조회 결과가 없습니다.");
 
   if (shouldRedirectToHome || shouldRedirectToOnboarding) {
