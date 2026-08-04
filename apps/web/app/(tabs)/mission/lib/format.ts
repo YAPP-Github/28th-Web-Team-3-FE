@@ -11,8 +11,8 @@ export function formatWeekDday(weekEndsAt: string | undefined): string {
   return days === 0 ? "D-DAY" : `D-${days}`;
 }
 
-/** 완료한 미션 수 — 완료 1건당 코인 1개로 표시한다. */
-export function countCompletedMissions(missions: readonly Mission[]): number {
+/** 완료한 미션 수. */
+function countCompletedMissions(missions: readonly Mission[]): number {
   return missions.filter((mission) => mission.status === "COMPLETED").length;
 }
 

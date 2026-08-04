@@ -1,3 +1,4 @@
+import { cn } from "@repo/ui";
 import { Plus, X } from "lucide-react";
 import Link from "next/link";
 
@@ -31,11 +32,12 @@ export function MissionAddMenu({ isOpen, onToggle }: MissionAddMenuProps) {
         aria-expanded={isOpen}
         aria-label={isOpen ? "미션 추가 메뉴 닫기" : "미션 추가 메뉴 열기"}
         // 열려 있을 땐 흰 버튼이다 — 파란 채움을 유지하면 메뉴보다 닫기 버튼이 더 도드라진다.
-        className={`flex size-[52px] items-center justify-center rounded-full shadow-[0_2px_12px_rgba(35,37,41,0.15)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
+        className={cn(
+          "flex size-[52px] items-center justify-center rounded-full shadow-[0_2px_12px_rgba(35,37,41,0.15)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
           isOpen
             ? "bg-gray-0 text-gray-600 hover:bg-gray-10"
-            : "bg-blue-500 text-gray-0 hover:bg-blue-600"
-        }`}
+            : "bg-blue-500 text-gray-0 hover:bg-blue-600",
+        )}
         type="button"
         onClick={onToggle}
       >
