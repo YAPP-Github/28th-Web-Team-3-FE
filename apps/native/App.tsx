@@ -13,8 +13,8 @@ import {
 } from "react-native";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import { initGuestAuth } from "./src/auth/guest-auth";
-import { ORIGIN_WHITELIST, WEB_ORIGIN, WEB_URL } from "./src/config";
-import { isTrustedWebViewUrl } from "./src/lib/trusted-url";
+import { WEB_ORIGIN, WEB_URL } from "./src/config";
+import { isAllowedExternalUrl, isTrustedWebViewUrl } from "./src/lib/trusted-url";
 import { authenticate, isBiometricAvailable } from "./src/native/biometric";
 import { WebView } from "./src/webview";
 
@@ -120,15 +120,25 @@ export default function App() {
               key={reloadKey}
               ref={webViewRef}
               source={{ uri: WEB_URL }}
-              originWhitelist={ORIGIN_WHITELIST}
+              // 라이브러리는 originWhitelist를 콜백보다 먼저 돌리고, 걸러낸 URL을
+              // 아래 콜백에 알리지도 않은 채 그대로 Linking으로 열어버린다. `*`로 열어
+              // 모든 내비게이션이 콜백에 도달하게 하고 판정은 한 곳에서만 한다.
+              originWhitelist={["*"]}
+              // 기본값(true)이면 target="_blank"·window.open 내비게이션이
+              // onShouldStartLoadWithRequest에 오지 않고 조용히 사라진다 — 사용자는
+              // 링크를 눌렀는데 아무 일도 안 일어나는 화면을 본다.
+              setSupportMultipleWindows={false}
               style={styles.webview}
-              // originWhitelist는 접두사만 맞아도 통과시키므로 여기서 origin 완전 일치를
-              // 강제한다. 이 검사를 통과한 페이지에만 브릿지가 주입된다 — 느슨하면
-              // getAccessToken/refreshAccessToken으로 토큰이 샌다.
               onShouldStartLoadWithRequest={(request) => {
+                // origin 완전 일치를 통과한 페이지에만 브릿지가 주입된다 — 느슨하면
+                // getAccessToken/refreshAccessToken으로 토큰이 샌다.
                 if (isTrustedWebViewUrl(request.url, WEB_ORIGIN)) return true;
-                // 우리 origin이 아니면 WebView에 띄우지 않고 OS에 넘긴다.
-                void Linking.openURL(request.url).catch(() => {});
+                // 우리 origin이 아니면 WebView에는 띄우지 않는다. 그중 브라우저·메일·전화로
+                // 끝나는 스킴만 OS에 넘기고, intent:/file:/javascript: 같은 나머지는
+                // 아무것도 열지 않는다.
+                if (isAllowedExternalUrl(request.url)) {
+                  void Linking.openURL(request.url).catch(() => {});
+                }
                 return false;
               }}
               // 응답보다 먼저 도는 시점이라 여기서 이번 내비게이션의 실패 여부를 초기화한다.
