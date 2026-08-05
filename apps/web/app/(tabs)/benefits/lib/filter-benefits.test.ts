@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { Benefit } from "@/app/(tabs)/benefits/types";
-import { filterBenefits, parseBenefitCategory } from "./filter-benefits";
+import { filterBenefits, parseBenefitFilter } from "./filter-benefits";
 
 function benefit(id: string, category: Benefit["category"]): Benefit {
   return {
@@ -19,16 +19,16 @@ const BENEFITS = [
   benefit("c", "savings"),
 ] as const;
 
-describe("parseBenefitCategory", () => {
+describe("parseBenefitFilter", () => {
   it("허용된 값만 통과시킨다", () => {
-    expect(parseBenefitCategory("saved")).toBe("saved");
-    expect(parseBenefitCategory("housing")).toBe("housing");
+    expect(parseBenefitFilter("saved")).toBe("saved");
+    expect(parseBenefitFilter("housing")).toBe("housing");
   });
 
   it("알 수 없는 값과 배열은 전체로 처리한다", () => {
-    expect(parseBenefitCategory("nope")).toBe("all");
-    expect(parseBenefitCategory(undefined)).toBe("all");
-    expect(parseBenefitCategory(["saved"])).toBe("all");
+    expect(parseBenefitFilter("nope")).toBe("all");
+    expect(parseBenefitFilter(undefined)).toBe("all");
+    expect(parseBenefitFilter(["saved"])).toBe("all");
   });
 });
 

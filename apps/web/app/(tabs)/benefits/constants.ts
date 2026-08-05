@@ -1,6 +1,6 @@
-import type { Benefit, BenefitCategory, BenefitItemCategory, FinancialTip } from "./types";
+import type { Benefit, BenefitFilter, BenefitItemCategory, FinancialTip } from "./types";
 
-export const BENEFIT_CATEGORIES: readonly { value: BenefitCategory; label: string }[] = [
+export const BENEFIT_FILTERS: readonly { value: BenefitFilter; label: string }[] = [
   { value: "all", label: "전체" },
   { value: "saved", label: "저장" },
   { value: "savings", label: "저축·자산형성" },

@@ -1,13 +1,13 @@
 import { BenefitsExplorer } from "./_components/benefits-explorer";
 import { BENEFITS } from "./constants";
-import { parseBenefitCategory } from "./lib/filter-benefits";
+import { parseBenefitFilter } from "./lib/filter-benefits";
 
 interface BenefitsPageProps {
   searchParams: Promise<{ category?: string | string[] }>;
 }
 
 export default async function BenefitsPage({ searchParams }: BenefitsPageProps) {
-  const initialCategory = parseBenefitCategory((await searchParams).category);
+  const initialFilter = parseBenefitFilter((await searchParams).category);
 
   return (
     <main className="flex flex-1 flex-col bg-gray-0">
@@ -25,7 +25,7 @@ export default async function BenefitsPage({ searchParams }: BenefitsPageProps) 
         </div>
       </section>
 
-      <BenefitsExplorer initialCategory={initialCategory} />
+      <BenefitsExplorer initialFilter={initialFilter} />
 
       <p className="mt-6 px-5 text-center text-caption-c1-500 text-gray-400">
         정책 내용은 변동될 수 있어요. 공식 페이지 기준으로 확인해 주세요.
