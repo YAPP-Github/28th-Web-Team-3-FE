@@ -38,15 +38,20 @@ export function BenefitsExplorer({ initialFilter }: { initialFilter: BenefitFilt
   }
 
   function toggleSave(id: string) {
+    // 화면 상태가 아니라 저장소를 다시 읽고 토글한다. 버튼은 하이드레이션 직후부터 눌리는데
+    // 이펙트는 페인트 뒤에 흘러서, 그 사이 클릭을 빈 Set으로 토글하면 방금 누른 id 하나만
+    // 쓰여 기존 저장 목록이 통째로 지워진다. 저장소가 원본이므로 매번 거기서 시작한다.
+    //
     // 저장은 updater 밖에서 한다 — StrictMode가 updater를 두 번 부르므로 안에 두면
     // 같은 값을 두 번 쓴다.
-    const next = toggleSavedBenefit(savedIds ?? NO_SAVED_BENEFITS, id);
+    const next = toggleSavedBenefit(readSavedBenefits(), id);
     setSavedIds(next);
     writeSavedBenefits(next);
   }
 
-  // 저장 목록을 읽기 전에는 비었는지 판단할 수 없다.
-  const isEmpty = benefits.length === 0 && (filter !== "saved" || savedIds !== null);
+  // 저장 목록을 읽기 전에는 비었는지도, 몇 개인지도 말할 수 없다.
+  const isResolved = filter !== "saved" || savedIds !== null;
+  const isEmpty = isResolved && benefits.length === 0;
 
   return (
     <>
@@ -54,13 +59,20 @@ export function BenefitsExplorer({ initialFilter }: { initialFilter: BenefitFilt
       <div className="mt-[18px]">
         <BenefitFilters selected={filter} onSelect={selectFilter} />
       </div>
-      {/* 칩을 눌러도 초점은 칩에 남는다. 목록이 바뀐 것을 스크린리더에도 알린다. */}
-      <section
-        id="benefits-list"
-        aria-label="정책 목록"
-        aria-live="polite"
-        className="mt-5 flex flex-col gap-3 px-5"
-      >
+      {/*
+        칩을 눌러도 초점은 칩에 남으므로 결과가 바뀐 것을 따로 알린다. 목록 자체를 live
+        region으로 만들면 안 된다 — 카드가 빠지기만 하는 변경은 안 읽히고, 카테고리를 바꾸면
+        추가된 카드의 제목·설명·버튼이 통째로 읽히며, 별 버튼의 aria-pressed 변화까지
+        region 안에서 일어난다. 짧은 상태 문구만 따로 둔다(W3C ARIA22).
+      */}
+      <p role="status" className="sr-only">
+        {isResolved
+          ? benefits.length > 0
+            ? `혜택 ${benefits.length}개를 찾았어요.`
+            : "조건에 맞는 혜택이 없어요."
+          : ""}
+      </p>
+      <section id="benefits-list" aria-label="정책 목록" className="mt-5 flex flex-col gap-3 px-5">
         {isEmpty ? (
           <p className="py-10 text-center text-body-b2-500 text-gray-500">
             {filter === "saved" ? (

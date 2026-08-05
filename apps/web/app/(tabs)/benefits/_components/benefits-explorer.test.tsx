@@ -1,19 +1,21 @@
 import { renderToString } from "react-dom/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { BENEFITS } from "@/app/(tabs)/benefits/constants";
-import { readSavedBenefits } from "@/app/(tabs)/benefits/lib/saved-benefits";
+import { readSavedBenefits, writeSavedBenefits } from "@/app/(tabs)/benefits/lib/saved-benefits";
 import { fireEvent, render, screen } from "@/lib/test/react";
 import { BenefitsExplorer } from "./benefits-explorer";
 
 vi.mock("@/app/(tabs)/benefits/lib/saved-benefits", async (importOriginal) => ({
   ...(await importOriginal<typeof import("@/app/(tabs)/benefits/lib/saved-benefits")>()),
   readSavedBenefits: vi.fn(),
+  writeSavedBenefits: vi.fn(),
 }));
 
 // 정적 배열이라 인덱스가 비지 않는다. noUncheckedIndexedAccess만 달래준다.
 const [first, second] = BENEFITS as [(typeof BENEFITS)[number], (typeof BENEFITS)[number]];
 
 beforeEach(() => {
+  vi.clearAllMocks();
   vi.mocked(readSavedBenefits).mockReturnValue(new Set());
   window.history.replaceState(null, "", "/benefits");
 });
@@ -45,6 +47,24 @@ describe("BenefitsExplorer", () => {
 
     expect(screen.getByText(first.title)).toBeInTheDocument();
     expect(screen.queryByText(/저장한 혜택이 없어요/)).not.toBeInTheDocument();
+  });
+
+  /**
+   * 화면 상태를 읽어 토글하면 그 상태가 뒤처졌을 때 저장분이 날아간다. 버튼은 하이드레이션
+   * 직후부터 눌리는데 이펙트는 페인트 뒤에 흐르므로 실제로 뒤처진 채 눌릴 수 있다.
+   * 읽기가 두 번째에 다른 값을 주도록 해서, 클릭이 저장소를 다시 읽는지 본다.
+   */
+  it("별을 누를 때 저장소를 다시 읽어 기존 저장분을 지키다", () => {
+    vi.mocked(readSavedBenefits)
+      .mockReturnValueOnce(new Set()) // 마운트 이펙트 — 아직 비어 있다고 본 시점
+      .mockReturnValue(new Set([second.id])); // 그 뒤 저장소에는 값이 들어와 있다
+    render(<BenefitsExplorer initialFilter="all" />);
+
+    fireEvent.click(screen.getByRole("button", { name: `${first.title} 저장` }));
+
+    expect(vi.mocked(writeSavedBenefits).mock.lastCall?.[0]).toEqual(
+      new Set([second.id, first.id]),
+    );
   });
 
   /**
