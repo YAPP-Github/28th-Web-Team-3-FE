@@ -2,6 +2,7 @@ import type { Benefit, BenefitCategory, BenefitItemCategory, FinancialTip } from
 
 export const BENEFIT_CATEGORIES: readonly { value: BenefitCategory; label: string }[] = [
   { value: "all", label: "전체" },
+  { value: "saved", label: "저장" },
   { value: "savings", label: "저축·자산형성" },
   { value: "housing", label: "주거비" },
   { value: "living", label: "교통·생활비" },

@@ -12,11 +12,16 @@ export function parseBenefitCategory(value: string | string[] | undefined): Bene
     : "all";
 }
 
-/** 선택 카테고리로 정책을 필터링한다. "all"이면 전체를 그대로 돌려준다. */
+/**
+ * 선택한 칩으로 정책을 필터링한다. "all"이면 전체를 그대로, "saved"면 저장한 것만 돌려준다.
+ * 저장 목록에는 사라진 정책의 id가 남아 있을 수 있어 정책 쪽을 기준으로 거른다.
+ */
 export function filterBenefits(
   benefits: readonly Benefit[],
   category: BenefitCategory,
+  savedIds: ReadonlySet<string>,
 ): readonly Benefit[] {
   if (category === "all") return benefits;
+  if (category === "saved") return benefits.filter((benefit) => savedIds.has(benefit.id));
   return benefits.filter((benefit) => benefit.category === category);
 }

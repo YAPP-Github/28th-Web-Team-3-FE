@@ -23,7 +23,7 @@ import { CategoryFilter } from "./category-filter";
 export function BenefitsExplorer({ initialCategory }: { initialCategory: BenefitCategory }) {
   const [category, setCategory] = useState(initialCategory);
   const [savedIds, setSavedIds] = useState(NO_SAVED_BENEFITS);
-  const benefits = filterBenefits(BENEFITS, category);
+  const benefits = filterBenefits(BENEFITS, category, savedIds);
 
   // localStorage는 서버에 없다. 첫 렌더는 저장 없음으로 그리고 마운트 후 실제 값으로 맞춘다.
   useEffect(() => {
@@ -50,14 +50,23 @@ export function BenefitsExplorer({ initialCategory }: { initialCategory: Benefit
         <CategoryFilter selected={category} onSelect={selectCategory} />
       </div>
       <section id="benefits-list" aria-label="정책 목록" className="mt-5 flex flex-col gap-3 px-5">
-        {benefits.map((benefit) => (
-          <BenefitCard
-            key={benefit.id}
-            benefit={benefit}
-            saved={savedIds.has(benefit.id)}
-            onToggleSave={toggleSave}
-          />
-        ))}
+        {/* 저장 필터는 비어 있을 수 있다. 안내가 없으면 목록이 안 뜬 건지 없는 건지 모른다. */}
+        {category === "saved" && benefits.length === 0 ? (
+          <p className="py-10 text-center text-body-b2-500 text-gray-500">
+            저장한 혜택이 없어요.
+            <br />
+            관심 있는 혜택의 별을 눌러 저장해보세요.
+          </p>
+        ) : (
+          benefits.map((benefit) => (
+            <BenefitCard
+              key={benefit.id}
+              benefit={benefit}
+              saved={savedIds.has(benefit.id)}
+              onToggleSave={toggleSave}
+            />
+          ))
+        )}
       </section>
     </>
   );
