@@ -25,7 +25,12 @@ const listeners = new Set<() => void>();
  * 받아들이고, 형식이 어긋나면 직전 색을 유지한다.
  */
 export function setColors(top: string, bottom: string): void {
-  if (!HEX_COLOR.test(top) || !HEX_COLOR.test(bottom)) return;
+  if (!HEX_COLOR.test(top) || !HEX_COLOR.test(bottom)) {
+    // 웹도 같은 검사를 하므로 여기 걸리면 웹의 폴백이 새고 있다는 뜻이다. 조용히 넘기면
+    // 밴드 색만 안 바뀌어 원인을 못 찾는다.
+    if (__DEV__) console.warn(`[safe-area] 16진수 색이 아니다: top=${top} bottom=${bottom}`);
+    return;
+  }
   // 같은 값이면 스냅샷 참조를 유지한다 — 바꾸면 useSyncExternalStore가 매번 리렌더한다.
   if (top === colors.top && bottom === colors.bottom) return;
   colors = { top, bottom };

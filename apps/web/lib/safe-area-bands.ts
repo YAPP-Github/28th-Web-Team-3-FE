@@ -25,3 +25,11 @@ const ROUTE_BAND_TOKENS: Record<string, SafeAreaBandTokens> = {
 export function getSafeAreaBandTokens(pathname: string): SafeAreaBandTokens {
   return ROUTE_BAND_TOKENS[pathname] ?? DEFAULT_BAND_TOKENS;
 }
+
+/** 변수를 못 읽거나 16진수가 아닐 때 쓰는 색. `--color-gray-0`과 같은 값이다. */
+export const FALLBACK_BAND_COLOR = "#ffffff";
+
+/** 네이티브가 받아들이는 형식인지. RN `backgroundColor`에 그대로 들어가므로 앵커해서 본다. */
+export function isHexColor(value: string): boolean {
+  return /^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/.test(value);
+}

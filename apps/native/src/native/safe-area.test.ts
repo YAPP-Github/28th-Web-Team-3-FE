@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
   DEFAULT_SAFE_AREA_COLORS,
   getSafeAreaColors,
@@ -6,14 +6,21 @@ import {
   subscribeSafeAreaColors,
 } from "./safe-area";
 
+// 저장소가 모듈 수준이라 구독을 놔두면 테스트마다 리스너가 쌓인다.
+const unsubscribes: (() => void)[] = [];
+
 beforeEach(() => {
   setColors(DEFAULT_SAFE_AREA_COLORS.top, DEFAULT_SAFE_AREA_COLORS.bottom);
+});
+
+afterEach(() => {
+  for (const unsubscribe of unsubscribes.splice(0)) unsubscribe();
 });
 
 describe("setColors", () => {
   it("색을 바꾸고 구독자에게 알린다", () => {
     const listener = vi.fn();
-    subscribeSafeAreaColors(listener);
+    unsubscribes.push(subscribeSafeAreaColors(listener));
 
     setColors("#e5f6fe", "#ffffff");
 
@@ -32,7 +39,7 @@ describe("setColors", () => {
   it("16진수 색이 아니면 무시하고 직전 색을 유지한다", () => {
     setColors("#e5f6fe", "#ffffff");
     const listener = vi.fn();
-    subscribeSafeAreaColors(listener);
+    unsubscribes.push(subscribeSafeAreaColors(listener));
 
     for (const invalid of ["red", "rgb(0,0,0)", "#12345", "", "#ggghhh", "#ffffff; drop"]) {
       setColors(invalid, "#ffffff");
@@ -48,7 +55,7 @@ describe("setColors", () => {
     setColors("#e5f6fe", "#ffffff");
     const snapshot = getSafeAreaColors();
     const listener = vi.fn();
-    subscribeSafeAreaColors(listener);
+    unsubscribes.push(subscribeSafeAreaColors(listener));
 
     setColors("#e5f6fe", "#ffffff");
 

@@ -255,7 +255,9 @@ function SafeAreaBands({ children }: { children: ReactNode }) {
 
 const styles = StyleSheet.create({
   root: { flex: 1 },
-  content: { flex: 1 },
+  // 밴드 사이 본문. 색이 없으면 부트 스피너 구간과 WebView 첫 프레임 전에 Android
+  // DayNight 루트 배경이 드러난다 — 다크모드 기기에서 회색 화면으로 보인다.
+  content: { flex: 1, backgroundColor: "#ffffff" },
   center: { flex: 1, alignItems: "center", justifyContent: "center" },
   webview: { flex: 1 },
   errorSurface: { backgroundColor: "#ffffff", gap: 8, paddingHorizontal: 24 },
