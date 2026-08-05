@@ -16,7 +16,11 @@ import { initGuestAuth } from "./src/auth/guest-auth";
 import { WEB_ORIGIN, WEB_URL } from "./src/config";
 import { isAllowedExternalUrl, isTrustedWebViewUrl } from "./src/lib/trusted-url";
 import { authenticate, isBiometricAvailable } from "./src/native/biometric";
-import { getSafeAreaColors, subscribeSafeAreaColors } from "./src/native/safe-area";
+import {
+  getSafeAreaColors,
+  resetColors as resetSafeAreaColors,
+  subscribeSafeAreaColors,
+} from "./src/native/safe-area";
 import { WebView } from "./src/webview";
 
 /**
@@ -77,6 +81,10 @@ export default function App() {
 
   function markLoadFailed() {
     navigationFailedRef.current = true;
+    // 오버레이는 흰 화면이라 직전 화면 색이 밴드에 남으면 위아래 띠만 도드라진다.
+    // 웹이 죽은 상태라 스스로 되돌릴 수도 없다 — 셸이 화면을 덮는 쪽에서 함께 걷는다.
+    // 렌더러 사망 복구(remount)는 같은 화면으로 돌아오므로 여기 해당하지 않는다.
+    resetSafeAreaColors();
     setLoadFailed(true);
   }
 

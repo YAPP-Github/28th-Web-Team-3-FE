@@ -146,6 +146,23 @@ describe("MissionPage", () => {
     expect(screen.getByRole("button", { name: "직접입력 (준비 중)" })).toBeDisabled();
   });
 
+  // 상단 safe-area 밴드는 경로만 보고 gray-50을 깐다. 히어로가 없는 화면이 흰색이면
+  // 없애려던 회색 띠가 상단에 다시 보인다.
+  it("로딩 화면도 밴드와 같은 색으로 시작한다", () => {
+    vi.mocked(fetchMissions).mockReturnValue(new Promise(() => {}));
+    render(<MissionPage />);
+
+    expect(screen.getByRole("main")).toHaveClass("bg-gray-50");
+  });
+
+  it("오류 화면도 밴드와 같은 색으로 시작한다", async () => {
+    vi.mocked(fetchMissions).mockRejectedValue(new Error("network error"));
+    render(<MissionPage />);
+
+    await screen.findByText("미션을 불러오지 못했어요. 잠시 후 다시 시도해 주세요.");
+    expect(screen.getByRole("main")).toHaveClass("bg-gray-50");
+  });
+
   it("추천받기를 새 미션 생성 경로로 연결한다", async () => {
     render(<MissionPage />);
 

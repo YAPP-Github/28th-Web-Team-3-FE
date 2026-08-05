@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
   DEFAULT_SAFE_AREA_COLORS,
   getSafeAreaColors,
+  resetColors,
   setColors,
   subscribeSafeAreaColors,
 } from "./safe-area";
@@ -60,6 +61,28 @@ describe("setColors", () => {
     setColors("#e5f6fe", "#ffffff");
 
     expect(getSafeAreaColors()).toBe(snapshot);
+    expect(listener).not.toHaveBeenCalled();
+  });
+});
+
+describe("resetColors", () => {
+  it("직전 화면 색을 걷고 기본 흰색으로 되돌린다", () => {
+    setColors("#e5f6fe", "#ffffff");
+    const listener = vi.fn();
+    unsubscribes.push(subscribeSafeAreaColors(listener));
+
+    resetColors();
+
+    expect(getSafeAreaColors()).toEqual(DEFAULT_SAFE_AREA_COLORS);
+    expect(listener).toHaveBeenCalledTimes(1);
+  });
+
+  it("이미 기본색이면 알리지 않는다", () => {
+    const listener = vi.fn();
+    unsubscribes.push(subscribeSafeAreaColors(listener));
+
+    resetColors();
+
     expect(listener).not.toHaveBeenCalled();
   });
 });

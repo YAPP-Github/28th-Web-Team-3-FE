@@ -37,6 +37,15 @@ export function setColors(top: string, bottom: string): void {
   for (const listener of listeners) listener();
 }
 
+/**
+ * 밴드를 기본 흰색으로 되돌린다. 웹이 아니라 셸이 화면을 덮을 때(로드 실패 오버레이) 쓴다 —
+ * 오버레이는 흰색인데 밴드에는 웹이 마지막으로 통보한 색이 남아 있어, 그대로 두면 흰 화면
+ * 위아래로 직전 화면의 색 띠만 남는다. 네트워크가 끊긴 상태면 웹이 다시 통보할 수도 없다.
+ */
+export function resetColors(): void {
+  setColors(DEFAULT_SAFE_AREA_COLORS.top, DEFAULT_SAFE_AREA_COLORS.bottom);
+}
+
 export function subscribeSafeAreaColors(listener: () => void): () => void {
   listeners.add(listener);
   return () => {
