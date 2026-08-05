@@ -19,7 +19,7 @@ const config: ExpoConfig = {
   userInterfaceStyle: "automatic",
   icon: "./assets/icon.png",
   ios: {
-    supportsTablet: true,
+    supportsTablet: false,
     bundleIdentifier: "com.akkimo.app",
     infoPlist: {
       // 생체인증을 호출할 때 iOS가 이유 문구를 보여주려면 필요하다.
