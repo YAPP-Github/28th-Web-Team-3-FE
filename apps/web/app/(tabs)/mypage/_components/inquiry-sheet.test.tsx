@@ -57,14 +57,17 @@ describe("InquirySheet", () => {
 
   /**
    * 배포 환경은 변수를 비운 채 정의해두거나 값을 잘못 넣기도 한다. 그런 값을 "설정됨"으로
-   * 보면 이메일 주소를 감춘 채 눌러도 아무 일 없는 오픈채팅 버튼만 남는다.
+   * 보면 이메일 주소를 감춘 채 눌러도 아무 일 없는(혹은 무관한 사이트를 여는) 버튼만 남는다.
    */
   it.each([
     " ",
     "https://",
     "잘못된 주소",
     "http://open.kakao.com/o/test",
-  ])("열 수 없는 오픈채팅 URL(%j)은 설정 안 한 것으로 본다", (value) => {
+    // 열리기는 하지만 "카카오톡으로 문의하기"라고 해놓고 무관한 사이트를 띄운다.
+    "https://example.com",
+    "https://open.kakao.com.attacker.tld/o/test",
+  ])("오픈채팅으로 못 여는 값(%j)은 설정 안 한 것으로 본다", (value) => {
     vi.stubEnv("NEXT_PUBLIC_KAKAO_OPENCHAT_URL", value);
     render(<InquirySheet open onOpenChange={() => {}} />);
 
