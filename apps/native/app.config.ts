@@ -15,19 +15,19 @@ const config: ExpoConfig = {
   slug: "web-team-3",
   version: "1.0.0",
   orientation: "portrait",
-  scheme: "webteam3",
+  scheme: "akkimo",
   userInterfaceStyle: "automatic",
   icon: "./assets/icon.png",
   ios: {
-    supportsTablet: true,
-    bundleIdentifier: "com.webteam3.app",
+    supportsTablet: false,
+    bundleIdentifier: "com.akkimo.app",
     infoPlist: {
       // 생체인증을 호출할 때 iOS가 이유 문구를 보여주려면 필요하다.
       NSFaceIDUsageDescription: "앱 잠금 해제를 위해 Face ID를 사용합니다.",
     },
   },
   android: {
-    package: "com.webteam3.app",
+    package: "com.akkimo.app",
     // 어댑티브 아이콘은 가장자리를 기기 모양대로 잘라내므로, icon.png를 그대로 쓰면
     // 아래쪽 귀가 먹힌다. foreground는 마크를 안전 영역(66%) 안으로 넣은 별도 파일이다.
     adaptiveIcon: {
