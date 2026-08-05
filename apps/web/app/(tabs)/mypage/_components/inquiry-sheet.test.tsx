@@ -19,8 +19,18 @@ beforeEach(() => {
   vi.stubEnv("NEXT_PUBLIC_KAKAO_OPENCHAT_URL", "");
 });
 
+/**
+ * `window.location`을 갈아끼운 테스트가 원상복구할 수 있게 원본 서술자를 들고 있는다.
+ * 복원하지 않으면 이후 테스트가 가짜 location을 물려받는다.
+ *
+ * jsdom이 `location`을 `configurable: true`로 두므로 재정의 자체는 된다. 반대로
+ * `location.assign`은 `writable: false, configurable: false`라 `vi.spyOn`으로는 못 잡는다.
+ */
+const ORIGINAL_LOCATION = Object.getOwnPropertyDescriptor(window, "location");
+
 afterEach(() => {
   vi.unstubAllEnvs();
+  if (ORIGINAL_LOCATION) Object.defineProperty(window, "location", ORIGINAL_LOCATION);
 });
 
 describe("InquirySheet", () => {
