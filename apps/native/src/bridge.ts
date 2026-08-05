@@ -6,6 +6,7 @@ import * as guestAuth from "./auth/guest-auth";
 import * as biometric from "./native/biometric";
 import * as link from "./native/link";
 import * as push from "./native/push";
+import * as safeArea from "./native/safe-area";
 import * as share from "./native/share";
 
 async function getNativeInfo(): Promise<NativeInfo> {
@@ -28,6 +29,7 @@ const handlers = {
   getPushToken: () => push.getToken(), // stub
   registerPush: () => push.register(), // stub
   getNativeInfo,
+  setSafeAreaColor: async (top, bottom) => safeArea.setColors(top, bottom),
   getAccessToken: () => guestAuth.getAccessToken(),
   refreshAccessToken: () => guestAuth.refreshAccessToken(),
 } satisfies AppBridgeMethods;

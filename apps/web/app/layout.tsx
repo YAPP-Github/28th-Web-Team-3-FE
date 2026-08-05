@@ -4,6 +4,7 @@ import type { ReactNode } from "react";
 import { Suspense } from "react";
 import { MixpanelPageTracker } from "./_components/mixpanel-page-tracker";
 import { OnboardingRouteGuard } from "./_components/onboarding-route-guard";
+import { SafeAreaColor } from "./_components/safe-area-color";
 import "./globals.css";
 import { MSWProvider } from "./msw-provider";
 
@@ -18,6 +19,9 @@ export default function RootLayout({ children }: { children: ReactNode }) {
       <OnboardingRouteGuard>{children}</OnboardingRouteGuard>
       <Suspense fallback={null}>
         <MixpanelPageTracker />
+      </Suspense>
+      <Suspense fallback={null}>
+        <SafeAreaColor />
       </Suspense>
     </QueryProvider>
   );

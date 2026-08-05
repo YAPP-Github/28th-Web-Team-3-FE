@@ -50,6 +50,12 @@ export type AppBridgeMethods = {
   /** 웹 UI에서 기능을 게이팅할 때 쓰는 플랫폼·기능 정보. */
   getNativeInfo(): Promise<NativeInfo>;
   /**
+   * 상·하단 safe-area 밴드 색을 바꾼다. 인셋의 주인이 네이티브 셸이라(`App.tsx`) 웹 CSS로는
+   * 이 영역을 칠할 수 없는데, 화면마다 히어로 배경이 달라 밴드도 따라가야 한다.
+   * `#rgb`·`#rrggbb`만 받는다 — 그 외 값은 무시하고 네이티브가 직전 색을 유지한다.
+   */
+  setSafeAreaColor(top: string, bottom: string): Promise<void>;
+  /**
    * 게스트 인증: RN 메모리에 있는 access token을 반환한다 (pull 모델).
    * 없으면 네이티브가 발급을 시도하고, 발급 실패(오프라인 등) 시 null.
    * refreshToken은 절대 이 경계를 넘지 않는다.

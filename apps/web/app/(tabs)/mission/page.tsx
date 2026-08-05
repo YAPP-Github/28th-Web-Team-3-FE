@@ -29,16 +29,24 @@ export default function MissionPage() {
   const [completeError, setCompleteError] = useState<string>();
   const [deleteError, setDeleteError] = useState<string>();
 
+  // 상단 safe-area 밴드는 경로만 보고 미션 히어로 색(gray-50)을 깐다(`lib/safe-area-bands.ts`).
+  // 히어로가 없는 로딩·오류 화면도 같은 색으로 시작해야 밴드만 회색인 띠가 다시 생기지 않는다.
   if (isPending) {
-    return <p className="px-5 pt-20 text-center text-body-b2-500 text-gray-400">{LOADING_TEXT}</p>;
+    return (
+      <main className="flex flex-1 flex-col bg-gray-50">
+        <p className="px-5 pt-20 text-center text-body-b2-500 text-gray-400">{LOADING_TEXT}</p>
+      </main>
+    );
   }
 
   // 재조회 실패로는 화면을 내리지 않는다 — react-query가 이전 데이터를 유지한 채 isError를 켠다.
   if (isError && !missions) {
     return (
-      <p className="px-5 pt-20 text-center text-body-b2-500 text-gray-500">
-        미션을 불러오지 못했어요. 잠시 후 다시 시도해 주세요.
-      </p>
+      <main className="flex flex-1 flex-col bg-gray-50">
+        <p className="px-5 pt-20 text-center text-body-b2-500 text-gray-500">
+          미션을 불러오지 못했어요. 잠시 후 다시 시도해 주세요.
+        </p>
+      </main>
     );
   }
 
