@@ -15,7 +15,7 @@ const config: ExpoConfig = {
   slug: "web-team-3",
   version: "1.0.0",
   orientation: "portrait",
-  scheme: "webteam3",
+  scheme: "akkimo",
   userInterfaceStyle: "automatic",
   icon: "./assets/icon.png",
   ios: {
