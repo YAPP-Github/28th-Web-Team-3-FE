@@ -45,6 +45,24 @@ describe("InquirySheet", () => {
     expect(bridge.openExternal).toHaveBeenCalledWith(MAILTO);
   });
 
+  /**
+   * 배포 환경은 변수를 비운 채 정의해두거나 값을 잘못 넣기도 한다. 그런 값을 "설정됨"으로
+   * 보면 이메일 주소를 감춘 채 눌러도 아무 일 없는 오픈채팅 버튼만 남는다.
+   */
+  it.each([
+    " ",
+    "https://",
+    "잘못된 주소",
+    "http://open.kakao.com/o/test",
+  ])("열 수 없는 오픈채팅 URL(%j)은 설정 안 한 것으로 본다", (value) => {
+    vi.stubEnv("NEXT_PUBLIC_KAKAO_OPENCHAT_URL", value);
+    render(<InquirySheet open onOpenChange={() => {}} />);
+
+    fireEvent.click(screen.getByRole("button", { name: "이메일로 문의하기" }));
+
+    expect(bridge.openExternal).toHaveBeenCalledWith(MAILTO);
+  });
+
   // openExternal은 실패해도 던지지 않고 false만 준다 — 메일 앱이 없으면 눌러도 무반응이다.
   it("링크가 안 열려도 주소를 눈으로 볼 수 있다", () => {
     render(<InquirySheet open onOpenChange={() => {}} />);

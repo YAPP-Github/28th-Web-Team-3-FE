@@ -15,10 +15,25 @@ interface InquirySheetProps {
  * 오픈채팅 URL(NEXT_PUBLIC_KAKAO_OPENCHAT_URL)이 없으면 이메일로 떨어진다 — 버튼을 막으면
  * 문의 수단이 아예 없는 앱이 되고, 심사에서는 그게 더 크게 걸린다(App Store 1.5).
  */
+/**
+ * 열 수 있는 https 주소일 때만 돌려준다.
+ *
+ * 배포 환경은 변수를 비운 채 정의해두는 경우가 흔하고, `"https://"`처럼 호스트가 없는 값도
+ * 들어올 수 있다. 그런 값을 "설정됨"으로 보면 이메일 주소를 감춘 채 눌러도 아무 일 없는
+ * 오픈채팅 버튼만 남는다 — 이 컴포넌트가 없애려던 상태 그대로다.
+ */
+function resolveOpenChatUrl(raw: string | undefined): string | undefined {
+  const value = raw?.trim();
+  if (!value) return undefined;
+  try {
+    return new URL(value).protocol === "https:" ? value : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
 export function InquirySheet({ open, onOpenChange }: InquirySheetProps) {
-  // 빈 문자열도 "설정 안 함"으로 본다 — 배포 환경은 변수를 비운 채 정의해두는 경우가 흔한데,
-  // `??`로만 받으면 빈 URL을 그대로 열어 아무 일도 일어나지 않는다.
-  const openChatUrl = process.env.NEXT_PUBLIC_KAKAO_OPENCHAT_URL || undefined;
+  const openChatUrl = resolveOpenChatUrl(process.env.NEXT_PUBLIC_KAKAO_OPENCHAT_URL);
   const inquiryUrl = openChatUrl ?? `mailto:${PRIVACY_CONTACT_EMAIL}`;
 
   function openInquiryChannel() {
