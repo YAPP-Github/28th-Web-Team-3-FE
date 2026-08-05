@@ -1,5 +1,8 @@
 import type { ExpoConfig } from "expo/config";
 
+/** @repo/ui의 --color-blue-500. 웹 토큰을 네이티브에서 참조할 수 없어 값만 맞춰 둔다. */
+const BRAND_BLUE = "#00aeff";
+
 /**
  * Expo 설정. 네이티브 기능 플러그인은 미리 선언해둔다(App Store 4.2) — 생체인증·공유는
  * 구현돼 있고, 알림은 연결만 해두고 스텁 상태다. `extra.webUrl`은 WebView 대상이고
@@ -14,6 +17,7 @@ const config: ExpoConfig = {
   orientation: "portrait",
   scheme: "webteam3",
   userInterfaceStyle: "automatic",
+  icon: "./assets/icon.png",
   ios: {
     supportsTablet: true,
     bundleIdentifier: "com.webteam3.app",
@@ -24,6 +28,12 @@ const config: ExpoConfig = {
   },
   android: {
     package: "com.webteam3.app",
+    // 어댑티브 아이콘은 가장자리를 기기 모양대로 잘라내므로, icon.png를 그대로 쓰면
+    // 아래쪽 귀가 먹힌다. foreground는 마크를 안전 영역(66%) 안으로 넣은 별도 파일이다.
+    adaptiveIcon: {
+      foregroundImage: "./assets/adaptive-icon.png",
+      backgroundColor: BRAND_BLUE,
+    },
   },
   plugins: [
     "expo-dev-client",
@@ -33,6 +43,15 @@ const config: ExpoConfig = {
       { faceIDPermission: "앱 잠금 해제를 위해 Face ID를 사용합니다." },
     ],
     "expo-notifications",
+    [
+      "expo-splash-screen",
+      {
+        image: "./assets/splash-icon.png",
+        backgroundColor: BRAND_BLUE,
+        // 표시 너비는 160dp. 원본(478px)이 3x 기기의 480px를 채우므로 업스케일이 없다.
+        imageWidth: 160,
+      },
+    ],
   ],
   experiments: {
     // React Compiler 활성화 — babel-preset-expo가 babel-plugin-react-compiler를 이 플래그로 켠다.
