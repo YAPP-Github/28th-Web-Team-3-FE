@@ -143,7 +143,8 @@ describe("MissionPage", () => {
     await screen.findByText("33% 달성");
     fireEvent.click(screen.getByRole("button", { name: "미션 추가 메뉴 열기" }));
     expect(screen.getByRole("link", { name: "추천받기" })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "직접입력 (준비 중)" })).toBeDisabled();
+    // 직접입력은 구현 전이라 메뉴에 없다 — 눌리지 않는 항목을 보이면 앱이 미완성으로 읽힌다.
+    expect(screen.queryByText("직접입력")).not.toBeInTheDocument();
   });
 
   // 상단 safe-area 밴드는 경로만 보고 gray-50을 깐다. 히어로가 없는 화면이 흰색이면
