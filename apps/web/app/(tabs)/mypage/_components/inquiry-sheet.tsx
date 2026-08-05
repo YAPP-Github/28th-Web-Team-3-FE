@@ -1,6 +1,6 @@
 import { bridge, isNativeApp } from "@repo/bridge";
 import { BottomSheet, Button } from "@repo/ui";
-import { PRIVACY_CONTACT_EMAIL } from "./legal-content";
+import { PRIVACY_CONTACT_EMAIL } from "./legal-constants";
 
 interface InquirySheetProps {
   open: boolean;
@@ -16,7 +16,9 @@ interface InquirySheetProps {
  * 문의 수단이 아예 없는 앱이 되고, 심사에서는 그게 더 크게 걸린다(App Store 1.5).
  */
 export function InquirySheet({ open, onOpenChange }: InquirySheetProps) {
-  const openChatUrl = process.env.NEXT_PUBLIC_KAKAO_OPENCHAT_URL;
+  // 빈 문자열도 "설정 안 함"으로 본다 — 배포 환경은 변수를 비운 채 정의해두는 경우가 흔한데,
+  // `??`로만 받으면 빈 URL을 그대로 열어 아무 일도 일어나지 않는다.
+  const openChatUrl = process.env.NEXT_PUBLIC_KAKAO_OPENCHAT_URL || undefined;
   const inquiryUrl = openChatUrl ?? `mailto:${PRIVACY_CONTACT_EMAIL}`;
 
   function openInquiryChannel() {
@@ -42,8 +44,16 @@ export function InquirySheet({ open, onOpenChange }: InquirySheetProps) {
           <br />
           {openChatUrl
             ? "카카오톡 오픈채팅으로 편하게 문의해주세요."
-            : "이메일로 편하게 문의해주세요."}
+            : "아래 주소로 편하게 문의해주세요."}
         </p>
+        {/*
+          openExternal은 실패해도 던지지 않고 false만 돌려준다 — 메일 앱이 지워진 기기에서는
+          버튼을 눌러도 아무 일이 없다. 유일한 문의 수단이므로 주소를 본문에도 남겨
+          링크가 안 열려도 눈으로 보고 옮겨 적을 수 있게 한다.
+        */}
+        {openChatUrl ? null : (
+          <p className="text-body-b1-700 text-gray-900">{PRIVACY_CONTACT_EMAIL}</p>
+        )}
         <Button size="cta" onClick={openInquiryChannel}>
           {openChatUrl ? "카카오톡으로 문의하기" : "이메일로 문의하기"}
         </Button>

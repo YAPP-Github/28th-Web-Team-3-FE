@@ -1,6 +1,6 @@
 import { bridge, isNativeApp } from "@repo/bridge";
-import { beforeEach, describe, expect, it, vi } from "vitest";
-import { render, screen } from "@/lib/test/react";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { fireEvent, render, screen } from "@/lib/test/react";
 import { InquirySheet } from "./inquiry-sheet";
 
 vi.mock("@repo/bridge", () => ({
@@ -9,21 +9,26 @@ vi.mock("@repo/bridge", () => ({
 }));
 
 const OPEN_CHAT_URL = "https://open.kakao.com/o/test";
+const MAILTO = "mailto:yappweb3@gmail.com";
 
 beforeEach(() => {
   vi.clearAllMocks();
   vi.mocked(bridge.openExternal).mockResolvedValue(true);
   vi.mocked(isNativeApp).mockReturnValue(true);
-  // 대입으로 지우면 문자열 "undefined"가 남아 truthy가 된다. .env.local 값도 여기서 걷힌다.
-  delete process.env.NEXT_PUBLIC_KAKAO_OPENCHAT_URL;
+  // 셸에서 export한 값이 남아 있으면 폴백 분기를 못 탄다. 빈 문자열은 falsy라 없는 것과 같다.
+  vi.stubEnv("NEXT_PUBLIC_KAKAO_OPENCHAT_URL", "");
+});
+
+afterEach(() => {
+  vi.unstubAllEnvs();
 });
 
 describe("InquirySheet", () => {
   it("오픈채팅 URL이 있으면 그쪽으로 연결한다", () => {
-    process.env.NEXT_PUBLIC_KAKAO_OPENCHAT_URL = OPEN_CHAT_URL;
+    vi.stubEnv("NEXT_PUBLIC_KAKAO_OPENCHAT_URL", OPEN_CHAT_URL);
     render(<InquirySheet open onOpenChange={() => {}} />);
 
-    screen.getByRole("button", { name: "카카오톡으로 문의하기" }).click();
+    fireEvent.click(screen.getByRole("button", { name: "카카오톡으로 문의하기" }));
 
     expect(bridge.openExternal).toHaveBeenCalledWith(OPEN_CHAT_URL);
   });
@@ -35,8 +40,40 @@ describe("InquirySheet", () => {
     const button = screen.getByRole("button", { name: "이메일로 문의하기" });
     expect(button).toBeEnabled();
 
-    button.click();
+    fireEvent.click(button);
 
-    expect(bridge.openExternal).toHaveBeenCalledWith("mailto:yappweb3@gmail.com");
+    expect(bridge.openExternal).toHaveBeenCalledWith(MAILTO);
+  });
+
+  // openExternal은 실패해도 던지지 않고 false만 준다 — 메일 앱이 없으면 눌러도 무반응이다.
+  it("링크가 안 열려도 주소를 눈으로 볼 수 있다", () => {
+    render(<InquirySheet open onOpenChange={() => {}} />);
+
+    expect(screen.getByText("yappweb3@gmail.com")).toBeInTheDocument();
+  });
+
+  // 일반 브라우저에서 mailto를 새 탭으로 열면 빈 탭이 남는다.
+  it("브라우저에서는 현재 탭으로 메일 앱에 넘긴다", () => {
+    vi.mocked(isNativeApp).mockReturnValue(false);
+    const open = vi.spyOn(window, "open").mockReturnValue(null);
+    const setHref = vi.fn();
+    Object.defineProperty(window, "location", {
+      configurable: true,
+      value: {
+        get href() {
+          return "";
+        },
+        set href(value: string) {
+          setHref(value);
+        },
+      },
+    });
+
+    render(<InquirySheet open onOpenChange={() => {}} />);
+    fireEvent.click(screen.getByRole("button", { name: "이메일로 문의하기" }));
+
+    expect(setHref).toHaveBeenCalledWith(MAILTO);
+    expect(open).not.toHaveBeenCalled();
+    expect(bridge.openExternal).not.toHaveBeenCalled();
   });
 });
