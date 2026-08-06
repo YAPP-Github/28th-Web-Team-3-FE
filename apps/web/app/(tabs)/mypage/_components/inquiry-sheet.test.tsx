@@ -30,6 +30,8 @@ const ORIGINAL_LOCATION = Object.getOwnPropertyDescriptor(window, "location");
 
 afterEach(() => {
   vi.unstubAllEnvs();
+  // clearAllMocks는 호출 기록만 비운다 — spyOn으로 갈아낀 원본은 여기서 돌려놔야 한다.
+  vi.restoreAllMocks();
   if (ORIGINAL_LOCATION) Object.defineProperty(window, "location", ORIGINAL_LOCATION);
 });
 
@@ -76,9 +78,19 @@ describe("InquirySheet", () => {
     expect(bridge.openExternal).toHaveBeenCalledWith(MAILTO);
   });
 
-  // openExternal은 실패해도 던지지 않고 false만 준다 — 메일 앱이 없으면 눌러도 무반응이다.
-  it("링크가 안 열려도 주소를 눈으로 볼 수 있다", () => {
+  /**
+   * `openExternal`은 실패해도 던지지 않고 false만 준다 — 앱이 없는 기기에서는 눌러도 무반응이다.
+   * 어느 경로가 막히든 옮겨 적을 주소는 화면에 남아야 한다.
+   */
+  it.each([
+    ["오픈채팅", OPEN_CHAT_URL],
+    ["이메일", ""],
+  ])("%s 링크가 안 열려도 주소가 화면에 남는다", (_label, envValue) => {
+    vi.stubEnv("NEXT_PUBLIC_KAKAO_OPENCHAT_URL", envValue);
+    vi.mocked(bridge.openExternal).mockResolvedValue(false);
     render(<InquirySheet open onOpenChange={() => {}} />);
+
+    fireEvent.click(screen.getByRole("button", { name: /문의하기$/ }));
 
     expect(screen.getByText("yappweb3@gmail.com")).toBeInTheDocument();
   });
