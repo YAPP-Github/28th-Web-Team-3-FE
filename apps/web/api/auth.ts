@@ -5,3 +5,8 @@ import { http } from "@/api/client";
 export function getCurrentUser(): Promise<CurrentUser> {
   return http.get("auth/me", { response: currentUserSchema });
 }
+
+/** DELETE /api/auth/guest — 게스트 계정과 사용자 귀속 데이터 영구 삭제. */
+export function withdrawGuest(): Promise<void> {
+  return http.delete("auth/guest");
+}
