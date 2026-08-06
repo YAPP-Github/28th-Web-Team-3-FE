@@ -1,11 +1,13 @@
 import {
-  LegalList,
-  LegalOrderedList,
-  LegalSection,
   OPERATOR_NAME,
   POLICY_EFFECTIVE_DATE,
   PRIVACY_CONTACT_EMAIL,
   SERVICE_NAME,
+} from "@/app/(tabs)/mypage/_components/legal-constants";
+import {
+  LegalList,
+  LegalOrderedList,
+  LegalSection,
 } from "@/app/(tabs)/mypage/_components/legal-content";
 import { LegalPageLayout } from "@/app/(tabs)/mypage/_components/legal-page-layout";
 
