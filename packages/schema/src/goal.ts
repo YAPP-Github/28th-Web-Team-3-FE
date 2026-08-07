@@ -16,6 +16,7 @@ export const thisMonthSchema = z.object({
 /** GET /api/goal 응답. */
 export const goalStatusSchema = z.object({
   targetAmountManwon: z.number().int(),
+  periodMonths: z.number().int(),
   totalSavedManwon: z.number().int(),
   progressPercent: z.number().int(),
   usageMonths: z.number().int(),

@@ -6,6 +6,7 @@ import { act, createTestQueryClient, fireEvent, render, screen, waitFor } from "
 // (API 연동 자체는 브라우저 MSW로 별도 확인. vitest jsdom은 msw/node fetch를 가로채지 못한다.)
 const MOCK_GOAL: GoalStatus = {
   targetAmountManwon: 5000,
+  periodMonths: 16,
   totalSavedManwon: 1950,
   progressPercent: 100,
   usageMonths: 8,
@@ -51,7 +52,7 @@ describe("GoalDetail", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.mocked(fetchGoalStatus).mockResolvedValue(MOCK_GOAL);
-    vi.mocked(updateGoal).mockResolvedValue(undefined);
+    vi.mocked(updateGoal).mockResolvedValue(MOCK_GOAL);
     vi.mocked(updateSavings).mockResolvedValue(undefined);
     // clearAllMocks는 호출 기록만 지우고 구현은 남긴다 — 실패 케이스가 뒤 테스트로 새지 않게 되돌린다.
     vi.mocked(patchOnboardingProfile).mockResolvedValue({

@@ -4,6 +4,7 @@ import { HttpResponse, http, type RequestHandler } from "msw";
 // BE 연동 전 개발/테스트용 목 상태. 요청 간 값이 유지돼 저축 입력·목표 수정이 화면에 반영된다.
 const goal: GoalStatus = {
   targetAmountManwon: 5000,
+  periodMonths: 16,
   totalSavedManwon: 1950,
   progressPercent: 100,
   usageMonths: 8,
@@ -44,7 +45,8 @@ export const handlers: RequestHandler[] = [
   http.patch("*/api/goal", async ({ request }) => {
     const body = (await request.json()) as GoalUpdateRequest;
     if (body.targetAmountManwon != null) goal.targetAmountManwon = body.targetAmountManwon;
+    if (body.periodMonths != null) goal.periodMonths = body.periodMonths;
     recalcPercent();
-    return new HttpResponse(null, { status: 204 });
+    return HttpResponse.json(goal);
   }),
 ];
