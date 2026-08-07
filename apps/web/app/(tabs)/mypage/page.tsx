@@ -1,5 +1,6 @@
 import { InquiryRow } from "./_components/inquiry-row";
 import { SettingLinkRow } from "./_components/setting-row";
+import { WithdrawalButton } from "./_components/withdrawal-button";
 
 export default function MyPage() {
   return (
@@ -20,6 +21,8 @@ export default function MyPage() {
           </li>
         </ul>
       </section>
+
+      <WithdrawalButton />
     </div>
   );
 }
