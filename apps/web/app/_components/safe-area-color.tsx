@@ -37,7 +37,10 @@ export function SafeAreaColor() {
     const bottom = resolveBandColor(style, tokens.bottom);
 
     // 웹 브릿지는 throwOnError:true라 실패 시 reject된다 — 삼켜서 unhandled rejection을 막는다.
-    // 구버전 셸에는 이 메서드가 없어 여기로 떨어진다. 색만 못 바꿀 뿐 화면은 그대로 뜬다.
+    //
+    // 외부 링크(`lib/open-external.ts`)와 달리 여기서는 Sentry에 보고하지 않는다. 이 메서드가
+    // 없는 구버전 셸에서는 화면을 옮길 때마다 실패하므로 보고하면 같은 이벤트만 쌓이고,
+    // 실패해도 밴드 색만 그대로일 뿐 사용자가 할 수 있는 일도 잃지 않는다.
     bridge.setSafeAreaColor(top, bottom).catch(() => {});
   }, [pathname]);
 

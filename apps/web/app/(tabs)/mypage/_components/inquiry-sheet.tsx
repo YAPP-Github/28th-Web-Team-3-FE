@@ -1,5 +1,5 @@
-import { bridge, isNativeApp } from "@repo/bridge";
 import { BottomSheet, Button } from "@repo/ui";
+import { openExternalLink } from "@/lib/open-external";
 import { PRIVACY_CONTACT_EMAIL } from "./legal-constants";
 
 interface InquirySheetProps {
@@ -44,18 +44,7 @@ export function InquirySheet({ open, onOpenChange }: InquirySheetProps) {
   const inquiryUrl = openChatUrl ?? `mailto:${PRIVACY_CONTACT_EMAIL}`;
 
   function openInquiryChannel() {
-    if (isNativeApp()) {
-      // 웹 브릿지는 throwOnError:true라 전송 실패(타임아웃·구버전 앱에 openExternal 미등록)
-      // 시 reject된다 — 삼켜서 unhandled rejection을 막는다.
-      bridge.openExternal(inquiryUrl).catch(() => {});
-      return;
-    }
-    // mailto는 새 탭으로 열면 빈 탭이 남는다 — 현재 탭에서 메일 앱으로 넘긴다.
-    if (openChatUrl) {
-      window.open(openChatUrl, "_blank", "noopener,noreferrer");
-    } else {
-      window.location.href = inquiryUrl;
-    }
+    openExternalLink(inquiryUrl);
   }
 
   return (
