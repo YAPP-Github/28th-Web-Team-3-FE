@@ -1,7 +1,8 @@
-import { bridge, isNativeApp } from "@repo/bridge";
+import { isNativeApp } from "@repo/bridge";
 import type { MouseEvent } from "react";
 import { BENEFITS } from "@/app/(tabs)/benefits/constants";
 import type { FinancialTip } from "@/app/(tabs)/benefits/types";
+import { openExternalLink } from "@/lib/open-external";
 import { SectionHeader } from "./section-header";
 
 interface FinancialTipListProps {
@@ -56,10 +57,10 @@ function TipCard({ tip }: { tip: FinancialTip }) {
   }
 
   function handleClick(event: MouseEvent<HTMLAnchorElement>) {
+    // 브라우저에서는 `<a target="_blank">` 기본 동작에 맡긴다.
     if (!isNativeApp() || !officialUrl) return;
     event.preventDefault();
-    // 웹 브릿지는 throwOnError:true라 실패 시 reject된다 — 삼켜서 unhandled rejection을 막는다.
-    bridge.openExternal(officialUrl).catch(() => {});
+    openExternalLink(officialUrl);
   }
 
   return (

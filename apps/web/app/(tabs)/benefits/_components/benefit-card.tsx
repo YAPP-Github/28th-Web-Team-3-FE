@@ -1,8 +1,9 @@
-import { bridge, isNativeApp } from "@repo/bridge";
+import { isNativeApp } from "@repo/bridge";
 import { Star } from "lucide-react";
 import type { MouseEvent } from "react";
 import { BENEFIT_ITEM_CATEGORY_LABELS } from "@/app/(tabs)/benefits/constants";
 import type { Benefit } from "@/app/(tabs)/benefits/types";
+import { openExternalLink } from "@/lib/open-external";
 
 interface BenefitCardProps {
   benefit: Benefit;
@@ -21,10 +22,10 @@ interface BenefitCardProps {
  */
 export function BenefitCard({ benefit, saved, onToggleSave }: BenefitCardProps) {
   function handleClick(event: MouseEvent<HTMLAnchorElement>) {
+    // 브라우저에서는 `<a target="_blank">` 기본 동작에 맡긴다.
     if (!isNativeApp()) return;
     event.preventDefault();
-    // 웹 브릿지는 throwOnError:true라 실패 시 reject된다 — 삼켜서 unhandled rejection을 막는다.
-    bridge.openExternal(benefit.officialUrl).catch(() => {});
+    openExternalLink(benefit.officialUrl);
   }
 
   return (
