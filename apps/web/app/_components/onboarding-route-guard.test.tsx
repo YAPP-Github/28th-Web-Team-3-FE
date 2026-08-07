@@ -4,12 +4,12 @@ import { render, screen, waitFor } from "@/lib/test/react";
 
 const navigation = vi.hoisted(() => ({
   pathname: "/",
-  redirect: vi.fn(),
+  replace: vi.fn(),
 }));
 
 vi.mock("next/navigation", () => ({
   usePathname: () => navigation.pathname,
-  redirect: navigation.redirect,
+  useRouter: () => ({ replace: navigation.replace }),
 }));
 
 vi.mock("@/api/auth", () => ({ getCurrentUser: vi.fn() }));
@@ -45,7 +45,7 @@ describe("OnboardingRouteGuard", () => {
       </OnboardingRouteGuard>,
     );
 
-    await waitFor(() => expect(navigation.redirect).toHaveBeenCalledWith("/onboarding/intro"));
+    await waitFor(() => expect(navigation.replace).toHaveBeenCalledWith("/onboarding/intro"));
   });
 
   it("온보딩 완료 사용자를 홈으로 교체 이동한다", async () => {
@@ -58,7 +58,7 @@ describe("OnboardingRouteGuard", () => {
       </OnboardingRouteGuard>,
     );
 
-    await waitFor(() => expect(navigation.redirect).toHaveBeenCalledWith("/"));
+    await waitFor(() => expect(navigation.replace).toHaveBeenCalledWith("/"));
   });
 
   it("현재 경로가 사용자 상태에 맞으면 자식을 렌더한다", async () => {
@@ -72,7 +72,7 @@ describe("OnboardingRouteGuard", () => {
     );
 
     expect(await screen.findByText("온보딩 질문")).toBeInTheDocument();
-    expect(navigation.redirect).not.toHaveBeenCalled();
+    expect(navigation.replace).not.toHaveBeenCalled();
   });
 
   it("현재 사용자 조회 실패를 에러 바운더리에 전파한다", async () => {
