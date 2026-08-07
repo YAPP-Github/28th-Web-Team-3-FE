@@ -1,3 +1,4 @@
+import { SAFE_AREA_HERO_ATTRIBUTE } from "@/lib/safe-area-bands";
 import { BenefitsExplorer } from "./_components/benefits-explorer";
 import { BENEFITS } from "./constants";
 import { parseBenefitFilter } from "./lib/filter-benefits";
@@ -11,8 +12,9 @@ export default async function BenefitsPage({ searchParams }: BenefitsPageProps) 
 
   return (
     <main className="flex flex-1 flex-col bg-gray-0">
-      {/* 히어로는 탭 제목까지 감싼다 — 디자인에서 파란 면이 상단 바 뒤까지 이어진다. */}
-      <section className="bg-blue-50 px-5 pb-[46px]">
+      {/* 히어로는 탭 제목까지 감싼다 — 디자인에서 파란 면이 상단 바 뒤까지 이어진다.
+          표시는 safe-area 밴드가 스크롤을 따라가게 한다(`lib/safe-area-bands.ts`). */}
+      <section {...{ [SAFE_AREA_HERO_ATTRIBUTE]: "" }} className="bg-blue-50 px-5 pb-[46px]">
         <h1 className="py-2 text-title-t1-700 text-gray-900">혜택</h1>
         <div className="mt-[22px] flex flex-col items-start gap-2">
           <p className="text-headline-h2-700 text-gray-900">
