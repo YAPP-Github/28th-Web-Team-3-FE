@@ -10,10 +10,19 @@ export interface SafeAreaBandTokens {
   bottom: string;
 }
 
-const DEFAULT_BAND_TOKENS: SafeAreaBandTokens = {
+export const DEFAULT_BAND_TOKENS: SafeAreaBandTokens = {
   top: "--color-gray-0",
   bottom: "--color-gray-0",
 };
+
+/**
+ * 상단 밴드가 히어로 색을 이어받는 화면에서 히어로에 붙이는 표시.
+ *
+ * 히어로는 sticky가 아니라 스크롤하면 화면 위로 사라진다. 그때도 밴드가 히어로 색이면
+ * 아래는 흰 본문인데 위만 색이 남아 띠가 생긴다 — 없애려던 흰 띠가 색만 바뀌어 돌아온다.
+ * 스크롤할 때마다 이 요소가 아직 화면 맨 위를 덮고 있는지 보고 색을 되돌린다.
+ */
+export const SAFE_AREA_HERO_ATTRIBUTE = "data-safe-area-hero";
 
 const ROUTE_BAND_TOKENS: Record<string, SafeAreaBandTokens> = {
   // 미션 히어로가 bg-gray-50, 혜택 히어로가 bg-blue-50다.
