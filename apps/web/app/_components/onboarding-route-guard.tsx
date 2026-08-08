@@ -10,13 +10,33 @@ function isOnboardingPath(pathname: string | null): boolean {
   return pathname === "/onboarding" || pathname?.startsWith("/onboarding/") === true;
 }
 
+/**
+ * 인증 없이 열려야 하는 경로.
+ *
+ * 약관·개인정보처리방침 URL은 스토어에 제출해 심사자가 브라우저에서 연다. 그쪽에는 토큰이
+ * 없어(기기 uuid·refresh는 네이티브 SecureStore에만 있다) `/api/auth/me`가 401이 되는데,
+ * 가드가 그걸 그대로 던지면 문서 대신 오류 화면을 보게 된다.
+ */
+function isPublicPath(pathname: string | null): boolean {
+  return pathname === "/legal" || pathname?.startsWith("/legal/") === true;
+}
+
 export function OnboardingRouteGuard({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
-  const { data: currentUser, error, isPending } = useQuery(currentUserOptions());
+  const publicRoute = isPublicPath(pathname);
+  // 공개 경로에서는 조회 자체를 하지 않는다 — 어차피 401이고, 결과를 쓸 일도 없다.
+  const {
+    data: currentUser,
+    error,
+    isPending,
+  } = useQuery({
+    ...currentUserOptions(),
+    enabled: !publicRoute,
+  });
   const onboardingRoute = isOnboardingPath(pathname);
   const redirectPath =
-    !isPending && !error && currentUser
+    !publicRoute && !isPending && !error && currentUser
       ? currentUser.onboardingCompleted && onboardingRoute
         ? "/"
         : !currentUser.onboardingCompleted && !onboardingRoute
@@ -29,6 +49,9 @@ export function OnboardingRouteGuard({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (redirectPath) router.replace(redirectPath);
   }, [redirectPath, router]);
+
+  // 공개 경로는 조회 결과를 기다리지도, 실패를 문제 삼지도 않는다.
+  if (publicRoute) return children;
 
   if (isPending || redirectPath) {
     return <p className="px-5 pt-20 text-center text-body-b2-500 text-gray-400">{LOADING_TEXT}</p>;

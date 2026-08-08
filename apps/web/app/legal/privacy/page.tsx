@@ -1,15 +1,18 @@
+import type { Metadata } from "next";
+import { LegalList, LegalOrderedList, LegalSection } from "@/app/legal/_components/legal-content";
+import { LegalPageLayout } from "@/app/legal/_components/legal-page-layout";
 import {
   OPERATOR_NAME,
   POLICY_EFFECTIVE_DATE,
   PRIVACY_CONTACT_EMAIL,
   SERVICE_NAME,
-} from "@/app/(tabs)/mypage/_components/legal-constants";
-import {
-  LegalList,
-  LegalOrderedList,
-  LegalSection,
-} from "@/app/(tabs)/mypage/_components/legal-content";
-import { LegalPageLayout } from "@/app/(tabs)/mypage/_components/legal-page-layout";
+} from "@/lib/legal";
+
+// 브라우저 탭·검색결과·스토어 심사자에게 보이는 이름이다. 앱 이름만 뜨면 무슨 문서인지 모른다.
+export const metadata: Metadata = {
+  title: `개인정보처리방침 | ${SERVICE_NAME}`,
+  description: `${SERVICE_NAME}가 개인정보를 어떻게 처리하고 보호하는지 안내합니다.`,
+};
 
 export default function PrivacyPage() {
   return (

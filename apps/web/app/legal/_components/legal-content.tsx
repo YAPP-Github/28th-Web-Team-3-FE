@@ -40,5 +40,5 @@ export function LegalOrderedList({ items }: { items: string[] }) {
   );
 }
 
-// 공유 문자열은 `legal-constants.ts`에 있다 — 클라이언트 컴포넌트도 연락처를 쓰는데,
+// 공유 문자열은 `lib/legal.ts`에 있다 — 클라이언트 컴포넌트도 연락처를 쓰는데,
 // 이 파일을 끌어오면 서버 컴포넌트로 남긴다는 위 전제가 깨진다.
