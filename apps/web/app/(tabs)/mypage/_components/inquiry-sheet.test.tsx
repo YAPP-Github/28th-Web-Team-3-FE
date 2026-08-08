@@ -79,20 +79,24 @@ describe("InquirySheet", () => {
   });
 
   /**
-   * `openExternal`은 실패해도 던지지 않고 false만 준다 — 앱이 없는 기기에서는 눌러도 무반응이다.
-   * 어느 경로가 막히든 옮겨 적을 주소는 화면에 남아야 한다.
+   * `openExternal`은 실패해도 던지지 않고 false만 준다 — 메일 앱이 없는 기기에서는 눌러도
+   * 무반응이다. 이메일이 유일한 창구인 경우에는 옮겨 적을 주소가 화면에 남아야 한다.
    */
-  it.each([
-    ["오픈채팅", OPEN_CHAT_URL],
-    ["이메일", ""],
-  ])("%s 링크가 안 열려도 주소가 화면에 남는다", (_label, envValue) => {
-    vi.stubEnv("NEXT_PUBLIC_KAKAO_OPENCHAT_URL", envValue);
+  it("이메일로 떨어졌을 때는 주소를 함께 보여준다", () => {
     vi.mocked(bridge.openExternal).mockResolvedValue(false);
     render(<InquirySheet open onOpenChange={() => {}} />);
 
-    fireEvent.click(screen.getByRole("button", { name: /문의하기$/ }));
+    fireEvent.click(screen.getByRole("button", { name: "이메일로 문의하기" }));
 
     expect(screen.getByText("yappweb3@gmail.com")).toBeInTheDocument();
+  });
+
+  // 창구가 카카오톡 하나면 이메일 주소를 함께 두지 않는다.
+  it("오픈채팅이 설정돼 있으면 이메일 주소를 보여주지 않는다", () => {
+    vi.stubEnv("NEXT_PUBLIC_KAKAO_OPENCHAT_URL", OPEN_CHAT_URL);
+    render(<InquirySheet open onOpenChange={() => {}} />);
+
+    expect(screen.queryByText("yappweb3@gmail.com")).not.toBeInTheDocument();
   });
 
   // 일반 브라우저에서 mailto를 새 탭으로 열면 빈 탭이 남는다.
