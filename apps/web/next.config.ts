@@ -7,7 +7,12 @@ const nextConfig: NextConfig = {
   reactStrictMode: true,
   allowedDevOrigins: ["10.0.2.2"],
   async rewrites() {
-    if (process.env.NODE_ENV !== "development" || !backendApiUrl) return [];
+    if (!backendApiUrl) {
+      if (process.env.NODE_ENV === "production") {
+        throw new Error("BACKEND_API_URL is required in production");
+      }
+      return [];
+    }
     return [
       {
         source: "/api/:path*",
