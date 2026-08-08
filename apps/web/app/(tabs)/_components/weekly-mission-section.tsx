@@ -97,6 +97,8 @@ export function WeeklyMissionSection() {
           <div className="flex flex-col gap-3">
             {visibleMissions.map((mission) => {
               const isExpanded = expandedId === mission.id;
+              const savingsLabel =
+                mission.savingsLabel ?? "예상 절약 금액이 없는 직접 추가 미션이에요.";
               return (
                 <div
                   key={mission.id}
@@ -132,9 +134,9 @@ export function WeeklyMissionSection() {
                   {isExpanded ? (
                     <p className="pl-7 text-body-b2-500 text-gray-700">
                       <span className="mr-2 rounded bg-blue-100 px-1.5 py-1 text-blue-600">
-                        달성 시
+                        {mission.savingsLabel ? "달성 시" : "직접 추가"}
                       </span>
-                      {mission.savingsLabel}
+                      {savingsLabel}
                     </p>
                   ) : null}
                 </div>

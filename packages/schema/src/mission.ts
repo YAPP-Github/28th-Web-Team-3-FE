@@ -14,20 +14,33 @@ export type MissionSource = z.infer<typeof missionSourceSchema>;
 export const missionStatusSchema = z.enum(["ACTIVE", "COMPLETED", "INCOMPLETE"]);
 export type MissionStatus = z.infer<typeof missionStatusSchema>;
 
-/** GET /api/missions 응답의 미션 하나. */
-export const missionSchema = z.object({
+const missionBaseSchema = z.object({
   id: z.string(),
-  source: missionSourceSchema,
   category: missionCategorySchema,
   title: z.string(),
-  targetCount: z.number().int(),
-  targetUnit: z.string(),
-  estimatedSavingsWon: z.number().int(),
-  savingsEstimateVersion: z.string(),
-  savingsLabel: z.string(),
   status: missionStatusSchema,
   weekEndsAt: z.string(),
 });
+
+/** GET /api/missions 응답의 미션 하나. 수동 미션에는 절약 추정 필드가 없다. */
+export const missionSchema = z.discriminatedUnion("source", [
+  missionBaseSchema.extend({
+    source: z.literal("RECOMMENDED"),
+    targetCount: z.number().int(),
+    targetUnit: z.string(),
+    estimatedSavingsWon: z.number().int(),
+    savingsEstimateVersion: z.string(),
+    savingsLabel: z.string(),
+  }),
+  missionBaseSchema.extend({
+    source: z.literal("MANUAL"),
+    targetCount: z.null().optional(),
+    targetUnit: z.null().optional(),
+    estimatedSavingsWon: z.null().optional(),
+    savingsEstimateVersion: z.null().optional(),
+    savingsLabel: z.null().optional(),
+  }),
+]);
 export type Mission = z.infer<typeof missionSchema>;
 
 /** GET /api/missions 응답. */

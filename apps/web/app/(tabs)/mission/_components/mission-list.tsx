@@ -36,6 +36,8 @@ export function MissionList({
               const isExpanded = expandedMissionId === mission.id;
               const canDelete = mission.source === "RECOMMENDED";
               const isDeleting = deletingMissionId === mission.id;
+              const savingsLabel =
+                mission.savingsLabel ?? "예상 절약 금액이 없는 직접 추가 미션이에요.";
               return (
                 <article
                   key={mission.id}
@@ -70,9 +72,9 @@ export function MissionList({
                     <>
                       <p className="flex gap-3 pl-0 text-body-b2-500 text-gray-700">
                         <span className="h-fit shrink-0 rounded bg-blue-100 px-1.5 py-1 text-caption-c1-700 text-blue-600">
-                          달성 시
+                          {mission.savingsLabel ? "달성 시" : "직접 추가"}
                         </span>
-                        <span>{mission.savingsLabel}</span>
+                        <span>{savingsLabel}</span>
                       </p>
                       <button
                         aria-label={canDelete ? "미션 삭제" : "삭제 (지원 안 함)"}
