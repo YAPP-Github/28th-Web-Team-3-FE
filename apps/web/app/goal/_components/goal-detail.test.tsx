@@ -35,7 +35,7 @@ describe("GoalDetail", () => {
     vi.clearAllMocks();
     vi.mocked(fetchGoalStatus).mockResolvedValue(MOCK_GOAL);
     vi.mocked(updateGoal).mockResolvedValue(MOCK_GOAL);
-    vi.mocked(updateSavings).mockResolvedValue(undefined);
+    vi.mocked(updateSavings).mockResolvedValue(MOCK_GOAL);
   });
 
   it("목표 현황을 제목·게이지·스탯 카드로 렌더한다", async () => {

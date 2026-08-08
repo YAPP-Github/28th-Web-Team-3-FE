@@ -17,7 +17,8 @@ export function goalStatusOptions() {
 export function updateSavingsOptions(queryClient: QueryClient) {
   return mutationOptions({
     mutationFn: (body: SavingRequest) => updateSavings(body),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: GOAL_QUERY_KEY }),
+    onMutate: () => queryClient.cancelQueries({ queryKey: goalStatusOptions().queryKey }),
+    onSuccess: (goal) => queryClient.setQueryData(goalStatusOptions().queryKey, goal),
   });
 }
 

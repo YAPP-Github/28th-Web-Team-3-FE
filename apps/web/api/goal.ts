@@ -19,9 +19,13 @@ export function fetchGoalStatus(): Promise<GoalStatus> {
   return http.get("goal", { response: goalStatusSchema });
 }
 
-/** PUT /api/goal/savings — 현재 저축액 입력. 전송 전 계약 검증. */
-export function updateSavings(body: SavingRequest): Promise<void> {
-  return http.put("goal/savings", { body, request: savingRequestSchema });
+/** PUT /api/goal/savings — 이번 달 저축액 입력 후 갱신된 목표 현황 반환. */
+export function updateSavings(body: SavingRequest): Promise<GoalStatus> {
+  return http.put("goal/savings", {
+    body,
+    request: savingRequestSchema,
+    response: goalStatusSchema,
+  });
 }
 
 /** PATCH /api/goal — 목표 금액/기간 수정. 전송과 응답 계약을 검증한다. */

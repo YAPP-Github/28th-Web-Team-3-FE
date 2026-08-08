@@ -14,6 +14,8 @@ export const metadata: Metadata = {
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {
+  const apiMocksEnabled =
+    process.env.NODE_ENV === "development" && process.env.ENABLE_API_MOCKS === "true";
   const app = (
     <QueryProvider>
       <OnboardingRouteGuard>{children}</OnboardingRouteGuard>
@@ -27,7 +29,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
   );
   return (
     <html lang="ko">
-      <body>{process.env.NODE_ENV === "development" ? <MSWProvider>{app}</MSWProvider> : app}</body>
+      <body>{apiMocksEnabled ? <MSWProvider>{app}</MSWProvider> : app}</body>
     </html>
   );
 }
