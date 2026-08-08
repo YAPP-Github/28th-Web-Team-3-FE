@@ -9,8 +9,8 @@ vi.mock("@/api/goal", () => ({
   updateSavings: vi.fn(),
 }));
 
-import { fetchGoalStatus, updateGoal } from "@/api/goal";
-import { goalStatusOptions, updateGoalOptions } from "./goal";
+import { fetchGoalStatus, updateGoal, updateSavings } from "@/api/goal";
+import { goalStatusOptions, updateGoalOptions, updateSavingsOptions } from "./goal";
 
 const STALE_GOAL: GoalStatus = {
   targetAmountManwon: 5000,
@@ -32,6 +32,37 @@ const UPDATED_GOAL: GoalStatus = {
   targetAmountManwon: 6000,
   periodMonths: 24,
 };
+
+const UPDATED_SAVINGS: GoalStatus = {
+  ...STALE_GOAL,
+  totalSavedManwon: 1983,
+  progressPercent: 40,
+  thisMonth: {
+    ...STALE_GOAL.thisMonth,
+    savedManwon: 133,
+    progressPercent: 70,
+  },
+};
+
+describe("updateSavingsOptions", () => {
+  beforeEach(() => vi.clearAllMocks());
+
+  it("저축액 입력 응답으로 목표 현황 캐시를 갱신한다", async () => {
+    vi.mocked(updateSavings).mockResolvedValue(UPDATED_SAVINGS);
+    const queryClient = createTestQueryClient();
+    queryClient.setQueryData(goalStatusOptions().queryKey, STALE_GOAL);
+
+    const { result } = renderHook(() => useMutation(updateSavingsOptions(queryClient)), {
+      queryClient,
+    });
+
+    await act(async () => {
+      await result.current.mutateAsync({ savedAmountManwon: 133 });
+    });
+
+    expect(queryClient.getQueryData(goalStatusOptions().queryKey)).toEqual(UPDATED_SAVINGS);
+  });
+});
 
 describe("updateGoalOptions", () => {
   beforeEach(() => vi.clearAllMocks());

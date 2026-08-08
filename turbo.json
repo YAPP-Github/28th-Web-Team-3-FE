@@ -21,7 +21,12 @@
       "dependsOn": ["^build"],
       "cache": false,
       "persistent": true,
-      "env": ["NEXT_PUBLIC_SENTRY_DSN", "NEXT_PUBLIC_API_URL", "BACKEND_API_URL"]
+      "env": [
+        "NEXT_PUBLIC_SENTRY_DSN",
+        "NEXT_PUBLIC_API_URL",
+        "BACKEND_API_URL",
+        "ENABLE_API_MOCKS"
+      ]
     },
     "native#start": {
       "cache": false,

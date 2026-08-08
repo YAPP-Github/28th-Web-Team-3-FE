@@ -5,7 +5,7 @@ vi.mock("@/api/client", () => ({
 }));
 
 import { http } from "@/api/client";
-import { updateGoal } from "./goal";
+import { updateGoal, updateSavings } from "./goal";
 
 const UPDATED_GOAL = {
   targetAmountManwon: 6000,
@@ -33,6 +33,22 @@ describe("goal API", () => {
 
     expect(http.patch).toHaveBeenCalledWith(
       "goal",
+      expect.objectContaining({
+        body,
+        request: expect.anything(),
+        response: expect.anything(),
+      }),
+    );
+  });
+
+  it("이번 달 저축액 입력 후 갱신된 목표 현황을 검증한다", async () => {
+    vi.mocked(http.put).mockReturnValue(Promise.resolve(UPDATED_GOAL) as never);
+    const body = { savedAmountManwon: 100 };
+
+    await expect(updateSavings(body)).resolves.toEqual(UPDATED_GOAL);
+
+    expect(http.put).toHaveBeenCalledWith(
+      "goal/savings",
       expect.objectContaining({
         body,
         request: expect.anything(),

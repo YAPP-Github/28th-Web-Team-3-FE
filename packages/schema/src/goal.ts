@@ -34,7 +34,7 @@ export const MAX_GOAL_TARGET_MANWON = 1_000_000;
 export const MIN_GOAL_PERIOD_MONTHS = 3;
 export const MAX_GOAL_PERIOD_MONTHS = 36;
 
-/** PUT /api/goal/savings 요청 — 현재 저축액 입력. */
+/** PUT /api/goal/savings 요청 — 이번 달 저축액을 입력값으로 덮어쓴다. */
 export const savingRequestSchema = z.object({
   savedAmountManwon: z.number().int().min(0).max(MAX_SAVED_AMOUNT_MANWON),
 });

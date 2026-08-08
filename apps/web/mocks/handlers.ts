@@ -1,12 +1,13 @@
 import type { GoalStatus, GoalUpdateRequest, SavingRequest } from "@repo/schema/goal";
 import { HttpResponse, http, type RequestHandler } from "msw";
 
-// BE 연동 전 개발/테스트용 목 상태. 요청 간 값이 유지돼 저축 입력·목표 수정이 화면에 반영된다.
+// ENABLE_API_MOCKS=true로 UI만 독립 개발할 때와 테스트에서 쓰는 목 상태.
+// 기본 개발 실행은 실 API를 사용한다.
 const goal: GoalStatus = {
   targetAmountManwon: 5000,
   periodMonths: 16,
   totalSavedManwon: 1950,
-  progressPercent: 100,
+  progressPercent: 39,
   usageMonths: 8,
   deadlineDDay: 486,
   thisMonth: {
@@ -39,7 +40,7 @@ export const handlers: RequestHandler[] = [
         ? Math.min(100, Math.round((savedAmountManwon / goal.thisMonth.targetManwon) * 100))
         : 0;
     recalcPercent();
-    return new HttpResponse(null, { status: 204 });
+    return HttpResponse.json(goal);
   }),
 
   http.patch("*/api/goal", async ({ request }) => {

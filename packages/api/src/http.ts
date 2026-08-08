@@ -52,7 +52,7 @@ function createRequest(client: KyInstance, method: HttpMethod): ApiRequest {
  *
  * @example
  * http.get("goal", { response: goalStatusSchema });
- * http.put("goal/savings", { body, request: savingRequestSchema });
+ * http.put("goal/savings", { body, request: savingRequestSchema, response: goalStatusSchema });
  * http.delete(`missions/recommended/${missionId}`);
  */
 export function createHttp(client: KyInstance) {
