@@ -1,11 +1,18 @@
+import type { Metadata } from "next";
+import { LegalOrderedList, LegalSection } from "@/app/legal/_components/legal-content";
+import { LegalPageLayout } from "@/app/legal/_components/legal-page-layout";
 import {
   OPERATOR_NAME,
   POLICY_EFFECTIVE_DATE,
   PRIVACY_CONTACT_EMAIL,
   SERVICE_NAME,
-} from "@/app/(tabs)/mypage/_components/legal-constants";
-import { LegalOrderedList, LegalSection } from "@/app/(tabs)/mypage/_components/legal-content";
-import { LegalPageLayout } from "@/app/(tabs)/mypage/_components/legal-page-layout";
+} from "@/lib/legal";
+
+// 브라우저 탭·검색결과·스토어 심사자에게 보이는 이름이다. 앱 이름만 뜨면 무슨 문서인지 모른다.
+export const metadata: Metadata = {
+  title: `이용약관 | ${SERVICE_NAME}`,
+  description: `${SERVICE_NAME} 서비스 이용에 관한 이용자와 운영팀의 권리·의무를 안내합니다.`,
+};
 
 export default function TermsPage() {
   return (
