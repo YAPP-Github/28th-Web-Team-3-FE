@@ -2,12 +2,14 @@
 
 import { MAX_NET_WORTH_AMOUNT, type OnboardingFormValues } from "@repo/schema/onboarding";
 import { AmountField, BottomSheet, ButtonGroup, TextButton } from "@repo/ui";
+import { useQuery } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Controller, useFormContext, useWatch } from "react-hook-form";
 import { NetWorthSlider } from "@/app/onboarding/_components/net-worth-slider";
 import { useSaveOnboardingProfile } from "@/app/onboarding/_hooks/use-save-onboarding-profile";
 import { onlyDigits } from "@/lib/number";
+import { onboardingProfileOptions } from "@/lib/queries/onboarding";
 
 function parseNetWorthInput(inputValue: string) {
   return Math.min(Number(onlyDigits(inputValue)), MAX_NET_WORTH_AMOUNT);
@@ -18,8 +20,10 @@ export default function NetWorthOnboardingPage() {
   const [isDirectInputSheetOpen, setIsDirectInputSheetOpen] = useState(false);
   const { control, trigger } = useFormContext<OnboardingFormValues>();
   const netWorthAmount = useWatch({ control, name: "netWorthManwon" });
+  const { data: profile } = useQuery(onboardingProfileOptions());
   // 순자산 0은 유효한 답변(모으기 시작 단계)이라 금액이 아니라 "응답했는지"로 다음을 연다.
   const [hasAnswered, setHasAnswered] = useState(false);
+  const hasStoredAnswer = profile?.netWorthManwon != null;
   const { isSaving, saveError, saveProfile } = useSaveOnboardingProfile();
 
   async function navigateToInvestmentPeriodQuestion() {
@@ -97,7 +101,7 @@ export default function NetWorthOnboardingPage() {
       ) : null}
       <div className="pt-8 pb-6">
         <ButtonGroup
-          nextDisabled={!hasAnswered || isSaving}
+          nextDisabled={(!hasAnswered && !hasStoredAnswer) || isSaving}
           nextLabel={isSaving ? "저장 중…" : "다음"}
           onNext={navigateToInvestmentPeriodQuestion}
           onPrev={() => router.push("/onboarding/month")}

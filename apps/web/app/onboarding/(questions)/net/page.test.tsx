@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { patchOnboardingProfile } from "@/api/onboarding";
+import { getOnboardingProfile, patchOnboardingProfile } from "@/api/onboarding";
 import { OnboardingFormProvider } from "@/app/onboarding/(questions)/_components/onboarding-form-provider";
 import { fireEvent, render, screen, waitFor } from "@/lib/test/react";
 import NetWorthOnboardingPage from "./page";
@@ -23,12 +23,28 @@ function renderNetWorthOnboardingPage() {
 describe("NetWorthOnboardingPage", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.mocked(getOnboardingProfile).mockRejectedValue(new Error("test"));
   });
 
   it("금액을 입력하기 전에는 다음 버튼이 비활성화된다", () => {
     renderNetWorthOnboardingPage();
 
     expect(screen.getByRole("button", { name: "다음" })).toBeDisabled();
+  });
+
+  it("저장된 순자산을 복원하면 다시 입력하지 않아도 다음으로 갈 수 있다", async () => {
+    vi.mocked(getOnboardingProfile).mockResolvedValue({
+      status: "IN_PROGRESS",
+      birthDate: "1998-03-01",
+      monthlySalaryManwon: 300,
+      monthlySavingManwon: 100,
+      netWorthManwon: 0,
+      goalPeriodMonths: null,
+    });
+
+    renderNetWorthOnboardingPage();
+
+    await waitFor(() => expect(screen.getByRole("button", { name: "다음" })).toBeEnabled());
   });
 
   it("한도 초과 직접 입력은 최대값으로 제한한다", () => {

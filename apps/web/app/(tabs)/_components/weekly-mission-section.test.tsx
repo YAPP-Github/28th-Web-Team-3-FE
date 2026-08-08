@@ -97,6 +97,24 @@ describe("WeeklyMissionSection", () => {
     );
   });
 
+  it("절약 추정값이 없는 수동 미션에는 대체 설명을 표시한다", async () => {
+    mockData = [
+      {
+        id: "manual-1",
+        source: "MANUAL",
+        category: "LIVING",
+        title: "사용하지 않는 구독 정리하기",
+        status: "ACTIVE",
+        weekEndsAt: "2099-01-01T00:00:00Z",
+      },
+    ];
+    render(<WeeklyMissionSection />);
+
+    fireEvent.click(await screen.findByRole("button", { name: "사용하지 않는 구독 정리하기" }));
+    expect(screen.getByText("직접 추가")).toBeInTheDocument();
+    expect(screen.getByText("예상 절약 금액이 없는 직접 추가 미션이에요.")).toBeInTheDocument();
+  });
+
   it("체크 아이콘 확인 모달에서 완료를 요청한다", async () => {
     mockData = MOCK_MISSIONS;
     render(<WeeklyMissionSection />);
