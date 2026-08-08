@@ -13,6 +13,13 @@ import { withdrawGuest } from "@/api/auth";
  */
 const ORIGINAL_LOCATION = Object.getOwnPropertyDescriptor(window, "location");
 
+/** 다이얼로그를 열고 확인란까지 체크한 뒤 탈퇴를 누른다. */
+function openAndConfirm() {
+  fireEvent.click(screen.getByRole("button", { name: "탈퇴하기" }));
+  fireEvent.click(screen.getByRole("checkbox"));
+  fireEvent.click(screen.getByRole("button", { name: "탈퇴하기" }));
+}
+
 function stubLocationReplace() {
   const replace = vi.fn();
   Object.defineProperty(window, "location", { configurable: true, value: { replace } });
@@ -37,7 +44,7 @@ describe("WithdrawalButton", () => {
     expect(button.parentElement).toHaveClass("border-gray-100", "border-t");
   });
 
-  it("탈퇴 버튼을 누르면 미션 완료와 같은 형식의 확인 다이얼로그를 연다", () => {
+  it("탈퇴 버튼을 누르면 확인 다이얼로그를 연다", () => {
     render(<WithdrawalButton />);
 
     fireEvent.click(screen.getByRole("button", { name: "탈퇴하기" }));
@@ -47,12 +54,49 @@ describe("WithdrawalButton", () => {
     expect(screen.getByRole("button", { name: "탈퇴하기" })).toBeInTheDocument();
   });
 
+  // 되돌릴 수 없는 동작이다. 무엇이 사라지는지 보여주지 않으면 눌러 보고 알게 된다.
+  it("무엇이 지워지는지와 되돌릴 수 없다는 것을 알린다", () => {
+    render(<WithdrawalButton />);
+
+    fireEvent.click(screen.getByRole("button", { name: "탈퇴하기" }));
+
+    expect(screen.getByText("목표 금액과 저축 기록")).toBeInTheDocument();
+    expect(screen.getByText("진행 중인 미션과 완료 기록")).toBeInTheDocument();
+    expect(screen.getByText("온보딩에서 답한 재무상태 정보")).toBeInTheDocument();
+    expect(screen.getByText("지워진 기록은 되돌릴 수 없어요.")).toBeInTheDocument();
+  });
+
+  it("확인란을 체크하기 전에는 탈퇴할 수 없다", () => {
+    render(<WithdrawalButton />);
+    fireEvent.click(screen.getByRole("button", { name: "탈퇴하기" }));
+
+    const confirm = screen.getByRole("button", { name: "탈퇴하기" });
+    expect(confirm).toBeDisabled();
+
+    fireEvent.click(confirm);
+
+    expect(withdrawGuest).not.toHaveBeenCalled();
+  });
+
+  // 지난번 확인이 남아 있으면 다시 열었을 때 바로 눌러진다.
+  it("닫았다 다시 열면 확인란이 풀려 있다", () => {
+    render(<WithdrawalButton />);
+    fireEvent.click(screen.getByRole("button", { name: "탈퇴하기" }));
+    fireEvent.click(screen.getByRole("checkbox"));
+    expect(screen.getByRole("button", { name: "탈퇴하기" })).toBeEnabled();
+
+    fireEvent.click(screen.getByRole("button", { name: "취소" }));
+    fireEvent.click(screen.getByRole("button", { name: "탈퇴하기" }));
+
+    expect(screen.getByRole("checkbox")).not.toBeChecked();
+    expect(screen.getByRole("button", { name: "탈퇴하기" })).toBeDisabled();
+  });
+
   it("확인해야 탈퇴 API를 호출하고 성공 동작을 실행한다", async () => {
     const onWithdrawn = vi.fn();
     render(<WithdrawalButton onWithdrawn={onWithdrawn} />);
 
-    fireEvent.click(screen.getByRole("button", { name: "탈퇴하기" }));
-    fireEvent.click(screen.getByRole("button", { name: "탈퇴하기" }));
+    openAndConfirm();
 
     await waitFor(() => expect(withdrawGuest).toHaveBeenCalledOnce());
     expect(onWithdrawn).toHaveBeenCalledOnce();
@@ -66,8 +110,7 @@ describe("WithdrawalButton", () => {
     const replace = stubLocationReplace();
     render(<WithdrawalButton />);
 
-    fireEvent.click(screen.getByRole("button", { name: "탈퇴하기" }));
-    fireEvent.click(screen.getByRole("button", { name: "탈퇴하기" }));
+    openAndConfirm();
 
     await waitFor(() => expect(replace).toHaveBeenCalledWith("/onboarding/intro"));
   });
@@ -78,8 +121,7 @@ describe("WithdrawalButton", () => {
     const replace = stubLocationReplace();
     render(<WithdrawalButton />);
 
-    fireEvent.click(screen.getByRole("button", { name: "탈퇴하기" }));
-    fireEvent.click(screen.getByRole("button", { name: "탈퇴하기" }));
+    openAndConfirm();
 
     await screen.findByText("탈퇴하지 못했어요. 잠시 후 다시 시도해주세요.");
     expect(replace).not.toHaveBeenCalled();
@@ -89,8 +131,7 @@ describe("WithdrawalButton", () => {
     vi.mocked(withdrawGuest).mockRejectedValue(new Error("network error"));
     render(<WithdrawalButton />);
 
-    fireEvent.click(screen.getByRole("button", { name: "탈퇴하기" }));
-    fireEvent.click(screen.getByRole("button", { name: "탈퇴하기" }));
+    openAndConfirm();
 
     expect(
       await screen.findByText("탈퇴하지 못했어요. 잠시 후 다시 시도해주세요."),

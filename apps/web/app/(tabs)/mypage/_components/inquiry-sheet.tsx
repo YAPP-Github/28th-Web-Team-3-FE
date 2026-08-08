@@ -58,11 +58,13 @@ export function InquirySheet({ open, onOpenChange }: InquirySheetProps) {
             : "아래 주소로 편하게 문의해주세요."}
         </p>
         {/*
-          `openExternal`은 실패해도 던지지 않고 false만 돌려준다 — 카카오톡·메일 앱이 없는
-          기기에서는 버튼을 눌러도 아무 일이 없다. 어느 경로가 막히든 옮겨 적을 주소는 남도록
-          두 분기 모두에 노출한다.
+          이메일로 떨어진 경우에만 주소를 보여준다. `openExternal`은 실패해도 false만 돌려주므로
+          메일 앱이 없는 기기에서는 버튼이 무반응인데, 그때 옮겨 적을 곳이 화면에 있어야 한다.
+          오픈채팅이 설정된 경로에서는 문의 창구가 카카오톡 하나라 주소를 함께 두지 않는다.
         */}
-        <p className="text-body-b1-700 text-gray-900">{PRIVACY_CONTACT_EMAIL}</p>
+        {openChatUrl ? null : (
+          <p className="text-body-b1-700 text-gray-900">{PRIVACY_CONTACT_EMAIL}</p>
+        )}
         <Button size="cta" onClick={openInquiryChannel}>
           {openChatUrl ? "카카오톡으로 문의하기" : "이메일로 문의하기"}
         </Button>
