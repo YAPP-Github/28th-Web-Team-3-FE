@@ -16,9 +16,10 @@
     "check": "biome check --write .",
     "prepare": "lefthook install",
     "web": "pnpm --filter web dev",
-    "native": "pnpm --filter native start",
-    "ios": "pnpm --filter native ios",
-    "android": "pnpm --filter native android",
+    "native": "turbo run native#start",
+    "ios": "turbo run native#ios",
+    "android": "turbo run native#android",
+    "storybook": "pnpm --filter @repo/ui storybook",
     "chromatic": "pnpm --filter @repo/ui chromatic",
     "knip": "knip"
   },

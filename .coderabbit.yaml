@@ -2,6 +2,9 @@ reviews:
   review_status: true
   request_changes_workflow: false
   high_level_summary: true
+  high_level_summary_instructions: |
+    이번 PR diff에 포함된 변경만 한국어로 요약한다.
+    파일 이동이나 이름 변경을 신규 기능으로 설명하지 않는다.
   poem: false
   collapse_walkthrough: false
   auto_review:
@@ -16,6 +19,8 @@ reviews:
     - "!pnpm-lock.yaml"
     - "!.agents/**"
     - "!.claude/**"
+    - "!apps/web/public/mockServiceWorker.js"
+    - "!packages/ui/tokens.json"
   path_instructions:
     - path: "apps/web/**"
       instructions: |
@@ -25,12 +30,19 @@ reviews:
         - 데이터 패칭: Server Component fetch 또는 TanStack Query (클라이언트)
         - 폼: react-hook-form + zod
         - 구버전 패턴 주의: getServerSideProps/getStaticProps 없음, pages/ 없음
+    - path: "apps/admin/**"
+      instructions: |
+        Next.js 16 App Router 기반 어드민 앱. 웹 전용이며 개발 서버는 3001 포트를 사용.
+        - 서버 컴포넌트가 기본이며, 브라우저 API나 상태가 필요한 경우에만 'use client' 명시
+        - 페이지와 레이아웃은 app/ 디렉터리 기반 파일 시스템 라우팅 사용
+        - 구버전 패턴 주의: getServerSideProps/getStaticProps 없음, pages/ 없음
     - path: "apps/native/**"
       instructions: |
-        Expo 56 / React Native 0.85 프로젝트. React 19, Expo managed workflow.
+        Expo 57 / React Native 0.86 프로젝트. React 19, Expo managed workflow.
         - 네이티브 브릿지: @webview-bridge/react-native
         - 빌드: expo prebuild (ios/android 폴더는 gitignore)
         - 스타일: StyleSheet (Tailwind 없음)
+        - 의존성: Expo SDK가 호환 버전을 관리하는 패키지는 `pnpm expo install`로 설치하고 이 앱에 직접 핀한다. `expo`·`expo-*`, `react-native`, `react-native-webview`, `react-native-safe-area-context`, `expo-device`에 `catalog:` 이전을 요구하지 않는다.
         - 구버전 패턴 주의: expo-router 미사용, 클래스형 컴포넌트 없음
     - path: "packages/ui/**"
       instructions: |
@@ -39,3 +51,6 @@ reviews:
         - Chromatic 비주얼 테스트 연동
 
 language: ko
+tone_instructions: >
+  자연스럽고 간결한 한국어로 작성한다. 번역투와 불필요한 영어 문단을 피하고,
+  코드 식별자·파일명·설정값은 백틱으로 감싼다.

@@ -6,7 +6,12 @@
   "exports": {
     ".": "./src/index.ts",
     "./auth": "./src/auth.ts",
-    "./user": "./src/user.ts"
+    "./goal": "./src/goal.ts",
+    "./mission": "./src/mission.ts",
+    "./mission-generation": "./src/mission-generation.ts",
+    "./mission-survey": "./src/mission-survey.ts",
+    "./onboarding": "./src/onboarding.ts",
+    "./onboarding-api": "./src/onboarding-api.ts"
   },
   "scripts": {
     "lint": "biome check .",

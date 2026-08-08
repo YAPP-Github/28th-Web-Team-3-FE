@@ -1,12 +1,11 @@
 @import "tailwindcss";
-@import "./tokens.generated.css";
 
 /* Tailwind v4, CSS-first. THIS FILE IS THE SINGLE SOURCE OF TRUTH FOR THEME TOKENS.
    Apps consume it via `@import "@repo/ui/globals.css"` and scan ui classes with @source.
    The web/native(WebView) apps do NOT redefine tokens.
-   tokens.generated.css (Figma → Tokens Studio → Style Dictionary)는 @theme 안에
-   color-gray, color-blue 원시 팔레트만 제공. background/primary 등 시맨틱 토큰은
-   여전히 이 파일이 직접 관리하며 Figma 값을 참조하지 않음. */
+   Tokens Studio 파이프라인(tokens.json → tokens.generated.css)은 잠정 연동 해제 —
+   당분간 Figma MCP로 이 파일에 직접 토큰을 채워 넣는다. 색상 원시 팔레트와
+   타이포그래피 유틸은 아래 블록에 직접 정의돼 있다. 자세한 내용은 DESIGN.md 참고. */
 
 @custom-variant dark (&:is(.dark *));
 
@@ -65,54 +64,227 @@
   font-display: swap;
 }
 
-/* TODO: 아래 :root/.dark 색상 값과 @theme inline의 --color-* 매핑은 shadcn init 기본값
-   그대로임 (Figma 값 아님). Figma 시맨틱 팔레트 확정되면 정리 예정. */
+/* Figma MCP로 추출한 YAPP Web3 Design System 원시 색상 토큰.
+   Tokens Studio 재연결 전까지 이 블록이 원시 팔레트의 유일한 정의다.
+   gray-100은 가이드 라벨(#D7DBE3)과 변수/스와치(#DFE4EC)가 달라 변수/스와치를 따른다. */
+@theme {
+  --color-blue-50: #e5f6fe;
+  --color-blue-100: #c4ecfe;
+  --color-blue-200: #a1e1ff;
+  --color-blue-300: #70d2ff;
+  --color-blue-400: #3dc2ff;
+  --color-blue-500: #00aeff;
+  --color-blue-600: #008dcf;
+  --color-blue-700: #006796;
+  --color-blue-800: #004261;
+  --color-blue-900: #002130;
+  --color-gray-0: #ffffff;
+  --color-gray-10: #f9fafb;
+  --color-gray-50: #f0f3f8;
+  --color-gray-100: #dfe4ec;
+  --color-gray-200: #c9ced4;
+  --color-gray-300: #b5b9c0;
+  --color-gray-400: #8f949c;
+  --color-gray-500: #747a83;
+  --color-gray-600: #585d64;
+  --color-gray-700: #494d54;
+  --color-gray-800: #3b3e43;
+  --color-gray-900: #232529;
+  --color-error: #ff443b;
+  --color-error-light: #ffe5e4;
+  --color-warning: #ffe14d;
+  --color-success: #2ddd93;
+  --color-dim-light: rgb(0 0 0 / 40%);
+  --color-dim-dark: rgb(0 0 0 / 60%);
+}
+
+/* 시맨틱 토큰 — Figma Design System(Guide-Color) 기준으로 프리미티브를 용도별로
+   별칭화. 컴포넌트는 원시 팔레트(bg-blue-500) 대신 이 시맨틱 토큰을 사용할 것.
+   Secondary는 Figma 가이드가 미확정(라벨·스와치 불일치)이라 확정 전까지 중립 회색.
+   다른 변수를 참조하는 색상 토큰은 @theme inline이어야 opacity modifier
+   (bg-primary/90 등)의 color-mix가 올바로 동작한다 (Tailwind v4 문서). */
+@theme inline {
+  --color-background: var(--color-gray-0);
+  --color-foreground: var(--color-gray-900);
+  --color-primary: var(--color-blue-500);
+  --color-primary-foreground: var(--color-gray-0);
+  --color-secondary: var(--color-gray-50);
+  --color-secondary-foreground: var(--color-gray-900);
+  --color-muted: var(--color-gray-10);
+  --color-muted-foreground: var(--color-gray-500);
+  --color-destructive: var(--color-error);
+  --color-border: var(--color-gray-100);
+  --color-input: var(--color-gray-200);
+  /* 포커스 링. 앱 화면들이 이미 blue-300으로 그리고 있어 여기에 맞춘다 —
+     `focus-visible:ring-ring` 한 곳에서만 색을 바꿀 수 있게 값을 직접 박지 말 것. */
+  --color-ring: var(--color-blue-300);
+}
+
+@utility text-headline-h1-700 {
+  font-family: Pretendard, sans-serif;
+  font-weight: 700;
+  line-height: 38px;
+  font-size: 28px;
+  letter-spacing: -0.2px;
+}
+
+@utility text-headline-h1-500 {
+  font-family: Pretendard, sans-serif;
+  font-weight: 500;
+  line-height: 38px;
+  font-size: 28px;
+  letter-spacing: -0.2px;
+}
+
+@utility text-headline-h2-700 {
+  font-family: Pretendard, sans-serif;
+  font-weight: 700;
+  line-height: 34px;
+  font-size: 24px;
+  letter-spacing: -0.2px;
+}
+
+@utility text-headline-h2-500 {
+  font-family: Pretendard, sans-serif;
+  font-weight: 500;
+  line-height: 34px;
+  font-size: 24px;
+  letter-spacing: -0.2px;
+}
+
+@utility text-headline-h2-400 {
+  font-family: Pretendard, sans-serif;
+  font-weight: 400;
+  line-height: 34px;
+  font-size: 24px;
+  letter-spacing: -0.2px;
+}
+
+@utility text-title-t1-700 {
+  font-family: Pretendard, sans-serif;
+  font-weight: 700;
+  line-height: 28px;
+  font-size: 20px;
+  letter-spacing: -0.2px;
+}
+
+@utility text-title-t1-500 {
+  font-family: Pretendard, sans-serif;
+  font-weight: 500;
+  line-height: 28px;
+  font-size: 20px;
+  letter-spacing: -0.2px;
+}
+
+@utility text-title-t1-400 {
+  font-family: Pretendard, sans-serif;
+  font-weight: 400;
+  line-height: 28px;
+  font-size: 20px;
+  letter-spacing: -0.2px;
+}
+
+@utility text-title-t2-700 {
+  font-family: Pretendard, sans-serif;
+  font-weight: 700;
+  line-height: 26px;
+  font-size: 18px;
+  letter-spacing: -0.2px;
+}
+
+@utility text-title-t2-500 {
+  font-family: Pretendard, sans-serif;
+  font-weight: 500;
+  line-height: 26px;
+  font-size: 18px;
+  letter-spacing: -0.2px;
+}
+
+@utility text-title-t2-400 {
+  font-family: Pretendard, sans-serif;
+  font-weight: 400;
+  line-height: 26px;
+  font-size: 18px;
+  letter-spacing: -0.2px;
+}
+
+@utility text-body-b1-700 {
+  font-family: Pretendard, sans-serif;
+  font-weight: 700;
+  line-height: 24px;
+  font-size: 16px;
+  letter-spacing: -0.2px;
+}
+
+@utility text-body-b1-500 {
+  font-family: Pretendard, sans-serif;
+  font-weight: 500;
+  line-height: 24px;
+  font-size: 16px;
+  letter-spacing: -0.2px;
+}
+
+@utility text-body-b1-400 {
+  font-family: Pretendard, sans-serif;
+  font-weight: 400;
+  line-height: 24px;
+  font-size: 16px;
+  letter-spacing: -0.2px;
+}
+
+@utility text-body-b2-700 {
+  font-family: Pretendard, sans-serif;
+  font-weight: 700;
+  line-height: 21px;
+  font-size: 14px;
+  letter-spacing: -0.2px;
+}
+
+@utility text-body-b2-500 {
+  font-family: Pretendard, sans-serif;
+  font-weight: 500;
+  line-height: 21px;
+  font-size: 14px;
+  letter-spacing: -0.2px;
+}
+
+@utility text-body-b2-400 {
+  font-family: Pretendard, sans-serif;
+  font-weight: 400;
+  line-height: 21px;
+  font-size: 14px;
+  letter-spacing: -0.2px;
+}
+
+@utility text-caption-c1-700 {
+  font-family: Pretendard, sans-serif;
+  font-weight: 700;
+  line-height: 18px;
+  font-size: 12px;
+  letter-spacing: -0.2px;
+}
+
+@utility text-caption-c1-500 {
+  font-family: Pretendard, sans-serif;
+  font-weight: 500;
+  line-height: 18px;
+  font-size: 12px;
+  letter-spacing: -0.2px;
+}
+
+@utility text-caption-c1-400 {
+  font-family: Pretendard, sans-serif;
+  font-weight: 400;
+  line-height: 18px;
+  font-size: 12px;
+  letter-spacing: -0.2px;
+}
+
 :root {
   --radius: 0.625rem;
-
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
 }
 
-.dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --primary: oklch(0.985 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --color-primary: var(--primary);
-  --color-primary-foreground: var(--primary-foreground);
-  --color-secondary: var(--secondary);
-  --color-secondary-foreground: var(--secondary-foreground);
-  --color-muted: var(--muted);
-  --color-muted-foreground: var(--muted-foreground);
-  --color-destructive: var(--destructive);
-  --color-border: var(--border);
-  --color-input: var(--input);
-  --color-ring: var(--ring);
-
+@theme {
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);

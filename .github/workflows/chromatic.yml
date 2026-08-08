@@ -4,9 +4,11 @@ on:
   push:
     branches:
       - main
+      - develop
   pull_request:
     branches:
       - main
+      - develop
 
 # 같은 브랜치에 연속 push 시 이전 빌드를 취소해 스냅샷 쿼터 절약
 concurrency:

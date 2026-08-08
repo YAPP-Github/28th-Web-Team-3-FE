@@ -1,37 +1,44 @@
-# Flat node_modules so Expo/Metro can resolve hoisted deps (pnpm 11 reads this here, not .npmrc).
+# 현재 Expo/Metro 조합에서 워크스페이스 의존성 해석 문제가 있어 isolated 대신 hoisted를 사용한다.
+# pnpm 11부터 이 설정은 .npmrc가 아니라 pnpm-workspace.yaml에서 관리한다.
 nodeLinker: hoisted
 
 packages:
   - "apps/*"
   - "packages/*"
 
-# Single source of truth for dependency versions across the workspace.
-# Packages reference these with "catalog:".
+# 워크스페이스 전체에서 사용하는 의존성 버전의 기준.
+# 각 앱과 패키지는 개별 버전 대신 "catalog:"로 아래 버전을 참조한다.
 catalog:
-  # Toolchain
+  # 개발 도구
   typescript: ^6.0.3
   "@types/node": ^24.13.2
   turbo: ^2.9.18
   "@biomejs/biome": ^2.5.0
   lefthook: ^2.1.9
 
-  # React / Next
-  react: ^19.2.7
-  react-dom: ^19.2.7
+  # React / Next.js
+  # RN 0.86(Expo SDK 57) renderer가 기대하는 버전에 정확히 고정.
+  # 범위 허용 시 hoisted 단일 카피가 renderer와 어긋나 런타임 버전 불일치 에러가 날 수 있다.
+  react: 19.2.3
+  react-dom: 19.2.3
   "@types/react": ^19.2.17
   "@types/react-dom": ^19.2.3
   next: ^16.2.9
+  # RSC 경계 마커 (server/client 전용 모듈을 잘못된 번들에 넣으면 빌드 실패)
+  server-only: ^0.0.1
+  client-only: ^0.0.1
 
-  # Schema / forms — zod v4 (one copy across the workspace).
+  # 스키마 / 폼 — 워크스페이스 전체에서 Zod v4 한 버전만 사용한다.
   zod: ^4.4.3
   react-hook-form: ^7.80.0
   "@hookform/resolvers": ^5.4.0
 
-  # Data / http
+  # 데이터 요청 / HTTP
   ky: ^2.0.2
+  mixpanel-browser: ^2.81.0
   "@tanstack/react-query": ^5.101.0
 
-  # UI / Tailwind v4
+  # UI / Tailwind CSS v4
   tailwindcss: ^4.3.1
   "@tailwindcss/postcss": ^4.3.1
   "@tailwindcss/vite": ^4.3.1
@@ -39,20 +46,29 @@ catalog:
   tailwind-merge: ^3.6.0
   class-variance-authority: ^0.7.1
   lucide-react: ^1.21.0
+  # React Compiler — 네이티브는 babel-preset-expo가 제공하는 버전을 사용한다.
+  babel-plugin-react-compiler: ^1.0.0
+  # SVG를 React 컴포넌트로 변환한다. Next.js 설정의 Turbopack rules에서 사용한다.
+  "@svgr/webpack": ^8.1.0
+  "@radix-ui/react-dialog": ^1.1.19
+  "@radix-ui/react-progress": ^1.1.7
+  "@radix-ui/react-radio-group": ^1.4.3
+  "@radix-ui/react-slider": ^1.3.5
+  "@radix-ui/react-toggle": ^1.1.14
 
-  # Bridge
+  # WebView 브릿지
   "@webview-bridge/web": ^1.7.9
   "@webview-bridge/react-native": ^1.7.9
   "@webview-bridge/react": ^1.7.9
   "@webview-bridge/types": ^1.7.9
 
-  # State
+  # 상태 관리
   zustand: ^5.0.14
 
-  # Monitoring
+  # 오류 모니터링
   "@sentry/nextjs": ^10.61.0
 
-  # Test
+  # 테스트
   vitest: ^4.1.9
   "@playwright/test": ^1.61.0
   jsdom: ^29.1.1
@@ -61,14 +77,18 @@ catalog:
   "@testing-library/dom": ^10.4.1
   msw: ^2.14.6
 
-  # Dead code detection
+  # 미사용 코드 탐지
   knip: ^6.23.0
 
-  # Design tokens (@repo/ui, Tokens Studio 연동)
+  # 네이티브 빌드 도구 — Expo SDK가 버전을 관리하지 않으므로 카탈로그에서 고정한다.
+  "@babel/core": ^7.25.0
+  eas-cli: ^20.4.0
+
+  # 디자인 토큰 — @repo/ui와 Tokens Studio 연동에 사용한다.
   style-dictionary: ^5.5.0
   "@tokens-studio/sd-transforms": ^2.0.3
 
-  # Storybook / Vite tooling (@repo/ui)
+  # 컴포넌트 문서화 / Vite 도구 — @repo/ui에서 사용한다.
   storybook: ^10.4.6
   "@storybook/react": ^10.4.6
   "@storybook/react-vite": ^10.4.6
@@ -76,7 +96,8 @@ catalog:
   "@vitejs/plugin-react": ^6.0.2
   chromatic: ^17.8.0
 
-# Packages allowed to run install/build lifecycle scripts (pnpm 11+).
+# 의존성 설치 중 install/build lifecycle script 실행을 허용할 패키지 목록.
+# 목록에 없는 패키지의 lifecycle script는 pnpm 11이 실행하지 않는다.
 allowBuilds:
   "@sentry/cli": true
   dtrace-provider: false
@@ -85,12 +106,12 @@ allowBuilds:
   msw: true
   sharp: true
 
-# 출시 1일(pnpm 11 기본값과 동일) 미만 버전 설치 차단 — 공급망 공격 완충.
-# 아래 exclude는 이 규칙의 예외 (도입 시점에 신선했던 버전들).
+# 출시 후 24시간이 지나지 않은 버전은 설치하지 않는다. 공급망 공격을 완화하기 위한 설정이다.
 minimumReleaseAge: 1440
-# 나이 제한을 만족하는 버전이 없으면 구버전으로 폴백 (pnpm add 하드 실패 방지).
+# 조건을 만족하는 버전이 없으면 설치를 실패시키지 않고 이전 버전으로 대체한다.
 minimumReleaseAgeStrict: false
 
+# 도입 당시 출시 후 24시간이 지나지 않아 위 제한에서 임시로 제외한 버전.
 minimumReleaseAgeExclude:
   - '@sentry/browser-utils@10.61.0'
   - '@sentry/browser@10.61.0'

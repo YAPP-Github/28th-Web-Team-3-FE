@@ -1,0 +1,80 @@
+import { z } from "zod";
+import { missionCategorySchema } from "./mission";
+
+/**
+ * 미션 초안 생성(비동기 job) API 계약 — 백엔드 OpenAPI(`/api/missions/generation-jobs`) 기준.
+ */
+
+export const missionGenerationJobStatusSchema = z.enum([
+  "PENDING",
+  "RUNNING",
+  "SUCCEEDED",
+  "FAILED",
+]);
+export type MissionGenerationJobStatus = z.infer<typeof missionGenerationJobStatusSchema>;
+
+export const missionGenerationJobSchema = z.object({
+  jobId: z.string(),
+  status: missionGenerationJobStatusSchema,
+  failureCode: z.string().nullable(),
+  generationSource: z.string().nullable(),
+  draftsAvailable: z.boolean(),
+  expiresAt: z.string().nullable(),
+  confirmed: z.boolean(),
+  pollingIntervalMillis: z.number().int(),
+});
+export type MissionGenerationJob = z.infer<typeof missionGenerationJobSchema>;
+
+export const missionDraftSchema = z.object({
+  id: z.string(),
+  title: z.string(),
+  description: z.string(),
+  actionCode: z.string(),
+  metricType: z.string(),
+  targetCount: z.number().int(),
+  targetUnit: z.string(),
+  estimatedSavingsWon: z.number().int(),
+  savingsEstimateVersion: z.string(),
+  savingsLabel: z.string(),
+});
+export type MissionDraft = z.infer<typeof missionDraftSchema>;
+
+export const missionCategoryDraftsSchema = z.object({
+  category: missionCategorySchema,
+  drafts: z.array(missionDraftSchema),
+});
+export type MissionCategoryDrafts = z.infer<typeof missionCategoryDraftsSchema>;
+
+/** GET /api/missions/generation-jobs/{jobId}/drafts 응답. */
+export const missionDraftsResponseSchema = z.object({
+  jobId: z.string(),
+  categories: z.array(missionCategoryDraftsSchema),
+});
+export type MissionDraftsResponse = z.infer<typeof missionDraftsResponseSchema>;
+
+/** POST /api/missions/generation-jobs/{jobId}/confirm 요청 — 1개 이상, 중복 없이. */
+export const missionConfirmRequestSchema = z.object({
+  selectedDraftIds: z.array(z.string()).min(1),
+});
+export type MissionConfirmRequest = z.infer<typeof missionConfirmRequestSchema>;
+
+export const missionConfirmResponseSchema = z.object({
+  jobId: z.string(),
+  missions: z.array(
+    z.object({
+      id: z.string(),
+      category: missionCategorySchema,
+      title: z.string(),
+      description: z.string(),
+      actionCode: z.string(),
+      metricType: z.string(),
+      targetCount: z.number().int(),
+      targetUnit: z.string(),
+      estimatedSavingsWon: z.number().int(),
+      savingsEstimateVersion: z.string(),
+      savingsLabel: z.string(),
+      status: z.string(),
+    }),
+  ),
+});
+export type MissionConfirmResponse = z.infer<typeof missionConfirmResponseSchema>;

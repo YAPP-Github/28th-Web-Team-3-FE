@@ -1,30 +1,49 @@
 {
   "$schema": "https://turbo.build/schema.json",
   "ui": "tui",
-  "globalDependencies": [".env", "tsconfig.json"],
+  "globalDependencies": ["tsconfig.json"],
   "globalEnv": ["NODE_ENV"],
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
-      "env": ["SENTRY_AUTH_TOKEN", "CI"],
+      "env": [
+        "SENTRY_AUTH_TOKEN",
+        "CI",
+        "NEXT_PUBLIC_SENTRY_DSN",
+        "NEXT_PUBLIC_API_URL",
+        "BACKEND_API_URL",
+        "NEXT_PUBLIC_KAKAO_OPENCHAT_URL"
+      ],
       "inputs": ["$TURBO_DEFAULT$", ".env*"],
-      "outputs": [
-        ".next/**",
-        "!.next/cache/**",
-        "dist/**",
-        "storybook-static/**",
-        "src/styles/tokens.generated.css"
-      ]
+      "outputs": [".next/**", "!.next/cache/**"]
     },
     "dev": {
       "dependsOn": ["^build"],
       "cache": false,
-      "persistent": true
+      "persistent": true,
+      "env": ["NEXT_PUBLIC_SENTRY_DSN", "NEXT_PUBLIC_API_URL", "BACKEND_API_URL"]
+    },
+    "native#start": {
+      "cache": false,
+      "persistent": true,
+      "env": ["EXPO_PUBLIC_WEB_URL", "EXPO_PUBLIC_API_URL", "EXPO_PUBLIC_ANDROID_EMULATOR"]
+    },
+    "native#prebuild": {
+      "cache": false,
+      "env": ["EXPO_PUBLIC_WEB_URL", "EXPO_PUBLIC_API_URL", "EXPO_PUBLIC_ANDROID_EMULATOR"]
+    },
+    "native#ios": {
+      "cache": false,
+      "env": ["EXPO_PUBLIC_WEB_URL", "EXPO_PUBLIC_API_URL", "EXPO_PUBLIC_ANDROID_EMULATOR"]
+    },
+    "native#android": {
+      "cache": false,
+      "env": ["EXPO_PUBLIC_WEB_URL", "EXPO_PUBLIC_API_URL", "EXPO_PUBLIC_ANDROID_EMULATOR"]
     },
     "lint": {},
     "typecheck": {
       "dependsOn": ["^typecheck"],
-      "outputs": ["*.tsbuildinfo"]
+      "outputs": ["**/*.tsbuildinfo", ".next/types/**"]
     },
     "test": {
       "dependsOn": ["^build"],

@@ -1,22 +1,44 @@
 import { withSentryConfig } from "@sentry/nextjs";
 import type { NextConfig } from "next";
 
+const backendApiUrl = process.env.BACKEND_API_URL?.replace(/\/$/, "");
+
 const nextConfig: NextConfig = {
   reactStrictMode: true,
-  // Internal packages ship TS/TSX source; Next compiles them here.
+  allowedDevOrigins: ["10.0.2.2"],
+  async rewrites() {
+    if (process.env.NODE_ENV !== "development" || !backendApiUrl) return [];
+    return [
+      {
+        source: "/api/:path*",
+        destination: `${backendApiUrl}/api/:path*`,
+      },
+    ];
+  },
+  // 내부 패키지는 빌드 없이 TS/TSX 소스를 그대로 내보내므로 Next가 여기서 컴파일한다.
   transpilePackages: ["@repo/ui", "@repo/api", "@repo/schema", "@repo/bridge"],
+  reactCompiler: true,
+  // .svg import를 SVGR로 React 컴포넌트화 (fill=currentColor로 색상 제어).
+  turbopack: {
+    rules: {
+      "*.svg": {
+        loaders: ["@svgr/webpack"],
+        as: "*.js",
+      },
+    },
+  },
 };
 
 export default withSentryConfig(nextConfig, {
   org: "yapp-web3",
   project: "javascript-nextjs",
 
-  // Upload source maps for readable stack traces (CI; needs SENTRY_AUTH_TOKEN).
+  // 스택 트레이스를 읽을 수 있게 소스맵을 업로드한다(CI 전용, SENTRY_AUTH_TOKEN 필요).
   authToken: process.env.SENTRY_AUTH_TOKEN,
 
-  // Route SDK requests through our own domain to dodge ad-blockers.
+  // SDK 요청을 우리 도메인으로 우회시켜 광고 차단기를 피한다.
   tunnelRoute: "/monitoring",
 
-  // Quiet build logs except on CI.
+  // CI가 아니면 빌드 로그를 조용히 한다.
   silent: !process.env.CI,
 });

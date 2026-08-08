@@ -6,6 +6,7 @@
   "exports": {
     ".": "./src/index.ts",
     "./client": "./src/client.ts",
+    "./http": "./src/http.ts",
     "./provider": "./src/query-client.tsx"
   },
   "scripts": {
@@ -16,7 +17,8 @@
   "dependencies": {
     "@repo/schema": "workspace:*",
     "@tanstack/react-query": "catalog:",
-    "ky": "catalog:"
+    "ky": "catalog:",
+    "zod": "catalog:"
   },
   "peerDependencies": {
     "react": "catalog:"

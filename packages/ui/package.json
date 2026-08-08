@@ -7,18 +7,23 @@
     ".": "./src/index.ts",
     "./globals.css": "./src/styles/globals.css",
     "./lib/utils": "./src/lib/utils.ts",
-    "./components/*": "./src/components/*.tsx"
+    "./components/*": "./src/components/*.tsx",
+    "./svg/*": "./src/svg/*"
   },
   "scripts": {
-    "build": "node scripts/build-tokens.mjs",
     "lint": "biome check .",
     "typecheck": "tsc --noEmit",
-    "storybook": "node scripts/build-tokens.mjs && storybook dev -p 6006",
-    "build-storybook": "node scripts/build-tokens.mjs && storybook build --stats-json",
+    "storybook": "storybook dev -p 6006",
+    "build-storybook": "storybook build --stats-json",
     "chromatic": "chromatic --build-script-name build-storybook",
     "tokens:build": "node scripts/build-tokens.mjs"
   },
   "dependencies": {
+    "@radix-ui/react-dialog": "catalog:",
+    "@radix-ui/react-progress": "catalog:",
+    "@radix-ui/react-radio-group": "catalog:",
+    "@radix-ui/react-slider": "catalog:",
+    "@radix-ui/react-toggle": "catalog:",
     "class-variance-authority": "catalog:",
     "clsx": "catalog:",
     "lucide-react": "catalog:",

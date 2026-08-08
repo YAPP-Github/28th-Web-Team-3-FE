@@ -58,4 +58,8 @@ public/workbox-*.js.map
 Thumbs.db
 .vscode/*
 !.vscode/extensions.json
+!.vscode/settings.json
 .idea/
+
+# Vercel
+.vercel/

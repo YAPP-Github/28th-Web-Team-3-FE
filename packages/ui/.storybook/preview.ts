@@ -1,5 +1,5 @@
 import type { Preview } from "@storybook/react";
-// Load the shared theme tokens so stories render with real design tokens.
+// 스토리가 실제 디자인 토큰으로 렌더링되도록 공유 테마 토큰을 불러온다.
 import "../src/styles/globals.css";
 
 const preview: Preview = {
