@@ -21,6 +21,7 @@ test("home page renders", async ({ page }) => {
       contentType: "application/json",
       body: JSON.stringify({
         targetAmountManwon: 5_000,
+        periodMonths: 16,
         totalSavedManwon: 1_950,
         progressPercent: 100,
         usageMonths: 8,

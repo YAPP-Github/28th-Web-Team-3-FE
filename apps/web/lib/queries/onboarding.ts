@@ -19,8 +19,8 @@ const ONBOARDING_REPORT_QUERY_KEY = ["onboarding", "report"] as const;
 const ONBOARDING_GOAL_PLANS_QUERY_KEY = ["onboarding", "goal-plans"] as const;
 
 /**
- * 온보딩 프로필 조회. 홈의 온보딩 완료 판정, 질문 퍼널의 초기값 복원, 목표 수정
- * 시트의 기간·월소득이 모두 이 하나를 본다 — 같은 queryKey를 공유해 화면마다 따로 요청하지 않는다.
+ * 온보딩 프로필 조회. 홈의 온보딩 완료 판정과 질문 퍼널의 초기값 복원이
+ * 같은 queryKey를 공유해 화면마다 따로 요청하지 않는다.
  */
 export function onboardingProfileOptions() {
   return queryOptions({

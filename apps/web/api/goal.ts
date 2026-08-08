@@ -24,7 +24,11 @@ export function updateSavings(body: SavingRequest): Promise<void> {
   return http.put("goal/savings", { body, request: savingRequestSchema });
 }
 
-/** PATCH /api/goal — 목표 금액/기간 수정. 전송 전 계약 검증(양수 또는 null). */
-export function updateGoal(body: GoalUpdateRequest): Promise<void> {
-  return http.patch("goal", { body, request: goalUpdateRequestSchema });
+/** PATCH /api/goal — 목표 금액/기간 수정. 전송과 응답 계약을 검증한다. */
+export function updateGoal(body: GoalUpdateRequest): Promise<GoalStatus> {
+  return http.patch("goal", {
+    body,
+    request: goalUpdateRequestSchema,
+    response: goalStatusSchema,
+  });
 }
