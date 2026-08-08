@@ -10,11 +10,15 @@ export default function MyPage() {
       <section className="mt-4">
         <h2 className="text-body-b2-500 text-gray-400">설정</h2>
         <ul className="mt-2">
+          {/*
+            문서는 탭 그룹 밖(`/legal`)에 둔다 — 스토어에 제출하는 개인정보처리방침 URL은
+            브라우저에서 토큰 없이 열려야 하는데, 탭 그룹은 인증 가드 아래라 401로 막힌다.
+          */}
           <li>
-            <SettingLinkRow href="/mypage/terms">이용약관</SettingLinkRow>
+            <SettingLinkRow href="/legal/terms">이용약관</SettingLinkRow>
           </li>
           <li>
-            <SettingLinkRow href="/mypage/privacy">개인정보처리방침</SettingLinkRow>
+            <SettingLinkRow href="/legal/privacy">개인정보처리방침</SettingLinkRow>
           </li>
           <li>
             <InquiryRow />

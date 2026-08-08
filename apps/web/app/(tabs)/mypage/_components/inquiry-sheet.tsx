@@ -1,6 +1,6 @@
 import { BottomSheet, Button } from "@repo/ui";
+import { PRIVACY_CONTACT_EMAIL } from "@/lib/legal";
 import { openExternalLink } from "@/lib/open-external";
-import { PRIVACY_CONTACT_EMAIL } from "./legal-constants";
 
 interface InquirySheetProps {
   open: boolean;
