@@ -70,7 +70,7 @@ export function WithdrawalButton({
       <Dialog
         open={isDialogOpen}
         title="정말 탈퇴할까요?"
-        contentClassName="max-w-[320px]"
+        contentClassName="max-w-[298px]"
         onOpenChange={(open) => {
           if (!open) closeDialog();
         }}
@@ -103,9 +103,9 @@ export function WithdrawalButton({
             {error}
           </p>
         ) : null}
-        <div className="grid w-full grid-cols-2 gap-2.5">
+        <div className="grid w-full grid-cols-2 gap-3">
           <Button
-            className="h-[52px] text-body-b1-700 text-gray-800"
+            className="h-[52px] bg-gray-100 text-body-b1-700 text-gray-900 hover:bg-gray-200"
             variant="secondary"
             size="cta"
             disabled={isPending}
@@ -115,7 +115,7 @@ export function WithdrawalButton({
           </Button>
           {/* 되돌릴 수 없는 쪽이라 일반 CTA와 같은 파란색을 쓰지 않는다. */}
           <Button
-            className="h-[52px] text-body-b1-700"
+            className="h-[52px] bg-error-light text-body-b1-700 text-error hover:bg-error-light/80 disabled:bg-error-light disabled:text-error disabled:opacity-100"
             variant="destructive"
             size="cta"
             disabled={isPending || !isConfirmed}

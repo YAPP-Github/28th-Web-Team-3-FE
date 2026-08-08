@@ -54,6 +54,21 @@ describe("WithdrawalButton", () => {
     expect(screen.getByRole("button", { name: "탈퇴하기" })).toBeInTheDocument();
   });
 
+  it("확인 다이얼로그에 Figma 경고 버튼 색과 간격을 적용한다", () => {
+    render(<WithdrawalButton />);
+
+    fireEvent.click(screen.getByRole("button", { name: "탈퇴하기" }));
+
+    expect(screen.getByRole("dialog", { name: "정말 탈퇴할까요?" })).toHaveClass("max-w-[298px]");
+    expect(screen.getByRole("button", { name: "취소" })).toHaveClass(
+      "bg-gray-100",
+      "text-gray-900",
+    );
+    const confirm = screen.getByRole("button", { name: "탈퇴하기" });
+    expect(confirm).toHaveClass("bg-error-light", "text-error", "disabled:opacity-100");
+    expect(confirm.parentElement).toHaveClass("gap-3");
+  });
+
   // 되돌릴 수 없는 동작이다. 무엇이 사라지는지 보여주지 않으면 눌러 보고 알게 된다.
   it("무엇이 지워지는지와 되돌릴 수 없다는 것을 알린다", () => {
     render(<WithdrawalButton />);
