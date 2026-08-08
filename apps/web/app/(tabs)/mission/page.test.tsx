@@ -91,15 +91,32 @@ describe("MissionPage", () => {
     await waitFor(() => expect(completeMission).toHaveBeenCalledWith("RECOMMENDED", "meal-1"));
   });
 
-  it("펼친 추천 미션에서 삭제를 요청한다", async () => {
+  it("펼친 추천 미션의 삭제를 확인한 뒤 요청한다", async () => {
     render(<MissionPage />);
 
     await screen.findByText("33% 달성");
     fireEvent.click(screen.getByRole("tab", { name: "식비" }));
     fireEvent.click(screen.getByRole("button", { name: /이번 주 배달음식/ }));
     fireEvent.click(screen.getByRole("button", { name: "미션 삭제" }));
+    expect(screen.getByRole("dialog", { name: "미션을 삭제할까요?" })).toBeInTheDocument();
+    expect(deleteRecommendedMission).not.toHaveBeenCalled();
+
+    fireEvent.click(screen.getByRole("button", { name: "삭제" }));
 
     await waitFor(() => expect(deleteRecommendedMission).toHaveBeenCalledWith("meal-1"));
+  });
+
+  it("삭제 확인을 취소하면 요청하지 않는다", async () => {
+    render(<MissionPage />);
+
+    await screen.findByText("33% 달성");
+    fireEvent.click(screen.getByRole("tab", { name: "식비" }));
+    fireEvent.click(screen.getByRole("button", { name: /이번 주 배달음식/ }));
+    fireEvent.click(screen.getByRole("button", { name: "미션 삭제" }));
+    fireEvent.click(screen.getByRole("button", { name: "취소" }));
+
+    expect(screen.queryByRole("dialog", { name: "미션을 삭제할까요?" })).not.toBeInTheDocument();
+    expect(deleteRecommendedMission).not.toHaveBeenCalled();
   });
 
   it("완료 요청이 실패하면 다이얼로그를 열어둔 채 오류를 보여준다", async () => {
@@ -126,10 +143,12 @@ describe("MissionPage", () => {
     fireEvent.click(screen.getByRole("tab", { name: "식비" }));
     fireEvent.click(screen.getByRole("button", { name: /이번 주 배달음식/ }));
     fireEvent.click(screen.getByRole("button", { name: "미션 삭제" }));
+    fireEvent.click(screen.getByRole("button", { name: "삭제" }));
 
     expect(
       await screen.findByText("미션을 삭제하지 못했어요. 잠시 후 다시 시도해 주세요."),
     ).toBeInTheDocument();
+    expect(screen.getByRole("dialog", { name: "미션을 삭제할까요?" })).toBeInTheDocument();
   });
 
   it("플로팅 버튼으로 미션 추가 메뉴를 연다", async () => {

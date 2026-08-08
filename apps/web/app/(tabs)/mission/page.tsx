@@ -12,6 +12,7 @@ import {
 import { MissionAddMenu } from "./_components/mission-add-menu";
 import { MissionCategoryFilter } from "./_components/mission-category-filter";
 import { MissionCompleteDialog } from "./_components/mission-complete-dialog";
+import { MissionDeleteDialog } from "./_components/mission-delete-dialog";
 import { MissionHero } from "./_components/mission-hero";
 import { MissionList } from "./_components/mission-list";
 import { MISSION_CATEGORY_LABELS, type MissionCategory } from "./constants/mission";
@@ -26,6 +27,7 @@ export default function MissionPage() {
   const [expandedMissionId, setExpandedMissionId] = useState<string | null>(null);
   const [isAddMenuOpen, setIsAddMenuOpen] = useState(false);
   const [missionToComplete, setMissionToComplete] = useState<Mission | null>(null);
+  const [missionToDelete, setMissionToDelete] = useState<Mission | null>(null);
   const [completeError, setCompleteError] = useState<string>();
   const [deleteError, setDeleteError] = useState<string>();
 
@@ -80,22 +82,10 @@ export default function MissionPage() {
           onComplete={setMissionToComplete}
           onDelete={(mission) => {
             setDeleteError(undefined);
-            deleteMission.mutate(
-              { missionId: mission.id },
-              {
-                onError: () =>
-                  setDeleteError("미션을 삭제하지 못했어요. 잠시 후 다시 시도해 주세요."),
-                onSuccess: () => setExpandedMissionId(null),
-              },
-            );
+            setMissionToDelete(mission);
           }}
           onToggle={(id) => setExpandedMissionId((expandedId) => (expandedId === id ? null : id))}
         />
-        {deleteError ? (
-          <p aria-live="polite" className="text-body-b2-500 text-error">
-            {deleteError}
-          </p>
-        ) : null}
       </section>
       <MissionAddMenu
         isOpen={isAddMenuOpen}
@@ -118,6 +108,31 @@ export default function MissionPage() {
               onError: () =>
                 setCompleteError("완료 처리하지 못했어요. 잠시 후 다시 시도해 주세요."),
               onSuccess: () => setMissionToComplete(null),
+            },
+          );
+        }}
+      />
+      <MissionDeleteDialog
+        error={deleteError}
+        open={missionToDelete != null}
+        pending={deleteMission.isPending}
+        onCancel={() => {
+          if (deleteMission.isPending) return;
+          setDeleteError(undefined);
+          setMissionToDelete(null);
+        }}
+        onConfirm={() => {
+          if (!missionToDelete) return;
+          setDeleteError(undefined);
+          deleteMission.mutate(
+            { missionId: missionToDelete.id },
+            {
+              onError: () =>
+                setDeleteError("미션을 삭제하지 못했어요. 잠시 후 다시 시도해 주세요."),
+              onSuccess: () => {
+                setExpandedMissionId(null);
+                setMissionToDelete(null);
+              },
             },
           );
         }}
