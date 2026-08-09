@@ -54,4 +54,15 @@ describe("HomePage", () => {
     expect(screen.getByText("이번 주 배달음식 2회 이하로 주문")).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "재테크 선배의 팁" })).toBeInTheDocument();
   });
+
+  it("목표 조회 실패 시 사용자용 오류 문구를 렌더한다", async () => {
+    const error = new Error("goal request failed");
+    vi.mocked(fetchGoalStatus).mockRejectedValue(error);
+
+    render(<HomePage />);
+
+    expect(
+      await screen.findByText("목표를 불러오지 못했어요. 잠시 후 다시 시도해 주세요."),
+    ).toBeInTheDocument();
+  });
 });

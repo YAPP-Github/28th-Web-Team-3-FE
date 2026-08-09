@@ -1,6 +1,7 @@
 import type { GoalUpdateRequest, SavingRequest } from "@repo/schema/goal";
 import { mutationOptions, type QueryClient, queryOptions } from "@tanstack/react-query";
 import { fetchGoalStatus, updateGoal, updateSavings } from "@/api/goal";
+import { reportGoalStatusError } from "@/lib/report-goal-status-error";
 
 /** 목표 현황 캐시 키. 밖에서는 `goalStatusOptions().queryKey`로 꺼낸다. */
 const GOAL_QUERY_KEY = ["goal"] as const;
@@ -9,7 +10,14 @@ const GOAL_QUERY_KEY = ["goal"] as const;
 export function goalStatusOptions() {
   return queryOptions({
     queryKey: GOAL_QUERY_KEY,
-    queryFn: fetchGoalStatus,
+    queryFn: async () => {
+      try {
+        return await fetchGoalStatus();
+      } catch (error) {
+        reportGoalStatusError(error);
+        throw error;
+      }
+    },
   });
 }
 
