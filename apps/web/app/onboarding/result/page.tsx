@@ -4,6 +4,7 @@ import { ButtonGroup } from "@repo/ui";
 import AppleIntelIcon from "@repo/ui/svg/apple-intel.svg";
 import { useQuery } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
+import { OnboardingPageSkeleton } from "@/app/onboarding/_components/onboarding-page-skeleton";
 import { SavingsComparisonChart } from "@/app/onboarding/_components/savings-comparison-chart";
 import { formatManwon } from "@/lib/format";
 import { onboardingReportOptions } from "@/lib/queries/onboarding";
@@ -22,11 +23,7 @@ export default function OnboardingResultPage() {
   }
 
   if (!report) {
-    return (
-      <div className="flex min-h-dvh items-center justify-center text-body-b1-500 text-gray-500">
-        결과를 불러오는 중…
-      </div>
-    );
+    return <OnboardingPageSkeleton label="결과를 불러오는 중" />;
   }
 
   const { simulation } = report;

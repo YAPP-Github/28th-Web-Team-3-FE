@@ -100,7 +100,7 @@ export function GoalEditSheet({
             {submitError}
           </p>
         ) : null}
-        <Button size="cta" disabled={isUpdatingGoal} onClick={submit}>
+        <Button size="cta" pending={isUpdatingGoal} onClick={submit}>
           완료
         </Button>
       </div>

@@ -44,7 +44,7 @@ export function MissionDeleteDialog({
         <Button
           className="h-[52px] text-body-b1-700"
           size="cta"
-          disabled={pending}
+          pending={pending}
           onClick={onConfirm}
         >
           삭제

@@ -12,6 +12,12 @@ export interface ButtonGroupProps extends React.HTMLAttributes<HTMLDivElement> {
   prevLabel?: string;
   nextLabel?: string;
   nextDisabled?: boolean;
+  /**
+   * 다음 버튼이 시작한 작업을 기다리는 중. 문구는 그대로 두고 눌린 상태만 유지한다.
+   * 기다리는 동안 이전 버튼도 막는다 — 저장 중에 뒤로 가면 어느 쪽이 이긴 상태인지
+   * 화면만 봐서는 알 수 없다.
+   */
+  nextPending?: boolean;
   /** 다음 버튼을 submit으로 쓸 때. */
   nextType?: "button" | "submit";
 }
@@ -26,6 +32,7 @@ export function ButtonGroup({
   prevLabel = "이전",
   nextLabel = "다음",
   nextDisabled,
+  nextPending = false,
   nextType = "button",
   className,
   ...props
@@ -38,6 +45,7 @@ export function ButtonGroup({
           variant="secondary"
           size="cta"
           className="w-[105px] shrink-0"
+          disabled={nextPending}
           onClick={onPrev}
         >
           {prevLabel}
@@ -48,6 +56,7 @@ export function ButtonGroup({
         size="cta"
         className="flex-1"
         disabled={nextDisabled}
+        pending={nextPending}
         onClick={onNext}
       >
         {nextLabel}

@@ -58,7 +58,7 @@ export function SavingsInputSheet({ open, onOpenChange, initialManwon }: Savings
             {submitError}
           </p>
         ) : null}
-        <Button size="cta" disabled={isPending || value === ""} onClick={submit}>
+        <Button size="cta" disabled={value === ""} pending={isPending} onClick={submit}>
           완료
         </Button>
       </div>

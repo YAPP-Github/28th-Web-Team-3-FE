@@ -103,7 +103,8 @@ export default function AgeOnboardingPage() {
       ) : null}
       <Button
         className={`${saveError ? "mt-3" : "mt-auto"} mb-6 disabled:bg-gray-50 disabled:text-gray-300 disabled:opacity-100`}
-        disabled={!isBirthDateValid || isSaving}
+        disabled={!isBirthDateValid}
+        pending={isSaving}
         size="cta"
         onClick={async () => {
           if (await trigger("birthDate", { shouldFocus: true })) {
@@ -111,7 +112,7 @@ export default function AgeOnboardingPage() {
           }
         }}
       >
-        {isSaving ? "저장 중…" : "다음"}
+        다음
       </Button>
     </div>
   );

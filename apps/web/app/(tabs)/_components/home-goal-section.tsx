@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
+import { GoalSectionSkeleton } from "@/app/_components/goal-section-skeleton";
 import { MonthlyGoalCard } from "@/app/goal/_components/monthly-goal-card";
 import { SavingsInputSheet } from "@/app/goal/_components/savings-input-sheet";
 import { formatDday } from "@/app/goal/lib/format";
@@ -17,8 +18,7 @@ export function HomeGoalSection() {
   const [savingsOpen, setSavingsOpen] = useState(false);
 
   if (isPending) {
-    // 라인 + 이번 달 카드 실제 높이에 근사시켜 데이터 도착 시 레이아웃 시프트를 줄인다.
-    return <div aria-busy="true" className="h-64" />;
+    return <GoalSectionSkeleton />;
   }
 
   // 재조회 실패로는 화면을 내리지 않는다 — react-query가 이전 데이터를 유지한 채 isError를 켠다.

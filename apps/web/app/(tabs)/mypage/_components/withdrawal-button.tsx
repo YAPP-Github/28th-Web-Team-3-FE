@@ -118,10 +118,11 @@ export function WithdrawalButton({
             className="h-[52px] bg-error-light text-body-b1-700 text-error hover:bg-error-light/80 disabled:bg-error-light disabled:text-error disabled:opacity-100"
             variant="destructive"
             size="cta"
-            disabled={isPending || !isConfirmed}
+            disabled={!isConfirmed}
+            pending={isPending}
             onClick={confirmWithdrawal}
           >
-            {isPending ? "탈퇴 중…" : "탈퇴하기"}
+            탈퇴하기
           </Button>
         </div>
       </Dialog>

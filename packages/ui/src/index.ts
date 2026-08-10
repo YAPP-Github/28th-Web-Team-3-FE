@@ -11,6 +11,7 @@ export {
   type OptionItemProps,
 } from "./components/option-item";
 export { Progress, type ProgressProps } from "./components/progress";
+export { Skeleton, type SkeletonProps } from "./components/skeleton";
 export { Slider, type SliderProps } from "./components/slider";
 export { TextButton, type TextButtonProps } from "./components/text-button";
 export { Toggle, type ToggleProps, toggleVariants } from "./components/toggle";

@@ -6,8 +6,8 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ChevronLeft } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { MissionListSkeleton } from "@/app/_components/mission-list-skeleton";
 import { MISSION_CATEGORY_LABELS } from "@/app/(tabs)/mission/constants/mission";
-import { LOADING_TEXT } from "@/lib/messages";
 import {
   confirmGenerationJobOptions,
   generationDraftsOptions,
@@ -63,7 +63,7 @@ export function MissionCreationResult({ jobId }: MissionCreationResultProps) {
   }
 
   if (isPending) {
-    return <p className="px-5 pt-20 text-center text-body-b2-500 text-gray-400">{LOADING_TEXT}</p>;
+    return <MissionListSkeleton className="px-5 pt-20" count={3} />;
   }
 
   // 재조회 실패로는 화면을 내리지 않는다 — react-query가 이전 데이터를 유지한 채 isError를 켠다.
@@ -122,6 +122,7 @@ export function MissionCreationResult({ jobId }: MissionCreationResultProps) {
         ) : null}
         <ButtonGroup
           nextDisabled={selectedDraftIds.length === 0}
+          nextPending={confirmJob.isPending}
           onNext={() =>
             confirmJob.mutate({ selectedDraftIds }, { onSuccess: () => router.push("/mission") })
           }
