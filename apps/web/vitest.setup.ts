@@ -15,6 +15,10 @@ vi.stubGlobal(
   },
 );
 
+// jsdom에 포인터 캡처가 없다. 바텀시트가 끌기 시작할 때 부르므로, 없으면 드래그 테스트가
+// 동작이 아니라 이 빈자리 때문에 죽는다.
+Element.prototype.setPointerCapture ??= () => {};
+
 beforeAll(() => server.listen());
 afterEach(() => {
   server.resetHandlers();
