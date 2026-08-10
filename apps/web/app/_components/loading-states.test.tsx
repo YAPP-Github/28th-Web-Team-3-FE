@@ -22,6 +22,22 @@ describe("Button pending", () => {
     expect(screen.getByRole("button", { name: "다음" })).toHaveAttribute("aria-busy", "true");
   });
 
+  /**
+   * `disabled`를 걸면 브라우저가 초점을 body로 옮겨, 방금 누른 버튼의 aria-busy가
+   * 스크린리더에 전달될 길이 사라진다. variant의 disabled 회색조까지 걸려서 "처리 중"이
+   * 아니라 "지금 못 누름"으로 읽히기도 한다.
+   */
+  it("처리 중에도 초점을 잃지 않는다", () => {
+    render(<Button pending>다음</Button>);
+
+    const button = screen.getByRole("button", { name: "다음" });
+    expect(button).not.toBeDisabled();
+    expect(button).toHaveAttribute("aria-disabled", "true");
+
+    button.focus();
+    expect(button).toHaveFocus();
+  });
+
   // 응답을 기다리는 동안 또 누르면 같은 요청이 두 번 나간다.
   it("처리 중에는 다시 눌러도 실행되지 않는다", () => {
     const onClick = vi.fn();
@@ -67,15 +83,32 @@ describe("ButtonGroup nextPending", () => {
  * 대기 중이라는 사실만 감싸는 영역이 알린다.
  */
 describe("로딩 자리표시자", () => {
+  /**
+   * 라이브 리전은 내용을 읽는다 — `aria-label`은 읽지 않는다. 그리고 리전에 `aria-busy`를
+   * 붙이면 "false가 될 때까지 알리지 마라"가 되는데, 이 리전은 false가 되는 일 없이
+   * 그대로 사라진다. 둘 다 틀리면 대기 상태가 아예 전달되지 않는다.
+   */
   it.each([
-    ["목표", <GoalSectionSkeleton key="goal" />, "목표를 불러오는 중"],
-    ["미션", <MissionListSkeleton key="mission" />, "미션을 불러오는 중"],
+    ["목표", <GoalSectionSkeleton key="goal" label="목표를 불러오는 중" />, "목표를 불러오는 중"],
+    [
+      "미션",
+      <MissionListSkeleton key="mission" label="미션을 불러오는 중" />,
+      "미션을 불러오는 중",
+    ],
     ["라우트", <RouteLoading key="route" />, "불러오는 중"],
-  ])("%s 자리표시자는 대기 중임을 알린다", (_label, element, name) => {
+  ])("%s 자리표시자는 읽을 문장을 리전 안에 둔다", (_label, element, name) => {
     render(element);
 
-    const status = screen.getByRole("status", { name });
-    expect(status).toHaveAttribute("aria-busy", "true");
+    const status = screen.getByRole("status");
+    expect(status).not.toHaveAttribute("aria-busy");
+    expect(status).toHaveTextContent(name);
+  });
+
+  /** 홈은 목표·미션 자리가 동시에 뜬다. 각자 알리면 두 번 읽힌다. */
+  it("라벨이 없으면 라이브 리전을 만들지 않는다", () => {
+    render(<MissionListSkeleton />);
+
+    expect(screen.queryByRole("status")).not.toBeInTheDocument();
   });
 
   it("회색 블록 자체는 읽히지 않는다", () => {
@@ -89,8 +122,8 @@ describe("로딩 자리표시자", () => {
   });
 
   it("개수를 준 만큼 카드 자리를 깐다", () => {
-    const { rerender } = render(<MissionListSkeleton count={2} />);
-    const countCards = () => screen.getByRole("status").firstElementChild?.childElementCount;
+    const { container, rerender } = render(<MissionListSkeleton count={2} />);
+    const countCards = () => container.querySelectorAll(".rounded-2xl").length;
 
     expect(countCards()).toBe(2);
 

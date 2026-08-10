@@ -1,4 +1,5 @@
 import { Skeleton } from "@repo/ui";
+import { LoadingRegion } from "@/app/_components/loading-region";
 
 interface OnboardingPageSkeletonProps {
   /** 화면을 읽어주는 이름. 무엇을 기다리는지 스크린리더에 알린다. */
@@ -13,17 +14,15 @@ interface OnboardingPageSkeletonProps {
  */
 export function OnboardingPageSkeleton({ label }: OnboardingPageSkeletonProps) {
   return (
-    <div
-      aria-busy="true"
-      aria-label={label}
-      role="status"
+    <LoadingRegion
       className="mx-auto flex min-h-dvh w-full max-w-md flex-col gap-6 px-5 pt-8 pb-6"
+      label={label}
     >
       <Skeleton className="h-8 w-2/3 self-center" />
       <Skeleton className="h-5 w-1/2 self-center" />
       <Skeleton className="h-56 w-full rounded-2xl" />
       <Skeleton className="h-32 w-full rounded-2xl" />
       <Skeleton className="mt-auto h-[52px] w-full rounded-[12px]" />
-    </div>
+    </LoadingRegion>
   );
 }

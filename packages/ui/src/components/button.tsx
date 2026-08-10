@@ -8,9 +8,14 @@ const buttonVariants = cva(
     "disabled:pointer-events-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
     // 눌린 느낌은 크기로만 준다. 문구를 "저장 중…"으로 바꾸면 버튼 폭이 흔들리고
     // 스크린리더는 이름이 바뀐 것으로 읽는다 — 처리 중은 상태지 이름이 아니다.
-    "transition-[transform,background-color,color] duration-100 ease-out active:scale-[0.98]",
+    //
+    // 전환 대상은 `transform`이 아니라 `scale`이다. Tailwind v4의 scale-* 유틸은
+    // `transform: scale()`이 아니라 독립 속성 `scale`을 낸다 — transform으로 적으면
+    // 목록에 없는 속성이라 전환이 통째로 안 걸리고 크기가 즉시 튄다.
+    "transition-[scale,background-color,color] duration-100 ease-out active:scale-[0.98]",
     // 처리 중에는 눌린 크기를 유지한다. 손을 떼도 응답이 올 때까지 들어가 있다.
-    "aria-busy:scale-[0.98]",
+    // 포인터도 막아 같은 요청이 두 번 나가지 않게 한다(키보드는 아래 onClick이 막는다).
+    "aria-busy:pointer-events-none aria-busy:scale-[0.98]",
     // 움직임을 줄이기로 한 사용자에게는 크기 변화를 주지 않는다.
     "motion-reduce:transition-none motion-reduce:active:scale-100 motion-reduce:aria-busy:scale-100",
   ],
@@ -56,8 +61,10 @@ export interface ButtonProps
   /**
    * 눌러서 시작한 작업이 끝나기를 기다리는 중.
    *
-   * 문구는 그대로 두고 눌린 상태만 유지한다. 같은 요청이 두 번 나가지 않도록 함께
-   * 비활성화하고, 보이지 않는 사용자를 위해 `aria-busy`로도 알린다.
+   * 문구는 그대로 두고 눌린 상태만 유지한다. 같은 요청이 두 번 나가지 않게 막되
+   * `disabled`는 쓰지 않는다 — disabled가 붙는 순간 브라우저가 초점을 body로 옮겨서
+   * 방금 누른 버튼의 `aria-busy`가 스크린리더에 전달될 길이 사라지고, variant의
+   * `disabled:` 회색조가 걸려 "처리 중"이 아니라 "지금 못 누름"으로 읽힌다.
    */
   pending?: boolean;
 }
@@ -70,15 +77,23 @@ export function Button({
   size,
   type = "button",
   pending = false,
-  disabled,
+  onClick,
   ...props
 }: ButtonProps) {
   return (
     <button
       aria-busy={pending || undefined}
+      aria-disabled={pending || undefined}
       className={cn(buttonVariants({ variant, size }), className)}
-      disabled={disabled || pending}
       type={type}
+      onClick={(event) => {
+        // 포인터는 CSS가 막지만 키보드(Enter/Space)는 여기로 들어온다.
+        if (pending) {
+          event.preventDefault();
+          return;
+        }
+        onClick?.(event);
+      }}
       {...props}
     />
   );

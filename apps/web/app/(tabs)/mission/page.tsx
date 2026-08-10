@@ -36,7 +36,7 @@ export default function MissionPage() {
   if (isPending) {
     return (
       <main className="flex flex-1 flex-col bg-gray-50">
-        <MissionListSkeleton className="px-5 pt-20" count={4} />
+        <MissionListSkeleton className="px-5 pt-20" count={4} label="미션을 불러오는 중" />
       </main>
     );
   }

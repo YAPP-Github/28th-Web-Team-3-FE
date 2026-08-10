@@ -63,7 +63,7 @@ export function MissionCreationResult({ jobId }: MissionCreationResultProps) {
   }
 
   if (isPending) {
-    return <MissionListSkeleton className="px-5 pt-20" count={3} />;
+    return <MissionListSkeleton className="px-5 pt-20" count={3} label="미션 초안을 불러오는 중" />;
   }
 
   // 재조회 실패로는 화면을 내리지 않는다 — react-query가 이전 데이터를 유지한 채 isError를 켠다.

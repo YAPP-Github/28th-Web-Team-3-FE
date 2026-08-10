@@ -1,7 +1,10 @@
 import { cn, Skeleton } from "@repo/ui";
+import { LoadingRegion } from "./loading-region";
 
 interface GoalSectionSkeletonProps {
   className?: string;
+  /** 스크린리더가 읽을 문장. 한 화면에 자리표시자가 여럿이면 하나에만 준다. */
+  label?: string;
 }
 
 /**
@@ -10,14 +13,9 @@ interface GoalSectionSkeletonProps {
  *
  * 문구 한 줄로 때우면 데이터가 도착하는 순간 아래 미션 섹션까지 통째로 밀린다.
  */
-export function GoalSectionSkeleton({ className }: GoalSectionSkeletonProps) {
+export function GoalSectionSkeleton({ className, label }: GoalSectionSkeletonProps) {
   return (
-    <div
-      aria-busy="true"
-      aria-label="목표를 불러오는 중"
-      className={cn("flex flex-col gap-4", className)}
-      role="status"
-    >
+    <LoadingRegion className={cn("flex flex-col gap-4", className)} label={label}>
       {/* "N만원 모으기" 라인 */}
       <div className="flex items-center justify-between">
         <span className="flex items-center gap-2">
@@ -37,6 +35,6 @@ export function GoalSectionSkeleton({ className }: GoalSectionSkeletonProps) {
         <Skeleton className="h-4 w-full rounded-full bg-gray-100" />
         <Skeleton className="h-[42px] w-full rounded-md bg-gray-100" />
       </section>
-    </div>
+    </LoadingRegion>
   );
 }
