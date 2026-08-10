@@ -2,6 +2,7 @@
   "extends": "@repo/config/tsconfig/nextjs",
   "compilerOptions": {
     "paths": {
+      "@/api/*": ["./src/api/*"],
       "@/*": ["./*"]
     }
   },
