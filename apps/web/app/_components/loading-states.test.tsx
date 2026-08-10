@@ -52,6 +52,22 @@ describe("Button pending", () => {
     expect(onClick).not.toHaveBeenCalled();
   });
 
+  /**
+   * 호출부가 넘긴 값이 이기면 클릭은 막히는데 보조 기술에는 처리 중이 아닌 버튼으로
+   * 노출된다 — 상태와 표시가 어긋난다.
+   */
+  it("호출부가 넘긴 aria 속성이 처리 중 표시를 덮지 못한다", () => {
+    render(
+      <Button aria-busy={false} aria-disabled={false} pending>
+        다음
+      </Button>,
+    );
+
+    const button = screen.getByRole("button", { name: "다음" });
+    expect(button).toHaveAttribute("aria-busy", "true");
+    expect(button).toHaveAttribute("aria-disabled", "true");
+  });
+
   it("처리 중이 아니면 aria-busy를 붙이지 않는다", () => {
     render(<Button>다음</Button>);
 

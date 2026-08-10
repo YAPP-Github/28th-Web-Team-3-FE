@@ -82,6 +82,9 @@ export function Button({
 }: ButtonProps) {
   return (
     <button
+      // pending이 제어하는 속성은 props 뒤에 둔다 — 앞에 두면 호출부가 넘긴 값이 덮어써서
+      // 클릭은 막히는데 보조 기술에는 처리 중이 아닌 버튼으로 노출된다.
+      {...props}
       aria-busy={pending || undefined}
       aria-disabled={pending || undefined}
       className={cn(buttonVariants({ variant, size }), className)}
@@ -94,7 +97,6 @@ export function Button({
         }
         onClick?.(event);
       }}
-      {...props}
     />
   );
 }
