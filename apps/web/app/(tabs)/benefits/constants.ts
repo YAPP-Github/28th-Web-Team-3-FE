@@ -1,21 +1,22 @@
-import type { Benefit, BenefitFilter, BenefitItemCategory, FinancialTip } from "./types";
+import type { PolicyCategory } from "@repo/schema/policy";
+import type { Benefit, BenefitFilter, FinancialTip } from "./types";
 
-export const BENEFIT_FILTERS: readonly { value: BenefitFilter; label: string }[] = [
-  { value: "all", label: "전체" },
-  { value: "saved", label: "저장" },
-  { value: "savings", label: "저축·자산형성" },
-  { value: "housing", label: "주거비" },
-  { value: "living", label: "교통·생활비" },
-  { value: "tax", label: "세금·환급" },
+/**
+ * 필터 칩. `category`는 서버 `/api/policies`의 `category` 쿼리로 그대로 나가는 값이고,
+ * 목록을 좁히는 방식일 뿐인 "전체"·"저장"은 null이다.
+ */
+export const BENEFIT_FILTERS: readonly {
+  value: BenefitFilter;
+  label: string;
+  category: PolicyCategory | null;
+}[] = [
+  { value: "all", label: "전체", category: null },
+  { value: "saved", label: "저장", category: null },
+  { value: "finance", label: "금융", category: "금융" },
+  { value: "housing", label: "주거", category: "주거" },
+  { value: "welfare", label: "복지", category: "복지" },
+  { value: "education", label: "교육", category: "교육" },
 ];
-
-/** 카드 태그에 쓰는 카테고리 짧은 라벨. */
-export const BENEFIT_ITEM_CATEGORY_LABELS: Record<BenefitItemCategory, string> = {
-  savings: "저축",
-  housing: "주거",
-  living: "생활",
-  tax: "세금",
-};
 
 /**
  * 정적 정책 데이터 — UT 대응 가안(디자인 미확정). 공식 URL은 2026-07-21 기준으로 확인했다.

@@ -1,8 +1,6 @@
-import {
-  BENEFIT_FILTER_VALUES,
-  type Benefit,
-  type BenefitFilter,
-} from "@/app/(tabs)/benefits/types";
+import type { PolicyCategory } from "@repo/schema/policy";
+import { BENEFIT_FILTERS } from "@/app/(tabs)/benefits/constants";
+import { BENEFIT_FILTER_VALUES, type BenefitFilter } from "@/app/(tabs)/benefits/types";
 
 /** URL 쿼리의 category 값을 허용된 값으로 좁힌다. 알 수 없는 값은 전체("all")로 처리한다. */
 export function parseBenefitFilter(value: string | string[] | undefined): BenefitFilter {
@@ -11,15 +9,9 @@ export function parseBenefitFilter(value: string | string[] | undefined): Benefi
 }
 
 /**
- * 선택한 칩으로 정책을 필터링한다. "all"이면 전체를 그대로, "saved"면 저장한 것만 돌려준다.
- * 저장 목록에는 사라진 정책의 id가 남아 있을 수 있어 정책 쪽을 기준으로 거른다.
+ * 필터에 대응하는 서버 카테고리. "전체"와 "저장"은 카테고리가 아니라 null이다 —
+ * 목록 필터링은 서버가 하므로 화면에서 다시 거르지 않는다.
  */
-export function filterBenefits(
-  benefits: readonly Benefit[],
-  category: BenefitFilter,
-  savedIds: ReadonlySet<string>,
-): readonly Benefit[] {
-  if (category === "all") return benefits;
-  if (category === "saved") return benefits.filter((benefit) => savedIds.has(benefit.id));
-  return benefits.filter((benefit) => benefit.category === category);
+export function getBenefitFilterCategory(filter: BenefitFilter): PolicyCategory | null {
+  return BENEFIT_FILTERS.find((item) => item.value === filter)?.category ?? null;
 }

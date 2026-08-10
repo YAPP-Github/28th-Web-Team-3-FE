@@ -15,6 +15,16 @@ vi.stubGlobal(
   },
 );
 
+// jsdom에는 없다. 교차를 실제로 흉내 내야 하는 테스트는 각자 다시 stub한다.
+vi.stubGlobal(
+  "IntersectionObserver",
+  class {
+    observe() {}
+    unobserve() {}
+    disconnect() {}
+  },
+);
+
 beforeAll(() => server.listen());
 afterEach(() => {
   server.resetHandlers();
