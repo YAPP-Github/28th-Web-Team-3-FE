@@ -10,8 +10,8 @@ export function toBenefitItem(policy: PolicySummary): BenefitItem {
   return {
     id: policy.id,
     title: policy.title,
-    categoryLabel: policy.category ?? policy.largeCategory,
-    description: policy.description,
+    categoryLabel: policy.category ?? policy.largeCategory ?? null,
+    description: policy.description ?? null,
     saved: policy.bookmarked,
   };
 }
@@ -21,8 +21,8 @@ export function toSavedBenefitItem(saved: SavedContent): BenefitItem {
   return {
     id: saved.id,
     title: saved.title,
-    categoryLabel: saved.category,
-    description: saved.description,
+    categoryLabel: saved.category ?? null,
+    description: saved.description ?? null,
     saved: true,
   };
 }

@@ -28,6 +28,8 @@ export function BenefitCard({ benefit, onToggleSave }: BenefitCardProps) {
   const [isOpening, setIsOpening] = useState(false);
 
   async function openApplyPage() {
+    // 버튼을 disabled로 막지 않는다 — 누르는 순간 접근성 트리에서 빠져 키보드 초점이 날아간다.
+    if (isOpening) return;
     setError(undefined);
     setIsOpening(true);
     try {
@@ -71,7 +73,7 @@ export function BenefitCard({ benefit, onToggleSave }: BenefitCardProps) {
       <div className="flex flex-col gap-1">
         <button
           type="button"
-          disabled={isOpening}
+          aria-busy={isOpening}
           onClick={openApplyPage}
           className="text-left text-body-b1-700 text-gray-900 after:absolute after:inset-0"
         >

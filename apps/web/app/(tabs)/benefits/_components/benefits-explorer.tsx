@@ -47,9 +47,13 @@ export function BenefitsExplorer({ initialFilter }: { initialFilter: BenefitFilt
   useEffect(() => {
     const sentinel = loadMoreRef.current;
     if (!sentinel || !hasNextPage || isFetchingNextPage) return;
-    const observer = new IntersectionObserver((entries) => {
-      if (entries.some((entry) => entry.isIntersecting)) fetchNextPage();
-    });
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((entry) => entry.isIntersecting)) fetchNextPage();
+      },
+      // 목록 끝에 닿기 한 화면 전에 미리 당긴다 — 정확히 바닥에서 시작하면 스크롤이 한 번 멈춘다.
+      { rootMargin: "400px" },
+    );
     observer.observe(sentinel);
     return () => observer.disconnect();
   }, [fetchNextPage, hasNextPage, isFetchingNextPage]);
@@ -80,11 +84,15 @@ export function BenefitsExplorer({ initialFilter }: { initialFilter: BenefitFilt
         추가된 카드의 제목·설명·버튼이 통째로 읽히며, 별 버튼의 aria-pressed 변화까지
         region 안에서 일어난다. 짧은 상태 문구만 따로 둔다(W3C ARIA22).
       */}
+      {/*
+        개수는 싣지 않는다 — 무한 스크롤로 목록이 늘 때마다 문구가 바뀌어 "20개를 찾았어요",
+        "40개를 찾았어요"가 스크롤 내내 읽힌다. 칩을 바꿔 결과 유무가 달라질 때만 바뀌게 둔다.
+      */}
       <p role="status" className="sr-only">
         {isPending || isError
           ? ""
           : benefits.length > 0
-            ? `혜택 ${benefits.length}개를 찾았어요.`
+            ? "혜택 목록을 불러왔어요."
             : "조건에 맞는 혜택이 없어요."}
       </p>
       <section id="benefits-list" aria-label="정책 목록" className="mt-5 flex flex-col gap-3 px-5">
@@ -96,7 +104,8 @@ export function BenefitsExplorer({ initialFilter }: { initialFilter: BenefitFilt
         {isPending ? (
           <p className="py-10 text-center text-body-b2-500 text-gray-400">{LOADING_TEXT}</p>
         ) : isError ? (
-          <p className="py-10 text-center text-body-b2-500 text-gray-500">
+          // 칩을 눌러 실패했을 때 초점은 칩에 남는다 — alert로 알려야 화면 밖 사용자도 안다.
+          <p role="alert" className="py-10 text-center text-body-b2-500 text-gray-500">
             혜택을 불러오지 못했어요. 잠시 후 다시 시도해 주세요.
           </p>
         ) : benefits.length === 0 ? (
