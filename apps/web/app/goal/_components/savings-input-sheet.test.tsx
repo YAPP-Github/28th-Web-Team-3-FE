@@ -85,6 +85,67 @@ describe("SavingsInputSheet 끌어서 닫기", () => {
     expect(onOpenChange).not.toHaveBeenCalled();
   });
 
+  // `>` 비교라 딱 임계값이면 닫지 않는다. 부등호가 뒤집히면 여기서 걸린다.
+  it.each([
+    [80, false],
+    [81, true],
+  ])("%ipx 끌면 닫힘=%s", (distance, closes) => {
+    const onOpenChange = vi.fn();
+    render(<SavingsInputSheet open onOpenChange={onOpenChange} initialManwon={0} />);
+
+    drag(grabArea(), distance);
+
+    expect(onOpenChange.mock.calls.length > 0).toBe(closes);
+  });
+
+  /**
+   * 포인터 캡처는 끌기를 시작한 포인터만 붙잡는다. 헤더에 나중에 닿은 손가락의 이동·뗌은
+   * 캡처를 우회해 그대로 들어오는데, 그걸 첫 손가락의 기준점으로 계산하면 시트가 튀고
+   * 두 번째 손가락을 떼는 순간 닫힌다 — 값을 입력하던 사용자에게는 시트가 그냥 사라진다.
+   */
+  it("끌던 중 다른 손가락이 움직이거나 떨어져도 닫히지 않는다", () => {
+    const onOpenChange = vi.fn();
+    render(<SavingsInputSheet open onOpenChange={onOpenChange} initialManwon={0} />);
+
+    const area = grabArea();
+    fireEvent.pointerDown(area, { ...PRIMARY, clientY: 0 });
+    fireEvent.pointerMove(area, { ...PRIMARY, clientY: 20 });
+
+    const second = { pointerId: 2, isPrimary: false, button: 0 };
+    fireEvent.pointerDown(area, { ...second, clientY: 300 });
+    fireEvent.pointerMove(area, { ...second, clientY: 400 });
+    fireEvent.pointerUp(area, { ...second, clientY: 400 });
+
+    expect(onOpenChange).not.toHaveBeenCalled();
+
+    // 첫 손가락은 그대로 살아 있어야 한다.
+    fireEvent.pointerUp(area, { ...PRIMARY, clientY: 200 });
+    expect(onOpenChange).toHaveBeenCalledWith(false);
+  });
+
+  /**
+   * transitionend는 자식에서 부모로 버블링된다. 본문 입력의 색 전환처럼 무관한 전환이
+   * 끝난 걸 복귀 완료로 읽으면 복귀 애니메이션이 중간에 끊긴다.
+   */
+  it("본문에서 올라온 transitionend는 복귀 전환을 끄지 않는다", () => {
+    render(<SavingsInputSheet open onOpenChange={() => {}} initialManwon={0} />);
+
+    const area = grabArea();
+    fireEvent.pointerDown(area, { ...PRIMARY, clientY: 0 });
+    fireEvent.pointerMove(area, { ...PRIMARY, clientY: 40 });
+    fireEvent.pointerUp(area, { ...PRIMARY, clientY: 40 });
+
+    const dialog = screen.getByRole("dialog");
+    expect(dialog.style.transition).toContain("transform");
+
+    fireEvent.transitionEnd(screen.getByRole("textbox"), { propertyName: "color" });
+    expect(dialog.style.transition).toContain("transform");
+
+    // 시트 자신의 transform 전환이 끝나야 걷어낸다.
+    fireEvent.transitionEnd(dialog, { propertyName: "transform" });
+    expect(dialog.style.transition).toBe("none");
+  });
+
   /**
    * 취소는 사용자가 손을 뗀 게 아니라 OS가 제스처를 가져간 것이다(제어센터 스와이프, 전화 수신).
    * 그때 누적 거리가 임계를 넘었다고 닫으면 사용자는 닫은 적 없는 시트가 사라지는 걸 본다.

@@ -42,12 +42,19 @@ export function BottomSheet({
   const [isSnappingBack, setIsSnappingBack] = useState(false);
   /** 끌기 시작 y. null이면 끌고 있지 않다. */
   const dragStartYRef = useRef<number | null>(null);
+  /**
+   * 끌기를 시작한 포인터. 포인터 캡처는 이 포인터만 붙잡으므로, 헤더에 나중에 닿은 손가락의
+   * 이동·뗌은 캡처를 우회해 그대로 들어온다. 그걸 첫 손가락의 기준점으로 계산하면 시트가
+   * 튀거나, 두 번째 손가락을 떼는 순간 닫힌다.
+   */
+  const activePointerIdRef = useRef<number | null>(null);
   // Radix에는 밖에서 닫을 방법이 없다. 비제어로 써도 동작하도록 숨긴 Close를 눌러
   // Radix가 자기 상태까지 갱신하게 한다 — onOpenChange만 부르면 비제어일 때 안 닫힌다.
   const closeRef = useRef<HTMLButtonElement>(null);
 
   /** 끌던 도중에 닫히면 옮겨둔 만큼이 남아, 다음에 열 때 그 자리에서 뜬다. */
   function resetDrag() {
+    activePointerIdRef.current = null;
     dragStartYRef.current = null;
     setDragOffset(0);
     setIsSnappingBack(false);
@@ -61,6 +68,7 @@ export function BottomSheet({
   useEffect(() => {
     if (!rootProps.open) {
       // 부모가 open을 내려 닫는 경로(저장 성공 등). Root의 onOpenChange를 타지 않는다.
+      activePointerIdRef.current = null;
       dragStartYRef.current = null;
       setDragOffset(0);
       setIsSnappingBack(false);
@@ -118,9 +126,10 @@ export function BottomSheet({
    * 뒤처져 있을 수 있다. 80px 임계에서 그 차이는 손가락 속도에 따라 수십 px이다.
    * 테스트에서는 `fireEvent`가 매번 동기 flush를 해서 이 틈이 드러나지 않는다.
    */
-  function endDrag(releasedAtY: number | null) {
+  function endDrag(pointerId: number, releasedAtY: number | null) {
     const startY = dragStartYRef.current;
-    if (startY === null) return;
+    if (startY === null || pointerId !== activePointerIdRef.current) return;
+    activePointerIdRef.current = null;
     dragStartYRef.current = null;
     setIsSnappingBack(true);
     setDragOffset(0);
@@ -160,7 +169,12 @@ export function BottomSheet({
             } as React.CSSProperties
           }
           // 복귀가 끝나면 전환을 걷어낸다. 남겨두면 다음 키보드 이동이 이 전환을 탄다.
-          onTransitionEnd={() => setIsSnappingBack(false)}
+          // transitionend는 자식에서 버블링되므로, 본문 입력의 색 전환 하나가 끝나도
+          // 여기로 올라온다 — 그걸 복귀 완료로 읽으면 복귀 애니메이션이 중간에 끊긴다.
+          onTransitionEnd={(event) => {
+            if (event.target !== event.currentTarget || event.propertyName !== "transform") return;
+            setIsSnappingBack(false);
+          }}
         >
           <DialogPrimitive.Close ref={closeRef} className="hidden" tabIndex={-1} aria-hidden />
           {/* 끌어서 닫는 영역은 여기(핸들+제목)뿐이다. 본문까지 잡으면 시트 안 세로 스크롤과
@@ -172,19 +186,20 @@ export function BottomSheet({
               // 두 번째 손가락이 닿으면 기준점을 덮어써 진행 중인 끌기가 튄다. 우클릭도 막는다.
               if (!event.isPrimary || event.button !== 0) return;
               event.currentTarget.setPointerCapture(event.pointerId);
+              activePointerIdRef.current = event.pointerId;
               dragStartYRef.current = event.clientY;
               setIsSnappingBack(false);
             }}
             onPointerMove={(event) => {
               const startY = dragStartYRef.current;
-              if (startY === null) return;
+              if (startY === null || event.pointerId !== activePointerIdRef.current) return;
               // 위로는 끌리지 않는다 — 시트는 이미 화면 아래에 붙어 있다.
               setDragOffset(Math.max(0, event.clientY - startY));
             }}
-            onPointerUp={(event) => endDrag(event.clientY)}
+            onPointerUp={(event) => endDrag(event.pointerId, event.clientY)}
             // 취소는 OS가 제스처를 가져간 것이다(제어센터 스와이프, 전화 수신 등).
             // 사용자가 닫으려던 게 아니므로 임계값을 보지 않고 제자리로만 돌린다.
-            onPointerCancel={() => endDrag(null)}
+            onPointerCancel={(event) => endDrag(event.pointerId, null)}
           >
             <div className="flex justify-center pt-3 pb-2">
               <div className="h-1 w-9 rounded-full bg-gray-100" aria-hidden />
