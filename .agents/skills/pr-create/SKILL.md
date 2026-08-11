@@ -1,7 +1,7 @@
 ---
 name: pr-create
-description: 코드 빌드·테스트 → AI 리뷰 → 푸시 → GitHub PR 생성까지 한번에 처리. "pr-create", "PR 만들어줘", "리뷰하고 PR", "배포 준비" 등의 요청에 사용. develop/main 브랜치로 머지하는 PR은 이 스킬로 생성할 것.
-argument-hint: [브랜치] [리뷰어]
+description: 코드 빌드·테스트 → AI 리뷰 → 푸시 → GitHub PR 생성까지 한번에 처리. "pr-create", "PR 만들어줘", "리뷰하고 PR", "배포 준비" 등의 요청에 사용. develop/main 브랜치로 머지하는 PR은 이 스킬로 생성할 것. "코덱스한테 구현시키고 PR", "codex dev" 등 구현 자체를 Codex에 맡기는 요청도 이 스킬(개발 위임 모드)로 처리한다.
+argument-hint: [브랜치] [리뷰어] [--codex-dev "<작업 설명>"]
 ---
 
 빌드·테스트(vitest → Playwright) → next16-rn AI 리뷰 → 푸시 → PR 생성을 한번에 처리한다.
@@ -51,6 +51,32 @@ argument-hint: [브랜치] [리뷰어]
 - [ ] Merge 후 tag 생성: `vX.Y.Z`
 ```
 
+## 개발 위임 모드 (Codex 구현 → Claude 리뷰)
+
+기본 흐름은 Claude가 이미 만든 diff를 게이트·리뷰(Claude + Codex 교차)·PR로 이어간다. 이 모드는 그
+반대다 — **Codex가 구현하고, Claude가 독립적으로 리뷰한다.** 구현 자체를 Codex에 맡기고 싶을 때 쓴다
+("코덱스한테 시켜", "코덱스로 구현해줘", "opus 말고 codex로", `--codex-dev` 인자 등).
+
+- 이 모드는 Step 1과 Step 2 사이(Step 1.5)에서만 동작한다. 브랜치를 먼저 확정해야 Codex의 변경이
+  올바른 브랜치에 쌓인다.
+- Step 5의 Codex 교차 리뷰는 이 모드에서 **생략**한다. Codex가 쓴 코드를 Codex가 다시 보는 건 정보가
+  없다 — 이 모드의 존재 이유 자체가 Claude의 독립된 눈이다. `next16-rn-reviewer`만 디스패치한다.
+- PR 본문의 `## 🤖 AI 리뷰` 제목을 `### Claude 리뷰 (Codex 구현)`으로 바꿔 구현·리뷰 주체를 명시한다.
+- 그 외 Step 2~8(더티 트리 게이트부터 PR 생성까지)은 기본 흐름과 동일하다 — Codex가 만든 diff도
+  똑같이 빌드·테스트 게이트를 통과해야 하고, 🔴 리뷰면 똑같이 멈춘다.
+
+### Step 1.5: Codex에 구현 위임 (이 모드일 때만)
+
+1. 사용자가 준 작업 설명을 그대로 Task 도구로 **`codex:codex-rescue`** 서브에이전트에 전달한다.
+   **foreground로 실행할 것** — 이후 게이트가 Codex의 diff를 필요로 하므로 완료를 기다려야 한다
+   (백그라운드로 던지고 다음 Step으로 넘어가지 말 것).
+2. `--write`는 codex-rescue 기본값이라 따로 지정하지 않는다. `--effort`·`--model`은 사용자가
+   명시하지 않는 한 비워 코덱스 기본값을 쓴다.
+3. Codex 작업이 끝나면 워킹트리에 diff가 생긴다. 그대로 Step 2(더티 트리 게이트)로 진행 — 그
+   diff가 곧 Step 2가 확인할 "커밋 안 된 변경"이다.
+4. Codex가 아무 변경도 만들지 않았거나(이미 만족하는 상태 등) 실패를 보고하면 사용자에게 그대로
+   알리고 중단한다 — 빈 diff로 게이트를 통과시키지 않는다.
+
 ## 강제 사용 규칙
 
 - `develop` 또는 `main`으로 머지하는 PR은 이 스킬로 생성할 것.
@@ -90,6 +116,8 @@ argument-hint: [브랜치] [리뷰어]
 2. `git fetch origin --prune`.
 3. 대상 브랜치로 전환(`git switch <브랜치>`, 없으면 `git switch -c <브랜치>`).
 4. 릴리즈 모드면 head가 `develop`, base가 `main`인지 확인한다. 다르면 사용자에게 알리고 중단한다.
+5. 개발 위임 모드(사용자가 구현을 Codex에 맡기라고 요청, `--codex-dev` 인자 등)면 Step 1.5로 간다.
+   아니면 바로 Step 2.
 
 ### Step 2: 변경사항 확인 (더티 트리 게이트)
 
@@ -151,13 +179,17 @@ git log origin/main..origin/develop --oneline
 
 ### Step 5: AI 리뷰 (3·4 모두 통과한 경우에만)
 
-1. 리뷰 두 개를 **병렬로** 디스패치. diff 범위(lockfile 제외)는 공통:
+**개발 위임 모드(Step 1.5를 거쳤으면)에서는 Codex 교차 리뷰를 생략하고 `next16-rn-reviewer`만
+디스패치한다** — Codex가 쓴 코드를 Codex가 다시 리뷰하는 건 정보가 없다. 아래는 기본 흐름 기준이다.
+
+1. 리뷰 두 개를 **병렬로** 디스패치(개발 위임 모드면 `next16-rn-reviewer` 하나만). diff 범위
+   (lockfile 제외)는 공통:
    `git diff --merge-base origin/<base> HEAD -- ':!pnpm-lock.yaml' ':!package-lock.json' ':!yarn.lock'`
    - Task 도구로 **`next16-rn-reviewer`** 서브에이전트. 프롬프트에 head 브랜치, 베이스, diff 범위 전달.
      프롬프트 끝에 **언어 규칙**을 명시한다: "리뷰는 한국어로 작성하되 코드 식별자·경로·API 이름은
      모두 백틱(``)으로 감쌀 것. 영어 개념을 축자 번역한 어색한 번역투 금지." (서브에이전트는 독립
      세션이라 이 규칙을 상속받지 못하므로 매번 프롬프트에 넣어야 한다.)
-   - **Codex 교차 리뷰** — openai-codex 플러그인이 설치된 경우에만. `/codex:review`가 쓰는
+   - **Codex 교차 리뷰** (개발 위임 모드가 아닐 때만) — openai-codex 플러그인이 설치된 경우에만. `/codex:review`가 쓰는
      리뷰 전용 companion script를 실행한다(리뷰만 수행, 코드 수정 구조적으로 불가):
      `node ~/.claude/plugins/cache/openai-codex/codex/*/scripts/codex-companion.mjs review --wait --base origin/<base>`
      (버전 디렉터리는 glob으로 해석 — 여러 개면 최신 버전 사용. `--wait` 필수: 게이트라서 동기 완료 필요.)
@@ -223,9 +255,9 @@ git log origin/main..origin/develop --oneline
 
 ## 🤖 AI 리뷰
 
-<Step 5 리뷰 판정 + 발견 사항 전체 붙여넣기. Codex 교차 리뷰가 실행됐으면
-"### Claude (next16-rn-reviewer)" / "### Codex 교차 리뷰" 소제목으로 각각 구분.
-두 블록 모두 한국어로, 코드 식별자·파일 경로는 백틱으로 감싼다 — Codex 영어 출력은
+<개발 위임 모드면 제목을 "### Claude 리뷰 (Codex 구현)"로 쓰고 next16-rn-reviewer 결과만 붙인다.
+기본 흐름이고 Codex 교차 리뷰가 실행됐으면 "### Claude (next16-rn-reviewer)" / "### Codex 교차 리뷰"
+소제목으로 각각 구분. 모두 한국어로, 코드 식별자·파일 경로는 백틱으로 감싼다 — Codex 영어 출력은
 Step 5의 언어 정규화를 거친 한국어 버전을 붙인다(영어 원문 그대로 붙이지 말 것).>
 
 ## 💬 기타 코멘트
