@@ -35,20 +35,24 @@ export const MAX_MISSION_BASELINE_FREQUENCY = 10;
 export const MIN_MISSION_BASELINE_AMOUNT_WON = 1;
 export const MAX_MISSION_BASELINE_AMOUNT_WON = 2_000_000;
 
+export const missionBaselineFrequencySchema = z
+  .number()
+  .int()
+  .min(MIN_MISSION_BASELINE_FREQUENCY)
+  .max(MAX_MISSION_BASELINE_FREQUENCY);
+
+export const missionBaselineAmountWonSchema = z
+  .number()
+  .int()
+  .min(MIN_MISSION_BASELINE_AMOUNT_WON)
+  .max(MAX_MISSION_BASELINE_AMOUNT_WON);
+
 export const missionGenerationCreateRequestSchema = z
   .object({
     category: activeMissionCategorySchema,
     item: missionItemSchema,
-    baselineFrequency: z
-      .number()
-      .int()
-      .min(MIN_MISSION_BASELINE_FREQUENCY)
-      .max(MAX_MISSION_BASELINE_FREQUENCY),
-    baselineAmountWon: z
-      .number()
-      .int()
-      .min(MIN_MISSION_BASELINE_AMOUNT_WON)
-      .max(MAX_MISSION_BASELINE_AMOUNT_WON),
+    baselineFrequency: missionBaselineFrequencySchema,
+    baselineAmountWon: missionBaselineAmountWonSchema,
   })
   .superRefine((request, context) => {
     if (MISSION_ITEM_CATEGORIES[request.item] !== request.category) {

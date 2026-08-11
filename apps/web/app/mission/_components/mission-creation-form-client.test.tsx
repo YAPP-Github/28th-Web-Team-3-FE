@@ -70,14 +70,14 @@ describe("MissionCreationFormClient", () => {
     fireEvent.click(screen.getByRole("button", { name: "다음" }));
 
     expect(
-      screen.getByRole("heading", { name: "한 주에 배달음식을 몇 번 이용하나요?" }),
+      await screen.findByRole("heading", { name: "한 주에 배달음식을 몇 번 이용하나요?" }),
     ).toHaveFocus();
     const frequencyInput = screen.getByLabelText("주간 소비 횟수");
     expect(frequencyInput).toHaveAccessibleDescription("1회부터 10회까지 입력할 수 있어요.");
     fireEvent.change(frequencyInput, { target: { value: "3" } });
     fireEvent.click(screen.getByRole("button", { name: "다음" }));
 
-    const amountInput = screen.getByLabelText("주간 소비 금액(만원)");
+    const amountInput = await screen.findByLabelText("주간 소비 금액(만원)");
     expect(amountInput).toHaveAccessibleDescription("1만원부터 200만원까지 입력할 수 있어요.");
     fireEvent.change(amountInput, { target: { value: "5" } });
     fireEvent.click(screen.getByRole("button", { name: "다음" }));
@@ -102,13 +102,40 @@ describe("MissionCreationFormClient", () => {
     fireEvent.click(screen.getByRole("button", { name: "다음" }));
     fireEvent.click(await screen.findByRole("button", { name: "배달음식" }));
     fireEvent.click(screen.getByRole("button", { name: "다음" }));
-    fireEvent.change(screen.getByLabelText("주간 소비 횟수"), { target: { value: "3" } });
+    fireEvent.change(await screen.findByLabelText("주간 소비 횟수"), {
+      target: { value: "3" },
+    });
     fireEvent.click(screen.getByRole("button", { name: "다음" }));
-    fireEvent.change(screen.getByLabelText("주간 소비 금액(만원)"), {
+    fireEvent.change(await screen.findByLabelText("주간 소비 금액(만원)"), {
       target: { value: "5" },
     });
     fireEvent.click(screen.getByRole("button", { name: "다음" }));
 
     expect(await screen.findByRole("alert")).toHaveTextContent("미션 생성을 시작하지 못했어요.");
+  });
+
+  it("현재 단계의 횟수와 금액 범위를 Zod 스키마로 검증한다", async () => {
+    render(
+      <MissionCreationFormClient category="식비" categoryCode="MEAL" previousHref="/mission/new" />,
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "다음" }));
+    fireEvent.click(await screen.findByRole("button", { name: "배달음식" }));
+    fireEvent.click(screen.getByRole("button", { name: "다음" }));
+
+    const frequencyInput = await screen.findByLabelText("주간 소비 횟수");
+    fireEvent.change(frequencyInput, { target: { value: "11" } });
+    await waitFor(() => expect(screen.getByRole("button", { name: "다음" })).toBeDisabled());
+
+    fireEvent.change(frequencyInput, { target: { value: "10" } });
+    await waitFor(() => expect(screen.getByRole("button", { name: "다음" })).toBeEnabled());
+    fireEvent.click(screen.getByRole("button", { name: "다음" }));
+
+    const amountInput = await screen.findByLabelText("주간 소비 금액(만원)");
+    fireEvent.change(amountInput, { target: { value: "201" } });
+    await waitFor(() => expect(screen.getByRole("button", { name: "다음" })).toBeDisabled());
+
+    fireEvent.change(amountInput, { target: { value: "200" } });
+    await waitFor(() => expect(screen.getByRole("button", { name: "다음" })).toBeEnabled());
   });
 });

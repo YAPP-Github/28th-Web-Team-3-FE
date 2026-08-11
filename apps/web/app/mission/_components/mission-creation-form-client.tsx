@@ -1,16 +1,25 @@
 "use client";
 
-import type { ActiveMissionCategory, MissionItem } from "@repo/schema/mission";
+import { zodResolver } from "@hookform/resolvers/zod";
 import {
-  MAX_MISSION_BASELINE_AMOUNT_WON,
-  MAX_MISSION_BASELINE_FREQUENCY,
-  MIN_MISSION_BASELINE_FREQUENCY,
+  type ActiveMissionCategory,
+  activeMissionCategorySchema,
+  type MissionItem,
+  missionItemSchema,
+} from "@repo/schema/mission";
+import {
+  type MissionGenerationCreateRequest,
+  missionBaselineAmountWonSchema,
+  missionBaselineFrequencySchema,
+  missionGenerationCreateRequestSchema,
 } from "@repo/schema/mission-generation";
 import { Button, ButtonGroup, Input, Progress } from "@repo/ui";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { ChevronLeft } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
+import { Controller, useForm, useWatch } from "react-hook-form";
+import { z } from "zod";
 import { MissionListSkeleton } from "@/app/_components/mission-list-skeleton";
 import type { MissionCreationCategory } from "@/app/mission/constants/mission-creation";
 import { buildMissionGeneratingHref } from "@/app/mission/constants/mission-creation";
@@ -22,7 +31,23 @@ import { MissionCreationIntro } from "./mission-creation-intro";
 import { OptionPillList } from "./survey/option-pill-list";
 
 const QUESTION_COUNT = 3;
-const MAX_AMOUNT_MANWON = MAX_MISSION_BASELINE_AMOUNT_WON / 10_000;
+const numericInputSchema = z.string().regex(/^\d+$/).transform(Number);
+const missionCreationFormSchema = z
+  .object({
+    category: activeMissionCategorySchema,
+    item: missionItemSchema,
+    baselineFrequency: numericInputSchema.pipe(missionBaselineFrequencySchema),
+    baselineAmountManwon: numericInputSchema
+      .transform((amountManwon) => amountManwon * 10_000)
+      .pipe(missionBaselineAmountWonSchema),
+  })
+  .transform(({ baselineAmountManwon, ...request }) => ({
+    ...request,
+    baselineAmountWon: baselineAmountManwon,
+  }))
+  .pipe(missionGenerationCreateRequestSchema);
+
+type MissionCreationFormInput = z.input<typeof missionCreationFormSchema>;
 
 interface MissionCreationFormClientProps {
   category: MissionCreationCategory;
@@ -32,10 +57,6 @@ interface MissionCreationFormClientProps {
 
 function digitsOnly(value: string) {
   return value.replace(/\D/g, "");
-}
-
-function numericValue(value: string) {
-  return value === "" ? Number.NaN : Number(value);
 }
 
 function questionPrompt(
@@ -69,10 +90,27 @@ export function MissionCreationFormClient({
   const requestJob = useMutation(requestGenerationJobOptions());
   const [phase, setPhase] = useState<"intro" | "questions">("intro");
   const [step, setStep] = useState(0);
-  const [selectedItem, setSelectedItem] = useState<MissionItem>();
-  const [frequency, setFrequency] = useState("");
-  const [amountManwon, setAmountManwon] = useState("");
   const questionHeadingRef = useRef<HTMLHeadingElement>(null);
+  const {
+    control,
+    formState: { errors },
+    handleSubmit,
+    register,
+    trigger,
+  } = useForm<MissionCreationFormInput, undefined, MissionGenerationCreateRequest>({
+    defaultValues: {
+      category: categoryCode,
+      baselineFrequency: "",
+      baselineAmountManwon: "",
+    },
+    mode: "onChange",
+    resolver: zodResolver(missionCreationFormSchema),
+  });
+  const selectedItem = useWatch({ control, name: "item" });
+  const frequency = useWatch({ control, name: "baselineFrequency" });
+  const amountManwon = useWatch({ control, name: "baselineAmountManwon" });
+  const frequencyField = register("baselineFrequency");
+  const amountField = register("baselineAmountManwon");
 
   const categoryCatalog = catalog.data?.categories.find(
     (candidate) => candidate.category === categoryCode,
@@ -80,18 +118,12 @@ export function MissionCreationFormClient({
   const selectedItemLabel = categoryCatalog?.items.find(
     (item) => item.code === selectedItem,
   )?.label;
-  const frequencyNumber = numericValue(frequency);
-  const amountManwonNumber = numericValue(amountManwon);
-  const isFrequencyValid =
-    Number.isInteger(frequencyNumber) &&
-    frequencyNumber >= MIN_MISSION_BASELINE_FREQUENCY &&
-    frequencyNumber <= MAX_MISSION_BASELINE_FREQUENCY;
-  const isAmountValid =
-    Number.isInteger(amountManwonNumber) &&
-    amountManwonNumber >= 1 &&
-    amountManwonNumber <= MAX_AMOUNT_MANWON;
-  const canProceed =
-    step === 0 ? Boolean(selectedItem) : step === 1 ? isFrequencyValid : isAmountValid;
+  const nextDisabled =
+    step === 0
+      ? !selectedItem || Boolean(errors.item)
+      : step === 1
+        ? !frequency || Boolean(errors.baselineFrequency)
+        : !amountManwon || Boolean(errors.baselineAmountManwon);
 
   useEffect(() => {
     if (phase === "questions" && categoryCatalog) {
@@ -107,25 +139,20 @@ export function MissionCreationFormClient({
     setPhase("intro");
   }
 
-  function proceed() {
-    if (!canProceed) return;
+  function submit(request: MissionGenerationCreateRequest) {
+    requestJob.mutate(request, {
+      onSuccess: (job) => router.push(buildMissionGeneratingHref(job.jobId)),
+    });
+  }
+
+  async function proceed() {
     if (step < QUESTION_COUNT - 1) {
+      const currentField = step === 0 ? "item" : "baselineFrequency";
+      if (!(await trigger(currentField, { shouldFocus: true }))) return;
       setStep((current) => current + 1);
       return;
     }
-    if (!selectedItem) return;
-
-    requestJob.mutate(
-      {
-        category: categoryCode,
-        item: selectedItem,
-        baselineFrequency: frequencyNumber,
-        baselineAmountWon: amountManwonNumber * 10_000,
-      },
-      {
-        onSuccess: (job) => router.push(buildMissionGeneratingHref(job.jobId)),
-      },
-    );
+    await handleSubmit(submit)();
   }
 
   if (phase === "intro") {
@@ -175,10 +202,16 @@ export function MissionCreationFormClient({
         </h1>
 
         {step === 0 ? (
-          <OptionPillList
-            options={categoryCatalog.items}
-            selectedCodes={selectedItem ? [selectedItem] : []}
-            onToggle={(code) => setSelectedItem(code as MissionItem)}
+          <Controller
+            control={control}
+            name="item"
+            render={({ field }) => (
+              <OptionPillList
+                options={categoryCatalog.items}
+                selectedCodes={field.value ? [field.value] : []}
+                onToggle={(code) => field.onChange(code as MissionItem)}
+              />
+            )}
           />
         ) : null}
 
@@ -188,15 +221,18 @@ export function MissionCreationFormClient({
               주간 소비 횟수
             </label>
             <Input
+              {...frequencyField}
               id="mission-frequency"
               aria-describedby="mission-frequency-help"
-              aria-invalid={frequency !== "" && !isFrequencyValid}
+              aria-invalid={frequency !== "" && Boolean(errors.baselineFrequency)}
               inputMode="numeric"
               maxLength={2}
               placeholder="횟수를 입력해 주세요"
               type="text"
-              value={frequency}
-              onChange={(event) => setFrequency(digitsOnly(event.target.value))}
+              onChange={(event) => {
+                event.target.value = digitsOnly(event.target.value);
+                void frequencyField.onChange(event);
+              }}
             />
             <p id="mission-frequency-help" className="text-body-b2-400 text-gray-500">
               1회부터 10회까지 입력할 수 있어요.
@@ -211,16 +247,19 @@ export function MissionCreationFormClient({
             </label>
             <div className="relative">
               <Input
+                {...amountField}
                 id="mission-amount"
                 aria-describedby="mission-amount-help"
-                aria-invalid={amountManwon !== "" && !isAmountValid}
+                aria-invalid={amountManwon !== "" && Boolean(errors.baselineAmountManwon)}
                 className="pr-14"
                 inputMode="numeric"
                 maxLength={3}
                 placeholder="금액을 입력해 주세요"
                 type="text"
-                value={amountManwon}
-                onChange={(event) => setAmountManwon(digitsOnly(event.target.value))}
+                onChange={(event) => {
+                  event.target.value = digitsOnly(event.target.value);
+                  void amountField.onChange(event);
+                }}
               />
               <span
                 aria-hidden="true"
@@ -243,7 +282,7 @@ export function MissionCreationFormClient({
           </p>
         ) : null}
         <ButtonGroup
-          nextDisabled={!canProceed}
+          nextDisabled={nextDisabled}
           nextPending={requestJob.isPending}
           onNext={proceed}
           onPrev={goBack}
