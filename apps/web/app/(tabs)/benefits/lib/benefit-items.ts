@@ -19,12 +19,15 @@ export function toBenefitItem(policy: PolicySummary): BenefitItem {
   };
 }
 
-/** 저장 목록 응답 → 카드 항목. 저장 목록에 있다는 것 자체가 저장됨이다. */
-export function toSavedBenefitItem(saved: SavedContent): BenefitItem {
+/** 저장 목록 응답 → 카드 항목. 태그는 정책 상세의 4분류를 사용한다. */
+export function toSavedBenefitItem(
+  saved: SavedContent,
+  policyCategory: string | null | undefined = null,
+): BenefitItem {
   return {
     id: saved.id,
     title: saved.title,
-    categoryLabel: saved.category ?? null,
+    categoryLabel: policyCategory ?? null,
     description: saved.description ?? null,
     saved: true,
   };

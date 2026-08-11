@@ -1,6 +1,12 @@
 "use client";
 
-import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  useInfiniteQuery,
+  useMutation,
+  useQueries,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query";
 import { useEffect, useRef, useState } from "react";
 import { useSavedToggleQueue } from "@/app/(tabs)/benefits/_hooks/use-saved-toggle-queue";
 import { toBenefitItem, toSavedBenefitItem } from "@/app/(tabs)/benefits/lib/benefit-items";
@@ -8,7 +14,11 @@ import { getBenefitFilterCategory } from "@/app/(tabs)/benefits/lib/filter-benef
 import { getBenefitFilterHref } from "@/app/(tabs)/benefits/lib/filter-href";
 import type { BenefitFilter, BenefitItem } from "@/app/(tabs)/benefits/types";
 import { savedPoliciesOptions } from "@/lib/queries/bookmark";
-import { policiesOptions, togglePolicyBookmarkOptions } from "@/lib/queries/policy";
+import {
+  policiesOptions,
+  policyDetailOptions,
+  togglePolicyBookmarkOptions,
+} from "@/lib/queries/policy";
 import { BenefitCard } from "./benefit-card";
 import { BenefitFilters } from "./benefit-filters";
 
@@ -34,11 +44,21 @@ export function BenefitsExplorer({ initialFilter }: { initialFilter: BenefitFilt
     enabled: !isSavedFilter,
   });
   const saved = useQuery({ ...savedPoliciesOptions(), enabled: isSavedFilter });
+  const savedPolicyDetails = useQueries({
+    queries: (saved.data ?? []).map(({ id }) => ({
+      ...policyDetailOptions(id),
+      enabled: isSavedFilter,
+    })),
+  });
 
   const benefits: readonly BenefitItem[] = isSavedFilter
-    ? (saved.data ?? []).map(toSavedBenefitItem)
+    ? (saved.data ?? []).map((item, index) =>
+        toSavedBenefitItem(item, savedPolicyDetails[index]?.data?.category),
+      )
     : (policies.data?.pages.flat() ?? []).map(toBenefitItem);
-  const isPending = isSavedFilter ? saved.isPending : policies.isPending;
+  const isPending = isSavedFilter
+    ? saved.isPending || savedPolicyDetails.some((detail) => detail.isPending)
+    : policies.isPending;
   const isError = isSavedFilter ? saved.isError : policies.isError;
 
   const { fetchNextPage, hasNextPage, isFetchingNextPage } = policies;
