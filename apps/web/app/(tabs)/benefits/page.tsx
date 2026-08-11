@@ -1,6 +1,5 @@
 import { SAFE_AREA_HERO_ATTRIBUTE } from "@/lib/safe-area-bands";
 import { BenefitsExplorer } from "./_components/benefits-explorer";
-import { BENEFITS } from "./constants";
 import { parseBenefitFilter } from "./lib/filter-benefits";
 
 interface BenefitsPageProps {
@@ -21,8 +20,9 @@ export default async function BenefitsPage({ searchParams }: BenefitsPageProps) 
             지금 바로 신청할
             <br />수 있는 혜택
           </p>
+          {/* 개수는 못 쓴다 — 목록이 페이지 단위로 오고 전체 개수를 주는 응답이 없다. */}
           <a href="#benefits-list" className="text-body-b2-500 text-gray-900 underline-offset-4">
-            {BENEFITS.length}개 보러가기
+            혜택 보러가기
           </a>
         </div>
       </section>

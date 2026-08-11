@@ -6,7 +6,7 @@
 
 ## 이번 변경 핵심 요약
 
-- `apps/web`의 API 호출은 `apps/web/api/<도메인>.ts`에 둔다. `app/` 라우트 디렉터리나 `lib/<도메인>/api.ts`에 새 API 파일을 만들지 않는다.
+- `apps/web`의 API 호출은 `apps/web/src/api/<도메인>.ts`에 둔다. `app/` 라우트 디렉터리나 `lib/<도메인>/api.ts`에 새 API 파일을 만들지 않는다. Vercel은 프로젝트 루트의 `api/`를 Functions로 취급하므로 루트에 두지 않는다.
 - TanStack Query 설정은 `apps/web/lib/queries/<도메인>.ts`에 둔다. 여기에는 `queryOptions()` / `mutationOptions()` 팩토리만 두고 `useQuery` / `useMutation`을 감싼 커스텀 훅은 만들지 않는다.
 - 컴포넌트는 `@/lib/queries/<도메인>`에서 options를 가져와 `useQuery(options())` 또는 `useMutation(options(queryClient))` 형태로 사용한다.
 - 단위 테스트는 query 훅을 목으로 갈아끼우지 않고 `@/api/<도메인>` 함수만 목 처리해 실제 options 경로를 검증한다.
@@ -50,7 +50,7 @@ import { numberRangeOptions } from "../../lib/survey-answers"; // X — `@/`로
 `"use client"`는 **서버에서 쓰는 걸 막아주지 않는다.** 서버 컴포넌트가 그 모듈을 import하면 막히는 대신 조용히 클라이언트 그래프로 끌려 들어갈 뿐이다. 브라우저 전용 API를 감싼 모듈처럼 서버 유입 자체를 막아야 하면 `client-only`를 쓴다 — 이건 서버 번들에 들어가는 순간 빌드가 깨진다.
 
 ```ts
-// apps/web/api/client.ts — 토큰이 브라우저(bridge)에만 있어 서버에서 부르면 안 되는 모듈
+// apps/web/src/api/client.ts — 토큰이 브라우저(bridge)에만 있어 서버에서 부르면 안 되는 모듈
 import "client-only";
 ```
 
@@ -62,7 +62,7 @@ import "client-only";
 
 ```
 packages/schema/src/<도메인>.ts      요청·응답 계약(zod). 앱과 무관하게 백엔드 계약만 담는다
-apps/web/api/<도메인>.ts             HTTP 호출. 요청 검증 → 전송 → 응답 검증
+apps/web/src/api/<도메인>.ts         HTTP 호출. 요청 검증 → 전송 → 응답 검증
 apps/web/lib/queries/<도메인>.ts     TanStack Query options. queryKey·queryFn·mutationFn·캐시 갱신 정책
 컴포넌트                          useQuery/useMutation에 options를 주입해 서버 상태를 사용한다
 ```

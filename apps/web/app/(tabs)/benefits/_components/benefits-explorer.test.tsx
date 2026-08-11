@@ -1,83 +1,157 @@
-import { renderToString } from "react-dom/server";
+import type { SavedContent } from "@repo/schema/bookmark";
+import type { PolicySummary } from "@repo/schema/policy";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { BENEFITS } from "@/app/(tabs)/benefits/constants";
-import { readSavedBenefits, writeSavedBenefits } from "@/app/(tabs)/benefits/lib/saved-benefits";
-import { fireEvent, render, screen } from "@/lib/test/react";
+import { fetchSavedPolicies } from "@/api/bookmark";
+import { bookmarkPolicy, fetchPolicies, unbookmarkPolicy } from "@/api/policy";
+import { POLICY_PAGE_SIZE } from "@/lib/queries/policy";
+import { fireEvent, render, screen, waitFor } from "@/lib/test/react";
 import { BenefitsExplorer } from "./benefits-explorer";
 
-vi.mock("@/app/(tabs)/benefits/lib/saved-benefits", async (importOriginal) => ({
-  ...(await importOriginal<typeof import("@/app/(tabs)/benefits/lib/saved-benefits")>()),
-  readSavedBenefits: vi.fn(),
-  writeSavedBenefits: vi.fn(),
+vi.mock("@/api/policy", () => ({
+  bookmarkPolicy: vi.fn(),
+  fetchPolicies: vi.fn(),
+  fetchPolicyDetail: vi.fn(),
+  unbookmarkPolicy: vi.fn(),
 }));
 
-// 정적 배열이라 인덱스가 비지 않는다. noUncheckedIndexedAccess만 달래준다.
-const [first, second] = BENEFITS as [(typeof BENEFITS)[number], (typeof BENEFITS)[number]];
+vi.mock("@/api/bookmark", () => ({ fetchSavedPolicies: vi.fn() }));
+
+function policy(id: number, overrides: Partial<PolicySummary> = {}): PolicySummary {
+  return {
+    id,
+    title: `혜택 ${id}`,
+    category: "금융",
+    largeCategory: "금융",
+    description: "설명",
+    bookmarked: false,
+    ...overrides,
+  };
+}
+
+const SAVED: SavedContent[] = [
+  { contentType: "POLICY", id: 7, title: "저장한 혜택", category: "주거", description: "설명" },
+];
+
+/** 다음 페이지가 있으려면 첫 페이지가 꽉 차서 와야 한다(응답에 전체 개수가 없다). */
+const FULL_PAGE = Array.from({ length: POLICY_PAGE_SIZE }, (_, index) => policy(index + 1));
 
 beforeEach(() => {
   vi.clearAllMocks();
-  vi.mocked(readSavedBenefits).mockReturnValue(new Set());
+  vi.mocked(fetchPolicies).mockResolvedValue([policy(1), policy(2, { bookmarked: true })]);
+  vi.mocked(fetchSavedPolicies).mockResolvedValue(SAVED);
+  vi.mocked(bookmarkPolicy).mockResolvedValue(undefined);
+  vi.mocked(unbookmarkPolicy).mockResolvedValue(undefined);
   window.history.replaceState(null, "", "/benefits");
 });
 
 describe("BenefitsExplorer", () => {
-  it("저장 칩을 누르면 저장한 것만 남는다", () => {
-    vi.mocked(readSavedBenefits).mockReturnValue(new Set([second.id]));
+  it("혜택 목록을 API에서 받아 그린다", async () => {
     render(<BenefitsExplorer initialFilter="all" />);
 
-    fireEvent.click(screen.getByRole("link", { name: "저장" }));
-
-    expect(screen.getByText(second.title)).toBeInTheDocument();
-    expect(screen.queryByText(first.title)).not.toBeInTheDocument();
+    expect(await screen.findByText("혜택 1")).toBeInTheDocument();
+    // 전체 칩은 category 없이 첫 페이지만 요청한다.
+    expect(fetchPolicies).toHaveBeenCalledWith({ category: null, page: 0, size: POLICY_PAGE_SIZE });
   });
 
-  it("저장한 게 없으면 안내를 띄운다", () => {
+  it("카테고리 칩은 서버 4분류로 다시 조회한다", async () => {
     render(<BenefitsExplorer initialFilter="all" />);
+    await screen.findByText("혜택 1");
 
-    fireEvent.click(screen.getByRole("link", { name: "저장" }));
+    fireEvent.click(screen.getByRole("link", { name: "주거" }));
 
-    expect(screen.getByText(/저장한 혜택이 없어요/)).toBeInTheDocument();
-  });
-
-  it("별을 누르면 저장 목록에 들어간다", () => {
-    render(<BenefitsExplorer initialFilter="all" />);
-
-    fireEvent.click(screen.getByRole("button", { name: `${first.title} 저장` }));
-    fireEvent.click(screen.getByRole("link", { name: "저장" }));
-
-    expect(screen.getByText(first.title)).toBeInTheDocument();
-    expect(screen.queryByText(/저장한 혜택이 없어요/)).not.toBeInTheDocument();
-  });
-
-  /**
-   * 화면 상태를 읽어 토글하면 그 상태가 뒤처졌을 때 저장분이 날아간다. 버튼은 하이드레이션
-   * 직후부터 눌리는데 이펙트는 페인트 뒤에 흐르므로 실제로 뒤처진 채 눌릴 수 있다.
-   * 읽기가 두 번째에 다른 값을 주도록 해서, 클릭이 저장소를 다시 읽는지 본다.
-   */
-  it("별을 누를 때 저장소를 다시 읽어 기존 저장분을 지키다", () => {
-    vi.mocked(readSavedBenefits)
-      .mockReturnValueOnce(new Set()) // 마운트 이펙트 — 아직 비어 있다고 본 시점
-      .mockReturnValue(new Set([second.id])); // 그 뒤 저장소에는 값이 들어와 있다
-    render(<BenefitsExplorer initialFilter="all" />);
-
-    fireEvent.click(screen.getByRole("button", { name: `${first.title} 저장` }));
-
-    expect(vi.mocked(writeSavedBenefits).mock.lastCall?.[0]).toEqual(
-      new Set([second.id, first.id]),
+    await waitFor(() =>
+      expect(fetchPolicies).toHaveBeenCalledWith({
+        category: "주거",
+        page: 0,
+        size: POLICY_PAGE_SIZE,
+      }),
     );
   });
 
-  /**
-   * localStorage는 서버에 없어 첫 페인트에는 저장 목록이 없다. 그때 빈 안내를 그리면
-   * 저장한 게 있어도 "없어요"를 먼저 봤다가 목록으로 뒤집힌다.
-   * `?category=saved` 딥링크와 새로고침에서 실제로 밟는 경로다.
-   *
-   * `render`는 이펙트까지 흘려보내 뒤집힌 뒤 상태만 보이므로, 서버가 실제로 내보내는
-   * 첫 마크업을 직접 본다.
-   */
-  it("저장 목록을 읽기 전에는 빈 안내를 그리지 않는다", () => {
-    const html = renderToString(<BenefitsExplorer initialFilter="saved" />);
+  it("저장 칩은 저장 목록 API를 쓴다", async () => {
+    render(<BenefitsExplorer initialFilter="all" />);
+    await screen.findByText("혜택 1");
 
-    expect(html).not.toContain("저장한 혜택이 없어요");
+    fireEvent.click(screen.getByRole("link", { name: "저장" }));
+
+    expect(await screen.findByText("저장한 혜택")).toBeInTheDocument();
+    expect(fetchSavedPolicies).toHaveBeenCalled();
+    // 저장 목록의 항목은 전부 저장된 상태로 보여야 한다.
+    expect(screen.getByRole("button", { name: "저장한 혜택 저장" })).toHaveAttribute(
+      "aria-pressed",
+      "true",
+    );
+  });
+
+  it("저장한 게 없으면 안내를 띄운다", async () => {
+    vi.mocked(fetchSavedPolicies).mockResolvedValue([]);
+    render(<BenefitsExplorer initialFilter="saved" />);
+
+    expect(await screen.findByText(/저장한 혜택이 없어요/)).toBeInTheDocument();
+  });
+
+  it("별을 누르면 저장하고, 저장된 항목은 취소한다", async () => {
+    render(<BenefitsExplorer initialFilter="all" />);
+    await screen.findByText("혜택 1");
+
+    fireEvent.click(screen.getByRole("button", { name: "혜택 1 저장" }));
+    await waitFor(() => expect(bookmarkPolicy).toHaveBeenCalledWith(1));
+
+    fireEvent.click(screen.getByRole("button", { name: "혜택 2 저장" }));
+    await waitFor(() => expect(unbookmarkPolicy).toHaveBeenCalledWith(2));
+  });
+
+  it("저장에 실패하면 오류를 보여준다", async () => {
+    vi.mocked(bookmarkPolicy).mockRejectedValue(new Error("network error"));
+    render(<BenefitsExplorer initialFilter="all" />);
+    await screen.findByText("혜택 1");
+
+    fireEvent.click(screen.getByRole("button", { name: "혜택 1 저장" }));
+
+    expect(
+      await screen.findByText("저장 상태를 바꾸지 못했어요. 잠시 후 다시 시도해 주세요."),
+    ).toBeInTheDocument();
+  });
+
+  it("목록 끝이 보이면 다음 페이지를 이어붙인다", async () => {
+    let intersect: (() => void) | undefined;
+    vi.stubGlobal(
+      "IntersectionObserver",
+      class {
+        constructor(private readonly callback: IntersectionObserverCallback) {}
+        observe(target: Element) {
+          intersect = () =>
+            this.callback(
+              [{ isIntersecting: true, target } as IntersectionObserverEntry],
+              this as unknown as IntersectionObserver,
+            );
+        }
+        unobserve() {}
+        disconnect() {}
+      },
+    );
+    vi.mocked(fetchPolicies)
+      .mockResolvedValueOnce(FULL_PAGE)
+      .mockResolvedValueOnce([policy(99)]);
+    render(<BenefitsExplorer initialFilter="all" />);
+    await screen.findByText("혜택 1");
+
+    intersect?.();
+
+    expect(await screen.findByText("혜택 99")).toBeInTheDocument();
+    expect(fetchPolicies).toHaveBeenLastCalledWith({
+      category: null,
+      page: 1,
+      size: POLICY_PAGE_SIZE,
+    });
+  });
+
+  it("목록 조회에 실패하면 오류를 보여준다", async () => {
+    vi.mocked(fetchPolicies).mockRejectedValue(new Error("network error"));
+    render(<BenefitsExplorer initialFilter="all" />);
+
+    expect(
+      await screen.findByText("혜택을 불러오지 못했어요. 잠시 후 다시 시도해 주세요."),
+    ).toBeInTheDocument();
   });
 });

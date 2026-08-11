@@ -59,7 +59,7 @@ apps/native   Expo 57 / React Native 0.86
 packages/*    @repo/{api,bridge,schema,ui,config}
 ```
 
-`apps/web`의 서버 상태 레이어는 `api/<도메인>.ts`(HTTP 호출)와
+`apps/web`의 서버 상태 레이어는 `src/api/<도메인>.ts`(HTTP 호출)와
 `lib/queries/<도메인>.ts`(TanStack Query `queryOptions`/`mutationOptions`)로 나눈다.
 컴포넌트는 커스텀 query 훅을 만들지 않고 options를 가져와 `useQuery`/`useMutation`에 주입한다.
 
