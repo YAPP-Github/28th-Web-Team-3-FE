@@ -1,8 +1,9 @@
 import type { SavedContent } from "@repo/schema/bookmark";
-import type { PolicySummary } from "@repo/schema/policy";
+import type { PolicyDetail, PolicySummary } from "@repo/schema/policy";
+import { within } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { fetchSavedPolicies } from "@/api/bookmark";
-import { bookmarkPolicy, fetchPolicies, unbookmarkPolicy } from "@/api/policy";
+import { bookmarkPolicy, fetchPolicies, fetchPolicyDetail, unbookmarkPolicy } from "@/api/policy";
 import { POLICY_PAGE_SIZE } from "@/lib/queries/policy";
 import { fireEvent, render, screen, waitFor } from "@/lib/test/react";
 import { BenefitsExplorer } from "./benefits-explorer";
@@ -28,6 +29,29 @@ function policy(id: number, overrides: Partial<PolicySummary> = {}): PolicySumma
   };
 }
 
+function policyDetail(id: number, overrides: Partial<PolicyDetail> = {}): PolicyDetail {
+  return {
+    id,
+    title: `혜택 ${id}`,
+    description: "설명",
+    supportContent: null,
+    category: "금융",
+    largeCategory: "금융",
+    mediumCategory: null,
+    supervisingOrg: null,
+    applyUrl: null,
+    applyPeriodText: null,
+    applyMethod: null,
+    submitDocuments: null,
+    targetMinAge: null,
+    targetMaxAge: null,
+    earnCondition: null,
+    additionalQualification: null,
+    bookmarked: true,
+    ...overrides,
+  };
+}
+
 const SAVED: SavedContent[] = [
   { contentType: "POLICY", id: 7, title: "저장한 혜택", category: "주거", description: "설명" },
 ];
@@ -38,6 +62,7 @@ const FULL_PAGE = Array.from({ length: POLICY_PAGE_SIZE }, (_, index) => policy(
 beforeEach(() => {
   vi.clearAllMocks();
   vi.mocked(fetchPolicies).mockResolvedValue([policy(1), policy(2, { bookmarked: true })]);
+  vi.mocked(fetchPolicyDetail).mockImplementation((id) => Promise.resolve(policyDetail(id)));
   vi.mocked(fetchSavedPolicies).mockResolvedValue(SAVED);
   vi.mocked(bookmarkPolicy).mockResolvedValue(undefined);
   vi.mocked(unbookmarkPolicy).mockResolvedValue(undefined);
@@ -81,6 +106,28 @@ describe("BenefitsExplorer", () => {
       "aria-pressed",
       "true",
     );
+  });
+
+  it("저장 탭도 정책 상세의 4분류 category를 태그로 쓴다", async () => {
+    vi.mocked(fetchSavedPolicies).mockResolvedValue([
+      {
+        contentType: "POLICY",
+        id: 7,
+        title: "농식품 바우처",
+        category: "금융·복지·문화",
+        description: "설명",
+      },
+    ]);
+    vi.mocked(fetchPolicyDetail).mockResolvedValue(
+      policyDetail(7, { title: "농식품 바우처", category: "복지" }),
+    );
+
+    render(<BenefitsExplorer initialFilter="saved" />);
+
+    const card = (await screen.findByText("농식품 바우처")).closest("article");
+    expect(card).not.toBeNull();
+    expect(within(card as HTMLElement).getByText("복지")).toBeInTheDocument();
+    expect(within(card as HTMLElement).queryByText("금융·복지·문화")).not.toBeInTheDocument();
   });
 
   it("저장한 게 없으면 안내를 띄운다", async () => {
