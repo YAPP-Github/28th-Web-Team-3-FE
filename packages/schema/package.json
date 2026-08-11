@@ -10,7 +10,6 @@
     "./goal": "./src/goal.ts",
     "./mission": "./src/mission.ts",
     "./mission-generation": "./src/mission-generation.ts",
-    "./mission-survey": "./src/mission-survey.ts",
     "./onboarding": "./src/onboarding.ts",
     "./policy": "./src/policy.ts",
     "./onboarding-api": "./src/onboarding-api.ts"

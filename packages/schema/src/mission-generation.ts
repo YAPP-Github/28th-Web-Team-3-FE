@@ -1,5 +1,10 @@
 import { z } from "zod";
-import { missionCategorySchema } from "./mission";
+import {
+  activeMissionCategorySchema,
+  MISSION_ITEM_CATEGORIES,
+  missionCategorySchema,
+  missionItemSchema,
+} from "./mission";
 
 /**
  * 미션 초안 생성(비동기 job) API 계약 — 백엔드 OpenAPI(`/api/missions/generation-jobs`) 기준.
@@ -24,6 +29,41 @@ export const missionGenerationJobSchema = z.object({
   pollingIntervalMillis: z.number().int(),
 });
 export type MissionGenerationJob = z.infer<typeof missionGenerationJobSchema>;
+
+export const MIN_MISSION_BASELINE_FREQUENCY = 1;
+export const MAX_MISSION_BASELINE_FREQUENCY = 10;
+export const MIN_MISSION_BASELINE_AMOUNT_WON = 1;
+export const MAX_MISSION_BASELINE_AMOUNT_WON = 2_000_000;
+
+export const missionBaselineFrequencySchema = z
+  .number()
+  .int()
+  .min(MIN_MISSION_BASELINE_FREQUENCY)
+  .max(MAX_MISSION_BASELINE_FREQUENCY);
+
+export const missionBaselineAmountWonSchema = z
+  .number()
+  .int()
+  .min(MIN_MISSION_BASELINE_AMOUNT_WON)
+  .max(MAX_MISSION_BASELINE_AMOUNT_WON);
+
+export const missionGenerationCreateRequestSchema = z
+  .object({
+    category: activeMissionCategorySchema,
+    item: missionItemSchema,
+    baselineFrequency: missionBaselineFrequencySchema,
+    baselineAmountWon: missionBaselineAmountWonSchema,
+  })
+  .superRefine((request, context) => {
+    if (MISSION_ITEM_CATEGORIES[request.item] !== request.category) {
+      context.addIssue({
+        code: "custom",
+        message: "미션 항목이 카테고리와 일치하지 않습니다.",
+        path: ["item"],
+      });
+    }
+  });
+export type MissionGenerationCreateRequest = z.infer<typeof missionGenerationCreateRequestSchema>;
 
 export const missionDraftSchema = z.object({
   id: z.string(),

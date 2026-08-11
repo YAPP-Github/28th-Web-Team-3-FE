@@ -7,6 +7,7 @@ const replaceMock = vi.fn();
 
 vi.mock("@/api/mission-generation", () => ({
   requestGenerationJob: vi.fn(),
+  fetchMissionCatalog: vi.fn(),
   fetchGenerationJobStatus: (...args: unknown[]) => fetchGenerationJobStatus(...args),
   fetchGenerationDrafts: vi.fn(),
   confirmGenerationJob: vi.fn(),
