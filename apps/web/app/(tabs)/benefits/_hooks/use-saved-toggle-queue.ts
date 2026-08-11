@@ -63,11 +63,11 @@ export function useSavedToggleQueue(queryClient: QueryClient, toggleBookmark: To
     );
   }
 
-  /** 보낼 것이 남아 있는 동안 재조회하면 그 항목들이 옛 서버값으로 되돌아 보인다. */
-  function refetchWhenIdle() {
-    if (pendingRef.current.size > 0) return;
-    queryClient.invalidateQueries({ queryKey: POLICIES_QUERY_KEY });
-    queryClient.invalidateQueries({ queryKey: savedPoliciesOptions().queryKey });
+  function cancelOngoingFetches() {
+    // 먼저 시작한 GET이 늦게 끝나 낙관적 캐시를 옛 값으로 덮지 못하게 한다. cancelQueries는
+    // 즉시 결과 반영을 막으므로 기다리지 않고 이어 써도 클릭 반영은 동기적으로 유지된다.
+    void queryClient.cancelQueries({ queryKey: POLICIES_QUERY_KEY });
+    void queryClient.cancelQueries({ queryKey: savedPoliciesOptions().queryKey });
   }
 
   function settle(benefit: BenefitItem, pending: PendingToggle) {
@@ -78,7 +78,6 @@ export function useSavedToggleQueue(queryClient: QueryClient, toggleBookmark: To
       return;
     }
     pendingRef.current.delete(benefit.id);
-    refetchWhenIdle();
   }
 
   function flush(benefit: BenefitItem) {
@@ -90,7 +89,6 @@ export function useSavedToggleQueue(queryClient: QueryClient, toggleBookmark: To
 
     if (pending.desired === pending.serverSaved) {
       pendingRef.current.delete(benefit.id);
-      refetchWhenIdle();
       return;
     }
 
@@ -116,6 +114,7 @@ export function useSavedToggleQueue(queryClient: QueryClient, toggleBookmark: To
 
   function toggleSaved(benefit: BenefitItem) {
     setSaveError(undefined);
+    cancelOngoingFetches();
 
     const pending = pendingRef.current.get(benefit.id);
     if (pending) {
