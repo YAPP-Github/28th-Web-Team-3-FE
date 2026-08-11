@@ -1,24 +1,20 @@
 import type { SavedContent } from "@repo/schema/bookmark";
 import type { PolicySummary } from "@repo/schema/policy";
+import { POLICY_CATEGORIES } from "@repo/schema/policy";
 import type { BenefitItem } from "@/app/(tabs)/benefits/types";
 
 /**
- * 카드 태그에 쓸 분류 문자열 정리.
+ * 카드 태그에 쓸 분류. 필터 탭에 있는 4개(금융·주거·복지·교육) 중 하나만 돌려준다.
  *
- * 저장 목록은 분류를 필드로 나눠 주지 않고 쉼표로 이어 붙여 보낸다. 대분류와 소분류가 같은
- * 항목이 흔해서 "일자리,일자리"처럼 같은 값이 두 번 찍힌다.
- *
- * 값과 순서는 원본 그대로 두고 중복만 걷어낸다 — 어느 쪽이 대분류인지 응답만 봐서는 알 수
- * 없어 하나를 골라 버리면 다른 분류를 가진 항목에서 엉뚱한 쪽이 남는다.
+ * 서버 category/largeCategory는 자유 문자열이다. "일자리"처럼 4개 밖의 값이 오기도 하고,
+ * "금융복지문화세트"처럼 여러 분류가 구분자 없이 이어 붙어 오기도 한다(저장 목록은 쉼표로
+ * 잇지만 그마저 없는 값도 있다). 원문을 그대로 보여주면 필터 탭에 없는 이름이 카드에
+ * 뜬다 — 탭에 있는 이름만 내보낸다. 매칭되는 게 없으면 태그를 아예 안 보여준다. 여러
+ * 분류가 섞여 있으면 필터 탭 순서(금융·주거·복지·교육)상 앞선 것 하나만 남긴다.
  */
-export function normalizeCategoryLabel(raw: string | null | undefined): string | null {
+export function toKnownCategory(raw: string | null | undefined): string | null {
   if (!raw) return null;
-  const parts = raw
-    .split(",")
-    .map((part) => part.trim())
-    .filter(Boolean);
-  if (parts.length === 0) return null;
-  return [...new Set(parts)].join(", ");
+  return POLICY_CATEGORIES.find((category) => raw.includes(category)) ?? null;
 }
 
 /**
@@ -29,8 +25,7 @@ export function toBenefitItem(policy: PolicySummary): BenefitItem {
   return {
     id: policy.id,
     title: policy.title,
-    categoryLabel:
-      normalizeCategoryLabel(policy.category) ?? normalizeCategoryLabel(policy.largeCategory),
+    categoryLabel: toKnownCategory(policy.category) ?? toKnownCategory(policy.largeCategory),
     description: policy.description ?? null,
     saved: policy.bookmarked,
   };
@@ -41,7 +36,7 @@ export function toSavedBenefitItem(saved: SavedContent): BenefitItem {
   return {
     id: saved.id,
     title: saved.title,
-    categoryLabel: normalizeCategoryLabel(saved.category),
+    categoryLabel: toKnownCategory(saved.category),
     description: saved.description ?? null,
     saved: true,
   };
