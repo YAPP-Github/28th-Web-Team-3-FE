@@ -1,17 +1,16 @@
 "use client";
 
-import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import { useEffect, useRef, useState } from "react";
+import { useToggleSavedBenefit } from "@/app/(tabs)/benefits/_hooks/use-toggle-saved-benefit";
 import { toBenefitItem, toSavedBenefitItem } from "@/app/(tabs)/benefits/lib/benefit-items";
 import { getBenefitFilterCategory } from "@/app/(tabs)/benefits/lib/filter-benefits";
 import { getBenefitFilterHref } from "@/app/(tabs)/benefits/lib/filter-href";
 import type { BenefitFilter, BenefitItem } from "@/app/(tabs)/benefits/types";
 import { savedPoliciesOptions } from "@/lib/queries/bookmark";
-import { policiesOptions, togglePolicyBookmarkOptions } from "@/lib/queries/policy";
+import { policiesOptions } from "@/lib/queries/policy";
 import { BenefitCard } from "./benefit-card";
 import { BenefitFilters } from "./benefit-filters";
-
-const SAVE_FAILED = "저장 상태를 바꾸지 못했어요. 잠시 후 다시 시도해 주세요.";
 
 /**
  * 필터 칩 + 혜택 목록. 필터링·페이지네이션은 서버(`/api/policies`)가 하고, "저장" 칩만
@@ -21,8 +20,7 @@ const SAVE_FAILED = "저장 상태를 바꾸지 못했어요. 잠시 후 다시 
  */
 export function BenefitsExplorer({ initialFilter }: { initialFilter: BenefitFilter }) {
   const [filter, setFilter] = useState(initialFilter);
-  const [saveError, setSaveError] = useState<string>();
-  const queryClient = useQueryClient();
+  const { saveError, clearSaveError, toggleSaved } = useToggleSavedBenefit();
   const isSavedFilter = filter === "saved";
 
   const policies = useInfiniteQuery({
@@ -30,7 +28,6 @@ export function BenefitsExplorer({ initialFilter }: { initialFilter: BenefitFilt
     enabled: !isSavedFilter,
   });
   const saved = useQuery({ ...savedPoliciesOptions(), enabled: isSavedFilter });
-  const toggleSave = useMutation(togglePolicyBookmarkOptions(queryClient));
 
   const benefits: readonly BenefitItem[] = isSavedFilter
     ? (saved.data ?? []).map(toSavedBenefitItem)
@@ -59,16 +56,8 @@ export function BenefitsExplorer({ initialFilter }: { initialFilter: BenefitFilt
 
   function selectFilter(next: BenefitFilter) {
     setFilter(next);
-    setSaveError(undefined);
+    clearSaveError();
     window.history.replaceState(null, "", getBenefitFilterHref(next));
-  }
-
-  function handleToggleSave(benefit: BenefitItem) {
-    setSaveError(undefined);
-    toggleSave.mutate(
-      { policyId: benefit.id, saved: benefit.saved },
-      { onError: () => setSaveError(SAVE_FAILED) },
-    );
   }
 
   return (
@@ -121,7 +110,7 @@ export function BenefitsExplorer({ initialFilter }: { initialFilter: BenefitFilt
           </p>
         ) : (
           benefits.map((benefit) => (
-            <BenefitCard key={benefit.id} benefit={benefit} onToggleSave={handleToggleSave} />
+            <BenefitCard key={benefit.id} benefit={benefit} onToggleSave={toggleSaved} />
           ))
         )}
         {/* 다음 페이지 감지용. 저장 목록은 한 번에 다 오므로 목록 쿼리일 때만 둔다. */}
