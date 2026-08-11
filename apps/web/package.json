@@ -22,6 +22,7 @@
     "@tanstack/react-query": "catalog:",
     "client-only": "catalog:",
     "ky": "catalog:",
+    "lottie-web": "catalog:",
     "mixpanel-browser": "catalog:",
     "next": "catalog:",
     "react": "catalog:",

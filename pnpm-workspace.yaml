@@ -46,6 +46,7 @@ catalog:
   tailwind-merge: ^3.6.0
   class-variance-authority: ^0.7.1
   lucide-react: ^1.21.0
+  lottie-web: ^5.13.0
   # React Compiler — 네이티브는 babel-preset-expo가 제공하는 버전을 사용한다.
   babel-plugin-react-compiler: ^1.0.0
   # SVG를 React 컴포넌트로 변환한다. Next.js 설정의 Turbopack rules에서 사용한다.

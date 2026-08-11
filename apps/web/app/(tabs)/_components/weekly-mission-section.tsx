@@ -3,7 +3,6 @@ import { buttonVariants, cn } from "@repo/ui";
 import CoinIcon from "@repo/ui/svg/coin.svg";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Check, ChevronDown, ChevronRight, ChevronUp } from "lucide-react";
-import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
 import { MissionListSkeleton } from "@/app/_components/mission-list-skeleton";
@@ -19,6 +18,7 @@ import { calculateGoalTotalTargetManwon } from "@/app/goal/lib/progress";
 import { formatManwon } from "@/lib/format";
 import { goalStatusOptions } from "@/lib/queries/goal";
 import { completeMissionOptions, missionsOptions } from "@/lib/queries/mission";
+import { PigboxProgressGauge } from "./pigbox-progress-gauge";
 import { SectionHeader } from "./section-header";
 
 export function WeeklyMissionSection() {
@@ -70,7 +70,6 @@ export function WeeklyMissionSection() {
       <MissionProgress
         completedCount={countCompletedMissions(missions)}
         ddayLabel={formatWeekDday(missions[0]?.weekEndsAt)}
-        hasMissions={hasMissions}
         percent={calculateProgressPercent(missions)}
       />
 
@@ -183,19 +182,13 @@ export function WeeklyMissionSection() {
 
 interface MissionProgressProps {
   ddayLabel: string;
-  hasMissions: boolean;
   percent: number;
   /** 완료한 미션 수 — 완료 1건당 코인 1개. */
   completedCount: number;
 }
 
-function MissionProgress({
-  ddayLabel,
-  hasMissions,
-  percent,
-  completedCount,
-}: MissionProgressProps) {
-  const progressLabel = hasMissions ? `${percent}% 달성` : "0% 달성";
+function MissionProgress({ ddayLabel, percent, completedCount }: MissionProgressProps) {
+  const progressLabel = `${percent}% 달성`;
 
   return (
     <div className="flex flex-row justify-between bg-gray-50 px-5 py-[10px]">
@@ -211,14 +204,7 @@ function MissionProgress({
           <CoinIcon aria-hidden="true" />+{completedCount}
         </span>
       </div>
-      <Image
-        alt=""
-        aria-hidden="true"
-        className="pointer-events-none h-32 w-auto object-contain"
-        height={256}
-        src="/images/mission/mission-home.webp"
-        width={384}
-      />
+      <PigboxProgressGauge progress={percent} />
     </div>
   );
 }
