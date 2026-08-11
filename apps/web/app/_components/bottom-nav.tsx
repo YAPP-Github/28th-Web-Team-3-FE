@@ -22,7 +22,17 @@ export function BottomNav() {
   return (
     // 하단 인셋(홈 인디케이터·제스처바)은 네이티브 셸의 `SafeAreaBands`가 잡는다. 여기서
     // `env(safe-area-inset-bottom)`을 더하면 여백이 이중으로 들어간다.
-    <nav className="fixed inset-x-0 bottom-0 mx-auto max-w-md border-gray-100 border-t bg-gray-0">
+    //
+    // z-40은 본문 위, 모달 아래다. z-index를 비워두면 `auto`가 되는데, 그러면 본문의
+    // z-10 요소(혜택 카드 저장 별 등)가 밑으로 스크롤돼 들어올 때 네비를 뚫고 그려진다 —
+    // 양수 z를 가진 요소가 z-auto인 요소보다 나중에 칠해지기 때문이다. 시트·다이얼로그는
+    // z-50이라 네비를 계속 덮는다.
+    // 혜택 화면에는 필터 칩도 nav다(그쪽은 "혜택 필터"로 이름이 있다). 랜드마크가 둘인데
+    // 한쪽만 무명이면 목록에서 무엇인지 알 수 없다.
+    <nav
+      aria-label="주요 메뉴"
+      className="fixed inset-x-0 bottom-0 z-40 mx-auto max-w-md border-gray-100 border-t bg-gray-0"
+    >
       <ul className="flex">
         {TABS.map(({ label, href, Icon }) => {
           const active =
