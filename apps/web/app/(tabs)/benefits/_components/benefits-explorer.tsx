@@ -7,10 +7,14 @@ import {
   useQuery,
   useQueryClient,
 } from "@tanstack/react-query";
+import { useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { useSavedToggleQueue } from "@/app/(tabs)/benefits/_hooks/use-saved-toggle-queue";
 import { toBenefitItem, toSavedBenefitItem } from "@/app/(tabs)/benefits/lib/benefit-items";
-import { getBenefitFilterCategory } from "@/app/(tabs)/benefits/lib/filter-benefits";
+import {
+  getBenefitFilterCategory,
+  parseBenefitFilter,
+} from "@/app/(tabs)/benefits/lib/filter-benefits";
 import { getBenefitFilterHref } from "@/app/(tabs)/benefits/lib/filter-href";
 import type { BenefitFilter, BenefitItem } from "@/app/(tabs)/benefits/types";
 import { savedPoliciesOptions } from "@/lib/queries/bookmark";
@@ -26,10 +30,14 @@ import { BenefitFilters } from "./benefit-filters";
  * 필터 칩 + 혜택 목록. 필터링·페이지네이션은 서버(`/api/policies`)가 하고, "저장" 칩만
  * 저장 목록(`/api/bookmarks`)이라 다른 쿼리를 탄다. URL은 history.replaceState로만
  * 동기화해(서버 재렌더 없음) 공유·딥링크는 유지하되 전환은 끊김 없이 반영된다.
- * 초기 필터는 서버 페이지가 searchParams로 읽어 넘겨준다.
+ * 초기 필터는 클라이언트에서 searchParams를 읽어 정한다.
  */
-export function BenefitsExplorer({ initialFilter }: { initialFilter: BenefitFilter }) {
-  const [filter, setFilter] = useState(initialFilter);
+export function BenefitsExplorer() {
+  const searchParams = useSearchParams();
+  const [filter, setFilter] = useState<BenefitFilter>(() => {
+    const categories = searchParams.getAll("category");
+    return parseBenefitFilter(categories.length === 1 ? categories[0] : undefined);
+  });
   const queryClient = useQueryClient();
   const toggleBookmark = useMutation(togglePolicyBookmarkOptions());
   // 언제 보낼지와 그동안 화면을 어떻게 보일지는 큐가 맡는다 — mutation 자체는 여기서 만든다.
