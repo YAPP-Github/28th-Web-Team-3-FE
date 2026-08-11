@@ -1,14 +1,38 @@
+import { Suspense } from "react";
 import { SAFE_AREA_HERO_ATTRIBUTE } from "@/lib/safe-area-bands";
 import { BenefitsExplorer } from "./_components/benefits-explorer";
-import { parseBenefitFilter } from "./lib/filter-benefits";
 
-interface BenefitsPageProps {
-  searchParams: Promise<{ category?: string | string[] }>;
+const FILTER_SKELETONS = ["all", "saved", "finance", "housing", "welfare", "education"];
+const CARD_SKELETONS = ["first", "second", "third"];
+
+function BenefitsExplorerSkeleton() {
+  return (
+    <section aria-busy="true" aria-label="혜택 목록">
+      <span role="status" className="sr-only">
+        혜택 목록을 불러오고 있어요.
+      </span>
+      <div className="mx-5 mt-[17px] h-7 w-40 animate-pulse rounded bg-gray-50 motion-reduce:animate-none" />
+      <div className="mt-[18px] flex gap-1.5 overflow-hidden px-5">
+        {FILTER_SKELETONS.map((filter) => (
+          <div
+            key={filter}
+            className="h-9 w-16 shrink-0 animate-pulse rounded-lg bg-gray-50 motion-reduce:animate-none"
+          />
+        ))}
+      </div>
+      <div className="mt-5 flex flex-col gap-3 px-5">
+        {CARD_SKELETONS.map((card) => (
+          <div
+            key={card}
+            className="h-28 animate-pulse rounded-xl bg-gray-50 motion-reduce:animate-none"
+          />
+        ))}
+      </div>
+    </section>
+  );
 }
 
-export default async function BenefitsPage({ searchParams }: BenefitsPageProps) {
-  const initialFilter = parseBenefitFilter((await searchParams).category);
-
+export default function BenefitsPage() {
   return (
     <main className="flex flex-1 flex-col bg-gray-0">
       {/* 히어로는 탭 제목까지 감싼다 — 디자인에서 파란 면이 상단 바 뒤까지 이어진다.
@@ -27,7 +51,9 @@ export default async function BenefitsPage({ searchParams }: BenefitsPageProps) 
         </div>
       </section>
 
-      <BenefitsExplorer initialFilter={initialFilter} />
+      <Suspense fallback={<BenefitsExplorerSkeleton />}>
+        <BenefitsExplorer />
+      </Suspense>
 
       <p className="mt-6 px-5 text-center text-caption-c1-500 text-gray-400">
         정책 내용은 변동될 수 있어요. 공식 페이지 기준으로 확인해 주세요.

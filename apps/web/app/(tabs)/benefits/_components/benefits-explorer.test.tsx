@@ -17,6 +17,10 @@ vi.mock("@/api/policy", () => ({
 
 vi.mock("@/api/bookmark", () => ({ fetchSavedPolicies: vi.fn() }));
 
+vi.mock("next/navigation", () => ({
+  useSearchParams: () => new URLSearchParams(window.location.search),
+}));
+
 function policy(id: number, overrides: Partial<PolicySummary> = {}): PolicySummary {
   return {
     id,
@@ -70,8 +74,22 @@ beforeEach(() => {
 });
 
 describe("BenefitsExplorer", () => {
+  it("서버 prop 없이 URL의 카테고리로 첫 목록을 조회한다", async () => {
+    window.history.replaceState(null, "", "/benefits?category=housing");
+
+    render(<BenefitsExplorer />);
+
+    await waitFor(() =>
+      expect(fetchPolicies).toHaveBeenCalledWith({
+        category: "주거",
+        page: 0,
+        size: POLICY_PAGE_SIZE,
+      }),
+    );
+  });
+
   it("혜택 목록을 API에서 받아 그린다", async () => {
-    render(<BenefitsExplorer initialFilter="all" />);
+    render(<BenefitsExplorer />);
 
     expect(await screen.findByText("혜택 1")).toBeInTheDocument();
     // 전체 칩은 category 없이 첫 페이지만 요청한다.
@@ -79,7 +97,7 @@ describe("BenefitsExplorer", () => {
   });
 
   it("카테고리 칩은 서버 4분류로 다시 조회한다", async () => {
-    render(<BenefitsExplorer initialFilter="all" />);
+    render(<BenefitsExplorer />);
     await screen.findByText("혜택 1");
 
     fireEvent.click(screen.getByRole("link", { name: "주거" }));
@@ -94,7 +112,7 @@ describe("BenefitsExplorer", () => {
   });
 
   it("저장 칩은 저장 목록 API를 쓴다", async () => {
-    render(<BenefitsExplorer initialFilter="all" />);
+    render(<BenefitsExplorer />);
     await screen.findByText("혜택 1");
 
     fireEvent.click(screen.getByRole("link", { name: "저장" }));
@@ -121,8 +139,9 @@ describe("BenefitsExplorer", () => {
     vi.mocked(fetchPolicyDetail).mockResolvedValue(
       policyDetail(7, { title: "농식품 바우처", category: "복지" }),
     );
+    window.history.replaceState(null, "", "/benefits?category=saved");
 
-    render(<BenefitsExplorer initialFilter="saved" />);
+    render(<BenefitsExplorer />);
 
     const card = (await screen.findByText("농식품 바우처")).closest("article");
     expect(card).not.toBeNull();
@@ -132,13 +151,14 @@ describe("BenefitsExplorer", () => {
 
   it("저장한 게 없으면 안내를 띄운다", async () => {
     vi.mocked(fetchSavedPolicies).mockResolvedValue([]);
-    render(<BenefitsExplorer initialFilter="saved" />);
+    window.history.replaceState(null, "", "/benefits?category=saved");
+    render(<BenefitsExplorer />);
 
     expect(await screen.findByText(/저장한 혜택이 없어요/)).toBeInTheDocument();
   });
 
   it("별을 누르면 저장하고, 저장된 항목은 취소한다", async () => {
-    render(<BenefitsExplorer initialFilter="all" />);
+    render(<BenefitsExplorer />);
     await screen.findByText("혜택 1");
 
     fireEvent.click(screen.getByRole("button", { name: "혜택 1 저장" }));
@@ -153,7 +173,7 @@ describe("BenefitsExplorer", () => {
    * 요청이 나가기 전에 이미 바뀌어 있어야 한다.
    */
   it("별을 누르면 요청 전에 화면이 먼저 바뀐다", async () => {
-    render(<BenefitsExplorer initialFilter="all" />);
+    render(<BenefitsExplorer />);
     await screen.findByText("혜택 1");
 
     fireEvent.click(screen.getByRole("button", { name: "혜택 1 저장" }));
@@ -167,7 +187,7 @@ describe("BenefitsExplorer", () => {
 
   // 연타를 그대로 보내면 응답 순서가 뒤집혀 화면과 서버가 어긋난다.
   it("연타해도 요청은 마지막 상태로 한 번만 나간다", async () => {
-    render(<BenefitsExplorer initialFilter="all" />);
+    render(<BenefitsExplorer />);
     await screen.findByText("혜택 1");
 
     const star = () => screen.getByRole("button", { name: "혜택 1 저장" });
@@ -182,7 +202,7 @@ describe("BenefitsExplorer", () => {
 
   // 짝수 번 눌러 제자리로 돌아왔으면 서버는 이미 그 상태다.
   it("눌렀다 되돌리면 아무것도 보내지 않는다", async () => {
-    render(<BenefitsExplorer initialFilter="all" />);
+    render(<BenefitsExplorer />);
     await screen.findByText("혜택 1");
 
     const star = () => screen.getByRole("button", { name: "혜택 1 저장" });
@@ -202,7 +222,7 @@ describe("BenefitsExplorer", () => {
    */
   it("재조회를 기다리지 않고 별이 되돌아온다", async () => {
     vi.mocked(bookmarkPolicy).mockRejectedValue(new Error("network error"));
-    render(<BenefitsExplorer initialFilter="all" />);
+    render(<BenefitsExplorer />);
     await screen.findByText("혜택 1");
 
     const star = () => screen.getByRole("button", { name: "혜택 1 저장" });
@@ -218,7 +238,7 @@ describe("BenefitsExplorer", () => {
   // 실패하면 되돌려만 놓고 멈춘다. 다시 누르면 그때는 나가야 한다.
   it("실패한 뒤 다시 누르면 보낸다", async () => {
     vi.mocked(bookmarkPolicy).mockRejectedValueOnce(new Error("network error"));
-    render(<BenefitsExplorer initialFilter="all" />);
+    render(<BenefitsExplorer />);
     await screen.findByText("혜택 1");
 
     const star = () => screen.getByRole("button", { name: "혜택 1 저장" });
@@ -242,7 +262,7 @@ describe("BenefitsExplorer", () => {
           finishBookmark = resolve;
         }),
     );
-    render(<BenefitsExplorer initialFilter="all" />);
+    render(<BenefitsExplorer />);
     await screen.findByText("혜택 1");
 
     const star = () => screen.getByRole("button", { name: "혜택 1 저장" });
@@ -258,7 +278,7 @@ describe("BenefitsExplorer", () => {
 
   it("저장에 실패하면 오류를 보여준다", async () => {
     vi.mocked(bookmarkPolicy).mockRejectedValue(new Error("network error"));
-    render(<BenefitsExplorer initialFilter="all" />);
+    render(<BenefitsExplorer />);
     await screen.findByText("혜택 1");
 
     fireEvent.click(screen.getByRole("button", { name: "혜택 1 저장" }));
@@ -288,7 +308,7 @@ describe("BenefitsExplorer", () => {
     vi.mocked(fetchPolicies)
       .mockResolvedValueOnce(FULL_PAGE)
       .mockResolvedValueOnce([policy(99)]);
-    render(<BenefitsExplorer initialFilter="all" />);
+    render(<BenefitsExplorer />);
     await screen.findByText("혜택 1");
 
     intersect?.();
@@ -303,7 +323,7 @@ describe("BenefitsExplorer", () => {
 
   it("목록 조회에 실패하면 오류를 보여준다", async () => {
     vi.mocked(fetchPolicies).mockRejectedValue(new Error("network error"));
-    render(<BenefitsExplorer initialFilter="all" />);
+    render(<BenefitsExplorer />);
 
     expect(
       await screen.findByText("혜택을 불러오지 못했어요. 잠시 후 다시 시도해 주세요."),
