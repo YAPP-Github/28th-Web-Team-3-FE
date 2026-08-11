@@ -30,6 +30,7 @@ const MOCK_DRAFTS: MissionDraftsResponse = {
 
 vi.mock("@/api/mission-generation", () => ({
   confirmGenerationJob: vi.fn(),
+  fetchMissionCatalog: vi.fn(),
   fetchGenerationDrafts: vi.fn(),
   fetchGenerationJobStatus: vi.fn(),
   requestGenerationJob: vi.fn(),

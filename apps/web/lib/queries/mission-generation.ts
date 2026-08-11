@@ -1,18 +1,33 @@
-import type { MissionConfirmRequest } from "@repo/schema/mission-generation";
+import type {
+  MissionConfirmRequest,
+  MissionGenerationCreateRequest,
+} from "@repo/schema/mission-generation";
 import { mutationOptions, type QueryClient, queryOptions } from "@tanstack/react-query";
 import {
   confirmGenerationJob,
   fetchGenerationDrafts,
   fetchGenerationJobStatus,
+  fetchMissionCatalog,
   requestGenerationJob,
 } from "@/api/mission-generation";
 import { missionsOptions } from "@/lib/queries/mission";
 
-export const MISSION_GENERATION_POLLING_INTERVAL_MS = 5000;
+const MISSION_GENERATION_POLLING_INTERVAL_MS = 5000;
+
+/** 새 미션 정책의 카테고리·소비 항목 카탈로그. */
+export function missionCatalogOptions() {
+  return queryOptions({
+    queryKey: ["mission-catalog"],
+    queryFn: fetchMissionCatalog,
+    staleTime: Number.POSITIVE_INFINITY,
+  });
+}
 
 /** 생성 job 요청(진행 중이면 서버가 같은 job을 반환하므로 여러 번 호출해도 안전하다). */
 export function requestGenerationJobOptions() {
-  return mutationOptions({ mutationFn: requestGenerationJob });
+  return mutationOptions({
+    mutationFn: (body: MissionGenerationCreateRequest) => requestGenerationJob(body),
+  });
 }
 
 /**

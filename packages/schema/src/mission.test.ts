@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { missionsResponseSchema } from "./mission";
+import { missionCatalogResponseSchema, missionsResponseSchema } from "./mission";
 
 const commonMission = {
   id: "mission-1",
@@ -22,6 +22,19 @@ describe("mission API schemas", () => {
     expect(() =>
       missionsResponseSchema.parse({
         missions: [{ ...commonMission, source: "RECOMMENDED" }],
+      }),
+    ).toThrow();
+  });
+
+  it("카탈로그에서 카테고리와 항목이 일치해야 한다", () => {
+    expect(() =>
+      missionCatalogResponseSchema.parse({
+        categories: [
+          {
+            category: "MEAL",
+            items: [{ code: "GAME", label: "게임" }],
+          },
+        ],
       }),
     ).toThrow();
   });

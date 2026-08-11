@@ -1,28 +1,21 @@
 "use client";
 
-import type { MissionSurveyPutRequest } from "@repo/schema/mission-survey";
 import { Button, Toggle } from "@repo/ui";
 import { ChevronLeft } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { useFormContext } from "react-hook-form";
 import {
   buildMissionCreationFormHref,
-  MISSION_CREATION_CATEGORY_CODES,
   MISSION_RECOMMENDATION_CATEGORIES,
   type MissionCreationCategory,
 } from "@/app/mission/constants/mission-creation";
-import { buildDefaultSurveyValues } from "@/app/mission/constants/mission-survey";
 
 export default function NewMissionPage() {
   const router = useRouter();
-  const { reset } = useFormContext<MissionSurveyPutRequest>();
-  const [selectedCategories, setSelectedCategories] = useState<MissionCreationCategory[]>([]);
+  const [selectedCategory, setSelectedCategory] = useState<MissionCreationCategory>();
 
   function toggleCategory(category: MissionCreationCategory, pressed: boolean) {
-    setSelectedCategories((categories) =>
-      pressed ? [...categories, category] : categories.filter((item) => item !== category),
-    );
+    setSelectedCategory(pressed ? category : undefined);
   }
 
   return (
@@ -43,7 +36,7 @@ export default function NewMissionPage() {
               <br />
               도전할까요?
             </h1>
-            <p className="text-body-b1-400 text-gray-700">중복 선택이 가능해요.</p>
+            <p className="text-body-b1-400 text-gray-700">한 가지를 선택해 주세요.</p>
           </section>
 
           <div className="flex flex-col gap-3">
@@ -51,7 +44,7 @@ export default function NewMissionPage() {
               <Toggle
                 key={category.name}
                 aria-label={category.name}
-                pressed={selectedCategories.includes(category.name)}
+                pressed={selectedCategory === category.name}
                 className="group"
                 variant="onboarding"
                 onPressedChange={(pressed) => toggleCategory(category.name, pressed)}
@@ -72,15 +65,10 @@ export default function NewMissionPage() {
       </div>
       <div className="px-5">
         <Button
-          disabled={selectedCategories.length === 0}
+          disabled={!selectedCategory}
           size="cta"
           onClick={() => {
-            reset(
-              buildDefaultSurveyValues(
-                selectedCategories.map((category) => MISSION_CREATION_CATEGORY_CODES[category]),
-              ),
-            );
-            router.push(buildMissionCreationFormHref(selectedCategories, 0));
+            if (selectedCategory) router.push(buildMissionCreationFormHref(selectedCategory));
           }}
         >
           다음

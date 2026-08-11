@@ -1,11 +1,14 @@
+import { type MissionCatalogResponse, missionCatalogResponseSchema } from "@repo/schema/mission";
 import {
   type MissionConfirmRequest,
   type MissionConfirmResponse,
   type MissionDraftsResponse,
+  type MissionGenerationCreateRequest,
   type MissionGenerationJob,
   missionConfirmRequestSchema,
   missionConfirmResponseSchema,
   missionDraftsResponseSchema,
+  missionGenerationCreateRequestSchema,
   missionGenerationJobSchema,
 } from "@repo/schema/mission-generation";
 import { http } from "@/api/client";
@@ -14,9 +17,20 @@ import { http } from "@/api/client";
  * 미션 초안 생성(비동기 job) API — 백엔드 OpenAPI(`/api/missions/generation-jobs`) 연동.
  */
 
-/** POST /api/missions/generation-jobs — 생성 job 요청(진행 중이면 같은 job 반환). */
-export function requestGenerationJob(): Promise<MissionGenerationJob> {
-  return http.post("missions/generation-jobs", { response: missionGenerationJobSchema });
+/** GET /api/missions/catalog — 생성 가능한 카테고리·소비 항목 조회. */
+export function fetchMissionCatalog(): Promise<MissionCatalogResponse> {
+  return http.get("missions/catalog", { response: missionCatalogResponseSchema });
+}
+
+/** POST /api/missions/generation-jobs — 입력값 기반 생성 job 요청. */
+export function requestGenerationJob(
+  body: MissionGenerationCreateRequest,
+): Promise<MissionGenerationJob> {
+  return http.post("missions/generation-jobs", {
+    body,
+    request: missionGenerationCreateRequestSchema,
+    response: missionGenerationJobSchema,
+  });
 }
 
 /** GET /api/missions/generation-jobs/{jobId} — job 상태 polling. */
