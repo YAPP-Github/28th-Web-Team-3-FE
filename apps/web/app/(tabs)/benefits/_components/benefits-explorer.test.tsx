@@ -4,8 +4,9 @@ import { within } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { fetchSavedPolicies } from "@/api/bookmark";
 import { bookmarkPolicy, fetchPolicies, fetchPolicyDetail, unbookmarkPolicy } from "@/api/policy";
+import { savedPoliciesOptions } from "@/lib/queries/bookmark";
 import { POLICY_PAGE_SIZE } from "@/lib/queries/policy";
-import { fireEvent, render, screen, waitFor } from "@/lib/test/react";
+import { act, createTestQueryClient, fireEvent, render, screen, waitFor } from "@/lib/test/react";
 import { BenefitsExplorer } from "./benefits-explorer";
 
 vi.mock("@/api/policy", () => ({
@@ -171,6 +172,100 @@ describe("BenefitsExplorer", () => {
     expect(await screen.findByText(/저장한 혜택이 없어요/)).toBeInTheDocument();
   });
 
+  it("저장 탭에서 해제한 카드를 성공 직후 다시 보여주지 않는다", async () => {
+    let finishUnbookmark: (() => void) | undefined;
+    vi.mocked(unbookmarkPolicy).mockImplementation(
+      () =>
+        new Promise<void>((resolve) => {
+          finishUnbookmark = resolve;
+        }),
+    );
+    window.history.replaceState(null, "", "/benefits?category=saved");
+    const queryClient = createTestQueryClient();
+    render(<BenefitsExplorer />, { queryClient });
+
+    const star = await screen.findByRole("button", { name: "저장한 혜택 저장" });
+    fireEvent.click(star);
+    expect(screen.queryByText("저장한 혜택")).not.toBeInTheDocument();
+
+    await waitFor(() => expect(unbookmarkPolicy).toHaveBeenCalledWith(7));
+    await act(async () => {
+      finishUnbookmark?.();
+    });
+    await waitFor(() => expect(queryClient.isMutating()).toBe(0));
+    await waitFor(() => expect(queryClient.isFetching()).toBe(0));
+
+    expect(screen.queryByText("저장한 혜택")).not.toBeInTheDocument();
+  });
+
+  it("해제 전에 시작한 이전 목록 조회가 늦게 끝나도 카드를 다시 보여주지 않는다", async () => {
+    let finishStaleFetch: (() => void) | undefined;
+    vi.mocked(fetchSavedPolicies)
+      .mockResolvedValueOnce(SAVED)
+      .mockImplementationOnce(
+        () =>
+          new Promise((resolve) => {
+            finishStaleFetch = () => resolve(SAVED);
+          }),
+      );
+    window.history.replaceState(null, "", "/benefits?category=saved");
+    const queryClient = createTestQueryClient();
+    render(<BenefitsExplorer />, { queryClient });
+
+    const star = await screen.findByRole("button", { name: "저장한 혜택 저장" });
+    void queryClient.refetchQueries({ queryKey: savedPoliciesOptions().queryKey });
+    await waitFor(() => expect(fetchSavedPolicies).toHaveBeenCalledTimes(2));
+
+    fireEvent.click(star);
+    expect(screen.queryByText("저장한 혜택")).not.toBeInTheDocument();
+
+    await act(async () => {
+      finishStaleFetch?.();
+    });
+    await waitFor(() => expect(queryClient.isFetching()).toBe(0));
+
+    expect(screen.queryByText("저장한 혜택")).not.toBeInTheDocument();
+  });
+
+  it("해제 뒤 시작한 이전 목록 조회도 성공 상태를 덮어쓰지 않는다", async () => {
+    let finishUnbookmark: (() => void) | undefined;
+    let finishStaleFetch: (() => void) | undefined;
+    vi.mocked(unbookmarkPolicy).mockImplementation(
+      () =>
+        new Promise<void>((resolve) => {
+          finishUnbookmark = resolve;
+        }),
+    );
+    vi.mocked(fetchSavedPolicies)
+      .mockResolvedValueOnce(SAVED)
+      .mockImplementationOnce(
+        () =>
+          new Promise((resolve) => {
+            finishStaleFetch = () => resolve(SAVED);
+          }),
+      );
+    window.history.replaceState(null, "", "/benefits?category=saved");
+    const queryClient = createTestQueryClient();
+    render(<BenefitsExplorer />, { queryClient });
+
+    const star = await screen.findByRole("button", { name: "저장한 혜택 저장" });
+    fireEvent.click(star);
+    void queryClient.refetchQueries({ queryKey: savedPoliciesOptions().queryKey });
+    await waitFor(() => expect(fetchSavedPolicies).toHaveBeenCalledTimes(2));
+
+    await act(async () => {
+      finishStaleFetch?.();
+    });
+    await waitFor(() => expect(queryClient.isFetching()).toBe(0));
+    await waitFor(() => expect(unbookmarkPolicy).toHaveBeenCalledWith(7));
+    await act(async () => {
+      finishUnbookmark?.();
+    });
+    await waitFor(() => expect(queryClient.isMutating()).toBe(0));
+
+    expect(screen.queryByText("저장한 혜택")).not.toBeInTheDocument();
+  });
+
   it("별을 누르면 저장하고, 저장된 항목은 취소한다", async () => {
     render(<BenefitsExplorer />);
     await screen.findByText("혜택 1");
@@ -229,11 +324,7 @@ describe("BenefitsExplorer", () => {
     expect(unbookmarkPolicy).not.toHaveBeenCalled();
   });
 
-  /**
-   * 실패하면 재조회가 서버값을 다시 실어오긴 한다. 하지만 그건 응답이 돌아온 뒤 일이고,
-   * 느리거나 끊긴 망에서는 그동안 별이 켜진 채 남아 저장된 것처럼 보인다. 여기서는 재조회를
-   * 영영 멈춰 세워, 되돌리는 주체가 재조회가 아니라 실패 처리임을 못 박는다.
-   */
+  /** 실패하면 서버 재조회와 무관하게 낙관적 값을 즉시 되돌려야 한다. */
   it("재조회를 기다리지 않고 별이 되돌아온다", async () => {
     vi.mocked(bookmarkPolicy).mockRejectedValue(new Error("network error"));
     render(<BenefitsExplorer />);
@@ -242,9 +333,6 @@ describe("BenefitsExplorer", () => {
     const star = () => screen.getByRole("button", { name: "혜택 1 저장" });
     fireEvent.click(star());
     expect(star()).toHaveAttribute("aria-pressed", "true");
-
-    // 이 시점부터 목록 재조회는 끝나지 않는다 — 이전 데이터는 그대로 그려진다.
-    vi.mocked(fetchPolicies).mockImplementation(() => new Promise(() => {}));
 
     await waitFor(() => expect(star()).toHaveAttribute("aria-pressed", "false"));
   });
