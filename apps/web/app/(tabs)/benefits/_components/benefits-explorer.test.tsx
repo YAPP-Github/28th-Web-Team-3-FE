@@ -101,6 +101,114 @@ describe("BenefitsExplorer", () => {
     await waitFor(() => expect(unbookmarkPolicy).toHaveBeenCalledWith(2));
   });
 
+  /**
+   * 왕복을 기다렸다 뒤집으면 그동안 별이 눌리지 않은 것처럼 보여 사용자가 한 번 더 누른다.
+   * 요청이 나가기 전에 이미 바뀌어 있어야 한다.
+   */
+  it("별을 누르면 요청 전에 화면이 먼저 바뀐다", async () => {
+    render(<BenefitsExplorer initialFilter="all" />);
+    await screen.findByText("혜택 1");
+
+    fireEvent.click(screen.getByRole("button", { name: "혜택 1 저장" }));
+
+    expect(screen.getByRole("button", { name: "혜택 1 저장" })).toHaveAttribute(
+      "aria-pressed",
+      "true",
+    );
+    expect(bookmarkPolicy).not.toHaveBeenCalled();
+  });
+
+  // 연타를 그대로 보내면 응답 순서가 뒤집혀 화면과 서버가 어긋난다.
+  it("연타해도 요청은 마지막 상태로 한 번만 나간다", async () => {
+    render(<BenefitsExplorer initialFilter="all" />);
+    await screen.findByText("혜택 1");
+
+    const star = () => screen.getByRole("button", { name: "혜택 1 저장" });
+    fireEvent.click(star()); // 저장
+    fireEvent.click(star()); // 취소
+    fireEvent.click(star()); // 저장
+
+    await waitFor(() => expect(bookmarkPolicy).toHaveBeenCalledTimes(1));
+    expect(bookmarkPolicy).toHaveBeenCalledWith(1);
+    expect(unbookmarkPolicy).not.toHaveBeenCalled();
+  });
+
+  // 짝수 번 눌러 제자리로 돌아왔으면 서버는 이미 그 상태다.
+  it("눌렀다 되돌리면 아무것도 보내지 않는다", async () => {
+    render(<BenefitsExplorer initialFilter="all" />);
+    await screen.findByText("혜택 1");
+
+    const star = () => screen.getByRole("button", { name: "혜택 1 저장" });
+    fireEvent.click(star());
+    fireEvent.click(star());
+
+    await waitFor(() => expect(star()).toHaveAttribute("aria-pressed", "false"));
+    await new Promise((resolve) => setTimeout(resolve, 600));
+    expect(bookmarkPolicy).not.toHaveBeenCalled();
+    expect(unbookmarkPolicy).not.toHaveBeenCalled();
+  });
+
+  /**
+   * 실패하면 재조회가 서버값을 다시 실어오긴 한다. 하지만 그건 응답이 돌아온 뒤 일이고,
+   * 느리거나 끊긴 망에서는 그동안 별이 켜진 채 남아 저장된 것처럼 보인다. 여기서는 재조회를
+   * 영영 멈춰 세워, 되돌리는 주체가 재조회가 아니라 실패 처리임을 못 박는다.
+   */
+  it("재조회를 기다리지 않고 별이 되돌아온다", async () => {
+    vi.mocked(bookmarkPolicy).mockRejectedValue(new Error("network error"));
+    render(<BenefitsExplorer initialFilter="all" />);
+    await screen.findByText("혜택 1");
+
+    const star = () => screen.getByRole("button", { name: "혜택 1 저장" });
+    fireEvent.click(star());
+    expect(star()).toHaveAttribute("aria-pressed", "true");
+
+    // 이 시점부터 목록 재조회는 끝나지 않는다 — 이전 데이터는 그대로 그려진다.
+    vi.mocked(fetchPolicies).mockImplementation(() => new Promise(() => {}));
+
+    await waitFor(() => expect(star()).toHaveAttribute("aria-pressed", "false"));
+  });
+
+  // 실패하면 되돌려만 놓고 멈춘다. 다시 누르면 그때는 나가야 한다.
+  it("실패한 뒤 다시 누르면 보낸다", async () => {
+    vi.mocked(bookmarkPolicy).mockRejectedValueOnce(new Error("network error"));
+    render(<BenefitsExplorer initialFilter="all" />);
+    await screen.findByText("혜택 1");
+
+    const star = () => screen.getByRole("button", { name: "혜택 1 저장" });
+    fireEvent.click(star());
+    await waitFor(() => expect(star()).toHaveAttribute("aria-pressed", "false"));
+
+    fireEvent.click(star());
+
+    await waitFor(() => expect(bookmarkPolicy).toHaveBeenCalledTimes(2));
+  });
+
+  /**
+   * 요청이 나가 있는 동안 또 누르면, 그 항목을 큐에서 지운 뒤에는 아직 확정되지 않은
+   * 낙관적 값을 서버값으로 삼게 된다. 그러면 보내야 할 것을 "이미 그 상태"로 보고 건너뛴다.
+   */
+  it("요청이 나가 있는 동안 눌린 것도 이어서 보낸다", async () => {
+    let finishBookmark: (() => void) | undefined;
+    vi.mocked(bookmarkPolicy).mockImplementation(
+      () =>
+        new Promise<void>((resolve) => {
+          finishBookmark = resolve;
+        }),
+    );
+    render(<BenefitsExplorer initialFilter="all" />);
+    await screen.findByText("혜택 1");
+
+    const star = () => screen.getByRole("button", { name: "혜택 1 저장" });
+    fireEvent.click(star()); // 저장 요청이 나간다
+    await waitFor(() => expect(bookmarkPolicy).toHaveBeenCalledTimes(1));
+
+    fireEvent.click(star()); // 응답 전에 취소로 바꾼다
+    await waitFor(() => expect(star()).toHaveAttribute("aria-pressed", "false"));
+    finishBookmark?.();
+
+    await waitFor(() => expect(unbookmarkPolicy).toHaveBeenCalledWith(1));
+  });
+
   it("저장에 실패하면 오류를 보여준다", async () => {
     vi.mocked(bookmarkPolicy).mockRejectedValue(new Error("network error"));
     render(<BenefitsExplorer initialFilter="all" />);

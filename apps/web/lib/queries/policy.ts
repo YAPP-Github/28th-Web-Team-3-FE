@@ -1,10 +1,9 @@
 import type { PolicyCategory } from "@repo/schema/policy";
-import { infiniteQueryOptions, mutationOptions, type QueryClient } from "@tanstack/react-query";
+import { infiniteQueryOptions, mutationOptions } from "@tanstack/react-query";
 import { bookmarkPolicy, fetchPolicies, unbookmarkPolicy } from "@/api/policy";
-import { savedPoliciesOptions } from "@/lib/queries/bookmark";
 
 /** 혜택 목록 캐시 키의 뿌리. 카테고리별 캐시가 이 아래에 달린다. */
-const POLICIES_QUERY_KEY = ["policies"] as const;
+export const POLICIES_QUERY_KEY = ["policies"] as const;
 
 /** 한 번에 받아오는 혜택 수. 서버 기본값과 같게 두고 다음 페이지 판단에도 쓴다. */
 export const POLICY_PAGE_SIZE = 20;
@@ -24,15 +23,14 @@ export function policiesOptions(category: PolicyCategory | null) {
 
 /**
  * 저장 토글. `saved`는 누르기 직전 상태다 — 저장돼 있으면 취소하고, 아니면 저장한다.
- * 목록의 `bookmarked`와 저장 목록이 둘 다 바뀌므로 양쪽을 무효화한다.
+ *
+ * 캐시 갱신은 여기서 하지 않는다. 화면은 누르는 즉시 바뀌어야 하는데 이 mutation은
+ * 연타를 모은 뒤에야 시작되므로, 낙관적 반영과 재조회 시점은 `useToggleSavedBenefit`이
+ * 누름 단위로 관리한다.
  */
-export function togglePolicyBookmarkOptions(queryClient: QueryClient) {
+export function togglePolicyBookmarkOptions() {
   return mutationOptions({
     mutationFn: ({ policyId, saved }: { policyId: number; saved: boolean }) =>
       saved ? unbookmarkPolicy(policyId) : bookmarkPolicy(policyId),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: POLICIES_QUERY_KEY });
-      queryClient.invalidateQueries({ queryKey: savedPoliciesOptions().queryKey });
-    },
   });
 }
