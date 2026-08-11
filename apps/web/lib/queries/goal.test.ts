@@ -1,12 +1,17 @@
 import type { GoalStatus } from "@repo/schema/goal";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { reportGoalStatusError } from "@/lib/report-goal-status-error";
 import { act, createTestQueryClient, renderHook, waitFor } from "@/lib/test/react";
 
 vi.mock("@/api/goal", () => ({
   fetchGoalStatus: vi.fn(),
   updateGoal: vi.fn(),
   updateSavings: vi.fn(),
+}));
+
+vi.mock("@/lib/report-goal-status-error", () => ({
+  reportGoalStatusError: vi.fn(),
 }));
 
 import { fetchGoalStatus, updateGoal, updateSavings } from "@/api/goal";
@@ -43,6 +48,22 @@ const UPDATED_SAVINGS: GoalStatus = {
     progressPercent: 70,
   },
 };
+
+describe("goalStatusOptions", () => {
+  beforeEach(() => vi.clearAllMocks());
+
+  it("최종 조회 실패를 한 번 보고하고 같은 오류를 다시 던진다", async () => {
+    const error = new Error("goal request failed");
+    vi.mocked(fetchGoalStatus).mockRejectedValue(error);
+
+    const { result } = renderHook(() => useQuery(goalStatusOptions()));
+
+    await waitFor(() => expect(result.current.isError).toBe(true));
+    expect(result.current.error).toBe(error);
+    expect(reportGoalStatusError).toHaveBeenCalledOnce();
+    expect(reportGoalStatusError).toHaveBeenCalledWith(error);
+  });
+});
 
 describe("updateSavingsOptions", () => {
   beforeEach(() => vi.clearAllMocks());
