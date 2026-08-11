@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { fireEvent, render, screen, waitFor, within } from "@/lib/test/react";
+import { act, fireEvent, render, screen, waitFor, within } from "@/lib/test/react";
 import { WithdrawalButton } from "./withdrawal-button";
 
 vi.mock("@/api/auth", () => ({ withdrawGuest: vi.fn() }));
@@ -89,6 +89,36 @@ describe("WithdrawalButton", () => {
 
     expect(screen.queryByRole("dialog", { name: DIALOG_NAME })).not.toBeInTheDocument();
     expect(withdrawGuest).not.toHaveBeenCalled();
+  });
+
+  /**
+   * 탈퇴는 되돌릴 수 없다. 요청이 도는 동안 같은 요청이 또 나가거나, 결과를 보기 전에
+   * 다이얼로그가 닫혀서는 안 된다. 처리 중 표시는 `disabled`가 아니라 `aria-busy`다.
+   */
+  it("처리 중에는 다시 누르지도, 닫지도 못한다", async () => {
+    let finishWithdraw = () => {};
+    vi.mocked(withdrawGuest).mockReturnValue(
+      new Promise<void>((resolve) => {
+        finishWithdraw = resolve;
+      }),
+    );
+    render(<WithdrawalButton onWithdrawn={vi.fn()} />);
+    fireEvent.click(screen.getByRole("button", { name: "탈퇴하기" }));
+    const dialog = screen.getByRole("dialog", { name: DIALOG_NAME });
+    const confirm = within(dialog).getByRole("button", { name: "탈퇴하기" });
+
+    fireEvent.click(confirm);
+    await waitFor(() => expect(confirm).toHaveAttribute("aria-busy", "true"));
+
+    fireEvent.click(confirm);
+    fireEvent.click(within(dialog).getByRole("button", { name: "아니요" }));
+
+    expect(withdrawGuest).toHaveBeenCalledOnce();
+    expect(screen.getByRole("dialog", { name: DIALOG_NAME })).toBeInTheDocument();
+
+    await act(async () => {
+      finishWithdraw();
+    });
   });
 
   it("확인하면 탈퇴 API를 호출하고 성공 동작을 실행한다", async () => {

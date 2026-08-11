@@ -57,11 +57,20 @@ export function WithdrawalButton({
           if (!open) closeDialog();
         }}
       >
-        {error ? (
-          <p aria-live="polite" className="text-center text-body-b2-500 text-error">
-            {error}
-          </p>
-        ) : null}
+        {/*
+          비어 있어도 노드를 남긴다 — 오류가 날 때 처음 마운트되는 live region은 대부분의
+          스크린리더가 읽지 않는다. 빈 동안은 `sr-only`라 흐름 밖이라 버튼 간격도 안 벌어진다.
+        */}
+        <p
+          aria-live="polite"
+          className={
+            error
+              ? "text-center text-body-b2-500 text-error"
+              : "sr-only text-center text-body-b2-500 text-error"
+          }
+        >
+          {error}
+        </p>
         <div className="flex w-full gap-2.5">
           {/* 시안이 취소 쪽을 먼저 둔다 — 되돌릴 수 없는 쪽을 손이 먼저 닿는 자리에 두지 않는다. */}
           <Button
@@ -73,15 +82,19 @@ export function WithdrawalButton({
           >
             아니요
           </Button>
-          {/* 되돌릴 수 없는 쪽이라 일반 CTA와 같은 파란색을 쓰지 않는다. */}
+          {/*
+            되돌릴 수 없는 쪽이라 일반 CTA와 같은 파란색을 쓰지 않는다.
+            처리 중은 `disabled`가 아니라 `pending`이다 — disabled는 초점을 body로 보내
+            방금 누른 버튼의 `aria-busy`가 스크린리더에 닿지 못한다(`@repo/ui` Button).
+          */}
           <Button
-            className="h-[52px] flex-1 rounded-xl bg-error-light text-body-b1-700 text-error hover:bg-error-light/80 disabled:bg-error-light disabled:text-error disabled:opacity-100"
+            className="h-[52px] flex-1 rounded-xl bg-error-light text-body-b1-700 text-error hover:bg-error-light/80"
             variant="destructive"
             size="cta"
-            disabled={isPending}
+            pending={isPending}
             onClick={confirmWithdrawal}
           >
-            {isPending ? "탈퇴 중…" : "탈퇴하기"}
+            탈퇴하기
           </Button>
         </div>
       </Dialog>
