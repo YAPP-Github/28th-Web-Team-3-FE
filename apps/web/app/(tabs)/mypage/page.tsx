@@ -22,11 +22,12 @@ export default function MyPage() {
         <li>
           <InquiryRow />
         </li>
+        <li>
+          <WithdrawalButton />
+        </li>
       </ul>
 
       <AppVersionRow />
-
-      <WithdrawalButton />
     </div>
   );
 }
