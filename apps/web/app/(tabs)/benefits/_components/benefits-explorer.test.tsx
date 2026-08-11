@@ -74,6 +74,16 @@ beforeEach(() => {
 });
 
 describe("BenefitsExplorer", () => {
+  it("첫 목록을 기다리는 동안 텍스트 대신 카드 스켈레톤을 보여준다", () => {
+    vi.mocked(fetchPolicies).mockImplementation(() => new Promise(() => {}));
+
+    const { container } = render(<BenefitsExplorer />);
+
+    expect(screen.queryByText("불러오는 중…")).not.toBeInTheDocument();
+    expect(screen.getByText("혜택 목록을 불러오는 중")).toHaveClass("sr-only");
+    expect(container.querySelectorAll('[data-slot="benefit-card-skeleton"]')).toHaveLength(3);
+  });
+
   it("서버 prop 없이 URL의 카테고리로 첫 목록을 조회한다", async () => {
     window.history.replaceState(null, "", "/benefits?category=housing");
 
