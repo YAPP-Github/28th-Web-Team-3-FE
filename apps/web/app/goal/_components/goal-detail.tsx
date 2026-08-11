@@ -5,11 +5,11 @@ import { useQuery } from "@tanstack/react-query";
 import { Pencil } from "lucide-react";
 import { useState } from "react";
 import { formatManwon } from "@/lib/format";
-import { LOADING_TEXT } from "@/lib/messages";
 import { goalStatusOptions } from "@/lib/queries/goal";
 import { GOAL_TITLE_SUFFIX } from "../constants";
 import { formatDday } from "../lib/format";
 import { calculateGoalProgressPercent, calculateGoalTotalTargetManwon } from "../lib/progress";
+import { GoalDetailSkeleton } from "./goal-detail-skeleton";
 import { GoalEditSheet } from "./goal-edit-sheet";
 import { MonthlyGoalCard } from "./monthly-goal-card";
 import { SavingsInputSheet } from "./savings-input-sheet";
@@ -22,7 +22,7 @@ export function GoalDetail() {
   const [editOpen, setEditOpen] = useState(false);
 
   if (isPending) {
-    return <p className="px-5 pt-20 text-center text-body-b2-500 text-gray-400">{LOADING_TEXT}</p>;
+    return <GoalDetailSkeleton />;
   }
 
   // 재조회 실패로는 화면을 내리지 않는다 — react-query가 이전 데이터를 유지한 채 isError를 켠다.

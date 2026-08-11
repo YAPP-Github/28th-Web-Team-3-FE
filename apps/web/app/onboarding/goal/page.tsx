@@ -6,6 +6,7 @@ import GoalUpIcon from "@repo/ui/svg/goal-up.svg";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { OnboardingPageSkeleton } from "@/app/onboarding/_components/onboarding-page-skeleton";
 import { GoalPlanChart } from "@/app/onboarding/goal/_components/goal-plan-chart";
 import { formatManwon, formatNumber } from "@/lib/format";
 import { confirmOnboardingGoalOptions, onboardingGoalPlansOptions } from "@/lib/queries/onboarding";
@@ -54,11 +55,7 @@ export default function OnboardingGoalPage() {
   }
 
   if (!goalPlans || !selectedPlan) {
-    return (
-      <div className="flex min-h-dvh items-center justify-center text-body-b1-500 text-gray-500">
-        목표 플랜을 불러오는 중…
-      </div>
-    );
+    return <OnboardingPageSkeleton label="목표 플랜을 불러오는 중" />;
   }
 
   const plan = goalPlans.plans.find((item) => item.plan === selectedPlan);
@@ -153,8 +150,8 @@ export default function OnboardingGoalPage() {
 
       <div className="flex flex-col border-gray-400 border-t border-dashed px-5 pt-2 pb-6">
         <ButtonGroup
-          nextDisabled={isConfirming}
-          nextLabel={isConfirming ? "목표를 설정하고 있어요…" : "이 목표로 시작"}
+          nextLabel="이 목표로 시작"
+          nextPending={isConfirming}
           prevLabel="다시하기"
           onNext={async () => {
             setErrorMessage(undefined);

@@ -77,8 +77,8 @@ export default function InvestmentPeriodOnboardingPage() {
       ) : null}
       <div className="mt-auto pt-8 pb-6">
         <ButtonGroup
-          nextDisabled={periodMonths === "" || isSaving}
-          nextLabel={isSaving ? "저장 중…" : "다음"}
+          nextDisabled={periodMonths === ""}
+          nextPending={isSaving}
           onNext={async () => {
             if (periodMonths !== "" && (await trigger("goalPeriodMonths"))) {
               if (await saveProfile({ goalPeriodMonths: periodMonths })) {

@@ -13,6 +13,8 @@ type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {};
 export const DefaultDisabled: Story = { args: { disabled: true } };
+/** 눌러서 시작한 작업을 기다리는 중 — 문구는 그대로 두고 눌린 크기만 유지한다. */
+export const Pending: Story = { args: { pending: true, size: "cta", children: "다음" } };
 export const Secondary: Story = { args: { variant: "secondary" } };
 export const Destructive: Story = { args: { variant: "destructive" } };
 export const Outline: Story = { args: { variant: "outline" } };

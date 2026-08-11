@@ -3,7 +3,22 @@ import type * as React from "react";
 import { cn } from "../lib/utils";
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-colors disabled:pointer-events-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+  [
+    "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md font-medium text-sm",
+    "disabled:pointer-events-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+    // 눌린 느낌은 크기로만 준다. 문구를 "저장 중…"으로 바꾸면 버튼 폭이 흔들리고
+    // 스크린리더는 이름이 바뀐 것으로 읽는다 — 처리 중은 상태지 이름이 아니다.
+    //
+    // 전환 대상은 `transform`이 아니라 `scale`이다. Tailwind v4의 scale-* 유틸은
+    // `transform: scale()`이 아니라 독립 속성 `scale`을 낸다 — transform으로 적으면
+    // 목록에 없는 속성이라 전환이 통째로 안 걸리고 크기가 즉시 튄다.
+    "transition-[scale,background-color,color] duration-100 ease-out active:scale-[0.98]",
+    // 처리 중에는 눌린 크기를 유지한다. 손을 떼도 응답이 올 때까지 들어가 있다.
+    // 포인터도 막아 같은 요청이 두 번 나가지 않게 한다(키보드는 아래 onClick이 막는다).
+    "aria-busy:pointer-events-none aria-busy:scale-[0.98]",
+    // 움직임을 줄이기로 한 사용자에게는 크기 변화를 주지 않는다.
+    "motion-reduce:transition-none motion-reduce:active:scale-100 motion-reduce:aria-busy:scale-100",
+  ],
   {
     variants: {
       variant: {
@@ -42,13 +57,47 @@ const buttonVariants = cva(
 
 export interface ButtonProps
   extends React.ButtonHTMLAttributes<HTMLButtonElement>,
-    VariantProps<typeof buttonVariants> {}
+    VariantProps<typeof buttonVariants> {
+  /**
+   * 눌러서 시작한 작업이 끝나기를 기다리는 중.
+   *
+   * 문구는 그대로 두고 눌린 상태만 유지한다. 같은 요청이 두 번 나가지 않게 막되
+   * `disabled`는 쓰지 않는다 — disabled가 붙는 순간 브라우저가 초점을 body로 옮겨서
+   * 방금 누른 버튼의 `aria-busy`가 스크린리더에 전달될 길이 사라지고, variant의
+   * `disabled:` 회색조가 걸려 "처리 중"이 아니라 "지금 못 누름"으로 읽힌다.
+   */
+  pending?: boolean;
+}
 
 // `type`을 기본 "button"으로 둔다 — 폼 안에서 <button>의 기본값은 submit이라, 지정을
 // 빠뜨리면 아무 버튼이나 폼을 제출한다.
-export function Button({ className, variant, size, type = "button", ...props }: ButtonProps) {
+export function Button({
+  className,
+  variant,
+  size,
+  type = "button",
+  pending = false,
+  onClick,
+  ...props
+}: ButtonProps) {
   return (
-    <button className={cn(buttonVariants({ variant, size }), className)} type={type} {...props} />
+    <button
+      // pending이 제어하는 속성은 props 뒤에 둔다 — 앞에 두면 호출부가 넘긴 값이 덮어써서
+      // 클릭은 막히는데 보조 기술에는 처리 중이 아닌 버튼으로 노출된다.
+      {...props}
+      aria-busy={pending || undefined}
+      aria-disabled={pending || undefined}
+      className={cn(buttonVariants({ variant, size }), className)}
+      type={type}
+      onClick={(event) => {
+        // 포인터는 CSS가 막지만 키보드(Enter/Space)는 여기로 들어온다.
+        if (pending) {
+          event.preventDefault();
+          return;
+        }
+        onClick?.(event);
+      }}
+    />
   );
 }
 

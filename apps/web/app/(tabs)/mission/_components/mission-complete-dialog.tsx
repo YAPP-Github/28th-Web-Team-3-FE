@@ -47,7 +47,7 @@ export function MissionCompleteDialog({
         <Button
           className="h-[52px] text-body-b1-700"
           size="cta"
-          disabled={pending}
+          pending={pending}
           onClick={onConfirm}
         >
           완료

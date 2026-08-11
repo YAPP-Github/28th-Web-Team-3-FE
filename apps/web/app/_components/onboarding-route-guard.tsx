@@ -3,8 +3,8 @@
 import { useQuery } from "@tanstack/react-query";
 import { usePathname, useRouter } from "next/navigation";
 import { type ReactNode, useEffect } from "react";
-import { LOADING_TEXT } from "@/lib/messages";
 import { currentUserOptions } from "@/lib/queries/auth";
+import { RouteLoading } from "./route-loading";
 
 function isOnboardingPath(pathname: string | null): boolean {
   return pathname === "/onboarding" || pathname?.startsWith("/onboarding/") === true;
@@ -54,7 +54,7 @@ export function OnboardingRouteGuard({ children }: { children: ReactNode }) {
   if (publicRoute) return children;
 
   if (isPending || redirectPath) {
-    return <p className="px-5 pt-20 text-center text-body-b2-500 text-gray-400">{LOADING_TEXT}</p>;
+    return <RouteLoading />;
   }
 
   if (error) throw error;

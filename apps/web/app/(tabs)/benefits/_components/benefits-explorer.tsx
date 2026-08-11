@@ -6,7 +6,6 @@ import { toBenefitItem, toSavedBenefitItem } from "@/app/(tabs)/benefits/lib/ben
 import { getBenefitFilterCategory } from "@/app/(tabs)/benefits/lib/filter-benefits";
 import { getBenefitFilterHref } from "@/app/(tabs)/benefits/lib/filter-href";
 import type { BenefitFilter, BenefitItem } from "@/app/(tabs)/benefits/types";
-import { LOADING_TEXT } from "@/lib/messages";
 import { savedPoliciesOptions } from "@/lib/queries/bookmark";
 import { policiesOptions, togglePolicyBookmarkOptions } from "@/lib/queries/policy";
 import { BenefitCard } from "./benefit-card";
@@ -102,7 +101,7 @@ export function BenefitsExplorer({ initialFilter }: { initialFilter: BenefitFilt
           </p>
         ) : null}
         {isPending ? (
-          <p className="py-10 text-center text-body-b2-500 text-gray-400">{LOADING_TEXT}</p>
+          <p className="py-10 text-center text-body-b2-500 text-gray-400">불러오는 중…</p>
         ) : isError ? (
           // 칩을 눌러 실패했을 때 초점은 칩에 남는다 — alert로 알려야 화면 밖 사용자도 안다.
           <p role="alert" className="py-10 text-center text-body-b2-500 text-gray-500">

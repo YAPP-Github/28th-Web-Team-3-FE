@@ -3,7 +3,7 @@
 import type { Mission } from "@repo/schema/mission";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
-import { LOADING_TEXT } from "@/lib/messages";
+import { MissionListSkeleton } from "@/app/_components/mission-list-skeleton";
 import {
   completeMissionOptions,
   deleteRecommendedMissionOptions,
@@ -36,7 +36,7 @@ export default function MissionPage() {
   if (isPending) {
     return (
       <main className="flex flex-1 flex-col bg-gray-50">
-        <p className="px-5 pt-20 text-center text-body-b2-500 text-gray-400">{LOADING_TEXT}</p>
+        <MissionListSkeleton className="px-5 pt-20" count={4} label="미션을 불러오는 중" />
       </main>
     );
   }

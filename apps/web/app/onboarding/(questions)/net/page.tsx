@@ -101,8 +101,8 @@ export default function NetWorthOnboardingPage() {
       ) : null}
       <div className="pt-8 pb-6">
         <ButtonGroup
-          nextDisabled={(!hasAnswered && !hasStoredAnswer) || isSaving}
-          nextLabel={isSaving ? "저장 중…" : "다음"}
+          nextDisabled={!hasAnswered && !hasStoredAnswer}
+          nextPending={isSaving}
           onNext={navigateToInvestmentPeriodQuestion}
           onPrev={() => router.push("/onboarding/month")}
         />

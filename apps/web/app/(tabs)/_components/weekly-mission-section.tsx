@@ -6,6 +6,7 @@ import { Check, ChevronDown, ChevronRight, ChevronUp } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
+import { MissionListSkeleton } from "@/app/_components/mission-list-skeleton";
 import { HOME_MISSION_CATEGORIES, type HomeMissionCategory } from "@/app/(tabs)/constants/home";
 import { MissionCompleteDialog } from "@/app/(tabs)/mission/_components/mission-complete-dialog";
 import { MISSION_CATEGORY_LABELS } from "@/app/(tabs)/mission/constants/mission";
@@ -16,7 +17,6 @@ import {
 } from "@/app/(tabs)/mission/lib/format";
 import { calculateGoalTotalTargetManwon } from "@/app/goal/lib/progress";
 import { formatManwon } from "@/lib/format";
-import { LOADING_TEXT } from "@/lib/messages";
 import { goalStatusOptions } from "@/lib/queries/goal";
 import { completeMissionOptions, missionsOptions } from "@/lib/queries/mission";
 import { SectionHeader } from "./section-header";
@@ -32,7 +32,7 @@ export function WeeklyMissionSection() {
   const [completeError, setCompleteError] = useState<string>();
 
   if (isPending) {
-    return <p className="px-5 pt-8 text-center text-body-b2-500 text-gray-400">{LOADING_TEXT}</p>;
+    return <MissionListSkeleton className="px-5 pt-8" />;
   }
 
   // 재조회 실패로는 화면을 내리지 않는다 — react-query가 이전 데이터를 유지한 채 isError를 켠다.
