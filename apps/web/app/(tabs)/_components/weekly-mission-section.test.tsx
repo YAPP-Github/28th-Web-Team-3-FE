@@ -73,9 +73,10 @@ describe("WeeklyMissionSection", () => {
 
   it("조회한 미션을 그리고 카테고리로 필터링한다", async () => {
     mockData = MOCK_MISSIONS;
-    render(<WeeklyMissionSection />);
+    const { container } = render(<WeeklyMissionSection />);
 
     expect(await screen.findByText(/\d+% 달성/)).toBeInTheDocument();
+    expect(container.querySelector('[data-pigbox-progress="0"]')).toBeInTheDocument();
     expect(screen.getByText("이번 주 배달음식 2회 이하로 주문")).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("button", { name: "교통" }));
@@ -84,6 +85,23 @@ describe("WeeklyMissionSection", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "취미" }));
     expect(screen.getByText("취미 구독 점검하기")).toBeInTheDocument();
+  });
+
+  it("모든 미션을 완료하면 진행률과 게이지를 100%로 표시한다", async () => {
+    mockData = [
+      {
+        id: "completed-1",
+        source: "MANUAL",
+        category: "LIVING",
+        title: "사용하지 않는 구독 정리하기",
+        status: "COMPLETED",
+        weekEndsAt: "2099-01-01T00:00:00Z",
+      },
+    ];
+    const { container } = render(<WeeklyMissionSection />);
+
+    expect(await screen.findByText("100% 달성")).toBeInTheDocument();
+    expect(container.querySelector('[data-pigbox-progress="100"]')).toBeInTheDocument();
   });
 
   it("미션이 없으면 추가 CTA를 표시한다", async () => {

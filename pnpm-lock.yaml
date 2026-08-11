@@ -117,6 +117,9 @@ catalogs:
     lefthook:
       specifier: ^2.1.9
       version: 2.1.9
+    lottie-web:
+      specifier: ^5.13.0
+      version: 5.13.0
     lucide-react:
       specifier: ^1.21.0
       version: 1.21.0
@@ -272,7 +275,7 @@ importers:
         version: 57.0.6(expo@57.0.7)(react-native@0.86.0(@babel/core@7.29.7(supports-color@8.1.1))(@types/react@19.2.17)(react@19.2.3)(supports-color@8.1.1))(react@19.2.3)(typescript@6.0.3)
       expo-splash-screen:
         specifier: ~57.0.5
-        version: 57.0.5(expo@57.0.7)(typescript@6.0.3)
+        version: 57.0.5(expo@57.0.7)(supports-color@8.1.1)(typescript@6.0.3)
       expo-status-bar:
         specifier: ~57.0.1
         version: 57.0.1(expo@57.0.7)(react-native@0.86.0(@babel/core@7.29.7(supports-color@8.1.1))(@types/react@19.2.17)(react@19.2.3)(supports-color@8.1.1))(react@19.2.3)
@@ -340,6 +343,9 @@ importers:
       ky:
         specifier: 'catalog:'
         version: 2.0.2
+      lottie-web:
+        specifier: 'catalog:'
+        version: 5.13.0
       lucide-react:
         specifier: 'catalog:'
         version: 1.21.0(react@19.2.3)
@@ -5967,6 +5973,9 @@ packages:
     resolution: {integrity: sha512-lyuxPGr/Wfhrlem2CL/UcnUc1zcqKAImBDzukY7Y5F/yQiNdko6+fRLevlw1HgMySw7f611UIY408EtxRSoK3Q==}
     hasBin: true
 
+  lottie-web@5.13.0:
+    resolution: {integrity: sha512-+gfBXl6sxXMPe8tKQm7qzLnUy5DUPJPKIyRHwtpCpyUEYjHYRJC/5gjUvdkuO2c3JllrPtHXH5UJJK8LRYl5yQ==}
+
   loupe@3.2.1:
     resolution: {integrity: sha512-CdzqowRJCeLU72bHvWqwRBBlLcMEtIvGrlvef74kMnV2AolS9Y8xUv1I0U/MNAWMhBlKIoyuEgoJ0t/bbwHbLQ==}
 
@@ -9064,7 +9073,7 @@ snapshots:
       - supports-color
       - typescript
 
-  '@expo/config-plugins@57.0.6(typescript@6.0.3)':
+  '@expo/config-plugins@57.0.6(supports-color@8.1.1)(typescript@6.0.3)':
     dependencies:
       '@expo/config-types': 57.0.2
       '@expo/json-file': 11.0.1
@@ -12862,9 +12871,9 @@ snapshots:
       - supports-color
       - typescript
 
-  expo-splash-screen@57.0.5(expo@57.0.7)(typescript@6.0.3):
+  expo-splash-screen@57.0.5(expo@57.0.7)(supports-color@8.1.1)(typescript@6.0.3):
     dependencies:
-      '@expo/config-plugins': 57.0.6(typescript@6.0.3)
+      '@expo/config-plugins': 57.0.6(supports-color@8.1.1)(typescript@6.0.3)
       '@expo/image-utils': 0.11.4(typescript@6.0.3)
       expo: 57.0.7(@babel/core@7.29.7(supports-color@8.1.1))(@expo/dom-webview@57.0.1)(react-dom@19.2.7(react@19.2.3))(react-native-webview@13.16.1(react-native@0.86.0(@babel/core@7.29.7(supports-color@8.1.1))(@types/react@19.2.17)(react@19.2.3)(supports-color@8.1.1))(react@19.2.3))(react-native@0.86.0(@babel/core@7.29.7(supports-color@8.1.1))(@types/react@19.2.17)(react@19.2.3)(supports-color@8.1.1))(react@19.2.3)(supports-color@8.1.1)(typescript@6.0.3)
       xml2js: 0.6.0
@@ -13676,6 +13685,8 @@ snapshots:
   loose-envify@1.4.0:
     dependencies:
       js-tokens: 4.0.0
+
+  lottie-web@5.13.0: {}
 
   loupe@3.2.1: {}
 

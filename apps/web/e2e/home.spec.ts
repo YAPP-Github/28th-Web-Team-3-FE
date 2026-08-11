@@ -31,9 +31,52 @@ test("home page renders", async ({ page }) => {
     }),
   );
 
+  await page.route("**/api/missions", (route) =>
+    route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({
+        missions: [
+          {
+            id: "active-1",
+            source: "RECOMMENDED",
+            category: "MEAL",
+            title: "이번 주 배달음식 2회 이하로 주문",
+            targetCount: 2,
+            targetUnit: "TIMES_PER_WEEK",
+            estimatedSavingsWon: 5000,
+            savingsEstimateVersion: "V1",
+            savingsLabel: "약 5,000원 절약 예상",
+            status: "ACTIVE",
+            weekEndsAt: "2099-01-01T00:00:00Z",
+          },
+          {
+            id: "completed-1",
+            source: "MANUAL",
+            category: "LIVING",
+            title: "사용하지 않는 구독 정리하기",
+            status: "COMPLETED",
+            weekEndsAt: "2099-01-01T00:00:00Z",
+          },
+        ],
+      }),
+    }),
+  );
+
   await page.goto("/");
   await expect(page.getByRole("heading", { name: "홈" })).toBeVisible();
   await expect(page.getByRole("link", { name: /5,000만원 모으기/ })).toBeVisible();
+
+  const pigboxGauge = page.locator('[data-pigbox-progress="50"]');
+  await expect(pigboxGauge).toBeVisible();
+  await expect(pigboxGauge.locator("svg")).toHaveCount(3);
+  await expect
+    .poll(() =>
+      pigboxGauge.evaluate((element) =>
+        getComputedStyle(element).getPropertyValue("--pigbox-fill-top").trim(),
+      ),
+    )
+    .toBe("63.5%");
 });
 
 test("onboarding status redirects to the allowed route", async ({ page }) => {

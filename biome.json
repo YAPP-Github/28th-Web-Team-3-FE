@@ -18,6 +18,7 @@
       "!**/*.gen.ts",
       "!**/.agents",
       "!**/mockServiceWorker.js",
+      "!apps/web/public/lottie/**/*.json",
       "!packages/ui/tokens.json"
     ]
   }
