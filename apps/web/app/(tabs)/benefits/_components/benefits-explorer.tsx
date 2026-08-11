@@ -1,14 +1,14 @@
 "use client";
 
-import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
+import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useRef, useState } from "react";
-import { useToggleSavedBenefit } from "@/app/(tabs)/benefits/_hooks/use-toggle-saved-benefit";
+import { useSavedToggleQueue } from "@/app/(tabs)/benefits/_hooks/use-saved-toggle-queue";
 import { toBenefitItem, toSavedBenefitItem } from "@/app/(tabs)/benefits/lib/benefit-items";
 import { getBenefitFilterCategory } from "@/app/(tabs)/benefits/lib/filter-benefits";
 import { getBenefitFilterHref } from "@/app/(tabs)/benefits/lib/filter-href";
 import type { BenefitFilter, BenefitItem } from "@/app/(tabs)/benefits/types";
 import { savedPoliciesOptions } from "@/lib/queries/bookmark";
-import { policiesOptions } from "@/lib/queries/policy";
+import { policiesOptions, togglePolicyBookmarkOptions } from "@/lib/queries/policy";
 import { BenefitCard } from "./benefit-card";
 import { BenefitFilters } from "./benefit-filters";
 
@@ -20,7 +20,13 @@ import { BenefitFilters } from "./benefit-filters";
  */
 export function BenefitsExplorer({ initialFilter }: { initialFilter: BenefitFilter }) {
   const [filter, setFilter] = useState(initialFilter);
-  const { saveError, clearSaveError, toggleSaved } = useToggleSavedBenefit();
+  const queryClient = useQueryClient();
+  const toggleBookmark = useMutation(togglePolicyBookmarkOptions());
+  // 언제 보낼지와 그동안 화면을 어떻게 보일지는 큐가 맡는다 — mutation 자체는 여기서 만든다.
+  const { saveError, clearSaveError, toggleSaved } = useSavedToggleQueue(
+    queryClient,
+    toggleBookmark.mutate,
+  );
   const isSavedFilter = filter === "saved";
 
   const policies = useInfiniteQuery({

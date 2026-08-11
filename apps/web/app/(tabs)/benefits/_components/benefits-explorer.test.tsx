@@ -168,6 +168,47 @@ describe("BenefitsExplorer", () => {
     await waitFor(() => expect(star()).toHaveAttribute("aria-pressed", "false"));
   });
 
+  // 실패하면 되돌려만 놓고 멈춘다. 다시 누르면 그때는 나가야 한다.
+  it("실패한 뒤 다시 누르면 보낸다", async () => {
+    vi.mocked(bookmarkPolicy).mockRejectedValueOnce(new Error("network error"));
+    render(<BenefitsExplorer initialFilter="all" />);
+    await screen.findByText("혜택 1");
+
+    const star = () => screen.getByRole("button", { name: "혜택 1 저장" });
+    fireEvent.click(star());
+    await waitFor(() => expect(star()).toHaveAttribute("aria-pressed", "false"));
+
+    fireEvent.click(star());
+
+    await waitFor(() => expect(bookmarkPolicy).toHaveBeenCalledTimes(2));
+  });
+
+  /**
+   * 요청이 나가 있는 동안 또 누르면, 그 항목을 큐에서 지운 뒤에는 아직 확정되지 않은
+   * 낙관적 값을 서버값으로 삼게 된다. 그러면 보내야 할 것을 "이미 그 상태"로 보고 건너뛴다.
+   */
+  it("요청이 나가 있는 동안 눌린 것도 이어서 보낸다", async () => {
+    let finishBookmark: (() => void) | undefined;
+    vi.mocked(bookmarkPolicy).mockImplementation(
+      () =>
+        new Promise<void>((resolve) => {
+          finishBookmark = resolve;
+        }),
+    );
+    render(<BenefitsExplorer initialFilter="all" />);
+    await screen.findByText("혜택 1");
+
+    const star = () => screen.getByRole("button", { name: "혜택 1 저장" });
+    fireEvent.click(star()); // 저장 요청이 나간다
+    await waitFor(() => expect(bookmarkPolicy).toHaveBeenCalledTimes(1));
+
+    fireEvent.click(star()); // 응답 전에 취소로 바꾼다
+    await waitFor(() => expect(star()).toHaveAttribute("aria-pressed", "false"));
+    finishBookmark?.();
+
+    await waitFor(() => expect(unbookmarkPolicy).toHaveBeenCalledWith(1));
+  });
+
   it("저장에 실패하면 오류를 보여준다", async () => {
     vi.mocked(bookmarkPolicy).mockRejectedValue(new Error("network error"));
     render(<BenefitsExplorer initialFilter="all" />);
