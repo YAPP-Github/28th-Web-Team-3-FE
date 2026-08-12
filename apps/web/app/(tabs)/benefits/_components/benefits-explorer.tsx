@@ -25,6 +25,7 @@ import {
 } from "@/lib/queries/policy";
 import { BenefitCard } from "./benefit-card";
 import { BenefitFilters } from "./benefit-filters";
+import { BenefitListSkeleton } from "./benefit-list-skeleton";
 
 /**
  * 필터 칩 + 혜택 목록. 필터링·페이지네이션은 서버(`/api/policies`)가 하고, "저장" 칩만
@@ -124,7 +125,7 @@ export function BenefitsExplorer() {
           </p>
         ) : null}
         {isPending ? (
-          <p className="py-10 text-center text-body-b2-500 text-gray-400">불러오는 중…</p>
+          <BenefitListSkeleton />
         ) : isError ? (
           // 칩을 눌러 실패했을 때 초점은 칩에 남는다 — alert로 알려야 화면 밖 사용자도 안다.
           <p role="alert" className="py-10 text-center text-body-b2-500 text-gray-500">

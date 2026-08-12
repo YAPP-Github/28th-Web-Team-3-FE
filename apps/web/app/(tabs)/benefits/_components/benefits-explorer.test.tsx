@@ -111,6 +111,20 @@ describe("BenefitsExplorer", () => {
     );
   });
 
+  it("카테고리 전환을 기다리는 동안 텍스트 대신 카드 스켈레톤을 보여준다", async () => {
+    vi.mocked(fetchPolicies)
+      .mockResolvedValueOnce([policy(1)])
+      .mockImplementationOnce(() => new Promise(() => {}));
+    const { container } = render(<BenefitsExplorer />);
+    await screen.findByText("혜택 1");
+
+    fireEvent.click(screen.getByRole("link", { name: "주거" }));
+
+    expect(screen.queryByText("불러오는 중…")).not.toBeInTheDocument();
+    expect(screen.getByText("혜택 목록을 불러오는 중")).toHaveClass("sr-only");
+    expect(container.querySelectorAll('[data-slot="benefit-card-skeleton"]')).toHaveLength(3);
+  });
+
   it("저장 칩은 저장 목록 API를 쓴다", async () => {
     render(<BenefitsExplorer />);
     await screen.findByText("혜택 1");
