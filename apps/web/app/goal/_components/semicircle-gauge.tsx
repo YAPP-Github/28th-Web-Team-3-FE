@@ -14,49 +14,54 @@ const ARC_PATH = "M 16 120 A 104 104 0 0 1 224 120";
 export function SemicircleGauge({ percent, savedLabel, minLabel, maxLabel }: SemicircleGaugeProps) {
   return (
     <div className="flex flex-col items-center">
-      <div className="relative w-full">
-        <svg
-          aria-hidden="true"
-          className="w-full"
-          fill="none"
-          viewBox="0 0 240 128"
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          <path
-            d={ARC_PATH}
-            stroke="var(--color-gray-200)"
-            strokeLinecap="round"
-            strokeWidth={16}
-          />
-          {/* percent 0이면 그리지 않는다 — 길이 0 대시 + round 캡이 시작점에 점으로 남는다. */}
-          {percent > 0 && (
+      {/* 피그마 목표 상세(node 2215:20074)는 호를 카드 폭 그대로 채우지 않는다 — 호(260)가
+          콘텐츠 폭(335)의 78%만 차지하고 양옆에 여백을 둔다. w-full로 꽉 채우면 실제보다
+          굵고 넓어 보인다. */}
+      <div className="w-full max-w-[78%]">
+        <div className="relative w-full">
+          <svg
+            aria-hidden="true"
+            className="w-full"
+            fill="none"
+            viewBox="0 0 240 128"
+            xmlns="http://www.w3.org/2000/svg"
+          >
             <path
               d={ARC_PATH}
-              pathLength={100}
-              stroke="var(--color-blue-500)"
-              strokeDasharray={`${percent} 100`}
+              stroke="var(--color-gray-200)"
               strokeLinecap="round"
               strokeWidth={16}
             />
-          )}
-        </svg>
+            {/* percent 0이면 그리지 않는다 — 길이 0 대시 + round 캡이 시작점에 점으로 남는다. */}
+            {percent > 0 && (
+              <path
+                d={ARC_PATH}
+                pathLength={100}
+                stroke="var(--color-blue-500)"
+                strokeDasharray={`${percent} 100`}
+                strokeLinecap="round"
+                strokeWidth={16}
+              />
+            )}
+          </svg>
 
-        <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 pt-6">
-          <div className="flex flex-col items-center gap-1">
-            <p className="text-body-b2-500 text-gray-900">현재 저축액</p>
-            <p className="font-bold text-[32px] text-blue-500 leading-[38px] tracking-[-0.2px]">
-              {savedLabel}
-            </p>
+          <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 pt-6">
+            <div className="flex flex-col items-center gap-1">
+              <p className="text-body-b2-500 text-gray-900">현재 저축액</p>
+              <p className="font-bold text-[32px] text-blue-500 leading-[38px] tracking-[-0.2px]">
+                {savedLabel}
+              </p>
+            </div>
+            <span className="rounded-full bg-blue-100 px-2.5 py-1 text-body-b2-700 text-blue-600">
+              {percent}%
+            </span>
           </div>
-          <span className="rounded-full bg-blue-100 px-2.5 py-1 text-body-b2-700 text-blue-600">
-            {percent}%
-          </span>
         </div>
-      </div>
 
-      <div className="mt-2 flex w-full justify-between px-4 text-caption-c1-500 text-gray-400">
-        <span>{minLabel}</span>
-        <span>{maxLabel}</span>
+        <div className="mt-2 flex w-full justify-between px-4 text-caption-c1-500 text-gray-400">
+          <span>{minLabel}</span>
+          <span>{maxLabel}</span>
+        </div>
       </div>
     </div>
   );

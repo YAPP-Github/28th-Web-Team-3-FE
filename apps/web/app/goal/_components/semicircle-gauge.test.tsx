@@ -26,4 +26,13 @@ describe("SemicircleGauge", () => {
     expect(getByText("39%")).toBeInTheDocument();
     expect(getByText("5,000만원")).toBeInTheDocument();
   });
+
+  // 피그마(node 2215:20074)에서 호는 카드 폭을 꽉 채우지 않고 78%만 차지한다 —
+  // w-full로 되돌아가면 실제보다 굵고 넓게 그려진다.
+  it("호를 카드 폭 그대로 채우지 않는다", () => {
+    const { container } = render(
+      <SemicircleGauge maxLabel="5,000만원" minLabel="0" percent={39} savedLabel="1,950만원" />,
+    );
+    expect(container.querySelector(".max-w-\\[78\\%\\]")).toBeInTheDocument();
+  });
 });
