@@ -1,8 +1,8 @@
 "use client";
 
 import Bill from "@repo/ui/svg/bill.svg";
+import Pencil from "@repo/ui/svg/pencil.svg";
 import { useQuery } from "@tanstack/react-query";
-import { Pencil } from "lucide-react";
 import { useState } from "react";
 import { formatManwon } from "@/lib/format";
 import { goalStatusOptions } from "@/lib/queries/goal";
@@ -56,7 +56,7 @@ export function GoalDetail() {
           className="flex shrink-0 items-center gap-0.5 text-body-b2-500 text-gray-900"
         >
           수정
-          <Pencil aria-hidden="true" className="size-5" strokeWidth={1.6} />
+          <Pencil aria-hidden="true" className="size-5" />
         </button>
       </div>
 
