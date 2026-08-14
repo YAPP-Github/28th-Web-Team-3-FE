@@ -11,6 +11,12 @@ const MOCK_GOAL: GoalStatus = {
   usageMonths: 8,
   deadlineDDay: 486,
   thisMonth: { targetManwon: 82, savedManwon: 67, progressPercent: 82, dDay: 12 },
+  monthlySavings: [
+    { yearMonth: "2026-05", savedManwon: 71, current: false },
+    { yearMonth: "2026-06", savedManwon: 80, current: false },
+    { yearMonth: "2026-07", savedManwon: 0, current: false },
+    { yearMonth: "2026-08", savedManwon: 67, current: true },
+  ],
 };
 
 vi.mock("@/api/goal", () => ({
@@ -46,6 +52,17 @@ describe("GoalDetail", () => {
     expect(screen.getByText("39%")).toBeInTheDocument();
     expect(screen.getByText("8개월째")).toBeInTheDocument();
     expect(screen.getByText("D-486")).toBeInTheDocument();
+  });
+
+  it("월별 저축 현황과 이번 달 목표·달성 금액을 렌더한다", async () => {
+    render(<GoalDetail />);
+
+    expect(await screen.findByRole("heading", { name: "월별 저축 현황" })).toBeInTheDocument();
+    expect(screen.getByText("5월")).toBeInTheDocument();
+    expect(screen.getByText("이번 달")).toBeInTheDocument();
+    expect(screen.getByText("목표: 82만원")).toBeInTheDocument();
+    expect(screen.getByText("달성: 67만원")).toBeInTheDocument();
+    expect(screen.getByRole("list", { name: "월별 저축 현황" })).toBeInTheDocument();
   });
 
   it("서버 달성률이 100이어도 전체 목표금액 기준으로 달성률을 다시 계산한다", async () => {
@@ -150,6 +167,45 @@ describe("GoalDetail", () => {
     fireEvent.click(screen.getByRole("button", { name: "완료" }));
 
     expect(await screen.findByText(SAVE_FAILED_TEXT)).toBeInTheDocument();
+  });
+
+  /**
+   * 저장은 서버에 반영됐는데 갱신 조회만 실패한 경우. 저장 실패로 말하면 사용자는 같은 값을
+   * 다시 저장하며 빠져나오지 못한다 — 시트는 닫고, 지금 값이 최신이 아닐 수 있다는 사실만
+   * 알린 뒤 다시 불러올 방법을 준다.
+   */
+  it("저장 뒤 재조회만 실패하면 저장 실패로 말하지 않고 갱신 실패를 안내한다", async () => {
+    vi.mocked(fetchGoalStatus)
+      .mockResolvedValueOnce(MOCK_GOAL)
+      .mockRejectedValue(new Error("goal refresh failed"));
+    render(<GoalDetail />);
+
+    await screen.findByText("5,000만원 모으기");
+    fireEvent.click(screen.getByRole("button", { name: "현재 저축액 입력" }));
+    fireEvent.click(screen.getByRole("button", { name: "완료" }));
+
+    expect(
+      await screen.findByText("최신 정보를 불러오지 못했어요. 아래는 마지막으로 불러온 값이에요."),
+    ).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "다시 불러오기" })).toBeInTheDocument();
+    expect(screen.queryByText(SAVE_FAILED_TEXT)).not.toBeInTheDocument();
+  });
+
+  it("갱신 실패 뒤 다시 불러오기를 누르면 재조회한다", async () => {
+    vi.mocked(fetchGoalStatus)
+      .mockResolvedValueOnce(MOCK_GOAL)
+      .mockRejectedValueOnce(new Error("goal refresh failed"))
+      .mockResolvedValue(MOCK_GOAL);
+    render(<GoalDetail />);
+
+    await screen.findByText("5,000만원 모으기");
+    fireEvent.click(screen.getByRole("button", { name: "현재 저축액 입력" }));
+    fireEvent.click(screen.getByRole("button", { name: "완료" }));
+
+    const retry = await screen.findByRole("button", { name: "다시 불러오기" });
+    fireEvent.click(retry);
+
+    await waitFor(() => expect(screen.queryByRole("button", { name: "다시 불러오기" })).toBeNull());
   });
 
   it("현재저축액 입력은 목표금액을 수정하지 않는다", async () => {

@@ -45,10 +45,10 @@ export function SemicircleGauge({ percent, savedLabel, minLabel, maxLabel }: Sem
             )}
           </svg>
 
-          <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 pt-6">
+          <div className="absolute top-[44%] left-1/2 flex -translate-x-1/2 flex-col items-center gap-3">
             <div className="flex flex-col items-center gap-1">
               <p className="text-body-b2-500 text-gray-900">현재 저축액</p>
-              <p className="font-bold text-[32px] text-blue-500 leading-[38px] tracking-[-0.2px]">
+              <p className="whitespace-nowrap font-bold text-[32px] text-blue-500 leading-[38px] tracking-[-0.2px]">
                 {savedLabel}
               </p>
             </div>
@@ -58,7 +58,7 @@ export function SemicircleGauge({ percent, savedLabel, minLabel, maxLabel }: Sem
           </div>
         </div>
 
-        <div className="mt-2 flex w-full justify-between px-4 text-caption-c1-500 text-gray-400">
+        <div className="mt-1.5 flex w-full justify-between px-1.5 text-caption-c1-500 text-gray-400">
           <span>{minLabel}</span>
           <span>{maxLabel}</span>
         </div>

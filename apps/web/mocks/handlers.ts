@@ -16,6 +16,14 @@ const goal: GoalStatus = {
     progressPercent: 82,
     dDay: 12,
   },
+  monthlySavings: [
+    { yearMonth: "2026-03", savedManwon: 0, current: false },
+    { yearMonth: "2026-04", savedManwon: 0, current: false },
+    { yearMonth: "2026-05", savedManwon: 71, current: false },
+    { yearMonth: "2026-06", savedManwon: 80, current: false },
+    { yearMonth: "2026-07", savedManwon: 0, current: false },
+    { yearMonth: "2026-08", savedManwon: 67, current: true },
+  ],
 };
 
 function recalcPercent() {
@@ -29,12 +37,14 @@ function recalcPercent() {
 // 미션(목록/complete/생성)은 실서버로 연동됐으므로 목을 두지 않는다 — 목이 있으면
 // bypass되지 않고 정적 응답으로 가로채져 실제 데이터가 화면에 안 뜬다.
 export const handlers: RequestHandler[] = [
-  http.get("*/api/goal", () => HttpResponse.json(goal)),
+  http.get("*/api/v2/goal", () => HttpResponse.json(goal)),
 
   http.put("*/api/goal/savings", async ({ request }) => {
     const { savedAmountManwon } = (await request.json()) as SavingRequest;
     goal.totalSavedManwon = goal.totalSavedManwon - goal.thisMonth.savedManwon + savedAmountManwon;
     goal.thisMonth.savedManwon = savedAmountManwon;
+    const currentMonth = goal.monthlySavings.find(({ current }) => current);
+    if (currentMonth) currentMonth.savedManwon = savedAmountManwon;
     goal.thisMonth.progressPercent =
       goal.thisMonth.targetManwon > 0
         ? Math.min(100, Math.round((savedAmountManwon / goal.thisMonth.targetManwon) * 100))

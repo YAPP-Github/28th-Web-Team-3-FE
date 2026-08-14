@@ -8,4 +8,8 @@ export const MOCK_GOAL_STATUS: GoalStatus = {
   usageMonths: 8,
   deadlineDDay: 486,
   thisMonth: { targetManwon: 82, savedManwon: 67, progressPercent: 82, dDay: 12 },
+  monthlySavings: [
+    { yearMonth: "2026-07", savedManwon: 80, current: false },
+    { yearMonth: "2026-08", savedManwon: 67, current: true },
+  ],
 };

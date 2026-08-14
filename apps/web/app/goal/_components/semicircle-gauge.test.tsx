@@ -35,4 +35,14 @@ describe("SemicircleGauge", () => {
     );
     expect(container.querySelector(".max-w-\\[78\\%\\]")).toBeInTheDocument();
   });
+
+  it("중앙 수치와 양끝 라벨을 피그마 간격에 맞춘다", () => {
+    const { container, getByText } = render(
+      <SemicircleGauge maxLabel="5,000만원" minLabel="0" percent={39} savedLabel="1,950만원" />,
+    );
+
+    expect(container.querySelector(".top-\\[44\\%\\]")).toBeInTheDocument();
+    expect(container.querySelector(".mt-1\\.5.px-1\\.5")).toBeInTheDocument();
+    expect(getByText("1,950만원")).toHaveClass("whitespace-nowrap");
+  });
 });

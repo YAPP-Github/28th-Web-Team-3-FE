@@ -38,16 +38,28 @@ export function GoalDetailSkeleton() {
         </section>
 
         {/* 이번 달 목표 현황 카드 */}
-        <section className="flex flex-col gap-4 rounded-2xl bg-gray-50 p-4">
+        <section className="flex flex-col rounded-2xl bg-gray-50 p-4">
           <div className="flex items-start justify-between">
             <Skeleton className="h-6 w-28 bg-gray-100" />
             <Skeleton className="h-7 w-12 bg-gray-100" />
           </div>
-          <Skeleton className="h-9 w-36 bg-gray-100" />
-          <Skeleton className="h-4 w-full rounded-full bg-gray-100" />
-          <Skeleton className="h-[42px] w-full rounded-md bg-gray-100" />
+          <Skeleton className="mt-3 h-9 w-36 bg-gray-100" />
+          <Skeleton className="mt-3 h-4 w-full rounded-full bg-gray-100" />
+          <Skeleton className="mt-4 h-[42px] w-full rounded-md bg-gray-100" />
         </section>
       </div>
+
+      <section className="px-5 pt-8">
+        <Skeleton className="h-7 w-32" />
+        <div className="mt-0.5 flex h-[217px] items-end gap-[18px] overflow-hidden pt-[59px]">
+          {Array.from({ length: 7 }, (_, index) => (
+            <div className="flex w-9 shrink-0 flex-col items-center gap-1.5" key={index}>
+              <Skeleton className="h-[134px] w-9 rounded-xl" />
+              <Skeleton className="h-[18px] w-7" />
+            </div>
+          ))}
+        </div>
+      </section>
     </LoadingRegion>
   );
 }

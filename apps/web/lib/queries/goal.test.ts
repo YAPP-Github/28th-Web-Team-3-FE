@@ -30,6 +30,10 @@ const STALE_GOAL: GoalStatus = {
     progressPercent: 53,
     dDay: 12,
   },
+  monthlySavings: [
+    { yearMonth: "2026-07", savedManwon: 80, current: false },
+    { yearMonth: "2026-08", savedManwon: 100, current: true },
+  ],
 };
 
 const UPDATED_GOAL: GoalStatus = {
@@ -69,9 +73,12 @@ describe("updateSavingsOptions", () => {
   beforeEach(() => vi.clearAllMocks());
 
   it("저축액 입력 응답으로 목표 현황 캐시를 갱신한다", async () => {
-    vi.mocked(updateSavings).mockResolvedValue(UPDATED_SAVINGS);
+    vi.mocked(updateSavings).mockResolvedValue(STALE_GOAL);
+    vi.mocked(fetchGoalStatus)
+      .mockResolvedValueOnce(STALE_GOAL)
+      .mockResolvedValueOnce(UPDATED_SAVINGS);
     const queryClient = createTestQueryClient();
-    queryClient.setQueryData(goalStatusOptions().queryKey, STALE_GOAL);
+    await queryClient.fetchQuery(goalStatusOptions());
 
     const { result } = renderHook(() => useMutation(updateSavingsOptions(queryClient)), {
       queryClient,
@@ -82,20 +89,52 @@ describe("updateSavingsOptions", () => {
     });
 
     expect(queryClient.getQueryData(goalStatusOptions().queryKey)).toEqual(UPDATED_SAVINGS);
+    expect(fetchGoalStatus).toHaveBeenCalledTimes(2);
+  });
+
+  /**
+   * 저장은 이미 서버에 반영됐다. 여기서 mutation을 실패로 만들면 호출부가 "저장하지
+   * 못했어요"를 띄우고, 사용자는 같은 값을 다시 저장하며 빠져나오지 못한다.
+   * 재조회 실패는 조회 쪽 오류로만 남는다.
+   */
+  it("저축액 입력 뒤 Goal v2 재조회가 실패해도 mutation은 성공한다", async () => {
+    const error = new Error("goal refresh failed");
+    vi.mocked(updateSavings).mockResolvedValue(STALE_GOAL);
+    vi.mocked(fetchGoalStatus).mockResolvedValueOnce(STALE_GOAL).mockRejectedValueOnce(error);
+    const queryClient = createTestQueryClient();
+    await queryClient.fetchQuery(goalStatusOptions());
+
+    const { result } = renderHook(() => useMutation(updateSavingsOptions(queryClient)), {
+      queryClient,
+    });
+
+    await expect(
+      act(() => result.current.mutateAsync({ savedAmountManwon: 133 })),
+    ).resolves.toBeDefined();
+    // 재조회는 시도했고(2회) 실패했을 뿐이다. 그 실패가 화면에 어떻게 보이는지는
+    // GoalDetail 테스트에서 확인한다.
+    expect(fetchGoalStatus).toHaveBeenCalledTimes(2);
   });
 });
 
 describe("updateGoalOptions", () => {
   beforeEach(() => vi.clearAllMocks());
 
-  it("진행 중이던 조회가 늦게 끝나도 수정 응답 캐시를 유지한다", async () => {
+  it("진행 중이던 조회가 늦게 끝나도 수정 뒤 재조회한 Goal v2를 유지한다", async () => {
     let resolveStaleGoal: (goal: GoalStatus) => void = () => {};
-    vi.mocked(fetchGoalStatus).mockReturnValue(
-      new Promise((resolve) => {
-        resolveStaleGoal = resolve;
-      }),
-    );
-    vi.mocked(updateGoal).mockResolvedValue(UPDATED_GOAL);
+    let resolveFreshGoal: (goal: GoalStatus) => void = () => {};
+    vi.mocked(fetchGoalStatus)
+      .mockReturnValueOnce(
+        new Promise((resolve) => {
+          resolveStaleGoal = resolve;
+        }),
+      )
+      .mockReturnValueOnce(
+        new Promise((resolve) => {
+          resolveFreshGoal = resolve;
+        }),
+      );
+    vi.mocked(updateGoal).mockResolvedValue(STALE_GOAL);
     const queryClient = createTestQueryClient();
 
     const { result } = renderHook(
@@ -107,18 +146,59 @@ describe("updateGoalOptions", () => {
     );
     await waitFor(() => expect(fetchGoalStatus).toHaveBeenCalledOnce());
 
-    await act(async () => {
-      await result.current.updateGoal.mutateAsync({
+    let mutation: Promise<unknown> = Promise.resolve();
+    act(() => {
+      mutation = result.current.updateGoal.mutateAsync({
         targetAmountManwon: 6000,
         periodMonths: 24,
       });
     });
+    await waitFor(() => expect(fetchGoalStatus).toHaveBeenCalledTimes(2));
 
-    expect(queryClient.getQueryData(goalStatusOptions().queryKey)).toEqual(UPDATED_GOAL);
+    resolveFreshGoal(UPDATED_GOAL);
+    await act(async () => mutation);
 
     resolveStaleGoal(STALE_GOAL);
     await new Promise((resolve) => setTimeout(resolve, 0));
 
     expect(queryClient.getQueryData(goalStatusOptions().queryKey)).toEqual(UPDATED_GOAL);
+  });
+
+  it("목표 수정 뒤 Goal v2를 다시 조회해 월별 현황을 갱신한다", async () => {
+    vi.mocked(updateGoal).mockResolvedValue(STALE_GOAL);
+    vi.mocked(fetchGoalStatus)
+      .mockResolvedValueOnce(STALE_GOAL)
+      .mockResolvedValueOnce(UPDATED_GOAL);
+    const queryClient = createTestQueryClient();
+    await queryClient.fetchQuery(goalStatusOptions());
+
+    const { result } = renderHook(() => useMutation(updateGoalOptions(queryClient)), {
+      queryClient,
+    });
+
+    await act(async () => {
+      await result.current.mutateAsync({ targetAmountManwon: 6000, periodMonths: 24 });
+    });
+
+    expect(fetchGoalStatus).toHaveBeenCalledTimes(2);
+    expect(queryClient.getQueryData(goalStatusOptions().queryKey)).toEqual(UPDATED_GOAL);
+  });
+
+  /** 저축액 입력과 같은 이유 — 수정은 반영됐으므로 저장 실패로 되돌리지 않는다. */
+  it("목표 수정 뒤 Goal v2 재조회가 실패해도 mutation은 성공한다", async () => {
+    const error = new Error("goal refresh failed");
+    vi.mocked(updateGoal).mockResolvedValue(STALE_GOAL);
+    vi.mocked(fetchGoalStatus).mockResolvedValueOnce(STALE_GOAL).mockRejectedValueOnce(error);
+    const queryClient = createTestQueryClient();
+    await queryClient.fetchQuery(goalStatusOptions());
+
+    const { result } = renderHook(() => useMutation(updateGoalOptions(queryClient)), {
+      queryClient,
+    });
+
+    await expect(
+      act(() => result.current.mutateAsync({ targetAmountManwon: 6000, periodMonths: 24 })),
+    ).resolves.toBeDefined();
+    expect(fetchGoalStatus).toHaveBeenCalledTimes(2);
   });
 });

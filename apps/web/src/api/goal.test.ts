@@ -5,7 +5,7 @@ vi.mock("@/api/client", () => ({
 }));
 
 import { http } from "@/api/client";
-import { updateGoal, updateSavings } from "./goal";
+import { fetchGoalStatus, updateGoal, updateSavings } from "./goal";
 
 const UPDATED_GOAL = {
   targetAmountManwon: 6000,
@@ -24,6 +24,17 @@ const UPDATED_GOAL = {
 
 describe("goal API", () => {
   beforeEach(() => vi.clearAllMocks());
+
+  it("월별 저축 현황이 포함된 Goal v2를 조회한다", async () => {
+    vi.mocked(http.get).mockReturnValue(Promise.resolve(UPDATED_GOAL) as never);
+
+    await fetchGoalStatus();
+
+    expect(http.get).toHaveBeenCalledWith(
+      "v2/goal",
+      expect.objectContaining({ response: expect.anything() }),
+    );
+  });
 
   it("목표 수정 요청과 응답 계약을 함께 검증한다", async () => {
     vi.mocked(http.patch).mockReturnValue(Promise.resolve(UPDATED_GOAL) as never);

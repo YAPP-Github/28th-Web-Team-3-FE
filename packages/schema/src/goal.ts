@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 /**
- * 목표(모으기) API 계약 — 백엔드 OpenAPI(`/api/goal`) 기준.
+ * 목표(모으기) API 계약 — 백엔드 OpenAPI(`/api/v2/goal`) 기준.
  * 금액 단위는 모두 "만원"(정수)이다.
  */
 
@@ -13,8 +13,8 @@ export const thisMonthSchema = z.object({
   dDay: z.number().int(),
 });
 
-/** GET /api/goal 응답. */
-export const goalStatusSchema = z.object({
+/** PUT /api/goal/savings·PATCH /api/goal 공통 응답. 조회 응답은 `goalStatusSchema`다. */
+export const goalSummarySchema = z.object({
   targetAmountManwon: z.number().int(),
   periodMonths: z.number().int(),
   totalSavedManwon: z.number().int(),
@@ -24,7 +24,21 @@ export const goalStatusSchema = z.object({
   thisMonth: thisMonthSchema,
 });
 
+/** 월별 저축 현황. */
+export const monthlySavingSchema = z.object({
+  yearMonth: z.string().regex(/^\d{4}-(0[1-9]|1[0-2])$/),
+  savedManwon: z.number().int(),
+  current: z.boolean(),
+});
+
+/** GET /api/v2/goal 응답. */
+export const goalStatusSchema = goalSummarySchema.extend({
+  monthlySavings: z.array(monthlySavingSchema),
+});
+
 export type ThisMonth = z.infer<typeof thisMonthSchema>;
+export type MonthlySaving = z.infer<typeof monthlySavingSchema>;
+export type GoalSummary = z.infer<typeof goalSummarySchema>;
 export type GoalStatus = z.infer<typeof goalStatusSchema>;
 
 /** 요청 값 허용 범위 — 백엔드 검증과 동일하게 맞춘다(초과하면 400). */
