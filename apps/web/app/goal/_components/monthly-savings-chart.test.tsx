@@ -51,4 +51,21 @@ describe("MonthlySavingsChart", () => {
 
     expect(scrollTo).toHaveBeenCalledTimes(2);
   });
+
+  /**
+   * 툴팁(82px)은 막대(36px)보다 넓어 양옆으로 23px씩 삐져나온다. 목록 양 끝에 그만큼
+   * 여백이 없으면 툴팁이 스크롤 영역 밖으로 나가 잘린다. 이번 달에 목표를 시작하면
+   * 목록이 한 달치뿐이라 그 한 항목이 첫 항목이자 마지막 항목이 된다.
+   */
+  it("이번 달이 유일한 항목이어도 툴팁 여백을 남긴다", () => {
+    const { container } = render(
+      <MonthlySavingsChart
+        monthlySavings={[{ yearMonth: "2026-08", savedManwon: 67, current: true }]}
+        targetManwon={82}
+      />,
+    );
+
+    expect(container.querySelector("ol")).toHaveClass("px-[23px]");
+    expect(screen.getByText("목표: 82만원")).toBeInTheDocument();
+  });
 });

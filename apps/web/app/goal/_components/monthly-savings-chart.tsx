@@ -58,7 +58,11 @@ export function MonthlySavingsChart({ monthlySavings, targetManwon }: MonthlySav
         // biome-ignore lint/a11y/noNoninteractiveTabindex: 가로 스크롤 영역을 키보드로 조작할 수 있어야 한다.
         tabIndex={0}
       >
-        <ol aria-label="월별 저축 현황" className="flex min-w-max gap-[18px] pt-[59px] pr-[23px]">
+        {/* 좌우 여백 23px = TOOLTIP_OVERHANG. 툴팁(82px)이 막대(36px)보다 넓어 양옆으로
+            그만큼 삐져나온다. 목록 양 끝에 여백이 없으면 이번 달이 첫 항목이거나 마지막
+            항목일 때 툴팁이 스크롤 영역 밖으로 나가 잘린다 — 첫 항목인 경우는 이번 달에
+            목표를 시작한 사용자에게 나온다(목록이 한 달치뿐). */}
+        <ol aria-label="월별 저축 현황" className="flex min-w-max gap-[18px] px-[23px] pt-[59px]">
           {monthlySavings.map((saving) => {
             const label = formatMonth(saving);
             const height = calculateBarHeight(saving.savedManwon, maxManwon);

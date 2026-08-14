@@ -92,7 +92,12 @@ describe("updateSavingsOptions", () => {
     expect(fetchGoalStatus).toHaveBeenCalledTimes(2);
   });
 
-  it("저축액 입력 뒤 Goal v2 재조회가 실패하면 mutation도 실패한다", async () => {
+  /**
+   * 저장은 이미 서버에 반영됐다. 여기서 mutation을 실패로 만들면 호출부가 "저장하지
+   * 못했어요"를 띄우고, 사용자는 같은 값을 다시 저장하며 빠져나오지 못한다.
+   * 재조회 실패는 조회 쪽 오류로만 남는다.
+   */
+  it("저축액 입력 뒤 Goal v2 재조회가 실패해도 mutation은 성공한다", async () => {
     const error = new Error("goal refresh failed");
     vi.mocked(updateSavings).mockResolvedValue(STALE_GOAL);
     vi.mocked(fetchGoalStatus).mockResolvedValueOnce(STALE_GOAL).mockRejectedValueOnce(error);
@@ -103,9 +108,12 @@ describe("updateSavingsOptions", () => {
       queryClient,
     });
 
-    await expect(act(() => result.current.mutateAsync({ savedAmountManwon: 133 }))).rejects.toBe(
-      error,
-    );
+    await expect(
+      act(() => result.current.mutateAsync({ savedAmountManwon: 133 })),
+    ).resolves.toBeDefined();
+    // 재조회는 시도했고(2회) 실패했을 뿐이다. 그 실패가 화면에 어떻게 보이는지는
+    // GoalDetail 테스트에서 확인한다.
+    expect(fetchGoalStatus).toHaveBeenCalledTimes(2);
   });
 });
 
@@ -176,7 +184,8 @@ describe("updateGoalOptions", () => {
     expect(queryClient.getQueryData(goalStatusOptions().queryKey)).toEqual(UPDATED_GOAL);
   });
 
-  it("목표 수정 뒤 Goal v2 재조회가 실패하면 mutation도 실패한다", async () => {
+  /** 저축액 입력과 같은 이유 — 수정은 반영됐으므로 저장 실패로 되돌리지 않는다. */
+  it("목표 수정 뒤 Goal v2 재조회가 실패해도 mutation은 성공한다", async () => {
     const error = new Error("goal refresh failed");
     vi.mocked(updateGoal).mockResolvedValue(STALE_GOAL);
     vi.mocked(fetchGoalStatus).mockResolvedValueOnce(STALE_GOAL).mockRejectedValueOnce(error);
@@ -189,6 +198,7 @@ describe("updateGoalOptions", () => {
 
     await expect(
       act(() => result.current.mutateAsync({ targetAmountManwon: 6000, periodMonths: 24 })),
-    ).rejects.toBe(error);
+    ).resolves.toBeDefined();
+    expect(fetchGoalStatus).toHaveBeenCalledTimes(2);
   });
 });

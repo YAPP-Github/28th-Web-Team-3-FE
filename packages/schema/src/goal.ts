@@ -13,7 +13,7 @@ export const thisMonthSchema = z.object({
   dDay: z.number().int(),
 });
 
-/** GET /api/goal·PUT /api/goal/savings·PATCH /api/goal 공통 응답. */
+/** PUT /api/goal/savings·PATCH /api/goal 공통 응답. 조회 응답은 `goalStatusSchema`다. */
 export const goalSummarySchema = z.object({
   targetAmountManwon: z.number().int(),
   periodMonths: z.number().int(),

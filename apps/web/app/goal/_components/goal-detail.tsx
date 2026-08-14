@@ -18,7 +18,7 @@ import { SemicircleGauge } from "./semicircle-gauge";
 
 /** 목표 상세 본문 — 목표 현황을 조회해 게이지·카드로 그리고, 저축 입력/수정 시트를 연다. */
 export function GoalDetail() {
-  const { data: goal, isPending, isError } = useQuery(goalStatusOptions());
+  const { data: goal, isPending, isError, isFetching, refetch } = useQuery(goalStatusOptions());
   const [savingsOpen, setSavingsOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
 
@@ -44,6 +44,28 @@ export function GoalDetail() {
 
   return (
     <>
+      {/* 이전 데이터가 남아 있는 재조회 실패. 저장 자체는 성공했을 수 있으므로(저장 뒤 갱신만
+          실패한 경우) 저장 실패로 말하지 않는다 — 지금 보이는 값이 최신이 아닐 수 있다는
+          사실만 알리고 다시 불러올 방법을 준다. */}
+      {isError ? (
+        <div
+          aria-live="polite"
+          className="mx-5 mt-4 flex items-center justify-between gap-3 rounded-lg bg-gray-50 px-4 py-3"
+        >
+          <p className="text-body-b2-500 text-gray-700">
+            최신 정보를 불러오지 못했어요. 아래는 마지막으로 불러온 값이에요.
+          </p>
+          <button
+            className="shrink-0 text-body-b2-700 text-blue-500 underline disabled:text-gray-400"
+            disabled={isFetching}
+            onClick={() => refetch()}
+            type="button"
+          >
+            다시 불러오기
+          </button>
+        </div>
+      ) : null}
+
       <div className="flex items-center justify-between px-5 pt-4">
         <span className="flex items-center gap-2">
           <Bill aria-hidden="true" className="h-6.25 w-8 shrink-0" />
