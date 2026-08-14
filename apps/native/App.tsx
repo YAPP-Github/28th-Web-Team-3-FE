@@ -38,6 +38,16 @@ const MAX_AUTO_RECOVERY = 3;
 const RECOVERY_RESET_MS = 60_000;
 
 /**
+ * 부트 스피너 색. 웹의 라우트 로딩 스피너(`RouteLoading`)와 같은 값이어야 한다 —
+ * 지문 잠금해제 직후 이 스피너가 걷히고 곧바로 웹 스피너가 뜨는데, 원래 한 번의 대기를
+ * 셸과 웹이 나눠 진 것이라 모양이 다르면 로딩이 두 번 도는 것처럼 보인다.
+ *
+ * 값을 박아둔 이유: `@repo/ui`의 CSS 토큰(`--color-gray-300`)은 RN에서 읽을 수 없다.
+ * 토큰이 바뀌면 여기도 함께 고쳐야 한다.
+ */
+const SPINNER_COLOR = "#b5b9c0";
+
+/**
  * 웹을 못 불러왔을 때 덮는 화면. 없으면 흰 화면만 남아 사용자도, 심사자도
  * 원인을 알 수 없다 — 앱이 고장 난 것으로 읽힌다.
  */
@@ -226,7 +236,7 @@ export default function App() {
           </>
         ) : (
           <View style={styles.center}>
-            <ActivityIndicator size="large" />
+            <ActivityIndicator size="large" color={SPINNER_COLOR} />
           </View>
         )}
       </SafeAreaBands>

@@ -120,6 +120,22 @@ describe("로딩 자리표시자", () => {
     expect(status).toHaveTextContent(name);
   });
 
+  /**
+   * 지문 잠금해제 직후 네이티브 셸 스피너가 걷히고 곧바로 이 스피너가 뜬다. 원래 한 번의
+   * 대기를 셸과 웹이 나눠 진 것이라(셸이 게스트 토큰 발급을 안 기다리고 넘긴다), 위치나
+   * 크기가 어긋나면 끝난 로딩이 또 시작된 것처럼 보인다. 셸은 화면 정중앙에
+   * `ActivityIndicator size="large"`(36px)를 그린다 — `apps/native/App.tsx`.
+   */
+  it("라우트 로딩은 네이티브 부트 스피너와 같은 자리·크기다", () => {
+    const { container } = render(<RouteLoading />);
+
+    const region = screen.getByRole("status");
+    // 상단 고정(pt-20)이 아니라 화면 정중앙.
+    expect(region).toHaveClass("min-h-dvh", "items-center", "justify-center");
+    // size-9 = 36px = RN size="large".
+    expect(container.querySelector(".size-9")).toBeInTheDocument();
+  });
+
   /** 홈은 목표·미션 자리가 동시에 뜬다. 각자 알리면 두 번 읽힌다. */
   it("라벨이 없으면 라이브 리전을 만들지 않는다", () => {
     render(<MissionListSkeleton />);
