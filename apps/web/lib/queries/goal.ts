@@ -26,7 +26,8 @@ export function updateSavingsOptions(queryClient: QueryClient) {
   return mutationOptions({
     mutationFn: (body: SavingRequest) => updateSavings(body),
     onMutate: () => queryClient.cancelQueries({ queryKey: goalStatusOptions().queryKey }),
-    onSuccess: (goal) => queryClient.setQueryData(goalStatusOptions().queryKey, goal),
+    onSuccess: () =>
+      queryClient.invalidateQueries({ queryKey: goalStatusOptions().queryKey, refetchType: "all" }),
   });
 }
 
@@ -35,6 +36,7 @@ export function updateGoalOptions(queryClient: QueryClient) {
   return mutationOptions({
     mutationFn: (body: GoalUpdateRequest) => updateGoal(body),
     onMutate: () => queryClient.cancelQueries({ queryKey: goalStatusOptions().queryKey }),
-    onSuccess: (goal) => queryClient.setQueryData(goalStatusOptions().queryKey, goal),
+    onSuccess: () =>
+      queryClient.invalidateQueries({ queryKey: goalStatusOptions().queryKey, refetchType: "all" }),
   });
 }

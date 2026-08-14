@@ -22,7 +22,7 @@ export function MonthlyGoalCard({
   savePending = false,
 }: MonthlyGoalCardProps) {
   return (
-    <section className="flex flex-col rounded-2xl gap-4 bg-gray-50 p-4">
+    <section className="flex flex-col rounded-2xl bg-gray-50 p-4">
       <div className="flex items-start justify-between">
         <h2 className="text-body-b1-700 text-gray-900">이번 달 목표 현황</h2>
         <span className="rounded bg-gray-100 px-2 py-1 text-body-b2-700 text-gray-700">
@@ -30,16 +30,16 @@ export function MonthlyGoalCard({
         </span>
       </div>
 
-      <p className="flex items-center gap-1">
+      <p className="mt-3 flex items-center gap-1">
         <span className="text-headline-h2-700 text-blue-500">{currentLabel}</span>
         <span className="text-body-b2-500 text-gray-500">/ {targetLabel}</span>
       </p>
 
-      <div className="h-4 overflow-hidden rounded-full bg-gray-200">
+      <div className="mt-3 h-4 overflow-hidden rounded-full bg-gray-200" data-monthly-progress>
         <div className="h-full rounded-full bg-blue-500" style={{ width: `${percent}%` }} />
       </div>
       <Button
-        className="h-[42px] border-[0.5px] border-gray-200 bg-white text-body-b2-700 text-gray-700"
+        className="mt-4 h-[42px] border-[0.5px] border-gray-200 bg-white text-body-b2-700 text-gray-700"
         disabled={savePending}
         onClick={onSaveClick}
         type="button"

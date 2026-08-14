@@ -15,7 +15,7 @@ async function mockCurrentUser(page: Page, onboardingCompleted: boolean) {
 test("home page renders", async ({ page }) => {
   await mockCurrentUser(page, true);
 
-  await page.route("**/api/goal", (route) =>
+  await page.route("**/api/v2/goal", (route) =>
     route.fulfill({
       status: 200,
       contentType: "application/json",
@@ -27,6 +27,10 @@ test("home page renders", async ({ page }) => {
         usageMonths: 8,
         deadlineDDay: 486,
         thisMonth: { targetManwon: 82, savedManwon: 67, progressPercent: 82, dDay: 12 },
+        monthlySavings: [
+          { yearMonth: "2026-07", savedManwon: 80, current: false },
+          { yearMonth: "2026-08", savedManwon: 67, current: true },
+        ],
       }),
     }),
   );

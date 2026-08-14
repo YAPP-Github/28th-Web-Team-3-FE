@@ -12,6 +12,7 @@ import { calculateGoalProgressPercent, calculateGoalTotalTargetManwon } from "..
 import { GoalDetailSkeleton } from "./goal-detail-skeleton";
 import { GoalEditSheet } from "./goal-edit-sheet";
 import { MonthlyGoalCard } from "./monthly-goal-card";
+import { MonthlySavingsChart } from "./monthly-savings-chart";
 import { SavingsInputSheet } from "./savings-input-sheet";
 import { SemicircleGauge } from "./semicircle-gauge";
 
@@ -89,6 +90,11 @@ export function GoalDetail() {
           onSaveClick={() => setSavingsOpen(true)}
         />
       </div>
+
+      <MonthlySavingsChart
+        monthlySavings={goal.monthlySavings}
+        targetManwon={thisMonth.targetManwon}
+      />
 
       <SavingsInputSheet
         initialManwon={thisMonth.savedManwon}

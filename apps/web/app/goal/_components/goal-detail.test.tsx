@@ -11,6 +11,12 @@ const MOCK_GOAL: GoalStatus = {
   usageMonths: 8,
   deadlineDDay: 486,
   thisMonth: { targetManwon: 82, savedManwon: 67, progressPercent: 82, dDay: 12 },
+  monthlySavings: [
+    { yearMonth: "2026-05", savedManwon: 71, current: false },
+    { yearMonth: "2026-06", savedManwon: 80, current: false },
+    { yearMonth: "2026-07", savedManwon: 0, current: false },
+    { yearMonth: "2026-08", savedManwon: 67, current: true },
+  ],
 };
 
 vi.mock("@/api/goal", () => ({
@@ -46,6 +52,17 @@ describe("GoalDetail", () => {
     expect(screen.getByText("39%")).toBeInTheDocument();
     expect(screen.getByText("8개월째")).toBeInTheDocument();
     expect(screen.getByText("D-486")).toBeInTheDocument();
+  });
+
+  it("월별 저축 현황과 이번 달 목표·달성 금액을 렌더한다", async () => {
+    render(<GoalDetail />);
+
+    expect(await screen.findByRole("heading", { name: "월별 저축 현황" })).toBeInTheDocument();
+    expect(screen.getByText("5월")).toBeInTheDocument();
+    expect(screen.getByText("이번 달")).toBeInTheDocument();
+    expect(screen.getByText("목표: 82만원")).toBeInTheDocument();
+    expect(screen.getByText("달성: 67만원")).toBeInTheDocument();
+    expect(screen.getByRole("list", { name: "월별 저축 현황" })).toBeInTheDocument();
   });
 
   it("서버 달성률이 100이어도 전체 목표금액 기준으로 달성률을 다시 계산한다", async () => {

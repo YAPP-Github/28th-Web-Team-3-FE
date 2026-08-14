@@ -30,6 +30,10 @@ const STALE_GOAL: GoalStatus = {
     progressPercent: 53,
     dDay: 12,
   },
+  monthlySavings: [
+    { yearMonth: "2026-07", savedManwon: 80, current: false },
+    { yearMonth: "2026-08", savedManwon: 100, current: true },
+  ],
 };
 
 const UPDATED_GOAL: GoalStatus = {
@@ -69,9 +73,12 @@ describe("updateSavingsOptions", () => {
   beforeEach(() => vi.clearAllMocks());
 
   it("저축액 입력 응답으로 목표 현황 캐시를 갱신한다", async () => {
-    vi.mocked(updateSavings).mockResolvedValue(UPDATED_SAVINGS);
+    vi.mocked(updateSavings).mockResolvedValue(STALE_GOAL);
+    vi.mocked(fetchGoalStatus)
+      .mockResolvedValueOnce(STALE_GOAL)
+      .mockResolvedValueOnce(UPDATED_SAVINGS);
     const queryClient = createTestQueryClient();
-    queryClient.setQueryData(goalStatusOptions().queryKey, STALE_GOAL);
+    await queryClient.fetchQuery(goalStatusOptions());
 
     const { result } = renderHook(() => useMutation(updateSavingsOptions(queryClient)), {
       queryClient,
@@ -82,20 +89,28 @@ describe("updateSavingsOptions", () => {
     });
 
     expect(queryClient.getQueryData(goalStatusOptions().queryKey)).toEqual(UPDATED_SAVINGS);
+    expect(fetchGoalStatus).toHaveBeenCalledTimes(2);
   });
 });
 
 describe("updateGoalOptions", () => {
   beforeEach(() => vi.clearAllMocks());
 
-  it("진행 중이던 조회가 늦게 끝나도 수정 응답 캐시를 유지한다", async () => {
+  it("진행 중이던 조회가 늦게 끝나도 수정 뒤 재조회한 Goal v2를 유지한다", async () => {
     let resolveStaleGoal: (goal: GoalStatus) => void = () => {};
-    vi.mocked(fetchGoalStatus).mockReturnValue(
-      new Promise((resolve) => {
-        resolveStaleGoal = resolve;
-      }),
-    );
-    vi.mocked(updateGoal).mockResolvedValue(UPDATED_GOAL);
+    let resolveFreshGoal: (goal: GoalStatus) => void = () => {};
+    vi.mocked(fetchGoalStatus)
+      .mockReturnValueOnce(
+        new Promise((resolve) => {
+          resolveStaleGoal = resolve;
+        }),
+      )
+      .mockReturnValueOnce(
+        new Promise((resolve) => {
+          resolveFreshGoal = resolve;
+        }),
+      );
+    vi.mocked(updateGoal).mockResolvedValue(STALE_GOAL);
     const queryClient = createTestQueryClient();
 
     const { result } = renderHook(
@@ -107,18 +122,41 @@ describe("updateGoalOptions", () => {
     );
     await waitFor(() => expect(fetchGoalStatus).toHaveBeenCalledOnce());
 
-    await act(async () => {
-      await result.current.updateGoal.mutateAsync({
+    let mutation: Promise<unknown> = Promise.resolve();
+    act(() => {
+      mutation = result.current.updateGoal.mutateAsync({
         targetAmountManwon: 6000,
         periodMonths: 24,
       });
     });
+    await waitFor(() => expect(fetchGoalStatus).toHaveBeenCalledTimes(2));
 
-    expect(queryClient.getQueryData(goalStatusOptions().queryKey)).toEqual(UPDATED_GOAL);
+    resolveFreshGoal(UPDATED_GOAL);
+    await act(async () => mutation);
 
     resolveStaleGoal(STALE_GOAL);
     await new Promise((resolve) => setTimeout(resolve, 0));
 
+    expect(queryClient.getQueryData(goalStatusOptions().queryKey)).toEqual(UPDATED_GOAL);
+  });
+
+  it("목표 수정 뒤 Goal v2를 다시 조회해 월별 현황을 갱신한다", async () => {
+    vi.mocked(updateGoal).mockResolvedValue(STALE_GOAL);
+    vi.mocked(fetchGoalStatus)
+      .mockResolvedValueOnce(STALE_GOAL)
+      .mockResolvedValueOnce(UPDATED_GOAL);
+    const queryClient = createTestQueryClient();
+    await queryClient.fetchQuery(goalStatusOptions());
+
+    const { result } = renderHook(() => useMutation(updateGoalOptions(queryClient)), {
+      queryClient,
+    });
+
+    await act(async () => {
+      await result.current.mutateAsync({ targetAmountManwon: 6000, periodMonths: 24 });
+    });
+
+    expect(fetchGoalStatus).toHaveBeenCalledTimes(2);
     expect(queryClient.getQueryData(goalStatusOptions().queryKey)).toEqual(UPDATED_GOAL);
   });
 });
