@@ -3,6 +3,9 @@ import { useEffect, useRef } from "react";
 import { formatManwon } from "@/lib/format";
 
 const BAR_HEIGHT = 134;
+const BAR_WIDTH = 36;
+const TOOLTIP_WIDTH = 82;
+const TOOLTIP_OVERHANG = (TOOLTIP_WIDTH - BAR_WIDTH) / 2;
 
 function formatMonth({ current, yearMonth }: MonthlySaving) {
   if (current) return "이번 달";
@@ -28,6 +31,7 @@ export function MonthlySavingsChart({ monthlySavings, targetManwon }: MonthlySav
     ...monthlySavings.map(({ savedManwon }) => savedManwon),
     1,
   );
+  const currentYearMonth = monthlySavings.find(({ current }) => current)?.yearMonth;
 
   useEffect(() => {
     const viewport = viewportRef.current;
@@ -35,18 +39,26 @@ export function MonthlySavingsChart({ monthlySavings, targetManwon }: MonthlySav
     if (!viewport || !current || typeof viewport.scrollTo !== "function") return;
 
     viewport.scrollTo({
-      left: Math.max(0, current.offsetLeft - viewport.clientWidth + current.clientWidth),
+      left: Math.max(
+        0,
+        current.offsetLeft + current.clientWidth + TOOLTIP_OVERHANG - viewport.clientWidth,
+      ),
     });
-  }, []);
+  }, [currentYearMonth]);
 
   return (
-    <section className="pt-8">
-      <h2 className="px-5 text-title-t2-700 text-gray-900">월별 저축 현황</h2>
-      <div
-        className="mt-0.5 h-[217px] overflow-x-auto overflow-y-hidden px-5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+    <div className="pt-8">
+      <h2 className="px-5 text-title-t2-700 text-gray-900" id="monthly-savings-title">
+        월별 저축 현황
+      </h2>
+      <section
+        aria-labelledby="monthly-savings-title"
+        className="mt-0.5 h-[217px] overflow-x-auto overflow-y-hidden overscroll-x-contain px-5 [scrollbar-width:none] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-900 [&::-webkit-scrollbar]:hidden"
         ref={viewportRef}
+        // biome-ignore lint/a11y/noNoninteractiveTabindex: 가로 스크롤 영역을 키보드로 조작할 수 있어야 한다.
+        tabIndex={0}
       >
-        <ol aria-label="월별 저축 현황" className="flex min-w-max gap-[18px] pt-[59px]">
+        <ol aria-label="월별 저축 현황" className="flex min-w-max gap-[18px] pt-[59px] pr-[23px]">
           {monthlySavings.map((saving) => {
             const label = formatMonth(saving);
             const height = calculateBarHeight(saving.savedManwon, maxManwon);
@@ -84,7 +96,7 @@ export function MonthlySavingsChart({ monthlySavings, targetManwon }: MonthlySav
             );
           })}
         </ol>
-      </div>
-    </section>
+      </section>
+    </div>
   );
 }
