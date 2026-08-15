@@ -2,6 +2,7 @@ import type { Mission } from "@repo/schema/mission";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { fetchGoalStatus } from "@/api/goal";
 import { completeMission, fetchMissions } from "@/api/mission";
+import { fetchPolicies } from "@/api/policy";
 import { MOCK_GOAL_STATUS } from "@/lib/test/fixtures/goal-status";
 import { render, screen } from "@/lib/test/react";
 import HomePage from "./page";
@@ -34,12 +35,29 @@ vi.mock("@/api/mission", () => ({
   fetchMissions: vi.fn(),
 }));
 
+vi.mock("@/api/policy", () => ({
+  bookmarkPolicy: vi.fn(),
+  fetchPolicies: vi.fn(),
+  fetchPolicyDetail: vi.fn(),
+  unbookmarkPolicy: vi.fn(),
+}));
+
 describe("HomePage", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.mocked(fetchGoalStatus).mockResolvedValue(MOCK_GOAL_STATUS);
     vi.mocked(fetchMissions).mockResolvedValue(MOCK_MISSIONS);
     vi.mocked(completeMission).mockResolvedValue(undefined);
+    vi.mocked(fetchPolicies).mockResolvedValue([
+      {
+        id: 1,
+        title: "청년 정책",
+        category: "금융",
+        largeCategory: null,
+        description: "청년을 위한 금융 혜택",
+        bookmarked: false,
+      },
+    ]);
   });
 
   it("Figma 홈의 목표·미션·팁 섹션을 렌더한다", async () => {
@@ -52,7 +70,7 @@ describe("HomePage", () => {
     );
     expect(screen.getByRole("heading", { name: "이번 주 미션" })).toBeInTheDocument();
     expect(screen.getByText("이번 주 배달음식 2회 이하로 주문")).toBeInTheDocument();
-    expect(screen.getByRole("heading", { name: "재테크 선배의 팁" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "눈여겨볼 만한 혜택/팁" })).toBeInTheDocument();
   });
 
   it("목표 조회 실패 시 사용자용 오류 문구를 렌더한다", async () => {

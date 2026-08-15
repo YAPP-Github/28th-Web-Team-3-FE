@@ -14,3 +14,12 @@ export const MISSION_CATEGORY_LABELS: Record<
   HOBBY: "취미",
   LIVING: "생활",
 };
+
+/** 홈 카테고리 필터를 미션 API 쿼리 값으로 변환한다. */
+export const MISSION_CATEGORY_VALUES: Record<MissionCategory, ApiMissionCategory | null> = {
+  전체: null,
+  식비: "MEAL",
+  교통: "TRANSPORT",
+  취미: "HOBBY",
+  생활: "LIVING",
+};

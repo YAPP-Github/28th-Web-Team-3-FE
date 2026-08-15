@@ -1,4 +1,10 @@
-import { type Mission, type MissionSource, missionsResponseSchema } from "@repo/schema/mission";
+import {
+  type Mission,
+  type MissionCategory,
+  type MissionSource,
+  type MissionStatus,
+  missionsResponseSchema,
+} from "@repo/schema/mission";
 import { http } from "@/api/client";
 
 /**
@@ -7,9 +13,20 @@ import { http } from "@/api/client";
  * baseUrl(`NEXT_PUBLIC_API_URL`)에 `/api`가 포함되므로 경로는 리소스명만 쓴다.
  */
 
-/** GET /api/missions — 내 미션 전체 조회(active/completed 구분은 호출부에서 status로 나눈다). */
-export async function fetchMissions(): Promise<readonly Mission[]> {
-  const { missions } = await http.get("missions", { response: missionsResponseSchema });
+export interface MissionListParams {
+  category?: MissionCategory;
+  status?: MissionStatus;
+}
+
+/** GET /api/missions — 페이지 없이 전체 또는 상태·카테고리로 필터링한 미션을 조회한다. */
+export async function fetchMissions(params: MissionListParams = {}): Promise<Mission[]> {
+  const { missions } = await http.get("missions", {
+    searchParams: {
+      ...(params.category ? { category: params.category } : {}),
+      ...(params.status ? { status: params.status } : {}),
+    },
+    response: missionsResponseSchema,
+  });
   return missions;
 }
 

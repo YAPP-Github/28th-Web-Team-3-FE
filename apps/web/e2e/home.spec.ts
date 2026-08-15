@@ -35,41 +35,66 @@ test("home page renders", async ({ page }) => {
     }),
   );
 
-  await page.route("**/api/missions", (route) =>
+  await page.route("**/api/missions**", (route) => {
+    const url = new URL(route.request().url());
+    const status = url.searchParams.get("status");
+    const category = url.searchParams.get("category");
+    const missions = [
+      {
+        id: "active-1",
+        source: "RECOMMENDED",
+        category: "MEAL",
+        title: "이번 주 배달음식 2회 이하로 주문",
+        targetCount: 2,
+        targetUnit: "TIMES_PER_WEEK",
+        estimatedSavingsWon: 5000,
+        savingsEstimateVersion: "V1",
+        savingsLabel: "약 5,000원 절약 예상",
+        status: "ACTIVE",
+        weekEndsAt: "2099-01-01T00:00:00Z",
+      },
+      {
+        id: "completed-1",
+        source: "MANUAL",
+        category: "LIVING",
+        title: "사용하지 않는 구독 정리하기",
+        status: "COMPLETED",
+        weekEndsAt: "2099-01-01T00:00:00Z",
+      },
+    ].filter(
+      (mission) =>
+        (!status || mission.status === status) && (!category || mission.category === category),
+    );
+
+    return route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({ missions }),
+    });
+  });
+
+  await page.route("**/api/policies**", (route) =>
     route.fulfill({
       status: 200,
       contentType: "application/json",
-      body: JSON.stringify({
-        missions: [
-          {
-            id: "active-1",
-            source: "RECOMMENDED",
-            category: "MEAL",
-            title: "이번 주 배달음식 2회 이하로 주문",
-            targetCount: 2,
-            targetUnit: "TIMES_PER_WEEK",
-            estimatedSavingsWon: 5000,
-            savingsEstimateVersion: "V1",
-            savingsLabel: "약 5,000원 절약 예상",
-            status: "ACTIVE",
-            weekEndsAt: "2099-01-01T00:00:00Z",
-          },
-          {
-            id: "completed-1",
-            source: "MANUAL",
-            category: "LIVING",
-            title: "사용하지 않는 구독 정리하기",
-            status: "COMPLETED",
-            weekEndsAt: "2099-01-01T00:00:00Z",
-          },
-        ],
-      }),
+      body: JSON.stringify([
+        {
+          id: 1,
+          title: "청년 자산 형성 지원",
+          category: "금융",
+          largeCategory: null,
+          description: "청년을 위한 금융 혜택을 확인해 보세요.",
+          bookmarked: false,
+        },
+      ]),
     }),
   );
 
   await page.goto("/");
   await expect(page.getByRole("heading", { name: "홈" })).toBeVisible();
   await expect(page.getByRole("link", { name: /5,000만원 모으기/ })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "눈여겨볼 만한 혜택/팁" })).toBeVisible();
+  await expect(page.getByRole("link", { name: /청년 자산 형성 지원/ })).toBeVisible();
 
   const pigboxGauge = page.locator('[data-pigbox-progress="50"]');
   await expect(pigboxGauge).toBeVisible();

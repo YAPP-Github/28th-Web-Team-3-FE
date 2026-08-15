@@ -37,6 +37,7 @@ catalog:
   ky: ^2.0.2
   mixpanel-browser: ^2.81.0
   "@tanstack/react-query": ^5.101.0
+  "@tanstack/react-table": ^9.1.2
 
   # UI / Tailwind CSS v4
   tailwindcss: ^4.3.1

@@ -8,6 +8,15 @@ const POLICY_DETAIL_QUERY_KEY = ["policy-detail"] as const;
 
 /** 한 번에 받아오는 혜택 수. 서버 기본값과 같게 두고 다음 페이지 판단에도 쓴다. */
 export const POLICY_PAGE_SIZE = 20;
+export const HOME_POLICY_COUNT = 5;
+
+/** 홈 캐러셀에 노출할 전체 정책 첫 5개. 무한 목록과 데이터 모양이 달라 별도 키를 쓴다. */
+export function homePoliciesOptions() {
+  return queryOptions({
+    queryKey: [...POLICIES_QUERY_KEY, "home", HOME_POLICY_COUNT] as const,
+    queryFn: () => fetchPolicies({ category: null, page: 0, size: HOME_POLICY_COUNT }),
+  });
+}
 
 /** 혜택 목록(무한 스크롤). category가 null이면 전체다. */
 export function policiesOptions(category: PolicyCategory | null) {
