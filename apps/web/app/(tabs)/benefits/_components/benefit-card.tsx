@@ -62,7 +62,7 @@ export function BenefitCard({ benefit, onToggleSave }: BenefitCardProps) {
           aria-pressed={benefit.saved}
           aria-label={`${benefit.title} 저장`}
           onClick={() => onToggleSave(benefit)}
-          className="-m-2.5 relative z-10 flex size-10 shrink-0 items-center justify-center rounded-full transition-[scale,background-color] duration-100 hover:bg-gray-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring active:scale-[0.92] motion-reduce:transition-none motion-reduce:active:scale-100"
+          className="-m-3 relative z-10 flex size-11 shrink-0 items-center justify-center rounded-full transition-[scale,background-color] duration-100 hover:bg-gray-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring active:scale-[0.92] motion-reduce:transition-none motion-reduce:active:scale-100"
         >
           <Star
             aria-hidden="true"

@@ -40,6 +40,8 @@ export function BenefitsExplorer() {
     const categories = searchParams.getAll("category");
     return parseBenefitFilter(categories.length === 1 ? categories[0] : undefined);
   });
+  const activeFilterRef = useRef(filter);
+  const [isRetryingInitial, setIsRetryingInitial] = useState(false);
   const queryClient = useQueryClient();
   const toggleBookmark = useMutation(togglePolicyBookmarkOptions());
   // 언제 보낼지와 그동안 화면을 어떻게 보일지는 큐가 맡는다 — mutation 자체는 여기서 만든다.
@@ -71,6 +73,7 @@ export function BenefitsExplorer() {
 
   const { fetchNextPage, hasNextPage, isFetchNextPageError, isFetchingNextPage } = policies;
   const loadMoreRef = useRef<HTMLDivElement>(null);
+  const benefitsListRef = useRef<HTMLElement>(null);
 
   // 목록 끝이 보이면 다음 페이지를 당긴다. 스크롤 이벤트로 위치를 재면 매 프레임 레이아웃을
   // 읽어야 하지만, observer는 브라우저가 교차 시점만 알려준다.
@@ -89,9 +92,29 @@ export function BenefitsExplorer() {
   }, [fetchNextPage, hasNextPage, isFetchingNextPage, isFetchNextPageError]);
 
   function selectFilter(next: BenefitFilter) {
+    activeFilterRef.current = next;
+    setIsRetryingInitial(false);
     setFilter(next);
     clearSaveError();
     window.history.replaceState(null, "", getBenefitFilterHref(next));
+  }
+
+  function focusBenefitsList() {
+    window.requestAnimationFrame(() => benefitsListRef.current?.focus({ preventScroll: true }));
+  }
+
+  async function retryInitialPage() {
+    const retryFilter = filter;
+    setIsRetryingInitial(true);
+    const result = await (isSavedFilter ? saved.refetch() : policies.refetch());
+    if (activeFilterRef.current !== retryFilter) return;
+    setIsRetryingInitial(false);
+    if (result.isSuccess) focusBenefitsList();
+  }
+
+  async function retryNextPage() {
+    const result = await fetchNextPage();
+    if (result.isSuccess) focusBenefitsList();
   }
 
   return (
@@ -111,21 +134,27 @@ export function BenefitsExplorer() {
         "40개를 찾았어요"가 스크롤 내내 읽힌다. 칩을 바꿔 결과 유무가 달라질 때만 바뀌게 둔다.
       */}
       <p role="status" className="sr-only">
-        {isPending || isInitialError
+        {isPending || isInitialError || isRetryingInitial
           ? ""
           : benefits.length > 0
             ? "혜택 목록을 불러왔어요."
             : "조건에 맞는 혜택이 없어요."}
       </p>
-      <section id="benefits-list" aria-label="정책 목록" className="mt-5 flex flex-col gap-3 px-5">
+      <section
+        ref={benefitsListRef}
+        id="benefits-list"
+        aria-label="정책 목록"
+        className="mt-5 flex flex-col gap-3 px-5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        tabIndex={-1}
+      >
         {saveError ? (
           <p aria-live="polite" className="text-body-b2-500 text-error">
             {saveError}
           </p>
         ) : null}
-        {isPending ? (
+        {isPending && !isRetryingInitial ? (
           <BenefitListSkeleton />
-        ) : isInitialError ? (
+        ) : isInitialError || isRetryingInitial ? (
           <div className="flex flex-col items-center py-10 text-center">
             {/* 칩을 눌러 실패했을 때 초점은 칩에 남는다 — alert로 알려야 화면 밖 사용자도 안다. */}
             <p role="alert" className="text-body-b2-500 text-gray-500">
@@ -133,8 +162,9 @@ export function BenefitsExplorer() {
             </p>
             <Button
               className="mt-4"
+              pending={isRetryingInitial}
               size="sm"
-              onClick={() => void (isSavedFilter ? saved.refetch() : policies.refetch())}
+              onClick={() => void retryInitialPage()}
             >
               다시 시도
             </Button>
@@ -164,9 +194,10 @@ export function BenefitsExplorer() {
                 </p>
                 <Button
                   className="mt-3"
+                  pending={isFetchingNextPage}
                   size="sm"
                   variant="secondary"
-                  onClick={() => void fetchNextPage()}
+                  onClick={() => void retryNextPage()}
                 >
                   다시 시도
                 </Button>

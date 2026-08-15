@@ -479,6 +479,7 @@ describe("BenefitsExplorer", () => {
 
   it("다음 페이지 조회 실패 시 기존 목록을 유지하고 다시 시도한다", async () => {
     let intersect: (() => void) | undefined;
+    let finishRetry: ((policies: PolicySummary[]) => void) | undefined;
     vi.stubGlobal(
       "IntersectionObserver",
       class {
@@ -497,7 +498,12 @@ describe("BenefitsExplorer", () => {
     vi.mocked(fetchPolicies)
       .mockResolvedValueOnce(FULL_PAGE)
       .mockRejectedValueOnce(new Error("network error"))
-      .mockResolvedValueOnce([policy(99)]);
+      .mockImplementationOnce(
+        () =>
+          new Promise((resolve) => {
+            finishRetry = resolve;
+          }),
+      );
     render(<BenefitsExplorer />);
     await screen.findByText("혜택 1");
 
@@ -508,24 +514,46 @@ describe("BenefitsExplorer", () => {
     ).toBeInTheDocument();
     expect(screen.getByText("혜택 1")).toBeInTheDocument();
 
-    fireEvent.click(screen.getByRole("button", { name: "다시 시도" }));
+    const retryButton = screen.getByRole("button", { name: "다시 시도" });
+    fireEvent.click(retryButton);
+
+    await waitFor(() => expect(fetchPolicies).toHaveBeenCalledTimes(3));
+    expect(retryButton).toHaveAttribute("aria-busy", "true");
+    await act(async () => {
+      finishRetry?.([policy(99)]);
+    });
 
     expect(await screen.findByText("혜택 99")).toBeInTheDocument();
+    await waitFor(() => expect(screen.getByRole("region", { name: "정책 목록" })).toHaveFocus());
   });
 
   it("첫 목록 조회에 실패하면 다시 시도할 수 있다", async () => {
+    let finishRetry: ((policies: PolicySummary[]) => void) | undefined;
     vi.mocked(fetchPolicies)
       .mockRejectedValueOnce(new Error("network error"))
-      .mockResolvedValueOnce([policy(3)]);
+      .mockImplementationOnce(
+        () =>
+          new Promise((resolve) => {
+            finishRetry = resolve;
+          }),
+      );
     render(<BenefitsExplorer />);
 
     expect(
       await screen.findByText("혜택을 불러오지 못했어요. 잠시 후 다시 시도해 주세요."),
     ).toBeInTheDocument();
 
-    fireEvent.click(screen.getByRole("button", { name: "다시 시도" }));
+    const retryButton = screen.getByRole("button", { name: "다시 시도" });
+    fireEvent.click(retryButton);
+
+    await waitFor(() => expect(fetchPolicies).toHaveBeenCalledTimes(2));
+    expect(retryButton).toHaveAttribute("aria-busy", "true");
+    await act(async () => {
+      finishRetry?.([policy(3)]);
+    });
 
     expect(await screen.findByText("혜택 3")).toBeInTheDocument();
+    await waitFor(() => expect(screen.getByRole("region", { name: "정책 목록" })).toHaveFocus());
   });
 
   it("필터 링크에 읽기 쉬운 색과 키보드 포커스 표시가 있다", async () => {

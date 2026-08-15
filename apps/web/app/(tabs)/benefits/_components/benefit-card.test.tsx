@@ -88,7 +88,7 @@ describe("BenefitCard", () => {
     render(<BenefitCard benefit={BENEFIT} onToggleSave={vi.fn()} />);
 
     expect(screen.getByRole("button", { name: `${BENEFIT.title} 저장` })).toHaveClass(
-      "size-10",
+      "size-11",
       "focus-visible:ring-2",
     );
     expect(screen.getByRole("button", { name: BENEFIT.title })).toHaveClass("focus-visible:ring-2");
