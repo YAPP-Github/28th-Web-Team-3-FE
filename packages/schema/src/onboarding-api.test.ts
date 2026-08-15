@@ -25,13 +25,13 @@ describe("onboarding API schemas", () => {
     expect(() => onboardingProfilePatchSchema.parse({ goalPeriodMonths: 2 })).toThrow();
     expect(() => onboardingProfilePatchSchema.parse({ address: "GWANGJU" })).toThrow();
     expect(() =>
-      onboardingGoalConfirmSchema.parse({ plan: "PLAN_1", monthlyTargetManwon: 701 }),
+      onboardingGoalConfirmSchema.parse({ plan: "PLAN_1", monthlySavingManwon: 651 }),
     ).toThrow();
   });
 
   it("accepts a monthly target with the legacy plan", () => {
-    expect(onboardingGoalConfirmSchema.parse({ plan: "PLAN_1", monthlyTargetManwon: 115 })).toEqual(
-      { plan: "PLAN_1", monthlyTargetManwon: 115 },
+    expect(onboardingGoalConfirmSchema.parse({ plan: "PLAN_1", monthlySavingManwon: 115 })).toEqual(
+      { plan: "PLAN_1", monthlySavingManwon: 115 },
     );
   });
 

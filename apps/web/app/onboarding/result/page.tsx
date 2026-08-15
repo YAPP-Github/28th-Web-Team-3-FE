@@ -1,22 +1,25 @@
 "use client";
 
 import {
-  MAX_ONBOARDING_MONTHLY_TARGET_INCREASE_MANWON,
+  MAX_ONBOARDING_MONTHLY_TARGET_MANWON,
   type OnboardingProfile,
 } from "@repo/schema/onboarding-api";
 import { Button, ButtonGroup, Slider } from "@repo/ui";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { ChevronLeft } from "lucide-react";
+import { ChevronLeft, Info } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { isOnboardingAlreadyCompletedError } from "@/api/onboarding";
 import { OnboardingPageSkeleton } from "@/app/onboarding/_components/onboarding-page-skeleton";
 import { isAddressConfirmed } from "@/app/onboarding/lib/address-confirmation";
 import { formatManwon } from "@/lib/format";
+import { useDebounce } from "@/lib/hooks/use-debounce";
 import { currentUserOptions } from "@/lib/queries/auth";
 import { confirmOnboardingGoalOptions, onboardingProfileOptions } from "@/lib/queries/onboarding";
+import { AnimatedNumber } from "./_components/animated-number";
 
 interface GoalReadyProfile {
+  monthlySalaryManwon: number;
   monthlySavingManwon: number;
   netWorthManwon: number;
   goalPeriodMonths: number;
@@ -43,26 +46,33 @@ function getGoalReadyProfile(profile: OnboardingProfile): GoalReadyProfile | nul
   }
 
   return {
+    monthlySalaryManwon: profile.monthlySalaryManwon,
     monthlySavingManwon: profile.monthlySavingManwon,
     netWorthManwon: profile.netWorthManwon,
     goalPeriodMonths: profile.goalPeriodMonths,
   };
 }
 
-function getDefaultMonthlyTarget(currentMonthlySaving: number): number {
-  const recommendedTarget = Math.round(currentMonthlySaving * 1.15);
+function getMaxMonthlyTarget(currentMonthlySaving: number, monthlySalary: number): number {
   return Math.min(
-    currentMonthlySaving + MAX_ONBOARDING_MONTHLY_TARGET_INCREASE_MANWON,
-    recommendedTarget,
+    MAX_ONBOARDING_MONTHLY_TARGET_MANWON,
+    monthlySalary,
+    Math.floor(currentMonthlySaving * 1.5),
   );
 }
 
+function getDefaultMonthlyTarget(currentMonthlySaving: number, monthlySalary: number): number {
+  const recommendedTarget = Math.round(currentMonthlySaving * 1.15);
+  return Math.min(getMaxMonthlyTarget(currentMonthlySaving, monthlySalary), recommendedTarget);
+}
+
 function getProfileFingerprint({
+  monthlySalaryManwon,
   monthlySavingManwon,
   netWorthManwon,
   goalPeriodMonths,
 }: GoalReadyProfile) {
-  const source = `${monthlySavingManwon}:${netWorthManwon}:${goalPeriodMonths}`;
+  const source = `${monthlySalaryManwon}:${monthlySavingManwon}:${netWorthManwon}:${goalPeriodMonths}`;
   let hash = 2_166_136_261;
 
   for (const character of source) {
@@ -74,7 +84,7 @@ function getProfileFingerprint({
 }
 
 function readMonthlyTargetDraft(
-  { monthlySavingManwon, netWorthManwon, goalPeriodMonths }: GoalReadyProfile,
+  { monthlySalaryManwon, monthlySavingManwon, netWorthManwon, goalPeriodMonths }: GoalReadyProfile,
   userId: number,
 ): number | null {
   try {
@@ -82,11 +92,16 @@ function readMonthlyTargetDraft(
     if (!storedDraft) return null;
 
     const draft = JSON.parse(storedDraft) as Partial<MonthlyTargetDraft>;
-    const maxMonthlyTarget = monthlySavingManwon + MAX_ONBOARDING_MONTHLY_TARGET_INCREASE_MANWON;
+    const maxMonthlyTarget = getMaxMonthlyTarget(monthlySavingManwon, monthlySalaryManwon);
     const isCurrentProfile =
       draft.userId === userId &&
       draft.profileFingerprint ===
-        getProfileFingerprint({ monthlySavingManwon, netWorthManwon, goalPeriodMonths });
+        getProfileFingerprint({
+          monthlySalaryManwon,
+          monthlySavingManwon,
+          netWorthManwon,
+          goalPeriodMonths,
+        });
     const monthlyTargetManwon = draft.monthlyTargetManwon;
     const isValidTarget =
       typeof monthlyTargetManwon === "number" &&
@@ -121,6 +136,7 @@ function clearMonthlyTargetDraft() {
 
 function OnboardingGoalResult({
   userId,
+  monthlySalaryManwon,
   monthlySavingManwon,
   netWorthManwon,
   goalPeriodMonths,
@@ -131,14 +147,13 @@ function OnboardingGoalResult({
     confirmOnboardingGoalOptions(queryClient),
   );
   const [monthlyTargetManwon, setMonthlyTargetManwon] = useState(() =>
-    getDefaultMonthlyTarget(monthlySavingManwon),
+    getDefaultMonthlyTarget(monthlySavingManwon, monthlySalaryManwon),
   );
   const [isDraftHydrated, setIsDraftHydrated] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string>();
-  const maxMonthlyTarget = monthlySavingManwon + MAX_ONBOARDING_MONTHLY_TARGET_INCREASE_MANWON;
+  const debouncedMonthlyTargetManwon = useDebounce(monthlyTargetManwon, 300);
+  const maxMonthlyTarget = getMaxMonthlyTarget(monthlySavingManwon, monthlySalaryManwon);
   const monthlyIncrease = monthlyTargetManwon - monthlySavingManwon;
-  const increasePercent =
-    monthlySavingManwon === 0 ? 0 : Math.round((monthlyIncrease / monthlySavingManwon) * 100);
   const additionalSavings = monthlyTargetManwon * goalPeriodMonths;
   const expectedTotal = netWorthManwon + additionalSavings;
 
@@ -146,27 +161,32 @@ function OnboardingGoalResult({
 
   useEffect(() => {
     setMonthlyTargetManwon(
-      readMonthlyTargetDraft({ monthlySavingManwon, netWorthManwon, goalPeriodMonths }, userId) ??
-        getDefaultMonthlyTarget(monthlySavingManwon),
+      readMonthlyTargetDraft(
+        { monthlySalaryManwon, monthlySavingManwon, netWorthManwon, goalPeriodMonths },
+        userId,
+      ) ?? getDefaultMonthlyTarget(monthlySavingManwon, monthlySalaryManwon),
     );
     setIsDraftHydrated(true);
-  }, [goalPeriodMonths, monthlySavingManwon, netWorthManwon, userId]);
+  }, [goalPeriodMonths, monthlySalaryManwon, monthlySavingManwon, netWorthManwon, userId]);
 
   useEffect(() => {
-    if (!isDraftHydrated) return;
+    if (!isDraftHydrated || debouncedMonthlyTargetManwon !== monthlyTargetManwon) return;
 
     saveMonthlyTargetDraft({
       userId,
       profileFingerprint: getProfileFingerprint({
+        monthlySalaryManwon,
         monthlySavingManwon,
         netWorthManwon,
         goalPeriodMonths,
       }),
-      monthlyTargetManwon,
+      monthlyTargetManwon: debouncedMonthlyTargetManwon,
     });
   }, [
+    debouncedMonthlyTargetManwon,
     goalPeriodMonths,
     isDraftHydrated,
+    monthlySalaryManwon,
     monthlySavingManwon,
     monthlyTargetManwon,
     netWorthManwon,
@@ -190,7 +210,7 @@ function OnboardingGoalResult({
       <main className="flex flex-col gap-8 px-5 pt-5">
         <div className="flex flex-col gap-6">
           <div className="flex flex-col gap-1">
-            <h1 className="text-headline-h2-700 text-gray-900">얼마를 목표로 저축할까요?</h1>
+            <h1 className="text-headline-h2-700 text-gray-900">얼마를 목표로 할까요?</h1>
             <p className="text-body-b1-500 text-gray-700">
               매달 모을 금액을 정하면 목표 금액이 만들어져요.
             </p>
@@ -199,19 +219,17 @@ function OnboardingGoalResult({
           <section className="flex flex-col items-center gap-2.5 rounded-2xl bg-gray-10 px-4 py-6 text-center">
             <div className="flex flex-col items-center">
               <h2 className="text-title-t2-700 text-blue-600">
-                {goalPeriodMonths}개월 뒤 저축 예상 금액
+                {goalPeriodMonths}개월 뒤 목표 금액
               </h2>
               <p className="font-bold text-[32px] leading-[38px] text-gray-900 tabular-nums">
-                {formatManwon(expectedTotal)}
+                <AnimatedNumber format={formatManwon} value={expectedTotal} />
               </p>
             </div>
-            <div className="flex flex-col text-body-b2-500 text-gray-500">
-              <p>현재 순자산 {formatManwon(netWorthManwon)}</p>
-              <p>
-                + 추가 저축액 {formatManwon(additionalSavings)}({formatManwon(monthlyTargetManwon)}{" "}
-                x {goalPeriodMonths}개월)
-              </p>
-            </div>
+            <p className="text-body-b2-500 text-gray-500">
+              현재 순자산 {formatManwon(netWorthManwon)} + 월 저축액{" "}
+              <AnimatedNumber format={formatManwon} value={monthlyTargetManwon} /> x{" "}
+              {goalPeriodMonths}개월
+            </p>
           </section>
         </div>
 
@@ -219,12 +237,8 @@ function OnboardingGoalResult({
           <section className="flex flex-col gap-6" aria-labelledby="monthly-goal-title">
             <div className="flex flex-col gap-1">
               <h2 id="monthly-goal-title" className="text-title-t1-700 text-gray-900">
-                매달 모을 금액 {formatManwon(monthlyTargetManwon)}
+                매달 모을 금액 <AnimatedNumber format={formatManwon} value={monthlyTargetManwon} />
               </h2>
-              <p className="text-body-b2-500 text-gray-700">
-                기존 월 저축액({formatManwon(monthlySavingManwon)})보다 {increasePercent}% 더
-                모아요.
-              </p>
             </div>
 
             <div className="flex flex-col">
@@ -240,20 +254,20 @@ function OnboardingGoalResult({
                 }}
               />
               <div className="flex justify-between gap-4 text-body-b2-500 text-gray-400">
-                <span>
-                  최소 {formatManwon(monthlySavingManwon)}
-                  <br /> (현재 저축액)
-                </span>
+                <span>현재 저축액 {formatManwon(monthlySavingManwon)}</span>
                 <span>최대 {formatManwon(maxMonthlyTarget)}</span>
               </div>
             </div>
           </section>
 
-          <section className="flex items-center justify-center rounded-[14px] bg-gradient-to-r from-[#e6ebff] to-[#e2f8ff] px-5 py-4 text-center">
+          <section className="flex items-start justify-center gap-2 rounded-[14px] bg-gradient-to-r from-[#e6ebff] to-[#e2f8ff] px-5 py-4 text-center">
+            <Info aria-hidden="true" className="mt-0.5 size-4 shrink-0 text-blue-500" />
             {monthlyIncrease > 0 ? (
               <p className="text-body-b1-500 text-gray-800">
                 현재 저축액에서 매달 더 모으는{" "}
-                <strong className="text-body-b1-700">{formatManwon(monthlyIncrease)}</strong>
+                <strong className="text-body-b1-700">
+                  <AnimatedNumber format={formatManwon} value={monthlyIncrease} />
+                </strong>
                 은<br />
                 맞춤 미션으로 아끼모와 함께해요.
               </p>
@@ -276,12 +290,12 @@ function OnboardingGoalResult({
 
       <div className="fixed inset-x-0 bottom-0 z-10 mx-auto w-full max-w-md bg-gray-0 px-5 pt-2 pb-6">
         <ButtonGroup
-          nextLabel="이 목표로 시작"
+          nextLabel="이 목표로 시작하기"
           nextPending={isPending}
           onNext={async () => {
             setErrorMessage(undefined);
             try {
-              await confirmGoal({ plan: "PLAN_1", monthlyTargetManwon });
+              await confirmGoal({ plan: "PLAN_1", monthlySavingManwon: monthlyTargetManwon });
               clearMonthlyTargetDraft();
               router.replace("/");
             } catch (error) {

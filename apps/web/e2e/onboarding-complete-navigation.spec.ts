@@ -49,11 +49,11 @@ test("온보딩 목표 확정 후 Hook 오류 없이 홈으로 이동한다", as
   });
 
   await page.goto("/onboarding/result");
-  await page.getByRole("button", { name: "이 목표로 시작" }).click();
+  await page.getByRole("button", { name: "이 목표로 시작하기" }).click();
 
   await expect(page).toHaveURL("/");
   await expect(page.getByRole("heading", { name: "홈" })).toBeVisible();
-  expect(confirmedGoal).toEqual({ plan: "PLAN_1", monthlyTargetManwon: 115 });
+  expect(confirmedGoal).toEqual({ plan: "PLAN_1", monthlySavingManwon: 115 });
   expect(pageErrors).toEqual([]);
 });
 
@@ -84,5 +84,5 @@ test("기존 목표 선택 URL은 새 결과 화면으로 이동한다", async (
   await page.goto("/onboarding/goal");
 
   await expect(page).toHaveURL("/onboarding/result");
-  await expect(page.getByRole("heading", { name: "얼마를 목표로 저축할까요?" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "얼마를 목표로 할까요?" })).toBeVisible();
 });

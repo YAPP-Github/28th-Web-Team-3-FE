@@ -115,14 +115,14 @@ describe("onboarding API", () => {
 
     await getOnboardingReport();
     await getOnboardingGoalPlans();
-    await confirmOnboardingGoal({ plan: "PLAN_1", monthlyTargetManwon: 115 });
+    await confirmOnboardingGoal({ plan: "PLAN_1", monthlySavingManwon: 115 });
 
     expect(http.get).toHaveBeenNthCalledWith(1, "onboarding/report", expect.anything());
     expect(http.get).toHaveBeenNthCalledWith(2, "onboarding/goal-plans", expect.anything());
     expect(http.post).toHaveBeenCalledWith(
       "onboarding/goal",
       expect.objectContaining({
-        body: { plan: "PLAN_1", monthlyTargetManwon: 115 },
+        body: { plan: "PLAN_1", monthlySavingManwon: 115 },
         request: expect.anything(),
       }),
     );

@@ -56,7 +56,7 @@ describe("confirmOnboardingGoalOptions", () => {
       queryClient,
     });
     await act(async () => {
-      await result.current.mutateAsync({ plan: "PLAN_1", monthlyTargetManwon: 115 });
+      await result.current.mutateAsync({ plan: "PLAN_1", monthlySavingManwon: 115 });
     });
 
     expect(queryClient.getQueryData(onboardingProfileOptions().queryKey)).toEqual({
@@ -83,7 +83,7 @@ describe("confirmOnboardingGoalOptions", () => {
       queryClient,
     });
     await act(async () => {
-      await result.current.mutateAsync({ plan: "PLAN_1", monthlyTargetManwon: 115 });
+      await result.current.mutateAsync({ plan: "PLAN_1", monthlySavingManwon: 115 });
     });
 
     expect(queryClient.getQueryData(onboardingProfileOptions().queryKey)).toBeUndefined();
@@ -106,7 +106,7 @@ describe("confirmOnboardingGoalOptions", () => {
     });
     await act(async () => {
       await expect(
-        result.current.mutateAsync({ plan: "PLAN_1", monthlyTargetManwon: 115 }),
+        result.current.mutateAsync({ plan: "PLAN_1", monthlySavingManwon: 115 }),
       ).rejects.toBe(ALREADY_COMPLETED_ERROR);
     });
 

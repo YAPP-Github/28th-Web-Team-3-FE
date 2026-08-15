@@ -28,6 +28,14 @@ const profile = {
   goalPeriodMonths: 24,
 };
 
+async function waitForSavedDraft(monthlyTargetManwon: number) {
+  await waitFor(() =>
+    expect(localStorage.getItem("onboarding:monthly-target-draft")).toContain(
+      `"monthlyTargetManwon":${monthlyTargetManwon}`,
+    ),
+  );
+}
+
 describe("OnboardingResultPage", () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -48,23 +56,39 @@ describe("OnboardingResultPage", () => {
     render(<OnboardingResultPage />);
 
     expect(await screen.findByText("5,260만원")).toBeInTheDocument();
-    expect(screen.getByText("매달 모을 금액 115만원")).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "매달 모을 금액 115만원" })).toBeInTheDocument();
     expect(screen.getByRole("slider", { name: "매달 모을 금액" })).toHaveAttribute(
       "aria-valuemax",
       "150",
     );
+    expect(screen.getByText("24개월 뒤 목표 금액")).toBeInTheDocument();
+    expect(screen.getByText(/현재 순자산 2,500만원/)).toHaveTextContent(
+      "현재 순자산 2,500만원 + 월 저축액 115만원 x 24개월",
+    );
+  });
+
+  it("슬라이더 최댓값은 기존 월 저축액의 1.5배와 월급 중 작은 값이다", async () => {
+    vi.mocked(getOnboardingProfile).mockResolvedValue({ ...profile, monthlySalaryManwon: 120 });
+
+    render(<OnboardingResultPage />);
+
+    expect(await screen.findByRole("slider", { name: "매달 모을 금액" })).toHaveAttribute(
+      "aria-valuemax",
+      "120",
+    );
+    expect(screen.getByText("최대 120만원")).toBeInTheDocument();
   });
 
   it("슬라이더로 바꾼 월 목표를 확정하고 홈으로 교체 이동한다", async () => {
     render(<OnboardingResultPage />);
     const slider = await screen.findByRole("slider", { name: "매달 모을 금액" });
     fireEvent.keyDown(slider, { key: "ArrowRight" });
-    fireEvent.click(screen.getByRole("button", { name: "이 목표로 시작" }));
+    fireEvent.click(screen.getByRole("button", { name: "이 목표로 시작하기" }));
 
     await waitFor(() =>
       expect(confirmOnboardingGoal).toHaveBeenCalledWith({
         plan: "PLAN_1",
-        monthlyTargetManwon: 116,
+        monthlySavingManwon: 116,
       }),
     );
     expect(replace).toHaveBeenCalledWith("/");
@@ -74,39 +98,48 @@ describe("OnboardingResultPage", () => {
     const firstRender = render(<OnboardingResultPage />);
     const slider = await screen.findByRole("slider", { name: "매달 모을 금액" });
     fireEvent.keyDown(slider, { key: "ArrowRight" });
-    await screen.findByText("매달 모을 금액 116만원");
+    await screen.findByRole("heading", { name: "매달 모을 금액 116만원" });
+    await waitForSavedDraft(116);
     firstRender.unmount();
 
     render(<OnboardingResultPage />);
 
-    expect(await screen.findByText("매달 모을 금액 116만원")).toBeInTheDocument();
+    expect(
+      await screen.findByRole("heading", { name: "매달 모을 금액 116만원" }),
+    ).toBeInTheDocument();
   });
 
   it("다른 사용자에게 이전 사용자의 월 목표 draft를 복원하지 않는다", async () => {
     const firstRender = render(<OnboardingResultPage />);
     const slider = await screen.findByRole("slider", { name: "매달 모을 금액" });
     fireEvent.keyDown(slider, { key: "ArrowRight" });
-    await screen.findByText("매달 모을 금액 116만원");
+    await screen.findByRole("heading", { name: "매달 모을 금액 116만원" });
+    await waitForSavedDraft(116);
     firstRender.unmount();
     vi.mocked(getCurrentUser).mockResolvedValue({ userId: 2, onboardingCompleted: false });
     persistAddressConfirmation(2);
 
     render(<OnboardingResultPage />);
 
-    expect(await screen.findByText("매달 모을 금액 115만원")).toBeInTheDocument();
+    expect(
+      await screen.findByRole("heading", { name: "매달 모을 금액 115만원" }),
+    ).toBeInTheDocument();
   });
 
   it("목표를 확정하면 저장한 월 목표 draft를 제거한다", async () => {
     const firstRender = render(<OnboardingResultPage />);
     const slider = await screen.findByRole("slider", { name: "매달 모을 금액" });
     fireEvent.keyDown(slider, { key: "ArrowRight" });
-    fireEvent.click(screen.getByRole("button", { name: "이 목표로 시작" }));
+    await waitForSavedDraft(116);
+    fireEvent.click(screen.getByRole("button", { name: "이 목표로 시작하기" }));
     await waitFor(() => expect(replace).toHaveBeenCalledWith("/"));
     firstRender.unmount();
 
     render(<OnboardingResultPage />);
 
-    expect(await screen.findByText("매달 모을 금액 115만원")).toBeInTheDocument();
+    expect(
+      await screen.findByRole("heading", { name: "매달 모을 금액 115만원" }),
+    ).toBeInTheDocument();
   });
 
   it("이전 버튼은 확인 화면으로 교체 이동해 왕복 히스토리를 만들지 않는다", async () => {
@@ -140,7 +173,7 @@ describe("OnboardingResultPage", () => {
     vi.mocked(confirmOnboardingGoal).mockRejectedValue(ALREADY_COMPLETED_ERROR);
 
     render(<OnboardingResultPage />);
-    fireEvent.click(await screen.findByRole("button", { name: "이 목표로 시작" }));
+    fireEvent.click(await screen.findByRole("button", { name: "이 목표로 시작하기" }));
 
     await waitFor(() => expect(replace).toHaveBeenCalledWith("/"));
     expect(screen.queryByText("목표를 저장하지 못했어요. 잠시 후 다시 시도해 주세요.")).toBeNull();
