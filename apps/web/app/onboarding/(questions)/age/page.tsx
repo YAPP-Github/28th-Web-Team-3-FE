@@ -101,19 +101,21 @@ export default function AgeOnboardingPage() {
           {saveError}
         </p>
       ) : null}
-      <Button
-        className={`${saveError ? "mt-3" : "mt-auto"} mb-6 disabled:bg-gray-50 disabled:text-gray-300 disabled:opacity-100`}
-        disabled={!isBirthDateValid}
-        pending={isSaving}
-        size="cta"
-        onClick={async () => {
-          if (await trigger("birthDate", { shouldFocus: true })) {
-            if (await saveProfile({ birthDate })) router.push("/onboarding/address");
-          }
-        }}
-      >
-        다음
-      </Button>
+      <div className={`${saveError ? "mt-3" : "mt-auto"} pt-2 pb-6`}>
+        <Button
+          className="disabled:bg-gray-50 disabled:text-gray-300 disabled:opacity-100"
+          disabled={!isBirthDateValid}
+          pending={isSaving}
+          size="cta"
+          onClick={async () => {
+            if (await trigger("birthDate", { shouldFocus: true })) {
+              if (await saveProfile({ birthDate })) router.push("/onboarding/address");
+            }
+          }}
+        >
+          다음
+        </Button>
+      </div>
     </div>
   );
 }

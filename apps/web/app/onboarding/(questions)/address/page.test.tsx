@@ -67,11 +67,19 @@ describe("AddressOnboardingPage", () => {
     expect(
       screen.getByRole("heading", { name: "거주지역이 어디이신가요?" }).closest("section"),
     ).toHaveClass("pb-[138px]");
-    expect(screen.getByRole("button", { name: "다음" }).parentElement).toHaveClass(
+    expect(screen.getByRole("button", { name: "다음" }).parentElement?.parentElement).toHaveClass(
       "fixed",
       "bottom-0",
       "pt-2",
       "pb-6",
     );
+  });
+
+  it("이전 버튼으로 나이 질문에 돌아간다", () => {
+    renderAddressOnboardingPage();
+
+    fireEvent.click(screen.getByRole("button", { name: "이전" }));
+
+    expect(pushMock).toHaveBeenCalledWith("/onboarding/age");
   });
 });

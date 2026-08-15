@@ -67,7 +67,7 @@ export default function InvestmentPeriodOnboardingPage() {
           {saveError}
         </p>
       ) : null}
-      <div className="mt-auto pt-8 pb-6">
+      <div className="mt-auto pt-2 pb-6">
         <ButtonGroup
           nextDisabled={periodMonths === ""}
           nextPending={isSaving}

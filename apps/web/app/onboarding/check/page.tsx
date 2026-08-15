@@ -106,9 +106,8 @@ export default function OnboardingCheckPage() {
         </div>
       </section>
 
-      <div className="mt-auto px-5 pt-8 pb-6">
+      <div className="mt-auto px-5 pt-2 pb-6">
         <ButtonGroup
-          className="[&>button]:text-body-b1-700 [&>button:first-child]:text-gray-800"
           nextDisabled={!isComplete}
           nextLabel="완료"
           onNext={() => router.push("/onboarding/result")}

@@ -2,7 +2,7 @@
 
 import type { OnboardingFormValues } from "@repo/schema/onboarding";
 import type { ResidentialArea } from "@repo/schema/onboarding-api";
-import { Button, OptionGroup, OptionItem } from "@repo/ui";
+import { ButtonGroup, OptionGroup, OptionItem } from "@repo/ui";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { useFormContext, useWatch } from "react-hook-form";
@@ -56,19 +56,16 @@ export default function AddressOnboardingPage() {
             {saveError}
           </p>
         ) : null}
-        <Button
-          className="disabled:bg-gray-50 disabled:text-gray-300 disabled:opacity-100"
-          disabled={address === ""}
-          pending={isSaving}
-          size="cta"
-          onClick={async () => {
+        <ButtonGroup
+          nextDisabled={address === ""}
+          nextPending={isSaving}
+          onPrev={() => router.push("/onboarding/age")}
+          onNext={async () => {
             if (address !== "" && (await trigger("address", { shouldFocus: true }))) {
               if (await saveProfile({ address })) router.push("/onboarding/month");
             }
           }}
-        >
-          다음
-        </Button>
+        />
       </div>
     </div>
   );

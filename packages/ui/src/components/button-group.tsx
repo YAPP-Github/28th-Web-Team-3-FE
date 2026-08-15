@@ -44,7 +44,7 @@ export function ButtonGroup({
           type="button"
           variant="secondary"
           size="cta"
-          className="w-[105px] shrink-0"
+          className="w-[105px] shrink-0 text-gray-800"
           disabled={nextPending}
           onClick={onPrev}
         >
