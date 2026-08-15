@@ -3,6 +3,7 @@
 import Bill from "@repo/ui/svg/bill.svg";
 import Pencil from "@repo/ui/svg/pencil.svg";
 import { useQuery } from "@tanstack/react-query";
+import Link from "next/link";
 import { useState } from "react";
 import { formatManwon } from "@/lib/format";
 import { goalStatusOptions } from "@/lib/queries/goal";
@@ -10,7 +11,6 @@ import { GOAL_TITLE_SUFFIX } from "../constants";
 import { formatDday } from "../lib/format";
 import { calculateGoalProgressPercent, calculateGoalTotalTargetManwon } from "../lib/progress";
 import { GoalDetailSkeleton } from "./goal-detail-skeleton";
-import { GoalEditSheet } from "./goal-edit-sheet";
 import { MonthlyGoalCard } from "./monthly-goal-card";
 import { MonthlySavingsChart } from "./monthly-savings-chart";
 import { SavingsInputSheet } from "./savings-input-sheet";
@@ -20,7 +20,6 @@ import { SemicircleGauge } from "./semicircle-gauge";
 export function GoalDetail() {
   const { data: goal, isPending, isError, isFetching, refetch } = useQuery(goalStatusOptions());
   const [savingsOpen, setSavingsOpen] = useState(false);
-  const [editOpen, setEditOpen] = useState(false);
 
   if (isPending) {
     return <GoalDetailSkeleton />;
@@ -73,14 +72,13 @@ export function GoalDetail() {
             {formatManwon(totalTargetManwon)} {GOAL_TITLE_SUFFIX}
           </span>
         </span>
-        <button
-          type="button"
-          onClick={() => setEditOpen(true)}
+        <Link
+          href="/profile/edit"
           className="flex shrink-0 items-center gap-0.5 text-body-b2-500 text-gray-900"
         >
           수정
           <Pencil aria-hidden="true" className="size-5" />
-        </button>
+        </Link>
       </div>
 
       <div className="px-5 pt-12">
@@ -122,12 +120,6 @@ export function GoalDetail() {
         initialManwon={thisMonth.savedManwon}
         open={savingsOpen}
         onOpenChange={setSavingsOpen}
-      />
-      <GoalEditSheet
-        initialPeriodMonths={goal.periodMonths}
-        initialTargetManwon={totalTargetManwon}
-        open={editOpen}
-        onOpenChange={setEditOpen}
       />
     </>
   );
