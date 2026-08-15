@@ -12,7 +12,7 @@ import MyIcon from "./icons/my.svg";
 const TABS: { label: string; href: string; Icon: FC<SVGProps<SVGSVGElement>> }[] = [
   { label: "홈", href: "/", Icon: HomeIcon },
   { label: "미션", href: "/mission", Icon: MissionIcon },
-  { label: "혜택", href: "/benefits", Icon: BenefitIcon },
+  { label: "혜택/팁", href: "/benefits", Icon: BenefitIcon },
   { label: "마이", href: "/mypage", Icon: MyIcon },
 ];
 

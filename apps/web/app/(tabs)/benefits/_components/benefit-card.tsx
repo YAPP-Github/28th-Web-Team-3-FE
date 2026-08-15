@@ -66,9 +66,15 @@ export function BenefitCard({ benefit, onToggleSave }: BenefitCardProps) {
           onClick={() => onToggleSave(benefit)}
           className="-m-3 relative z-10 flex size-11 shrink-0 items-center justify-center rounded-full transition-[scale,background-color] duration-100 hover:bg-gray-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring active:scale-[0.92] motion-reduce:transition-none motion-reduce:active:scale-100"
         >
+          {/* 시안은 저장 여부를 채운 별의 색으로만 구분한다(초록/회색). 상태 자체는
+              `aria-pressed`가 전한다. */}
           <Star
             aria-hidden="true"
-            className={benefit.saved ? "size-5 fill-success text-success" : "size-5 text-gray-300"}
+            className={
+              benefit.saved
+                ? "size-5 fill-success text-success"
+                : "size-5 fill-gray-400 text-gray-400"
+            }
           />
         </button>
       </div>
