@@ -84,75 +84,91 @@ function OnboardingGoalResult({
         </Button>
       </header>
 
-      <main className="px-5 pt-5">
-        <h1 className="text-headline-h2-700 text-gray-900">얼마를 목표로 저축할까요?</h1>
-        <p className="mt-1 text-body-b1-400 text-gray-700">
-          매달 모을 금액을 정하면 목표 금액이 만들어져요.
-        </p>
-
-        <section className="mt-6 rounded-2xl bg-gray-10 px-4 py-6 text-center">
-          <h2 className="text-title-t2-700 text-blue-500">
-            {goalPeriodMonths}개월 뒤 저축 예상 금액
-          </h2>
-          <p className="mt-1 text-headline-h1-700 text-gray-900 tabular-nums">
-            {formatManwon(expectedTotal)}
-          </p>
-          <p className="mt-2 text-caption-c1-500 text-gray-500">
-            현재 순자산 {formatManwon(netWorthManwon)} + 추가 저축액{" "}
-            {formatManwon(additionalSavings)}
-            <br />({formatManwon(monthlyTargetManwon)} x {goalPeriodMonths}개월)
-          </p>
-        </section>
-
-        <section className="mt-8" aria-labelledby="monthly-goal-title">
-          <h2 id="monthly-goal-title" className="text-title-t1-700 text-gray-900">
-            매달 모을 금액 {formatManwon(monthlyTargetManwon)}
-          </h2>
-          <p className="mt-1 text-caption-c1-500 text-gray-500">
-            기존 월 저축액({formatManwon(monthlySavingManwon)})보다 {increasePercent}% 더 모아요.
-          </p>
-
-          <Slider
-            className="mt-8"
-            max={maxMonthlyTarget}
-            min={monthlySavingManwon}
-            step={1}
-            thumbLabels={["매달 모을 금액"]}
-            value={[monthlyTargetManwon]}
-            onValueChange={([nextTarget]) => {
-              if (nextTarget !== undefined) setMonthlyTargetManwon(nextTarget);
-            }}
-          />
-          <div className="mt-4 flex justify-between gap-4 text-caption-c1-500 text-gray-400">
-            <span>
-              최소 {formatManwon(monthlySavingManwon)}
-              <br /> (현재 저축액)
-            </span>
-            <span>최대 {formatManwon(maxMonthlyTarget)}</span>
+      <main className="flex flex-col gap-8 px-5 pt-5">
+        <div className="flex flex-col gap-6">
+          <div className="flex flex-col gap-1">
+            <h1 className="text-headline-h2-700 text-gray-900">얼마를 목표로 저축할까요?</h1>
+            <p className="text-body-b1-500 text-gray-700">
+              매달 모을 금액을 정하면 목표 금액이 만들어져요.
+            </p>
           </div>
-        </section>
 
-        <section className="mt-10 rounded-2xl bg-gradient-to-r from-[#f0edff] to-[#e7f6ff] px-5 py-4">
-          {monthlyIncrease > 0 ? (
-            <p className="text-body-b2-500 text-gray-800">
-              현재 저축액에서 매달 더 모으는{" "}
-              <strong className="text-body-b2-700">{formatManwon(monthlyIncrease)}</strong>은<br />
-              맞춤 미션으로 아끼모와 함께해요.
-            </p>
-          ) : (
-            <p className="text-body-b2-500 text-gray-800">
-              현재 저축액을 꾸준히 모을 수 있도록
-              <br />
-              맞춤 미션으로 아끼모가 함께할게요.
-            </p>
-          )}
-        </section>
+          <section className="flex flex-col items-center gap-2.5 rounded-2xl bg-gray-10 px-4 py-6 text-center">
+            <div className="flex flex-col items-center">
+              <h2 className="text-title-t2-700 text-blue-600">
+                {goalPeriodMonths}개월 뒤 저축 예상 금액
+              </h2>
+              <p className="font-bold text-[32px] leading-[38px] text-gray-900 tabular-nums">
+                {formatManwon(expectedTotal)}
+              </p>
+            </div>
+            <div className="flex flex-col text-body-b2-500 text-gray-500">
+              <p>현재 순자산 {formatManwon(netWorthManwon)}</p>
+              <p>
+                + 추가 저축액 {formatManwon(additionalSavings)}({formatManwon(monthlyTargetManwon)}{" "}
+                x {goalPeriodMonths}개월)
+              </p>
+            </div>
+          </section>
+        </div>
 
-        {errorMessage ? (
-          <p aria-live="polite" className="mt-4 text-center text-body-b2-500 text-gray-700">
-            {errorMessage}
-          </p>
-        ) : null}
+        <div className="flex flex-col gap-6">
+          <section className="flex flex-col gap-6" aria-labelledby="monthly-goal-title">
+            <div className="flex flex-col gap-1">
+              <h2 id="monthly-goal-title" className="text-title-t1-700 text-gray-900">
+                매달 모을 금액 {formatManwon(monthlyTargetManwon)}
+              </h2>
+              <p className="text-body-b2-500 text-gray-700">
+                기존 월 저축액({formatManwon(monthlySavingManwon)})보다 {increasePercent}% 더
+                모아요.
+              </p>
+            </div>
+
+            <div className="flex flex-col">
+              <Slider
+                className="h-8"
+                max={maxMonthlyTarget}
+                min={monthlySavingManwon}
+                step={1}
+                thumbLabels={["매달 모을 금액"]}
+                value={[monthlyTargetManwon]}
+                onValueChange={([nextTarget]) => {
+                  if (nextTarget !== undefined) setMonthlyTargetManwon(nextTarget);
+                }}
+              />
+              <div className="flex justify-between gap-4 text-body-b2-500 text-gray-400">
+                <span>
+                  최소 {formatManwon(monthlySavingManwon)}
+                  <br /> (현재 저축액)
+                </span>
+                <span>최대 {formatManwon(maxMonthlyTarget)}</span>
+              </div>
+            </div>
+          </section>
+
+          <section className="flex items-center justify-center rounded-[14px] bg-gradient-to-r from-[#e6ebff] to-[#e2f8ff] px-5 py-4 text-center">
+            {monthlyIncrease > 0 ? (
+              <p className="text-body-b1-500 text-gray-800">
+                현재 저축액에서 매달 더 모으는{" "}
+                <strong className="text-body-b1-700">{formatManwon(monthlyIncrease)}</strong>
+                은<br />
+                맞춤 미션으로 아끼모와 함께해요.
+              </p>
+            ) : (
+              <p className="text-body-b1-500 text-gray-800">
+                현재 저축액을 꾸준히 모을 수 있도록
+                <br />
+                맞춤 미션으로 아끼모가 함께할게요.
+              </p>
+            )}
+          </section>
+
+          {errorMessage ? (
+            <p aria-live="polite" className="text-center text-body-b2-500 text-gray-700">
+              {errorMessage}
+            </p>
+          ) : null}
+        </div>
       </main>
 
       <div className="fixed inset-x-0 bottom-0 z-10 mx-auto w-full max-w-md bg-gray-0 px-5 pt-2 pb-6">
