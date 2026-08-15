@@ -10,6 +10,9 @@ const replaceMock = vi.fn();
 vi.mock("next/navigation", () => ({
   useRouter: () => ({ prefetch: vi.fn(), push: pushMock, replace: replaceMock }),
 }));
+vi.mock("@/api/auth", () => ({
+  getCurrentUser: vi.fn().mockResolvedValue({ userId: 1, onboardingCompleted: false }),
+}));
 vi.mock("@/api/onboarding", () => ({
   getOnboardingProfile: vi.fn().mockRejectedValue(new Error("test")),
   patchOnboardingProfile: vi.fn().mockResolvedValue({}),
@@ -26,6 +29,7 @@ function renderAddressOnboardingPage() {
 describe("AddressOnboardingPage", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    localStorage.clear();
     vi.mocked(getOnboardingProfile).mockRejectedValue(new Error("test"));
   });
 
@@ -45,13 +49,13 @@ describe("AddressOnboardingPage", () => {
     });
   });
 
-  it("후속 설문과 함께 저장된 지역은 다시 선택하지 않아도 진행할 수 있다", async () => {
+  it("서울이 아닌 저장 지역은 확인 기록 없이도 복원한다", async () => {
     vi.mocked(getOnboardingProfile).mockResolvedValue({
       status: "IN_PROGRESS",
       birthDate: "1998-03-01",
       address: "GYEONGGI",
-      monthlySalaryManwon: 300,
-      monthlySavingManwon: 100,
+      monthlySalaryManwon: null,
+      monthlySavingManwon: null,
       netWorthManwon: null,
       goalPeriodMonths: null,
     });
@@ -62,7 +66,7 @@ describe("AddressOnboardingPage", () => {
     expect(screen.getByRole("button", { name: "다음" })).toBeEnabled();
   });
 
-  it("신규 프로필의 임시 서울 기본값은 사용자가 선택하기 전까지 응답으로 인정하지 않는다", async () => {
+  it("BE의 임시 서울은 직접 선택하기 전까지 미응답이며 저장 후 재진입하면 복원한다", async () => {
     vi.mocked(getOnboardingProfile).mockResolvedValue({
       status: "IN_PROGRESS",
       birthDate: "1998-03-01",
@@ -73,14 +77,21 @@ describe("AddressOnboardingPage", () => {
       goalPeriodMonths: null,
     });
 
-    renderAddressOnboardingPage();
+    const firstRender = renderAddressOnboardingPage();
 
-    await waitFor(() => expect(screen.getByRole("radio", { name: "서울" })).not.toBeChecked());
-    expect(screen.getByRole("button", { name: "다음" })).toBeDisabled();
+    await waitFor(() => expect(screen.getByRole("button", { name: "다음" })).toBeDisabled());
+    expect(screen.getByRole("radio", { name: "서울" })).not.toBeChecked();
 
     fireEvent.click(screen.getByRole("radio", { name: "서울" }));
-
     expect(screen.getByRole("radio", { name: "서울" })).toBeChecked();
+    expect(screen.getByRole("button", { name: "다음" })).toBeEnabled();
+    fireEvent.click(screen.getByRole("button", { name: "다음" }));
+    await waitFor(() => expect(patchOnboardingProfile).toHaveBeenCalledWith({ address: "SEOUL" }));
+    firstRender.unmount();
+
+    renderAddressOnboardingPage();
+
+    await waitFor(() => expect(screen.getByRole("radio", { name: "서울" })).toBeChecked());
     expect(screen.getByRole("button", { name: "다음" })).toBeEnabled();
   });
 

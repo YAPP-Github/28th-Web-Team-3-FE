@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { getCurrentUser } from "@/api/auth";
 import { confirmOnboardingGoal, getOnboardingProfile } from "@/api/onboarding";
 import { fireEvent, render, screen, waitFor } from "@/lib/test/react";
 import OnboardingResultPage from "./page";
@@ -9,6 +10,7 @@ const { ALREADY_COMPLETED_ERROR } = vi.hoisted(() => ({
 }));
 
 vi.mock("next/navigation", () => ({ useRouter: () => ({ replace }) }));
+vi.mock("@/api/auth", () => ({ getCurrentUser: vi.fn() }));
 vi.mock("@/api/onboarding", () => ({
   confirmOnboardingGoal: vi.fn(),
   getOnboardingProfile: vi.fn(),
@@ -29,6 +31,7 @@ describe("OnboardingResultPage", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     localStorage.clear();
+    vi.mocked(getCurrentUser).mockResolvedValue({ userId: 1, onboardingCompleted: false });
     vi.mocked(getOnboardingProfile).mockResolvedValue(profile);
     vi.mocked(confirmOnboardingGoal).mockResolvedValue({
       goalId: 1,
@@ -75,6 +78,19 @@ describe("OnboardingResultPage", () => {
     render(<OnboardingResultPage />);
 
     expect(await screen.findByText("매달 모을 금액 116만원")).toBeInTheDocument();
+  });
+
+  it("다른 사용자에게 이전 사용자의 월 목표 draft를 복원하지 않는다", async () => {
+    const firstRender = render(<OnboardingResultPage />);
+    const slider = await screen.findByRole("slider", { name: "매달 모을 금액" });
+    fireEvent.keyDown(slider, { key: "ArrowRight" });
+    await screen.findByText("매달 모을 금액 116만원");
+    firstRender.unmount();
+    vi.mocked(getCurrentUser).mockResolvedValue({ userId: 2, onboardingCompleted: false });
+
+    render(<OnboardingResultPage />);
+
+    expect(await screen.findByText("매달 모을 금액 115만원")).toBeInTheDocument();
   });
 
   it("목표를 확정하면 저장한 월 목표 draft를 제거한다", async () => {

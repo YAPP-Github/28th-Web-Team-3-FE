@@ -9,29 +9,45 @@ import { useEffect, useState } from "react";
 import { useFormContext, useWatch } from "react-hook-form";
 import { useSaveOnboardingProfile } from "@/app/onboarding/_hooks/use-save-onboarding-profile";
 import { RESIDENTIAL_AREA_OPTIONS } from "@/app/onboarding/constants/residential-areas";
-import { onboardingProfileOptions } from "@/lib/queries/onboarding";
+import { currentUserOptions } from "@/lib/queries/auth";
+
+const ADDRESS_CONFIRMATION_STORAGE_KEY_PREFIX = "onboarding:address-confirmed:";
+
+function hasPersistedAddressConfirmation(userId: number) {
+  try {
+    return localStorage.getItem(`${ADDRESS_CONFIRMATION_STORAGE_KEY_PREFIX}${userId}`) === "true";
+  } catch {
+    return false;
+  }
+}
+
+function persistAddressConfirmation(userId: number) {
+  try {
+    localStorage.setItem(`${ADDRESS_CONFIRMATION_STORAGE_KEY_PREFIX}${userId}`, "true");
+  } catch {
+    // 저장소를 쓸 수 없으면 현재 폼 상태로 진행하고, 재진입 시 다시 선택하게 한다.
+  }
+}
 
 export default function AddressOnboardingPage() {
   const router = useRouter();
   const { control, setValue, trigger } = useFormContext<OnboardingFormValues>();
   const address = useWatch({ control, name: "address" });
-  const { data: profile } = useQuery(onboardingProfileOptions());
+  const { data: currentUser } = useQuery(currentUserOptions());
   const [hasAnswered, setHasAnswered] = useState(false);
-  // BE는 신규 프로필에도 임시 기본값 SEOUL을 내려준다. 후속 답변이 없으면 저장된
-  // 서울이 아니라 미응답으로 보고, 사용자가 지역을 명시적으로 선택하게 한다.
-  const hasStoredAnswer =
-    profile?.address != null &&
-    (profile.address !== "SEOUL" ||
-      profile.monthlySalaryManwon !== null ||
-      profile.monthlySavingManwon !== null ||
-      profile.netWorthManwon !== null ||
-      profile.goalPeriodMonths !== null);
-  const hasConfirmedAddress = hasAnswered || hasStoredAnswer;
+  const hasConfirmedAddress = address !== "" && (address !== "SEOUL" || hasAnswered);
   const { isSaving, saveError, saveProfile } = useSaveOnboardingProfile();
 
   useEffect(() => {
     router.prefetch("/onboarding/month");
   }, [router]);
+
+  useEffect(() => {
+    if (!currentUser) return;
+    setHasAnswered((currentAnswer) =>
+      currentAnswer ? true : hasPersistedAddressConfirmation(currentUser.userId),
+    );
+  }, [currentUser]);
 
   return (
     <div className="min-h-[calc(100dvh-56px)]">
@@ -72,12 +88,15 @@ export default function AddressOnboardingPage() {
           </p>
         ) : null}
         <ButtonGroup
-          nextDisabled={!hasConfirmedAddress || address === ""}
+          nextDisabled={!hasConfirmedAddress || (address === "SEOUL" && !currentUser)}
           nextPending={isSaving}
           onPrev={() => router.replace("/onboarding/age")}
           onNext={async () => {
             if (address !== "" && (await trigger("address", { shouldFocus: true }))) {
-              if (await saveProfile({ address })) router.push("/onboarding/month");
+              if (await saveProfile({ address })) {
+                if (currentUser) persistAddressConfirmation(currentUser.userId);
+                router.push("/onboarding/month");
+              }
             }
           }}
         />

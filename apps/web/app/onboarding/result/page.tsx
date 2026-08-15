@@ -12,6 +12,7 @@ import { useEffect, useState } from "react";
 import { isOnboardingAlreadyCompletedError } from "@/api/onboarding";
 import { OnboardingPageSkeleton } from "@/app/onboarding/_components/onboarding-page-skeleton";
 import { formatManwon } from "@/lib/format";
+import { currentUserOptions } from "@/lib/queries/auth";
 import { confirmOnboardingGoalOptions, onboardingProfileOptions } from "@/lib/queries/onboarding";
 
 interface GoalReadyProfile {
@@ -21,9 +22,8 @@ interface GoalReadyProfile {
 }
 
 interface MonthlyTargetDraft {
-  monthlySavingManwon: number;
-  netWorthManwon: number;
-  goalPeriodMonths: number;
+  userId: number;
+  profileFingerprint: string;
   monthlyTargetManwon: number;
 }
 
@@ -56,11 +56,26 @@ function getDefaultMonthlyTarget(currentMonthlySaving: number): number {
   );
 }
 
-function readMonthlyTargetDraft({
+function getProfileFingerprint({
   monthlySavingManwon,
   netWorthManwon,
   goalPeriodMonths,
-}: GoalReadyProfile): number | null {
+}: GoalReadyProfile) {
+  const source = `${monthlySavingManwon}:${netWorthManwon}:${goalPeriodMonths}`;
+  let hash = 2_166_136_261;
+
+  for (const character of source) {
+    hash ^= character.charCodeAt(0);
+    hash = Math.imul(hash, 16_777_619);
+  }
+
+  return (hash >>> 0).toString(36);
+}
+
+function readMonthlyTargetDraft(
+  { monthlySavingManwon, netWorthManwon, goalPeriodMonths }: GoalReadyProfile,
+  userId: number,
+): number | null {
   try {
     const storedDraft = localStorage.getItem(MONTHLY_TARGET_DRAFT_STORAGE_KEY);
     if (!storedDraft) return null;
@@ -68,9 +83,9 @@ function readMonthlyTargetDraft({
     const draft = JSON.parse(storedDraft) as Partial<MonthlyTargetDraft>;
     const maxMonthlyTarget = monthlySavingManwon + MAX_ONBOARDING_MONTHLY_TARGET_INCREASE_MANWON;
     const isCurrentProfile =
-      draft.monthlySavingManwon === monthlySavingManwon &&
-      draft.netWorthManwon === netWorthManwon &&
-      draft.goalPeriodMonths === goalPeriodMonths;
+      draft.userId === userId &&
+      draft.profileFingerprint ===
+        getProfileFingerprint({ monthlySavingManwon, netWorthManwon, goalPeriodMonths });
     const monthlyTargetManwon = draft.monthlyTargetManwon;
     const isValidTarget =
       typeof monthlyTargetManwon === "number" &&
@@ -104,10 +119,11 @@ function clearMonthlyTargetDraft() {
 }
 
 function OnboardingGoalResult({
+  userId,
   monthlySavingManwon,
   netWorthManwon,
   goalPeriodMonths,
-}: GoalReadyProfile) {
+}: GoalReadyProfile & { userId: number }) {
   const router = useRouter();
   const queryClient = useQueryClient();
   const { mutateAsync: confirmGoal, isPending } = useMutation(
@@ -129,22 +145,32 @@ function OnboardingGoalResult({
 
   useEffect(() => {
     setMonthlyTargetManwon(
-      readMonthlyTargetDraft({ monthlySavingManwon, netWorthManwon, goalPeriodMonths }) ??
+      readMonthlyTargetDraft({ monthlySavingManwon, netWorthManwon, goalPeriodMonths }, userId) ??
         getDefaultMonthlyTarget(monthlySavingManwon),
     );
     setIsDraftHydrated(true);
-  }, [goalPeriodMonths, monthlySavingManwon, netWorthManwon]);
+  }, [goalPeriodMonths, monthlySavingManwon, netWorthManwon, userId]);
 
   useEffect(() => {
     if (!isDraftHydrated) return;
 
     saveMonthlyTargetDraft({
-      monthlySavingManwon,
-      netWorthManwon,
-      goalPeriodMonths,
+      userId,
+      profileFingerprint: getProfileFingerprint({
+        monthlySavingManwon,
+        netWorthManwon,
+        goalPeriodMonths,
+      }),
       monthlyTargetManwon,
     });
-  }, [goalPeriodMonths, isDraftHydrated, monthlySavingManwon, monthlyTargetManwon, netWorthManwon]);
+  }, [
+    goalPeriodMonths,
+    isDraftHydrated,
+    monthlySavingManwon,
+    monthlyTargetManwon,
+    netWorthManwon,
+    userId,
+  ]);
 
   return (
     <div className="mx-auto min-h-dvh w-full max-w-md bg-gray-0 pb-[126px]">
@@ -276,8 +302,9 @@ function OnboardingGoalResult({
 export default function OnboardingResultPage() {
   const router = useRouter();
   const { data: profile, isError } = useQuery(onboardingProfileOptions());
+  const { data: currentUser, isError: isCurrentUserError } = useQuery(currentUserOptions());
 
-  if (isError && !profile) {
+  if ((isError && !profile) || (isCurrentUserError && !currentUser)) {
     return (
       <div className="flex min-h-dvh items-center justify-center px-5 text-center text-body-b1-500 text-gray-700">
         결과를 불러오지 못했어요. 잠시 후 페이지를 다시 열어주세요.
@@ -285,7 +312,7 @@ export default function OnboardingResultPage() {
     );
   }
 
-  if (!profile) {
+  if (!profile || !currentUser) {
     return <OnboardingPageSkeleton label="결과를 불러오는 중" />;
   }
 
@@ -301,5 +328,5 @@ export default function OnboardingResultPage() {
     );
   }
 
-  return <OnboardingGoalResult {...goalReadyProfile} />;
+  return <OnboardingGoalResult {...goalReadyProfile} userId={currentUser.userId} />;
 }

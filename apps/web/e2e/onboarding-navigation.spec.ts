@@ -6,7 +6,7 @@ test("온보딩에서 뒤로 이동하거나 이탈 후 재진입해도 마지�
   const profile = {
     status: "IN_PROGRESS",
     birthDate: null as string | null,
-    // 실제 BE는 신규 프로필에도 임시 기본값 SEOUL을 내려준다.
+    // prod BE는 주소를 보내지 않는 기존 FE를 위해 임시 SEOUL을 유지한다.
     address: "SEOUL" as string | null,
     monthlySalaryManwon: null,
     monthlySavingManwon: null,
