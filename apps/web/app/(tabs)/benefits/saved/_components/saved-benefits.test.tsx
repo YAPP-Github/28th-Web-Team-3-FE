@@ -133,17 +133,19 @@ describe("SavedBenefits", () => {
     expect(unbookmarkPolicy).not.toHaveBeenCalled();
   });
 
-  it("저장 취소 실패 시 모달을 유지하고 카드를 되돌린다", async () => {
+  it("저장 취소 실패 시 닫힌 모달을 다시 열지 않고 카드를 되돌린다", async () => {
     vi.mocked(unbookmarkPolicy).mockRejectedValue(new Error("network error"));
     render(<SavedBenefits />);
 
     fireEvent.click(await screen.findByRole("button", { name: "저장한 혜택 저장" }));
     fireEvent.click(screen.getByRole("button", { name: "취소" }));
 
+    expect(screen.queryByRole("dialog", { name: "저장을 취소할까요?" })).not.toBeInTheDocument();
+
     expect(
       await screen.findByText("저장 상태를 바꾸지 못했어요. 잠시 후 다시 시도해 주세요."),
     ).toBeInTheDocument();
-    expect(screen.getByRole("dialog", { name: "저장을 취소할까요?" })).toBeInTheDocument();
+    expect(screen.queryByRole("dialog", { name: "저장을 취소할까요?" })).not.toBeInTheDocument();
     expect(screen.getByText("저장한 혜택")).toBeInTheDocument();
   });
 
@@ -162,7 +164,7 @@ describe("SavedBenefits", () => {
     fireEvent.click(star);
     fireEvent.click(screen.getByRole("button", { name: "취소" }));
     expect(screen.queryByText("저장한 혜택")).not.toBeInTheDocument();
-    expect(screen.getByRole("dialog", { name: "저장을 취소할까요?" })).toBeInTheDocument();
+    expect(screen.queryByRole("dialog", { name: "저장을 취소할까요?" })).not.toBeInTheDocument();
 
     await waitFor(() => expect(unbookmarkPolicy).toHaveBeenCalledWith(7));
     await act(async () => {

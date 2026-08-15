@@ -22,7 +22,6 @@ import { SavedBenefitCancelDialog } from "./saved-benefit-cancel-dialog";
 export function SavedBenefits() {
   const [contentType, setContentType] = useState<BenefitContentType>("policy");
   const [cancelTarget, setCancelTarget] = useState<BenefitItem>();
-  const [isCancelPending, setIsCancelPending] = useState(false);
   const queryClient = useQueryClient();
   const toggleBookmark = useMutation(togglePolicyBookmarkOptions());
   const { saveError, clearSaveError, toggleSaved } = useSavedToggleQueue(
@@ -49,21 +48,15 @@ export function SavedBenefits() {
   }
 
   function closeCancelDialog() {
-    if (isCancelPending) return;
     clearSaveError();
     setCancelTarget(undefined);
   }
 
   function confirmCancel() {
-    if (!cancelTarget || isCancelPending) return;
-    setIsCancelPending(true);
-    toggleSaved(cancelTarget, {
-      onSuccess: () => {
-        setIsCancelPending(false);
-        setCancelTarget(undefined);
-      },
-      onError: () => setIsCancelPending(false),
-    });
+    if (!cancelTarget) return;
+    const target = cancelTarget;
+    setCancelTarget(undefined);
+    toggleSaved(target);
   }
 
   if (isTipTab) {
@@ -128,7 +121,6 @@ export function SavedBenefits() {
       <SavedBenefitCancelDialog
         error={saveError}
         open={Boolean(cancelTarget)}
-        pending={isCancelPending}
         onCancel={closeCancelDialog}
         onConfirm={confirmCancel}
       />
