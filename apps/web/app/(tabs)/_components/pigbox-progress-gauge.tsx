@@ -201,7 +201,10 @@ export function PigboxProgressGauge({
   return (
     <div
       aria-hidden="true"
-      className={cn("pointer-events-none relative size-32 shrink-0 overflow-hidden", className)}
+      className={cn(
+        "pointer-events-none relative h-[130px] w-[117px] shrink-0 overflow-hidden",
+        className,
+      )}
       data-pigbox-progress={Math.round(clampedProgress)}
       style={style}
     >
@@ -211,8 +214,8 @@ export function PigboxProgressGauge({
           alt=""
           aria-hidden="true"
           className="object-contain"
-          sizes="128px"
-          src="/images/mission/mission-home.webp"
+          sizes="117px"
+          src="/images/mission/pigbox-home.png"
         />
       )}
       <div ref={baseRef} aria-hidden="true" className="absolute inset-0 z-10" />

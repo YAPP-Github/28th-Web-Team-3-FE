@@ -38,7 +38,10 @@ export function HomeGoalSection() {
 
   return (
     <>
-      <GoalTrackerRow targetAmountManwon={totalTargetManwon} />
+      <GoalTrackerRow
+        currentAmountManwon={goal.totalSavedManwon}
+        targetAmountManwon={totalTargetManwon}
+      />
       <MonthlyGoalCard
         currentLabel={formatManwon(thisMonth.savedManwon)}
         ddayLabel={formatDday(thisMonth.dDay)}

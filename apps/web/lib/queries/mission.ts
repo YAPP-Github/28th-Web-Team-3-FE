@@ -1,15 +1,30 @@
 import type { MissionSource } from "@repo/schema/mission";
-import { mutationOptions, type QueryClient, queryOptions } from "@tanstack/react-query";
-import { completeMission, deleteRecommendedMission, fetchMissions } from "@/api/mission";
+import {
+  keepPreviousData,
+  mutationOptions,
+  type QueryClient,
+  queryOptions,
+} from "@tanstack/react-query";
+import {
+  completeMission,
+  deleteRecommendedMission,
+  fetchMissions,
+  type MissionListParams,
+} from "@/api/mission";
 
 /** 미션 목록 캐시 키. 밖에서는 `missionsOptions().queryKey`로 꺼낸다. */
 const MISSIONS_QUERY_KEY = ["missions"] as const;
 
-/** 내 미션 전체 조회. */
-export function missionsOptions() {
+/** 내 미션 조회. 필터가 바뀔 때는 직전 결과를 유지해 목록 깜빡임을 막는다. */
+export function missionsOptions(params: MissionListParams = {}) {
+  const filtered = params.status != null || params.category != null;
+
   return queryOptions({
-    queryKey: MISSIONS_QUERY_KEY,
-    queryFn: fetchMissions,
+    queryKey: filtered
+      ? [...MISSIONS_QUERY_KEY, "filtered", params.status ?? null, params.category ?? null]
+      : MISSIONS_QUERY_KEY,
+    queryFn: () => fetchMissions(params),
+    placeholderData: filtered ? keepPreviousData : undefined,
   });
 }
 

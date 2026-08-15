@@ -49,6 +49,14 @@ const MOCK_MISSIONS: Mission[] = [
 
 let mockData: Mission[] = MOCK_MISSIONS;
 
+function filterMissions(params: Parameters<typeof fetchMissions>[0] = {}) {
+  return mockData.filter(
+    (mission) =>
+      (!params.status || mission.status === params.status) &&
+      (!params.category || mission.category === params.category),
+  );
+}
+
 vi.mock("@/api/mission", () => ({
   completeMission: vi.fn(),
   deleteRecommendedMission: vi.fn(),
@@ -66,7 +74,9 @@ import { WeeklyMissionSection } from "./weekly-mission-section";
 describe("WeeklyMissionSection", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    vi.mocked(fetchMissions).mockImplementation(() => Promise.resolve(mockData));
+    vi.mocked(fetchMissions).mockImplementation((params) =>
+      Promise.resolve(filterMissions(params)),
+    );
     vi.mocked(completeMission).mockResolvedValue(undefined);
     vi.mocked(fetchGoalStatus).mockResolvedValue(MOCK_GOAL_STATUS);
   });
@@ -80,20 +90,47 @@ describe("WeeklyMissionSection", () => {
     expect(screen.getByText("이번 주 배달음식 2회 이하로 주문")).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("button", { name: "교통" }));
+    await waitFor(() =>
+      expect(screen.queryByText("이번 주 배달음식 2회 이하로 주문")).not.toBeInTheDocument(),
+    );
     expect(screen.getByText("가까운 거리 걸어다니기 1회")).toBeInTheDocument();
-    expect(screen.queryByText("이번 주 배달음식 2회 이하로 주문")).not.toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("button", { name: "취미" }));
-    expect(screen.getByText("취미 구독 점검하기")).toBeInTheDocument();
+    expect(await screen.findByText("취미 구독 점검하기")).toBeInTheDocument();
+    await waitFor(() =>
+      expect(screen.queryByText("가까운 거리 걸어다니기 1회")).not.toBeInTheDocument(),
+    );
+  });
+
+  it("카테고리 조회 중에는 직전 목록을 placeholder로 유지한다", async () => {
+    mockData = MOCK_MISSIONS;
+    vi.mocked(fetchMissions).mockImplementation((params) =>
+      params?.category === "LIVING"
+        ? new Promise(() => {})
+        : Promise.resolve(filterMissions(params)),
+    );
+    const { container } = render(<WeeklyMissionSection />);
+
+    expect(await screen.findByText("이번 주 배달음식 2회 이하로 주문")).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "생활" }));
+
+    expect(screen.getByText("이번 주 배달음식 2회 이하로 주문")).toBeInTheDocument();
+    expect(container.querySelector('[aria-busy="true"]')).toBeInTheDocument();
+    expect(screen.queryByText("미션을 불러오는 중")).not.toBeInTheDocument();
   });
 
   it("모든 미션을 완료하면 진행률과 게이지를 100%로 표시한다", async () => {
     mockData = [
       {
         id: "completed-1",
-        source: "MANUAL",
+        source: "RECOMMENDED",
         category: "LIVING",
         title: "사용하지 않는 구독 정리하기",
+        targetCount: 1,
+        targetUnit: "TIMES_PER_WEEK",
+        estimatedSavingsWon: 30_000,
+        savingsEstimateVersion: "V1",
+        savingsLabel: "약 3만원 절약 예상",
         status: "COMPLETED",
         weekEndsAt: "2099-01-01T00:00:00Z",
       },
@@ -101,18 +138,31 @@ describe("WeeklyMissionSection", () => {
     const { container } = render(<WeeklyMissionSection />);
 
     expect(await screen.findByText("100% 달성")).toBeInTheDocument();
+    expect(screen.getByText("약 3만원 절약했어요")).toBeInTheDocument();
     expect(container.querySelector('[data-pigbox-progress="100"]')).toBeInTheDocument();
   });
 
-  it("미션이 없으면 추가 CTA를 표시한다", async () => {
+  it("첫 미션이 없으면 목표 금액을 포함한 단일 추가 CTA를 표시한다", async () => {
     mockData = [];
     render(<WeeklyMissionSection />);
 
     expect(await screen.findByText("0% 달성")).toBeInTheDocument();
+    expect(screen.getByText("약 0원 절약했어요")).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "5,000만원 달성을 위한 미션 추가" })).toHaveAttribute(
       "href",
       "/mission/new",
     );
+  });
+
+  it("미션이 3개보다 많으면 페이지를 나눠 홈 높이를 유지한다", async () => {
+    mockData = [...MOCK_MISSIONS, { ...MOCK_MISSIONS[0]!, id: "m4", title: "네 번째 미션" }];
+    render(<WeeklyMissionSection />);
+
+    expect(await screen.findByText("1/2")).toBeInTheDocument();
+    expect(screen.queryByText("네 번째 미션")).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "다음 미션 페이지" }));
+    expect(screen.getByText("2/2")).toBeInTheDocument();
+    expect(screen.getByText("네 번째 미션")).toBeInTheDocument();
   });
 
   it("절약 추정값이 없는 수동 미션에는 대체 설명을 표시한다", async () => {
