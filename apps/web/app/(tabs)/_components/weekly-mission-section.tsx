@@ -204,7 +204,7 @@ function MissionProgress({ ddayLabel, percent, completedCount }: MissionProgress
           <CoinIcon aria-hidden="true" />+{completedCount}
         </span>
       </div>
-      <PigboxProgressGauge progress={percent} />
+      <PigboxProgressGauge completedCount={completedCount} progress={percent} />
     </div>
   );
 }

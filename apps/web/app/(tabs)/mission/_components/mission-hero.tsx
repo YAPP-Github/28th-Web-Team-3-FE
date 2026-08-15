@@ -1,5 +1,5 @@
 import CoinIcon from "@repo/ui/svg/coin.svg";
-import Image from "next/image";
+import { PigboxProgressGauge } from "@/app/(tabs)/_components/pigbox-progress-gauge";
 import { SAFE_AREA_HERO_ATTRIBUTE } from "@/lib/safe-area-bands";
 
 interface MissionHeroProps {
@@ -30,13 +30,10 @@ export function MissionHero({ ddayLabel, percent, completedCount }: MissionHeroP
         </p>
       </div>
       <div aria-hidden="true" className="absolute right-1 bottom-3 h-40 w-52">
-        <Image
-          fill
-          alt=""
-          className="object-contain"
-          preload
-          sizes="208px"
-          src="/images/mission/mission-home.webp"
+        <PigboxProgressGauge
+          className="size-full"
+          completedCount={completedCount}
+          progress={percent}
         />
       </div>
     </section>

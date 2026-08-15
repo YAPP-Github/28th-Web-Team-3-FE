@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { render, waitFor } from "@/lib/test/react";
+import { act, render, waitFor } from "@/lib/test/react";
 import { calculatePigboxFillTop, PigboxProgressGauge } from "./pigbox-progress-gauge";
 
 const lottieMocks = vi.hoisted(() => ({
@@ -17,8 +17,11 @@ vi.mock("lottie-web", () => ({
 }));
 
 describe("PigboxProgressGauge", () => {
+  const animationFrames: FrameRequestCallback[] = [];
+
   beforeEach(() => {
     vi.clearAllMocks();
+    animationFrames.length = 0;
     lottieMocks.loadAnimation.mockReturnValue({
       addEventListener: lottieMocks.addEventListener,
       destroy: lottieMocks.destroy,
@@ -33,10 +36,13 @@ describe("PigboxProgressGauge", () => {
       }),
     );
     vi.stubGlobal("matchMedia", vi.fn().mockReturnValue({ matches: false }));
-    vi.stubGlobal("requestAnimationFrame", (callback: FrameRequestCallback) => {
-      callback(0);
-      return 1;
-    });
+    vi.stubGlobal(
+      "requestAnimationFrame",
+      vi.fn((callback: FrameRequestCallback) => {
+        animationFrames.push(callback);
+        return animationFrames.length;
+      }),
+    );
     vi.stubGlobal("cancelAnimationFrame", vi.fn());
   });
 
@@ -55,14 +61,49 @@ describe("PigboxProgressGauge", () => {
     expect(calculatePigboxFillTop(130)).toBe(33);
   });
 
-  it("장식 이미지로 숨기고 0%에서 현재 미션 진행률까지 물을 채운다", async () => {
-    const { container } = render(<PigboxProgressGauge progress={10} />);
+  it("첫 렌더에서는 현재 진행률을 애니메이션 없이 즉시 표시한다", async () => {
+    const { container } = render(<PigboxProgressGauge completedCount={1} progress={10} />);
     const gauge = container.querySelector('[data-pigbox-progress="10"]');
+    const fill = container.querySelector("[data-pigbox-fill]");
+
+    await waitFor(() => expect(lottieMocks.loadAnimation).toHaveBeenCalledTimes(3));
 
     expect(gauge).toHaveAttribute("aria-hidden", "true");
     expect(gauge).not.toHaveAttribute("role");
-    expect(gauge).toHaveStyle("--pigbox-fill-top: 94%");
+    expect(gauge).toHaveStyle("--pigbox-fill-top: 87.9%");
+    expect(fill).toHaveClass("transition-none");
+    expect(requestAnimationFrame).not.toHaveBeenCalled();
+  });
 
-    await waitFor(() => expect(gauge).toHaveStyle("--pigbox-fill-top: 87.9%"));
+  it("완료 개수가 그대로면 진행률 변경을 애니메이션 없이 즉시 표시한다", async () => {
+    const { container, rerender } = render(
+      <PigboxProgressGauge completedCount={1} progress={10} />,
+    );
+    await waitFor(() => expect(lottieMocks.loadAnimation).toHaveBeenCalledTimes(3));
+
+    rerender(<PigboxProgressGauge completedCount={1} progress={20} />);
+
+    expect(container.querySelector('[data-pigbox-progress="20"]')).toHaveStyle(
+      "--pigbox-fill-top: 81.8%",
+    );
+    expect(container.querySelector("[data-pigbox-fill]")).toHaveClass("transition-none");
+    expect(requestAnimationFrame).not.toHaveBeenCalled();
+  });
+
+  it("미션 완료 개수가 증가할 때만 이전 진행률에서 새 진행률까지 채운다", async () => {
+    const { container, rerender } = render(
+      <PigboxProgressGauge completedCount={1} progress={10} />,
+    );
+    await waitFor(() => expect(lottieMocks.loadAnimation).toHaveBeenCalledTimes(3));
+
+    rerender(<PigboxProgressGauge completedCount={2} progress={20} />);
+
+    const gauge = container.querySelector('[data-pigbox-progress="20"]');
+    expect(gauge).toHaveStyle("--pigbox-fill-top: 87.9%");
+    expect(container.querySelector("[data-pigbox-fill]")).toHaveClass("transition-[clip-path]");
+    expect(animationFrames).toHaveLength(1);
+
+    act(() => animationFrames[0]?.(0));
+    expect(gauge).toHaveStyle("--pigbox-fill-top: 81.8%");
   });
 });
