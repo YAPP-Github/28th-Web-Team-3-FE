@@ -11,6 +11,7 @@ import { toSavedBenefitItem } from "@/app/(tabs)/benefits/lib/benefit-items";
 import type { BenefitContentType, BenefitItem } from "@/app/(tabs)/benefits/types";
 import { savedPoliciesOptions } from "@/lib/queries/bookmark";
 import { policyDetailOptions, togglePolicyBookmarkOptions } from "@/lib/queries/policy";
+import { SavedBenefitCancelDialog } from "./saved-benefit-cancel-dialog";
 
 /**
  * 저장한 혜택 목록.
@@ -20,9 +21,14 @@ import { policyDetailOptions, togglePolicyBookmarkOptions } from "@/lib/queries/
  */
 export function SavedBenefits() {
   const [contentType, setContentType] = useState<BenefitContentType>("policy");
+  const [cancelTarget, setCancelTarget] = useState<BenefitItem>();
+  const [isCancelPending, setIsCancelPending] = useState(false);
   const queryClient = useQueryClient();
   const toggleBookmark = useMutation(togglePolicyBookmarkOptions());
-  const { saveError, toggleSaved } = useSavedToggleQueue(queryClient, toggleBookmark.mutate);
+  const { saveError, clearSaveError, toggleSaved } = useSavedToggleQueue(
+    queryClient,
+    toggleBookmark.mutate,
+  );
   const isTipTab = contentType === "tip";
 
   const saved = useQuery({ ...savedPoliciesOptions(), enabled: !isTipTab });
@@ -37,10 +43,34 @@ export function SavedBenefits() {
     toSavedBenefitItem(item, savedPolicyDetails[index]?.data?.category),
   );
 
+  function askToCancel(benefit: BenefitItem) {
+    clearSaveError();
+    setCancelTarget(benefit);
+  }
+
+  function closeCancelDialog() {
+    if (isCancelPending) return;
+    clearSaveError();
+    setCancelTarget(undefined);
+  }
+
+  function confirmCancel() {
+    if (!cancelTarget || isCancelPending) return;
+    setIsCancelPending(true);
+    toggleSaved(cancelTarget, {
+      onSuccess: () => {
+        setIsCancelPending(false);
+        setCancelTarget(undefined);
+      },
+      onError: () => setIsCancelPending(false),
+    });
+  }
+
   if (isTipTab) {
     return (
       <>
         <ContentTypeTabs
+          className="pt-5"
           idPrefix="saved-content"
           selected={contentType}
           onSelect={setContentType}
@@ -58,10 +88,15 @@ export function SavedBenefits() {
 
   return (
     <>
-      <ContentTypeTabs idPrefix="saved-content" selected={contentType} onSelect={setContentType} />
+      <ContentTypeTabs
+        className="pt-5"
+        idPrefix="saved-content"
+        selected={contentType}
+        onSelect={setContentType}
+      />
       <div aria-labelledby="saved-content-tab-policy" id="saved-content-panel" role="tabpanel">
-        <section aria-label="저장한 혜택" className="mt-5 flex flex-col gap-3 px-5">
-          {saveError ? (
+        <section aria-label="저장한 혜택" className="mt-2 flex flex-col gap-3 px-5">
+          {saveError && !cancelTarget ? (
             <p aria-live="polite" className="text-body-b2-500 text-error">
               {saveError}
             </p>
@@ -85,11 +120,18 @@ export function SavedBenefits() {
             </p>
           ) : (
             benefits.map((benefit) => (
-              <BenefitCard benefit={benefit} key={benefit.id} onToggleSave={toggleSaved} />
+              <BenefitCard benefit={benefit} key={benefit.id} onToggleSave={askToCancel} />
             ))
           )}
         </section>
       </div>
+      <SavedBenefitCancelDialog
+        error={saveError}
+        open={Boolean(cancelTarget)}
+        pending={isCancelPending}
+        onCancel={closeCancelDialog}
+        onConfirm={confirmCancel}
+      />
     </>
   );
 }

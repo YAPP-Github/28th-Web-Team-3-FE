@@ -32,6 +32,49 @@ async function mockBenefits(page: Page) {
   );
 }
 
+async function mockSavedBenefits(page: Page) {
+  await page.route("**/api/bookmarks**", (route) =>
+    route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify([
+        {
+          contentType: "POLICY",
+          id: 7,
+          title: "저장한 혜택",
+          category: "금융",
+          description: "설명",
+        },
+      ]),
+    }),
+  );
+  await page.route("**/api/policies/7", (route) =>
+    route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({
+        id: 7,
+        title: "저장한 혜택",
+        description: "설명",
+        supportContent: null,
+        category: "금융",
+        largeCategory: "금융",
+        mediumCategory: null,
+        supervisingOrg: null,
+        applyUrl: null,
+        applyPeriodText: null,
+        applyMethod: null,
+        submitDocuments: null,
+        targetMinAge: null,
+        targetMaxAge: null,
+        earnCondition: null,
+        additionalQualification: null,
+        bookmarked: true,
+      }),
+    }),
+  );
+}
+
 /**
  * 네비에 z-index가 없으면 `auto`가 되고, 본문의 z-10 요소(저장 별)가 밑으로 스크롤돼
  * 들어올 때 네비를 뚫고 그려진다. 눈으로만 보이는 게 아니라 그 자리의 탭이 안 눌린다.
@@ -77,4 +120,43 @@ test("저장 별이 바텀 네비를 뚫고 올라오지 않는다", async ({ pa
 
   expect(overlapped.found).toBe(true);
   expect(overlapped.hitsNav).toBe(true);
+});
+
+test("바텀 네비로 혜택에 들어와도 가로 넘침 없이 시안 간격을 유지한다", async ({ page }) => {
+  await page.setViewportSize({ width: 375, height: 814 });
+  await mockBenefits(page);
+  await mockSavedBenefits(page);
+  await page.goto("/benefits/saved");
+
+  await page.getByRole("link", { name: "혜택/팁" }).click();
+  await expect(page).toHaveURL("/benefits");
+  await expect(page.getByRole("heading", { name: "혜택/팁" })).toBeVisible();
+  await expect(page.getByRole("navigation", { name: "혜택 필터" })).toBeVisible();
+
+  const layout = await page.evaluate(() => {
+    const hero = document.querySelector<HTMLElement>("[data-safe-area-hero]");
+    const tabs = document.querySelector<HTMLElement>('[role="tablist"][aria-label="혜택 종류"]');
+    const filters = document.querySelector<HTMLElement>('nav[aria-label="혜택 필터"]');
+    const illustration = document.querySelector<HTMLElement>(
+      '[data-slot="benefit-hero-illustration"]',
+    );
+    if (!hero || !tabs || !filters || !illustration) throw new Error("혜택 레이아웃을 찾지 못함");
+
+    const heroBox = hero.getBoundingClientRect();
+    const tabsBox = tabs.getBoundingClientRect();
+    const filtersBox = filters.getBoundingClientRect();
+    const illustrationBox = illustration.getBoundingClientRect();
+    return {
+      horizontalOverflow:
+        document.documentElement.scrollWidth - document.documentElement.clientWidth,
+      tabsTopGap: tabsBox.top - heroBox.bottom,
+      filtersTopGap: filtersBox.top - tabsBox.bottom,
+      illustrationRight: illustrationBox.right,
+    };
+  });
+
+  expect(layout.horizontalOverflow).toBe(0);
+  expect(layout.tabsTopGap).toBe(10);
+  expect(layout.filtersTopGap).toBe(24);
+  expect(layout.illustrationRight).toBeLessThanOrEqual(355);
 });

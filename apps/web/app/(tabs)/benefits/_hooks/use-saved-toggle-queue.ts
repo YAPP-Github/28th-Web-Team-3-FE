@@ -30,6 +30,11 @@ type ToggleBookmark = (
   callbacks: { onSuccess: () => void; onError: () => void; onSettled: () => void },
 ) => void;
 
+interface ToggleCallbacks {
+  onSuccess?: () => void;
+  onError?: () => void;
+}
+
 interface PendingToggle {
   /** 서버가 확정한 값. 성공 응답으로만 바뀐다. */
   serverSaved: boolean;
@@ -38,6 +43,7 @@ interface PendingToggle {
   timer: ReturnType<typeof setTimeout> | null;
   /** 요청이 나가 있는 동안은 지우지 않는다 — 지우면 낙관적 값을 서버값으로 착각한다. */
   inFlight: boolean;
+  callbacks?: ToggleCallbacks;
 }
 
 /**
@@ -114,19 +120,25 @@ export function useSavedToggleQueue(queryClient: QueryClient, toggleBookmark: To
       {
         onSuccess: () => {
           pending.serverSaved = sending;
+          if (pending.desired === sending) {
+            pending.callbacks?.onSuccess?.();
+            pending.callbacks = undefined;
+          }
         },
         onError: () => {
           // 되돌리고 멈춘다. 자동으로 다시 보내면 같은 실패를 반복한다.
           pending.desired = pending.serverSaved;
           writeCache(benefit, pending.serverSaved);
           setSaveError(SAVE_FAILED);
+          pending.callbacks?.onError?.();
+          pending.callbacks = undefined;
         },
         onSettled: () => settle(benefit, pending),
       },
     );
   }
 
-  function toggleSaved(benefit: BenefitItem) {
+  function toggleSaved(benefit: BenefitItem, callbacks?: ToggleCallbacks) {
     setSaveError(undefined);
     cancelOngoingFetches();
 
@@ -136,6 +148,7 @@ export function useSavedToggleQueue(queryClient: QueryClient, toggleBookmark: To
       // 교체하면 응답이 와도 큐에 있는 쪽이 아니라 버려진 객체가 갱신된다.
       if (pending.timer) clearTimeout(pending.timer);
       pending.desired = !pending.desired;
+      pending.callbacks = callbacks;
       writeCache(benefit, pending.desired);
       pending.timer = setTimeout(() => flush(benefit), SEND_DELAY_MS);
       return;
@@ -148,6 +161,7 @@ export function useSavedToggleQueue(queryClient: QueryClient, toggleBookmark: To
       serverSaved: benefit.saved,
       desired,
       inFlight: false,
+      callbacks,
       timer: setTimeout(() => flush(benefit), SEND_DELAY_MS),
     });
   }

@@ -117,6 +117,36 @@ describe("SavedBenefits", () => {
     expect(await screen.findByText(/저장한 혜택이 없어요/)).toBeInTheDocument();
   });
 
+  it("저장 취소 전에 확인하고 아니요를 누르면 그대로 둔다", async () => {
+    render(<SavedBenefits />);
+
+    fireEvent.click(await screen.findByRole("button", { name: "저장한 혜택 저장" }));
+
+    expect(screen.getByRole("dialog", { name: "저장을 취소할까요?" })).toBeInTheDocument();
+    expect(screen.getByText("저장한 혜택")).toBeInTheDocument();
+    expect(unbookmarkPolicy).not.toHaveBeenCalled();
+
+    fireEvent.click(screen.getByRole("button", { name: "아니요" }));
+
+    expect(screen.queryByRole("dialog", { name: "저장을 취소할까요?" })).not.toBeInTheDocument();
+    expect(screen.getByText("저장한 혜택")).toBeInTheDocument();
+    expect(unbookmarkPolicy).not.toHaveBeenCalled();
+  });
+
+  it("저장 취소 실패 시 모달을 유지하고 카드를 되돌린다", async () => {
+    vi.mocked(unbookmarkPolicy).mockRejectedValue(new Error("network error"));
+    render(<SavedBenefits />);
+
+    fireEvent.click(await screen.findByRole("button", { name: "저장한 혜택 저장" }));
+    fireEvent.click(screen.getByRole("button", { name: "취소" }));
+
+    expect(
+      await screen.findByText("저장 상태를 바꾸지 못했어요. 잠시 후 다시 시도해 주세요."),
+    ).toBeInTheDocument();
+    expect(screen.getByRole("dialog", { name: "저장을 취소할까요?" })).toBeInTheDocument();
+    expect(screen.getByText("저장한 혜택")).toBeInTheDocument();
+  });
+
   it("해제한 카드를 성공 직후 다시 보여주지 않는다", async () => {
     let finishUnbookmark: (() => void) | undefined;
     vi.mocked(unbookmarkPolicy).mockImplementation(
@@ -130,7 +160,9 @@ describe("SavedBenefits", () => {
 
     const star = await screen.findByRole("button", { name: "저장한 혜택 저장" });
     fireEvent.click(star);
+    fireEvent.click(screen.getByRole("button", { name: "취소" }));
     expect(screen.queryByText("저장한 혜택")).not.toBeInTheDocument();
+    expect(screen.getByRole("dialog", { name: "저장을 취소할까요?" })).toBeInTheDocument();
 
     await waitFor(() => expect(unbookmarkPolicy).toHaveBeenCalledWith(7));
     await act(async () => {
@@ -140,6 +172,7 @@ describe("SavedBenefits", () => {
     await waitFor(() => expect(queryClient.isFetching()).toBe(0));
 
     expect(screen.queryByText("저장한 혜택")).not.toBeInTheDocument();
+    expect(screen.queryByRole("dialog", { name: "저장을 취소할까요?" })).not.toBeInTheDocument();
   });
 
   it("해제 전에 시작한 이전 목록 조회가 늦게 끝나도 카드를 다시 보여주지 않는다", async () => {
@@ -160,6 +193,7 @@ describe("SavedBenefits", () => {
     await waitFor(() => expect(fetchSavedPolicies).toHaveBeenCalledTimes(2));
 
     fireEvent.click(star);
+    fireEvent.click(screen.getByRole("button", { name: "취소" }));
     expect(screen.queryByText("저장한 혜택")).not.toBeInTheDocument();
 
     await act(async () => {
@@ -192,6 +226,7 @@ describe("SavedBenefits", () => {
 
     const star = await screen.findByRole("button", { name: "저장한 혜택 저장" });
     fireEvent.click(star);
+    fireEvent.click(screen.getByRole("button", { name: "취소" }));
     void queryClient.refetchQueries({ queryKey: savedPoliciesOptions().queryKey });
     await waitFor(() => expect(fetchSavedPolicies).toHaveBeenCalledTimes(2));
 

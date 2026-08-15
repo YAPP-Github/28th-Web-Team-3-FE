@@ -15,8 +15,13 @@ function BenefitsExplorerSkeleton() {
       <span role="status" className="sr-only">
         혜택 목록을 불러오고 있어요.
       </span>
-      <div className="mx-5 mt-[17px] h-7 w-40 animate-pulse rounded bg-gray-50 motion-reduce:animate-none" />
-      <div className="mt-[18px] flex gap-1.5 overflow-hidden px-5">
+      <div className="border-gray-100 border-b pt-2.5">
+        <div className="mx-auto flex h-11 w-[335px] max-w-full">
+          <div className="flex-1 border-gray-800 border-b-2" />
+          <div className="flex-1" />
+        </div>
+      </div>
+      <div className="mt-[23px] flex gap-1.5 overflow-hidden px-5">
         {FILTER_SKELETONS.map((filter) => (
           <div
             key={filter}
@@ -49,10 +54,10 @@ export default async function BenefitsPage({
   if (category === "saved") redirect("/benefits/saved");
 
   return (
-    <main className="flex flex-1 flex-col bg-gray-0">
+    <main className="flex flex-1 flex-col overflow-x-clip bg-gray-0">
       {/* 히어로는 탭 제목까지 감싼다 — 디자인에서 파란 면이 상단 바 뒤까지 이어진다.
           표시는 safe-area 밴드가 스크롤을 따라가게 한다(`lib/safe-area-bands.ts`). */}
-      <section {...{ [SAFE_AREA_HERO_ATTRIBUTE]: "" }} className="bg-blue-50 px-5 pb-[46px]">
+      <section {...{ [SAFE_AREA_HERO_ATTRIBUTE]: "" }} className="bg-blue-50 px-5 pb-[39px]">
         <div className="flex items-center justify-between gap-2 py-2">
           <h1 className="text-title-t1-700 text-gray-900">혜택/팁</h1>
           <Link
@@ -70,11 +75,15 @@ export default async function BenefitsPage({
             <br />
             좋은 혜택
           </p>
-          <div aria-hidden="true" className="relative size-[100px] shrink-0">
-            <span className="absolute top-[3px] left-[7px] h-[57px] w-[94px] rotate-[-6.64deg] rounded-md bg-blue-200" />
-            <span className="absolute top-[25px] left-[33px] h-[57px] w-[93px] rotate-[6.88deg] rounded-md bg-blue-100" />
-            <BenefitCardWon className="absolute top-[45px] left-[64px] h-[27px] w-[37px]" />
-            <BenefitCoin className="absolute top-[28px] left-[-15px] h-[38px] w-[30px] rotate-[11.54deg]" />
+          <div
+            aria-hidden="true"
+            className="relative h-[104px] w-[148px] shrink-0"
+            data-slot="benefit-hero-illustration"
+          >
+            <span className="absolute top-[14px] left-[22px] h-[57px] w-[94px] rotate-[-6.64deg] rounded-md bg-blue-200" />
+            <span className="absolute top-9 left-12 h-[57px] w-[93px] rotate-[6.88deg] rounded-md bg-blue-100" />
+            <BenefitCardWon className="absolute top-14 left-[79px] h-[27px] w-[37px]" />
+            <BenefitCoin className="absolute top-[39px] left-0 h-[38px] w-[30px] rotate-[11.54deg]" />
           </div>
         </div>
       </section>
