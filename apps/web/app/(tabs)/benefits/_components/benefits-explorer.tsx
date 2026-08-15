@@ -1,5 +1,6 @@
 "use client";
 
+import { Button } from "@repo/ui";
 import {
   useInfiniteQuery,
   useMutation,
@@ -65,19 +66,17 @@ export function BenefitsExplorer() {
         toSavedBenefitItem(item, savedPolicyDetails[index]?.data?.category),
       )
     : (policies.data?.pages.flat() ?? []).map(toBenefitItem);
-  const isPending = isSavedFilter
-    ? saved.isPending || savedPolicyDetails.some((detail) => detail.isPending)
-    : policies.isPending;
-  const isError = isSavedFilter ? saved.isError : policies.isError;
+  const isPending = isSavedFilter ? saved.isPending : policies.isPending;
+  const isInitialError = isSavedFilter ? saved.isError : policies.isError && benefits.length === 0;
 
-  const { fetchNextPage, hasNextPage, isFetchingNextPage } = policies;
+  const { fetchNextPage, hasNextPage, isFetchNextPageError, isFetchingNextPage } = policies;
   const loadMoreRef = useRef<HTMLDivElement>(null);
 
   // 목록 끝이 보이면 다음 페이지를 당긴다. 스크롤 이벤트로 위치를 재면 매 프레임 레이아웃을
   // 읽어야 하지만, observer는 브라우저가 교차 시점만 알려준다.
   useEffect(() => {
     const sentinel = loadMoreRef.current;
-    if (!sentinel || !hasNextPage || isFetchingNextPage) return;
+    if (!sentinel || !hasNextPage || isFetchingNextPage || isFetchNextPageError) return;
     const observer = new IntersectionObserver(
       (entries) => {
         if (entries.some((entry) => entry.isIntersecting)) fetchNextPage();
@@ -87,7 +86,7 @@ export function BenefitsExplorer() {
     );
     observer.observe(sentinel);
     return () => observer.disconnect();
-  }, [fetchNextPage, hasNextPage, isFetchingNextPage]);
+  }, [fetchNextPage, hasNextPage, isFetchingNextPage, isFetchNextPageError]);
 
   function selectFilter(next: BenefitFilter) {
     setFilter(next);
@@ -112,7 +111,7 @@ export function BenefitsExplorer() {
         "40개를 찾았어요"가 스크롤 내내 읽힌다. 칩을 바꿔 결과 유무가 달라질 때만 바뀌게 둔다.
       */}
       <p role="status" className="sr-only">
-        {isPending || isError
+        {isPending || isInitialError
           ? ""
           : benefits.length > 0
             ? "혜택 목록을 불러왔어요."
@@ -126,11 +125,20 @@ export function BenefitsExplorer() {
         ) : null}
         {isPending ? (
           <BenefitListSkeleton />
-        ) : isError ? (
-          // 칩을 눌러 실패했을 때 초점은 칩에 남는다 — alert로 알려야 화면 밖 사용자도 안다.
-          <p role="alert" className="py-10 text-center text-body-b2-500 text-gray-500">
-            혜택을 불러오지 못했어요. 잠시 후 다시 시도해 주세요.
-          </p>
+        ) : isInitialError ? (
+          <div className="flex flex-col items-center py-10 text-center">
+            {/* 칩을 눌러 실패했을 때 초점은 칩에 남는다 — alert로 알려야 화면 밖 사용자도 안다. */}
+            <p role="alert" className="text-body-b2-500 text-gray-500">
+              혜택을 불러오지 못했어요. 잠시 후 다시 시도해 주세요.
+            </p>
+            <Button
+              className="mt-4"
+              size="sm"
+              onClick={() => void (isSavedFilter ? saved.refetch() : policies.refetch())}
+            >
+              다시 시도
+            </Button>
+          </div>
         ) : benefits.length === 0 ? (
           <p className="py-10 text-center text-body-b2-500 text-gray-500">
             {isSavedFilter ? (
@@ -144,9 +152,27 @@ export function BenefitsExplorer() {
             )}
           </p>
         ) : (
-          benefits.map((benefit) => (
-            <BenefitCard key={benefit.id} benefit={benefit} onToggleSave={toggleSaved} />
-          ))
+          <>
+            {benefits.map((benefit) => (
+              <BenefitCard key={benefit.id} benefit={benefit} onToggleSave={toggleSaved} />
+            ))}
+            {!isSavedFilter && isFetchingNextPage ? <BenefitListSkeleton count={1} /> : null}
+            {!isSavedFilter && isFetchNextPageError ? (
+              <div className="flex flex-col items-center py-5 text-center">
+                <p role="alert" className="text-body-b2-500 text-gray-500">
+                  다음 혜택을 불러오지 못했어요. 다시 시도해 주세요.
+                </p>
+                <Button
+                  className="mt-3"
+                  size="sm"
+                  variant="secondary"
+                  onClick={() => void fetchNextPage()}
+                >
+                  다시 시도
+                </Button>
+              </div>
+            ) : null}
+          </>
         )}
         {/* 다음 페이지 감지용. 저장 목록은 한 번에 다 오므로 목록 쿼리일 때만 둔다. */}
         {!isSavedFilter && hasNextPage ? <div ref={loadMoreRef} aria-hidden="true" /> : null}

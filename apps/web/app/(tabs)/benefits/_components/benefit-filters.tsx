@@ -19,7 +19,7 @@ export function BenefitFilters({ selected, onSelect }: BenefitFiltersProps) {
   return (
     <nav
       aria-label="혜택 필터"
-      className="overflow-x-auto [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+      className="overflow-x-auto overscroll-x-contain [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
     >
       <ul className="flex min-w-max gap-1.5 px-5">
         {BENEFIT_FILTERS.map((filter) => {
@@ -36,8 +36,10 @@ export function BenefitFilters({ selected, onSelect }: BenefitFiltersProps) {
                   event.preventDefault();
                   onSelect(filter.value);
                 }}
-                className={`inline-flex items-center whitespace-nowrap rounded-lg px-4 py-1.5 text-body-b2-700 ${
-                  isSelected ? "bg-gray-800 text-gray-0" : "bg-gray-50 text-gray-300"
+                className={`inline-flex items-center whitespace-nowrap rounded-lg px-4 py-1.5 text-body-b2-700 transition-[scale,background-color,color] duration-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring active:scale-[0.98] motion-reduce:transition-none motion-reduce:active:scale-100 ${
+                  isSelected
+                    ? "bg-gray-800 text-gray-0 hover:bg-gray-700"
+                    : "bg-gray-50 text-gray-600 hover:bg-gray-100"
                 }`}
               >
                 {filter.label}

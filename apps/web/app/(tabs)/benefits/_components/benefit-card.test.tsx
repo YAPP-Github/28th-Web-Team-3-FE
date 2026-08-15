@@ -83,4 +83,28 @@ describe("BenefitCard", () => {
 
     expect(screen.queryByText("주거")).not.toBeInTheDocument();
   });
+
+  it("키보드 포커스와 누르기 쉬운 저장 영역을 제공한다", () => {
+    render(<BenefitCard benefit={BENEFIT} onToggleSave={vi.fn()} />);
+
+    expect(screen.getByRole("button", { name: `${BENEFIT.title} 저장` })).toHaveClass(
+      "size-10",
+      "focus-visible:ring-2",
+    );
+    expect(screen.getByRole("button", { name: BENEFIT.title })).toHaveClass("focus-visible:ring-2");
+  });
+
+  it("긴 분류·제목·설명을 카드 안에서 잘라 보여준다", () => {
+    const longBenefit = {
+      ...BENEFIT,
+      title: "아주 긴 혜택 제목".repeat(20),
+      categoryLabel: "아주 긴 혜택 분류".repeat(10),
+      description: "아주 긴 혜택 설명".repeat(30),
+    };
+    render(<BenefitCard benefit={longBenefit} onToggleSave={vi.fn()} />);
+
+    expect(screen.getByText(longBenefit.categoryLabel)).toHaveClass("truncate");
+    expect(screen.getByRole("button", { name: longBenefit.title })).toHaveClass("line-clamp-2");
+    expect(screen.getByText(longBenefit.description)).toHaveClass("line-clamp-3");
+  });
 });

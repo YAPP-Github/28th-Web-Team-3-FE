@@ -164,6 +164,30 @@ describe("BenefitsExplorer", () => {
     expect(within(card as HTMLElement).queryByText("금융·복지·문화")).not.toBeInTheDocument();
   });
 
+  it("저장 정책 상세가 늦어도 저장 목록부터 보여준다", async () => {
+    let finishDetail: ((detail: PolicyDetail) => void) | undefined;
+    vi.mocked(fetchPolicyDetail).mockImplementation(
+      () =>
+        new Promise((resolve) => {
+          finishDetail = resolve;
+        }),
+    );
+    window.history.replaceState(null, "", "/benefits?category=saved");
+
+    render(<BenefitsExplorer />);
+
+    const card = (await screen.findByText("저장한 혜택")).closest("article");
+    expect(card).not.toBeNull();
+    expect(screen.queryByText("혜택 목록을 불러오는 중")).not.toBeInTheDocument();
+    expect(within(card as HTMLElement).queryByText("복지")).not.toBeInTheDocument();
+
+    await act(async () => {
+      finishDetail?.(policyDetail(7, { category: "복지" }));
+    });
+
+    await waitFor(() => expect(within(card as HTMLElement).getByText("복지")).toBeInTheDocument());
+  });
+
   it("저장한 게 없으면 안내를 띄운다", async () => {
     vi.mocked(fetchSavedPolicies).mockResolvedValue([]);
     window.history.replaceState(null, "", "/benefits?category=saved");
@@ -423,12 +447,92 @@ describe("BenefitsExplorer", () => {
     });
   });
 
-  it("목록 조회에 실패하면 오류를 보여준다", async () => {
-    vi.mocked(fetchPolicies).mockRejectedValue(new Error("network error"));
+  it("다음 페이지를 기다리는 동안 기존 목록 아래에 카드 스켈레톤 하나를 보여준다", async () => {
+    let intersect: (() => void) | undefined;
+    vi.stubGlobal(
+      "IntersectionObserver",
+      class {
+        constructor(private readonly callback: IntersectionObserverCallback) {}
+        observe(target: Element) {
+          intersect = () =>
+            this.callback(
+              [{ isIntersecting: true, target } as IntersectionObserverEntry],
+              this as unknown as IntersectionObserver,
+            );
+        }
+        unobserve() {}
+        disconnect() {}
+      },
+    );
+    vi.mocked(fetchPolicies)
+      .mockResolvedValueOnce(FULL_PAGE)
+      .mockImplementationOnce(() => new Promise(() => {}));
+    const { container } = render(<BenefitsExplorer />);
+    await screen.findByText("혜택 1");
+
+    intersect?.();
+
+    await waitFor(() => expect(fetchPolicies).toHaveBeenCalledTimes(2));
+    expect(screen.getByText("혜택 1")).toBeInTheDocument();
+    expect(container.querySelectorAll('[data-slot="benefit-card-skeleton"]')).toHaveLength(1);
+  });
+
+  it("다음 페이지 조회 실패 시 기존 목록을 유지하고 다시 시도한다", async () => {
+    let intersect: (() => void) | undefined;
+    vi.stubGlobal(
+      "IntersectionObserver",
+      class {
+        constructor(private readonly callback: IntersectionObserverCallback) {}
+        observe(target: Element) {
+          intersect = () =>
+            this.callback(
+              [{ isIntersecting: true, target } as IntersectionObserverEntry],
+              this as unknown as IntersectionObserver,
+            );
+        }
+        unobserve() {}
+        disconnect() {}
+      },
+    );
+    vi.mocked(fetchPolicies)
+      .mockResolvedValueOnce(FULL_PAGE)
+      .mockRejectedValueOnce(new Error("network error"))
+      .mockResolvedValueOnce([policy(99)]);
+    render(<BenefitsExplorer />);
+    await screen.findByText("혜택 1");
+
+    intersect?.();
+
+    expect(
+      await screen.findByText("다음 혜택을 불러오지 못했어요. 다시 시도해 주세요."),
+    ).toBeInTheDocument();
+    expect(screen.getByText("혜택 1")).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "다시 시도" }));
+
+    expect(await screen.findByText("혜택 99")).toBeInTheDocument();
+  });
+
+  it("첫 목록 조회에 실패하면 다시 시도할 수 있다", async () => {
+    vi.mocked(fetchPolicies)
+      .mockRejectedValueOnce(new Error("network error"))
+      .mockResolvedValueOnce([policy(3)]);
     render(<BenefitsExplorer />);
 
     expect(
       await screen.findByText("혜택을 불러오지 못했어요. 잠시 후 다시 시도해 주세요."),
     ).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "다시 시도" }));
+
+    expect(await screen.findByText("혜택 3")).toBeInTheDocument();
+  });
+
+  it("필터 링크에 읽기 쉬운 색과 키보드 포커스 표시가 있다", async () => {
+    render(<BenefitsExplorer />);
+    await screen.findByText("혜택 1");
+
+    const housingFilter = screen.getByRole("link", { name: "주거" });
+    expect(housingFilter).toHaveClass("text-gray-600", "focus-visible:ring-2");
   });
 });
