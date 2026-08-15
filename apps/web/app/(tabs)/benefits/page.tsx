@@ -1,8 +1,12 @@
+import BenefitCardWon from "@repo/ui/svg/benefit-card-won.svg";
+import BenefitCoin from "@repo/ui/svg/benefit-coin.svg";
+import Link from "next/link";
+import { redirect } from "next/navigation";
 import { Suspense } from "react";
 import { SAFE_AREA_HERO_ATTRIBUTE } from "@/lib/safe-area-bands";
 import { BenefitsExplorer } from "./_components/benefits-explorer";
 
-const FILTER_SKELETONS = ["all", "saved", "finance", "housing", "welfare", "education"];
+const FILTER_SKELETONS = ["all", "finance", "housing", "welfare", "education"];
 const CARD_SKELETONS = ["first", "second", "third"];
 
 function BenefitsExplorerSkeleton() {
@@ -32,22 +36,46 @@ function BenefitsExplorerSkeleton() {
   );
 }
 
-export default function BenefitsPage() {
+/**
+ * 저장 목록이 칩에서 별도 화면으로 빠지기 전의 링크. 공유된 URL이 조용히 전체 목록으로
+ * 떨어지지 않게 새 경로로 보낸다.
+ */
+export default async function BenefitsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ category?: string | string[] }>;
+}) {
+  const { category } = await searchParams;
+  if (category === "saved") redirect("/benefits/saved");
+
   return (
     <main className="flex flex-1 flex-col bg-gray-0">
       {/* 히어로는 탭 제목까지 감싼다 — 디자인에서 파란 면이 상단 바 뒤까지 이어진다.
           표시는 safe-area 밴드가 스크롤을 따라가게 한다(`lib/safe-area-bands.ts`). */}
       <section {...{ [SAFE_AREA_HERO_ATTRIBUTE]: "" }} className="bg-blue-50 px-5 pb-[46px]">
-        <h1 className="py-2 text-title-t1-700 text-gray-900">혜택</h1>
-        <div className="mt-[22px] flex flex-col items-start gap-2">
+        <div className="flex items-center justify-between gap-2 py-2">
+          <h1 className="text-title-t1-700 text-gray-900">혜택/팁</h1>
+          <Link
+            className="-mr-2.5 flex h-11 items-center rounded-sm px-2.5 text-body-b1-500 text-gray-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            href="/benefits/saved"
+          >
+            저장됨
+          </Link>
+        </div>
+        {/* 문구 옆 일러스트는 카드 두 장이 겹친 모양이다. 회전한 사각형 두 개는 CSS로 그리고,
+            그 위에 얹히는 원화 마크·동전만 피그마에서 내보낸 SVG를 쓴다. */}
+        <div className="mt-[22px] flex items-start justify-between gap-2">
           <p className="text-headline-h2-700 text-gray-900">
-            지금 바로 신청할
-            <br />수 있는 혜택
+            지금 바로 신청하기
+            <br />
+            좋은 혜택
           </p>
-          {/* 개수는 못 쓴다 — 목록이 페이지 단위로 오고 전체 개수를 주는 응답이 없다. */}
-          <a href="#benefits-list" className="text-body-b2-500 text-gray-900 underline-offset-4">
-            혜택 보러가기
-          </a>
+          <div aria-hidden="true" className="relative size-[100px] shrink-0">
+            <span className="absolute top-[3px] left-[7px] h-[57px] w-[94px] rotate-[-6.64deg] rounded-md bg-blue-200" />
+            <span className="absolute top-[25px] left-[33px] h-[57px] w-[93px] rotate-[6.88deg] rounded-md bg-blue-100" />
+            <BenefitCardWon className="absolute top-[45px] left-[64px] h-[27px] w-[37px]" />
+            <BenefitCoin className="absolute top-[28px] left-[-15px] h-[38px] w-[30px] rotate-[11.54deg]" />
+          </div>
         </div>
       </section>
 

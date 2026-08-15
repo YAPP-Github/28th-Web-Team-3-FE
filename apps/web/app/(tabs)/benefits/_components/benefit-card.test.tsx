@@ -105,6 +105,32 @@ describe("BenefitCard", () => {
 
     expect(screen.getByText(longBenefit.categoryLabel)).toHaveClass("truncate");
     expect(screen.getByRole("button", { name: longBenefit.title })).toHaveClass("line-clamp-2");
-    expect(screen.getByText(longBenefit.description)).toHaveClass("line-clamp-3");
+    // 설명은 접힌 상태가 기본이라 한 줄만 보인다 — 펼치면 전체가 나온다.
+    expect(screen.getByText(longBenefit.description)).toHaveClass("line-clamp-1");
+  });
+
+  it("설명을 접어 두고 화살표로 펼친다", () => {
+    render(<BenefitCard benefit={BENEFIT} onToggleSave={vi.fn()} />);
+
+    const toggle = screen.getByRole("button", { name: `${BENEFIT.title} 설명 펼치기` });
+    expect(toggle).toHaveAttribute("aria-expanded", "false");
+    expect(screen.getByText("설명")).toHaveClass("line-clamp-1");
+
+    fireEvent.click(toggle);
+
+    expect(screen.getByRole("button", { name: `${BENEFIT.title} 설명 접기` })).toHaveAttribute(
+      "aria-expanded",
+      "true",
+    );
+    expect(screen.getByText("설명")).not.toHaveClass("line-clamp-1");
+  });
+
+  /** 카드 전체가 신청 페이지로 나가는 덮개라, 펼침 버튼이 덮개 위에 없으면 클릭이 먹힌다. */
+  it("펼침 버튼은 카드 링크 덮개 위에 있다", () => {
+    render(<BenefitCard benefit={BENEFIT} onToggleSave={vi.fn()} />);
+
+    expect(screen.getByRole("button", { name: `${BENEFIT.title} 설명 펼치기` })).toHaveClass(
+      "z-10",
+    );
   });
 });

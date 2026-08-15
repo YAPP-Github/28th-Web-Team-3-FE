@@ -39,7 +39,7 @@ export function BenefitFilters({ selected, onSelect }: BenefitFiltersProps) {
                 className={`inline-flex items-center whitespace-nowrap rounded-lg px-4 py-1.5 text-body-b2-700 transition-[scale,background-color,color] duration-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring active:scale-[0.98] motion-reduce:transition-none motion-reduce:active:scale-100 ${
                   isSelected
                     ? "bg-gray-800 text-gray-0 hover:bg-gray-700"
-                    : "bg-gray-50 text-gray-600 hover:bg-gray-100"
+                    : "bg-gray-50 text-gray-300 hover:bg-gray-100 hover:text-gray-400"
                 }`}
               >
                 {filter.label}

@@ -1,7 +1,7 @@
 "use client";
 
-import { Star } from "lucide-react";
-import { useState } from "react";
+import { ChevronDown, Star } from "lucide-react";
+import { useId, useState } from "react";
 import { fetchPolicyDetail } from "@/api/policy";
 import type { BenefitItem } from "@/app/(tabs)/benefits/types";
 import { openExternalLink } from "@/lib/open-external";
@@ -26,6 +26,8 @@ const OPEN_FAILED = "혜택 정보를 불러오지 못했어요. 잠시 후 다�
 export function BenefitCard({ benefit, onToggleSave }: BenefitCardProps) {
   const [error, setError] = useState<string>();
   const [isOpening, setIsOpening] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(false);
+  const descriptionId = useId();
 
   async function openApplyPage() {
     // 버튼을 disabled로 막지 않는다 — 누르는 순간 접근성 트리에서 빠져 키보드 초점이 날아간다.
@@ -66,7 +68,7 @@ export function BenefitCard({ benefit, onToggleSave }: BenefitCardProps) {
         >
           <Star
             aria-hidden="true"
-            className={benefit.saved ? "size-5 fill-primary text-primary" : "size-5 text-gray-300"}
+            className={benefit.saved ? "size-5 fill-success text-success" : "size-5 text-gray-300"}
           />
         </button>
       </div>
@@ -79,10 +81,36 @@ export function BenefitCard({ benefit, onToggleSave }: BenefitCardProps) {
         >
           {benefit.title}
         </button>
+        {/*
+          설명은 접어 두고 화살표로 편다. 카드 전체가 신청 페이지로 나가는 링크라(제목 버튼의
+          `after:inset-0` 덮개) 펼침 버튼도 별과 같이 덮개 위(`z-10`)에 둬야 클릭이 먹지 않는다.
+        */}
         {benefit.description ? (
-          <p className="line-clamp-3 break-words text-body-b2-500 text-gray-900">
-            {benefit.description}
-          </p>
+          <div className="flex min-w-0 items-start justify-between gap-3.5">
+            <p
+              className={`min-w-0 break-words text-body-b2-500 ${
+                isExpanded ? "text-gray-600" : "line-clamp-1 text-gray-900"
+              }`}
+              id={descriptionId}
+            >
+              {benefit.description}
+            </p>
+            <button
+              aria-controls={descriptionId}
+              aria-expanded={isExpanded}
+              aria-label={`${benefit.title} 설명 ${isExpanded ? "접기" : "펼치기"}`}
+              className="-m-2.5 relative z-10 flex size-10 shrink-0 items-center justify-center rounded-full transition-[scale,background-color] duration-100 hover:bg-gray-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring active:scale-[0.92] motion-reduce:transition-none motion-reduce:active:scale-100"
+              onClick={() => setIsExpanded((expanded) => !expanded)}
+              type="button"
+            >
+              <ChevronDown
+                aria-hidden="true"
+                className={`size-5 text-gray-400 transition-transform duration-100 motion-reduce:transition-none ${
+                  isExpanded ? "rotate-180" : ""
+                }`}
+              />
+            </button>
+          </div>
         ) : null}
         {error ? (
           <p aria-live="polite" className="text-caption-c1-500 text-error">
