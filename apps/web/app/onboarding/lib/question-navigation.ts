@@ -21,5 +21,5 @@ export function getNextOnboardingQuestionPath(questionStep: OnboardingQuestionSt
   const questionStepIndex = ONBOARDING_QUESTION_STEPS.indexOf(questionStep);
   const nextQuestionStep = ONBOARDING_QUESTION_STEPS[questionStepIndex + 1];
 
-  return nextQuestionStep ? `/onboarding/${nextQuestionStep}` : "/onboarding/result";
+  return nextQuestionStep ? `/onboarding/${nextQuestionStep}` : "/onboarding/check";
 }

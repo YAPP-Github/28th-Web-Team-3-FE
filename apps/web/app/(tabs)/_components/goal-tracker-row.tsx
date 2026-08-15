@@ -1,4 +1,4 @@
-import Bill from "@repo/ui/svg/bill.svg";
+import BillBox from "@repo/ui/svg/bill-box.svg";
 import { ChevronRight } from "lucide-react";
 import Link from "next/link";
 import { GOAL_TITLE_SUFFIX } from "@/app/goal/constants";
@@ -17,7 +17,7 @@ export function GoalTrackerRow({ currentAmountManwon, targetAmountManwon }: Goal
     <Link href="/goal" className="flex items-center justify-between">
       <span className="flex min-w-0 items-center gap-1.5">
         <span className="flex min-w-0 items-center gap-2">
-          <Bill aria-hidden="true" className="size-[30px] shrink-0" />
+          <BillBox aria-hidden="true" className="size-[30px] shrink-0" />
           <span className="truncate text-title-t1-700 text-gray-900">
             {formatManwon(targetAmountManwon)} {GOAL_TITLE_SUFFIX}
           </span>

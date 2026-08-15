@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { residentialAreaSchema } from "./onboarding-api";
 
 export const MAX_MONTHLY_AMOUNT = 650;
 export const MAX_NET_WORTH_AMOUNT = 10_000;
@@ -16,6 +17,7 @@ export const onboardingFormSchema = z.object({
   birthDate: z
     .union([z.literal(""), z.iso.date()])
     .refine((value) => value !== "", "입력해주세요."),
+  address: z.union([z.literal(""), residentialAreaSchema]),
   monthlySalaryManwon: monthlyAmountSchema,
   monthlySavingManwon: monthlyAmountSchema,
   netWorthManwon: z.number().int().min(0).max(MAX_NET_WORTH_AMOUNT),

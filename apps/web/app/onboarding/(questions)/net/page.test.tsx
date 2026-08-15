@@ -5,8 +5,11 @@ import { fireEvent, render, screen, waitFor } from "@/lib/test/react";
 import NetWorthOnboardingPage from "./page";
 
 const pushMock = vi.fn();
+const replaceMock = vi.fn();
 
-vi.mock("next/navigation", () => ({ useRouter: () => ({ push: pushMock }) }));
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({ push: pushMock, replace: replaceMock }),
+}));
 vi.mock("@/api/onboarding", () => ({
   getOnboardingProfile: vi.fn().mockRejectedValue(new Error("test")),
   patchOnboardingProfile: vi.fn().mockResolvedValue({}),
@@ -36,6 +39,7 @@ describe("NetWorthOnboardingPage", () => {
     vi.mocked(getOnboardingProfile).mockResolvedValue({
       status: "IN_PROGRESS",
       birthDate: "1998-03-01",
+      address: "SEOUL",
       monthlySalaryManwon: 300,
       monthlySavingManwon: 100,
       netWorthManwon: 0,
@@ -90,6 +94,6 @@ describe("NetWorthOnboardingPage", () => {
     renderNetWorthOnboardingPage();
 
     fireEvent.click(screen.getByRole("button", { name: "이전" }));
-    expect(pushMock).toHaveBeenCalledWith("/onboarding/month");
+    expect(replaceMock).toHaveBeenCalledWith("/onboarding/month");
   });
 });

@@ -4,7 +4,7 @@ import { cn } from "../lib/utils";
 
 const buttonVariants = cva(
   [
-    "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md font-medium text-sm",
+    "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md",
     "disabled:pointer-events-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
     // 눌린 느낌은 크기로만 준다. 문구를 "저장 중…"으로 바꾸면 버튼 폭이 흔들리고
     // 스크린리더는 이름이 바뀐 것으로 읽는다 — 처리 중은 상태지 이름이 아니다.
@@ -35,15 +35,15 @@ const buttonVariants = cva(
           "bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50",
       },
       size: {
-        default: "h-10 px-4 py-2",
-        sm: "h-9 rounded-md px-3",
-        lg: "h-11 rounded-md px-6",
+        default: "h-10 px-4 py-2 font-medium text-sm",
+        sm: "h-9 rounded-md px-3 font-medium text-sm",
+        lg: "h-11 rounded-md px-6 font-medium text-sm",
         // 아이콘 단독 버튼(헤더 뒤로가기 등) — 44px는 터치 타깃 최소치다.
         icon: "size-11 rounded-full",
         // 하단 CTA("다음"/"적용" 등 앞으로가기 역할) — 풀너비.
-        cta: "w-full rounded-[12px] py-[14px]",
+        cta: "w-full rounded-[12px] py-[14px] text-body-b1-700",
         // 이전 API 호환용 alias.
-        full: "w-full rounded-[12px] py-[14px]",
+        full: "w-full rounded-[12px] py-[14px] text-body-b1-700",
         // 플로팅 버튼 (온보딩 하단 페이지 이동 버튼)
         floating: "h-12.5 w-12.5 rounded-full",
       },

@@ -33,7 +33,7 @@ describe("AgeOnboardingPage", () => {
 
     await waitFor(() => {
       expect(patchOnboardingProfile).toHaveBeenCalledWith({ birthDate: "1998-03-01" });
-      expect(pushMock).toHaveBeenCalledWith("/onboarding/month");
+      expect(pushMock).toHaveBeenCalledWith("/onboarding/address");
     });
   });
 

@@ -143,12 +143,12 @@ export default function MonthlyIncomeAndSavingsOnboardingPage() {
           {saveError}
         </p>
       ) : null}
-      <div className="pt-8 pb-6">
+      <div className="pt-2 pb-6">
         <ButtonGroup
           nextDisabled={!hasRequiredMonthlyAmounts || Boolean(amountError)}
           nextPending={isSaving}
           onNext={navigateToNetWorthQuestion}
-          onPrev={() => router.push("/onboarding/age")}
+          onPrev={() => router.replace("/onboarding/address")}
         />
       </div>
     </div>

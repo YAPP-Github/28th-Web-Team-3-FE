@@ -2,11 +2,13 @@ import {
   type OnboardingGoal,
   type OnboardingGoalConfirm,
   type OnboardingGoalPlans,
+  type OnboardingGoalPreview,
   type OnboardingProfile,
   type OnboardingProfilePatch,
   type OnboardingReport,
   onboardingGoalConfirmSchema,
   onboardingGoalPlansSchema,
+  onboardingGoalPreviewSchema,
   onboardingGoalSchema,
   onboardingProfilePatchSchema,
   onboardingProfileSchema,
@@ -16,9 +18,11 @@ import { HTTPError } from "ky";
 import { http } from "@/api/client";
 
 const ONBOARDING_PATH = "onboarding";
+const ONBOARDING_V2_PATH = "v2/onboarding";
 const EMPTY_ONBOARDING_PROFILE: OnboardingProfile = {
   status: "IN_PROGRESS",
   birthDate: null,
+  address: null,
   monthlySalaryManwon: null,
   monthlySavingManwon: null,
   netWorthManwon: null,
@@ -32,6 +36,17 @@ function isMissingOnboardingProfile(error: unknown): boolean {
     error.data !== null &&
     "name" in error.data &&
     error.data.name === "ONBOARDING_PROFILE_NOT_FOUND"
+  );
+}
+
+/** 서버에는 확정됐지만 응답을 받지 못한 뒤 재시도한 경우를 완료 상태로 복구한다. */
+export function isOnboardingAlreadyCompletedError(error: unknown): boolean {
+  if (!(error instanceof HTTPError) || error.response.status !== 409) return false;
+  return (
+    typeof error.data === "object" &&
+    error.data !== null &&
+    "name" in error.data &&
+    error.data.name === "ONBOARDING_ALREADY_COMPLETED"
   );
 }
 
@@ -73,8 +88,14 @@ export function getOnboardingGoalPlans(): Promise<OnboardingGoalPlans> {
   return http.get(`${ONBOARDING_PATH}/goal-plans`, { response: onboardingGoalPlansSchema });
 }
 
+export function getOnboardingGoalPreview(): Promise<OnboardingGoalPreview> {
+  return http.get(`${ONBOARDING_V2_PATH}/goal-preview`, {
+    response: onboardingGoalPreviewSchema,
+  });
+}
+
 export function confirmOnboardingGoal(goal: OnboardingGoalConfirm): Promise<OnboardingGoal> {
-  return http.post(`${ONBOARDING_PATH}/goal`, {
+  return http.post(`${ONBOARDING_V2_PATH}/goal`, {
     body: goal,
     request: onboardingGoalConfirmSchema,
     response: onboardingGoalSchema,

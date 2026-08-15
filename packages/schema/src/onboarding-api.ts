@@ -2,8 +2,28 @@ import { z } from "zod";
 
 export const onboardingStatusSchema = z.enum(["IN_PROGRESS", "COMPLETED"]);
 
+export const residentialAreaSchema = z.enum([
+  "SEOUL",
+  "GYEONGGI",
+  "INCHEON",
+  "BUSAN",
+  "DAEGU",
+  "DAEJEON",
+  "SEJONG",
+  "ULSAN",
+  "CHUNGNAM",
+  "CHUNGBUK",
+  "GYEONGNAM",
+  "GYEONGBUK",
+  "JEONNAM",
+  "JEONBUK",
+  "GANGWON",
+  "JEJU",
+]);
+
 export const onboardingProfilePatchSchema = z.object({
   birthDate: z.iso.date().optional(),
+  address: residentialAreaSchema.optional(),
   monthlySalaryManwon: z.number().int().min(0).max(650).optional(),
   monthlySavingManwon: z.number().int().min(0).max(650).optional(),
   netWorthManwon: z.number().int().min(0).max(10_000).optional(),
@@ -13,6 +33,7 @@ export const onboardingProfilePatchSchema = z.object({
 export const onboardingProfileSchema = onboardingProfilePatchSchema.extend({
   status: onboardingStatusSchema,
   birthDate: z.iso.date().nullable(),
+  address: residentialAreaSchema.nullable(),
   monthlySalaryManwon: z.number().int().nullable(),
   monthlySavingManwon: z.number().int().nullable(),
   netWorthManwon: z.number().int().nullable(),
@@ -80,19 +101,38 @@ export const onboardingGoalPlansSchema = z.object({
   ),
 });
 
-export const onboardingGoalConfirmSchema = z.object({ plan: goalPlanSchema });
+export const MAX_ONBOARDING_MONTHLY_TARGET_MANWON = 650;
+
+export const onboardingGoalConfirmSchema = z.object({
+  monthlySavingManwon: z.number().int().min(0).max(MAX_ONBOARDING_MONTHLY_TARGET_MANWON),
+});
 
 export const onboardingGoalSchema = z.object({
   goalId: z.number().int(),
-  plan: goalPlanSchema,
   periodMonths: z.number().int(),
   targetAmountManwon: z.number().int(),
   status: z.literal("COMPLETED"),
 });
 
+export const onboardingGoalPreviewSchema = z.object({
+  monthlySavingManwon: z.number().int(),
+  currentMonthlySavingManwon: z.number().int(),
+  minMonthlySavingManwon: z.number().int(),
+  maxMonthlySavingManwon: z.number().int(),
+  recommendedMonthlySavingManwon: z.number().int(),
+  periodMonths: z.number().int(),
+  baseAmountManwon: z.number().int(),
+  additionalSavingManwon: z.number().int(),
+  expectedAmountManwon: z.number().int(),
+  extraMonthlyManwon: z.number().int(),
+  extraPercent: z.number().int(),
+});
+
 export type OnboardingProfilePatch = z.infer<typeof onboardingProfilePatchSchema>;
 export type OnboardingProfile = z.infer<typeof onboardingProfileSchema>;
+export type ResidentialArea = z.infer<typeof residentialAreaSchema>;
 export type OnboardingReport = z.infer<typeof onboardingReportSchema>;
 export type OnboardingGoalPlans = z.infer<typeof onboardingGoalPlansSchema>;
 export type OnboardingGoalConfirm = z.infer<typeof onboardingGoalConfirmSchema>;
 export type OnboardingGoal = z.infer<typeof onboardingGoalSchema>;
+export type OnboardingGoalPreview = z.infer<typeof onboardingGoalPreviewSchema>;

@@ -6,6 +6,7 @@ import ProfilePage from "./page";
 const PROFILE: OnboardingProfile = {
   status: "COMPLETED",
   birthDate: "2002-10-24",
+  address: "SEOUL",
   monthlySalaryManwon: 500,
   monthlySavingManwon: 100,
   netWorthManwon: 5000,

@@ -28,9 +28,9 @@ export function QuestionHeader() {
           aria-label="이전 단계"
           size="icon"
           variant="ghost"
-          onClick={() => router.push(previousQuestionPath)}
+          onClick={() => router.replace(previousQuestionPath)}
         >
-          <ChevronLeft className="size-6" strokeWidth="1.6" />
+          <ChevronLeft aria-hidden="true" className="size-6" strokeWidth="1.6" />
         </Button>
         <div aria-hidden="true" className="size-11" />
       </div>

@@ -4,11 +4,16 @@ import { useMutation } from "@tanstack/react-query";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { act, createTestQueryClient, renderHook } from "@/lib/test/react";
 
+const { ALREADY_COMPLETED_ERROR } = vi.hoisted(() => ({
+  ALREADY_COMPLETED_ERROR: new Error("ONBOARDING_ALREADY_COMPLETED"),
+}));
+
 vi.mock("@/api/onboarding", () => ({
   confirmOnboardingGoal: vi.fn(),
   getOnboardingGoalPlans: vi.fn(),
   getOnboardingProfile: vi.fn(),
   getOnboardingReport: vi.fn(),
+  isOnboardingAlreadyCompletedError: (error: unknown) => error === ALREADY_COMPLETED_ERROR,
   patchOnboardingProfile: vi.fn(),
 }));
 
@@ -19,6 +24,7 @@ import { confirmOnboardingGoalOptions, onboardingProfileOptions } from "./onboar
 const IN_PROGRESS_PROFILE: OnboardingProfile = {
   status: "IN_PROGRESS",
   birthDate: "1998-03-01",
+  address: "SEOUL",
   monthlySalaryManwon: 300,
   monthlySavingManwon: 100,
   netWorthManwon: 1000,
@@ -40,7 +46,6 @@ describe("confirmOnboardingGoalOptions", () => {
     queryClient.setQueryData(currentUserOptions().queryKey, INCOMPLETE_CURRENT_USER);
     vi.mocked(confirmOnboardingGoal).mockResolvedValue({
       goalId: 1,
-      plan: "PLAN_1",
       periodMonths: 12,
       targetAmountManwon: 1440,
       status: "COMPLETED",
@@ -50,7 +55,7 @@ describe("confirmOnboardingGoalOptions", () => {
       queryClient,
     });
     await act(async () => {
-      await result.current.mutateAsync({ plan: "PLAN_1" });
+      await result.current.mutateAsync({ monthlySavingManwon: 115 });
     });
 
     expect(queryClient.getQueryData(onboardingProfileOptions().queryKey)).toEqual({
@@ -67,7 +72,6 @@ describe("confirmOnboardingGoalOptions", () => {
     const queryClient = createTestQueryClient();
     vi.mocked(confirmOnboardingGoal).mockResolvedValue({
       goalId: 1,
-      plan: "PLAN_1",
       periodMonths: 12,
       targetAmountManwon: 1440,
       status: "COMPLETED",
@@ -77,9 +81,40 @@ describe("confirmOnboardingGoalOptions", () => {
       queryClient,
     });
     await act(async () => {
-      await result.current.mutateAsync({ plan: "PLAN_1" });
+      await result.current.mutateAsync({ monthlySavingManwon: 115 });
     });
 
     expect(queryClient.getQueryData(onboardingProfileOptions().queryKey)).toBeUndefined();
+  });
+
+  it("서버에 이미 완료된 재시도도 완료 캐시로 복구한다", async () => {
+    const queryClient = createTestQueryClient();
+    queryClient.setQueryDefaults(onboardingProfileOptions().queryKey, {
+      gcTime: Number.POSITIVE_INFINITY,
+    });
+    queryClient.setQueryDefaults(currentUserOptions().queryKey, {
+      gcTime: Number.POSITIVE_INFINITY,
+    });
+    queryClient.setQueryData(onboardingProfileOptions().queryKey, IN_PROGRESS_PROFILE);
+    queryClient.setQueryData(currentUserOptions().queryKey, INCOMPLETE_CURRENT_USER);
+    vi.mocked(confirmOnboardingGoal).mockRejectedValue(ALREADY_COMPLETED_ERROR);
+
+    const { result } = renderHook(() => useMutation(confirmOnboardingGoalOptions(queryClient)), {
+      queryClient,
+    });
+    await act(async () => {
+      await expect(result.current.mutateAsync({ monthlySavingManwon: 115 })).rejects.toBe(
+        ALREADY_COMPLETED_ERROR,
+      );
+    });
+
+    expect(queryClient.getQueryData(onboardingProfileOptions().queryKey)).toEqual({
+      ...IN_PROGRESS_PROFILE,
+      status: "COMPLETED",
+    });
+    expect(queryClient.getQueryData(currentUserOptions().queryKey)).toEqual({
+      ...INCOMPLETE_CURRENT_USER,
+      onboardingCompleted: true,
+    });
   });
 });

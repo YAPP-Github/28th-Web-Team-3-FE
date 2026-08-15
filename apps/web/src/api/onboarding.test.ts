@@ -4,8 +4,10 @@ import { http } from "@/api/client";
 import {
   confirmOnboardingGoal,
   getOnboardingGoalPlans,
+  getOnboardingGoalPreview,
   getOnboardingProfile,
   getOnboardingReport,
+  isOnboardingAlreadyCompletedError,
   patchOnboardingProfile,
   updateOnboardingProfile,
 } from "@/api/onboarding";
@@ -17,6 +19,7 @@ vi.mock("@/api/client", () => ({
 const profile = {
   status: "IN_PROGRESS",
   birthDate: "1998-03-01",
+  address: "SEOUL",
   monthlySalaryManwon: 300,
   monthlySavingManwon: 100,
   netWorthManwon: 1000,
@@ -87,6 +90,7 @@ describe("onboarding API", () => {
     await expect(getOnboardingProfile()).resolves.toEqual({
       status: "IN_PROGRESS",
       birthDate: null,
+      address: null,
       monthlySalaryManwon: null,
       monthlySavingManwon: null,
       netWorthManwon: null,
@@ -100,20 +104,28 @@ describe("onboarding API", () => {
     await expect(getOnboardingProfile()).rejects.toBeInstanceOf(HTTPError);
   });
 
-  it("report, goal-plans, goal 계약 경로를 호출한다", async () => {
+  it("응답을 놓친 목표 확정의 이미 완료 오류를 구분한다", async () => {
+    await expect(httpError(409, "ONBOARDING_ALREADY_COMPLETED")).rejects.toSatisfy(
+      isOnboardingAlreadyCompletedError,
+    );
+  });
+
+  it("기존 조회와 v2 목표 미리보기·확정 계약 경로를 호출한다", async () => {
     vi.mocked(http.get).mockReturnValue(resolved({}));
     vi.mocked(http.post).mockReturnValue(resolved({}));
 
     await getOnboardingReport();
     await getOnboardingGoalPlans();
-    await confirmOnboardingGoal({ plan: "PLAN_1" });
+    await getOnboardingGoalPreview();
+    await confirmOnboardingGoal({ monthlySavingManwon: 115 });
 
     expect(http.get).toHaveBeenNthCalledWith(1, "onboarding/report", expect.anything());
     expect(http.get).toHaveBeenNthCalledWith(2, "onboarding/goal-plans", expect.anything());
+    expect(http.get).toHaveBeenNthCalledWith(3, "v2/onboarding/goal-preview", expect.anything());
     expect(http.post).toHaveBeenCalledWith(
-      "onboarding/goal",
+      "v2/onboarding/goal",
       expect.objectContaining({
-        body: { plan: "PLAN_1" },
+        body: { monthlySavingManwon: 115 },
         request: expect.anything(),
       }),
     );

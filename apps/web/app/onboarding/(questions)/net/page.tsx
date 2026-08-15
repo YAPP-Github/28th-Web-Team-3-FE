@@ -99,12 +99,12 @@ export default function NetWorthOnboardingPage() {
           {saveError}
         </p>
       ) : null}
-      <div className="pt-8 pb-6">
+      <div className="pt-2 pb-6">
         <ButtonGroup
           nextDisabled={!hasAnswered && !hasStoredAnswer}
           nextPending={isSaving}
           onNext={navigateToInvestmentPeriodQuestion}
-          onPrev={() => router.push("/onboarding/month")}
+          onPrev={() => router.replace("/onboarding/month")}
         />
       </div>
     </div>
