@@ -6,11 +6,10 @@ import { Button, cn, Input } from "@repo/ui";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ChevronLeft } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { type FormEvent, useEffect, useRef, useState } from "react";
+import { type FormEvent, useEffect, useState } from "react";
 import { SAVE_FAILED_TEXT } from "@/lib/messages";
 import { onlyDigits } from "@/lib/number";
-import { updateGoalOptions } from "@/lib/queries/goal";
-import { onboardingProfileOptions, patchOnboardingProfileOptions } from "@/lib/queries/onboarding";
+import { onboardingProfileOptions, updateOnboardingProfileOptions } from "@/lib/queries/onboarding";
 
 interface ProfileDraft {
   birthDate: string;
@@ -102,19 +101,14 @@ export default function ProfileEditPage() {
   const router = useRouter();
   const queryClient = useQueryClient();
   const { data: profile, isPending, isError } = useQuery(onboardingProfileOptions());
-  const { mutateAsync: patchProfile, isPending: isPatchingProfile } = useMutation(
-    patchOnboardingProfileOptions(queryClient),
-  );
-  const { mutateAsync: updateGoal, isPending: isUpdatingGoal } = useMutation(
-    updateGoalOptions(queryClient),
+  const { mutateAsync: updateProfile, isPending: isUpdatingProfile } = useMutation(
+    updateOnboardingProfileOptions(queryClient),
   );
   const [draft, setDraft] = useState<ProfileDraft>();
   const [submitError, setSubmitError] = useState<string>();
-  const initialGoalPeriodMonthsRef = useRef<number | undefined>(undefined);
 
   useEffect(() => {
     if (!profile || draft) return;
-    initialGoalPeriodMonthsRef.current = profile.goalPeriodMonths ?? 12;
     setDraft({
       birthDate: profile.birthDate?.replaceAll("-", ".") ?? "",
       monthlySalaryManwon:
@@ -168,10 +162,7 @@ export default function ProfileEditPage() {
 
     setSubmitError(undefined);
     try {
-      await patchProfile(nextProfile);
-      if (draft.goalPeriodMonths !== initialGoalPeriodMonthsRef.current) {
-        await updateGoal({ targetAmountManwon: null, periodMonths: draft.goalPeriodMonths });
-      }
+      await updateProfile(nextProfile);
     } catch {
       setSubmitError(SAVE_FAILED_TEXT);
       return;
@@ -284,7 +275,7 @@ export default function ProfileEditPage() {
           ) : null}
           <Button
             className={submitError ? "mt-3" : "mt-auto"}
-            pending={isPatchingProfile || isUpdatingGoal}
+            pending={isUpdatingProfile}
             size="cta"
             type="submit"
           >

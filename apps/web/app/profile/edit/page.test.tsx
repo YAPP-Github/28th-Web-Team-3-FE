@@ -1,4 +1,3 @@
-import type { GoalSummary } from "@repo/schema/goal";
 import type { OnboardingProfile } from "@repo/schema/onboarding-api";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { SAVE_FAILED_TEXT } from "@/lib/messages";
@@ -16,16 +15,6 @@ const PROFILE: OnboardingProfile = {
   goalPeriodMonths: 24,
 };
 
-const GOAL_SUMMARY: GoalSummary = {
-  targetAmountManwon: 5000,
-  periodMonths: 36,
-  totalSavedManwon: 1950,
-  progressPercent: 39,
-  usageMonths: 8,
-  deadlineDDay: 486,
-  thisMonth: { targetManwon: 82, savedManwon: 67, progressPercent: 82, dDay: 12 },
-};
-
 vi.mock("next/navigation", () => ({ useRouter: () => navigation }));
 
 vi.mock("@/api/onboarding", () => ({
@@ -34,6 +23,7 @@ vi.mock("@/api/onboarding", () => ({
   getOnboardingProfile: vi.fn(),
   getOnboardingReport: vi.fn(),
   patchOnboardingProfile: vi.fn(),
+  updateOnboardingProfile: vi.fn(),
 }));
 
 vi.mock("@/api/goal", () => ({
@@ -43,14 +33,18 @@ vi.mock("@/api/goal", () => ({
 }));
 
 import { updateGoal } from "@/api/goal";
-import { getOnboardingProfile, patchOnboardingProfile } from "@/api/onboarding";
+import {
+  getOnboardingProfile,
+  patchOnboardingProfile,
+  updateOnboardingProfile,
+} from "@/api/onboarding";
 
 describe("ProfileEditPage", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.mocked(getOnboardingProfile).mockResolvedValue(PROFILE);
     vi.mocked(patchOnboardingProfile).mockResolvedValue(PROFILE);
-    vi.mocked(updateGoal).mockResolvedValue(GOAL_SUMMARY);
+    vi.mocked(updateOnboardingProfile).mockResolvedValue(PROFILE);
   });
 
   it("프로필을 채워 보여주고 변경한 전체 정보와 목표 기간을 저장한다", async () => {
@@ -78,7 +72,7 @@ describe("ProfileEditPage", () => {
     fireEvent.click(screen.getByRole("button", { name: "완료" }));
 
     await waitFor(() =>
-      expect(patchOnboardingProfile).toHaveBeenCalledWith({
+      expect(updateOnboardingProfile).toHaveBeenCalledWith({
         birthDate: "2002-10-24",
         monthlySalaryManwon: 550,
         monthlySavingManwon: 120,
@@ -86,17 +80,19 @@ describe("ProfileEditPage", () => {
         goalPeriodMonths: 36,
       }),
     );
-    expect(updateGoal).toHaveBeenCalledWith({ targetAmountManwon: null, periodMonths: 36 });
+    expect(patchOnboardingProfile).not.toHaveBeenCalled();
+    expect(updateGoal).not.toHaveBeenCalled();
     expect(navigation.back).toHaveBeenCalledOnce();
   });
 
-  it("목표 기간을 바꾸지 않으면 목표 API를 호출하지 않는다", async () => {
+  it("목표 기간을 바꾸지 않아도 완료 사용자용 PUT으로 저장한다", async () => {
     render(<ProfileEditPage />);
 
     await screen.findByRole("textbox", { name: "생년월일" });
     fireEvent.click(screen.getByRole("button", { name: "완료" }));
 
-    await waitFor(() => expect(patchOnboardingProfile).toHaveBeenCalledOnce());
+    await waitFor(() => expect(updateOnboardingProfile).toHaveBeenCalledOnce());
+    expect(patchOnboardingProfile).not.toHaveBeenCalled();
     expect(updateGoal).not.toHaveBeenCalled();
   });
 
@@ -108,7 +104,7 @@ describe("ProfileEditPage", () => {
     fireEvent.click(screen.getByRole("button", { name: "완료" }));
 
     expect(screen.getByText("월 저축액은 월급보다 클 수 없어요.")).toBeInTheDocument();
-    expect(patchOnboardingProfile).not.toHaveBeenCalled();
+    expect(updateOnboardingProfile).not.toHaveBeenCalled();
     expect(updateGoal).not.toHaveBeenCalled();
   });
 
@@ -120,11 +116,11 @@ describe("ProfileEditPage", () => {
     fireEvent.click(screen.getByRole("button", { name: "완료" }));
 
     expect(screen.getByText("현재 순자산을 입력해주세요.")).toBeInTheDocument();
-    expect(patchOnboardingProfile).not.toHaveBeenCalled();
+    expect(updateOnboardingProfile).not.toHaveBeenCalled();
   });
 
   it("저장 실패를 안내하고 화면에 남는다", async () => {
-    vi.mocked(patchOnboardingProfile).mockRejectedValue(new Error("network error"));
+    vi.mocked(updateOnboardingProfile).mockRejectedValue(new Error("network error"));
     render(<ProfileEditPage />);
 
     await screen.findByRole("textbox", { name: "생년월일" });
@@ -134,11 +130,10 @@ describe("ProfileEditPage", () => {
     expect(navigation.back).not.toHaveBeenCalled();
   });
 
-  it("목표 기간 저장만 실패하면 다음 완료에서 목표 API를 다시 호출한다", async () => {
-    vi.mocked(patchOnboardingProfile).mockResolvedValue({ ...PROFILE, goalPeriodMonths: 36 });
-    vi.mocked(updateGoal)
-      .mockRejectedValueOnce(new Error("goal update failed"))
-      .mockResolvedValueOnce(GOAL_SUMMARY);
+  it("PUT 저장 실패 후 완료를 다시 누르면 전체 profile을 재시도한다", async () => {
+    vi.mocked(updateOnboardingProfile)
+      .mockRejectedValueOnce(new Error("network error"))
+      .mockResolvedValueOnce({ ...PROFILE, goalPeriodMonths: 36 });
     render(<ProfileEditPage />);
 
     await screen.findByRole("textbox", { name: "생년월일" });
@@ -148,7 +143,8 @@ describe("ProfileEditPage", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "완료" }));
 
-    await waitFor(() => expect(updateGoal).toHaveBeenCalledTimes(2));
+    await waitFor(() => expect(updateOnboardingProfile).toHaveBeenCalledTimes(2));
+    expect(updateGoal).not.toHaveBeenCalled();
     expect(navigation.back).toHaveBeenCalledOnce();
   });
 });
