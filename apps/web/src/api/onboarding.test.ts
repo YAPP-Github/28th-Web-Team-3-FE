@@ -6,6 +6,7 @@ import {
   getOnboardingGoalPlans,
   getOnboardingProfile,
   getOnboardingReport,
+  isOnboardingAlreadyCompletedError,
   patchOnboardingProfile,
   updateOnboardingProfile,
 } from "@/api/onboarding";
@@ -102,20 +103,26 @@ describe("onboarding API", () => {
     await expect(getOnboardingProfile()).rejects.toBeInstanceOf(HTTPError);
   });
 
+  it("응답을 놓친 목표 확정의 이미 완료 오류를 구분한다", async () => {
+    await expect(httpError(409, "ONBOARDING_ALREADY_COMPLETED")).rejects.toSatisfy(
+      isOnboardingAlreadyCompletedError,
+    );
+  });
+
   it("report, goal-plans, goal 계약 경로를 호출한다", async () => {
     vi.mocked(http.get).mockReturnValue(resolved({}));
     vi.mocked(http.post).mockReturnValue(resolved({}));
 
     await getOnboardingReport();
     await getOnboardingGoalPlans();
-    await confirmOnboardingGoal({ plan: "PLAN_1" });
+    await confirmOnboardingGoal({ plan: "PLAN_1", monthlyTargetManwon: 115 });
 
     expect(http.get).toHaveBeenNthCalledWith(1, "onboarding/report", expect.anything());
     expect(http.get).toHaveBeenNthCalledWith(2, "onboarding/goal-plans", expect.anything());
     expect(http.post).toHaveBeenCalledWith(
       "onboarding/goal",
       expect.objectContaining({
-        body: { plan: "PLAN_1" },
+        body: { plan: "PLAN_1", monthlyTargetManwon: 115 },
         request: expect.anything(),
       }),
     );

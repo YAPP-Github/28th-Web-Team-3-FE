@@ -36,6 +36,17 @@ function isMissingOnboardingProfile(error: unknown): boolean {
   );
 }
 
+/** 서버에는 확정됐지만 응답을 받지 못한 뒤 재시도한 경우를 완료 상태로 복구한다. */
+export function isOnboardingAlreadyCompletedError(error: unknown): boolean {
+  if (!(error instanceof HTTPError) || error.response.status !== 409) return false;
+  return (
+    typeof error.data === "object" &&
+    error.data !== null &&
+    "name" in error.data &&
+    error.data.name === "ONBOARDING_ALREADY_COMPLETED"
+  );
+}
+
 export async function getOnboardingProfile(): Promise<OnboardingProfile> {
   try {
     return await http.get(`${ONBOARDING_PATH}/profile`, { response: onboardingProfileSchema });

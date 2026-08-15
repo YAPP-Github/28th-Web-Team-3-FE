@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  onboardingGoalConfirmSchema,
   onboardingGoalPlansSchema,
   onboardingProfilePatchSchema,
   onboardingReportSchema,
@@ -23,6 +24,15 @@ describe("onboarding API schemas", () => {
     expect(() => onboardingProfilePatchSchema.parse({ netWorthManwon: 10_001 })).toThrow();
     expect(() => onboardingProfilePatchSchema.parse({ goalPeriodMonths: 2 })).toThrow();
     expect(() => onboardingProfilePatchSchema.parse({ address: "GWANGJU" })).toThrow();
+    expect(() =>
+      onboardingGoalConfirmSchema.parse({ plan: "PLAN_1", monthlyTargetManwon: 701 }),
+    ).toThrow();
+  });
+
+  it("accepts a monthly target with the legacy plan", () => {
+    expect(onboardingGoalConfirmSchema.parse({ plan: "PLAN_1", monthlyTargetManwon: 115 })).toEqual(
+      { plan: "PLAN_1", monthlyTargetManwon: 115 },
+    );
   });
 
   it("parses report and goal-plan response shapes", () => {

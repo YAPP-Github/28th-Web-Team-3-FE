@@ -101,7 +101,14 @@ export const onboardingGoalPlansSchema = z.object({
   ),
 });
 
-export const onboardingGoalConfirmSchema = z.object({ plan: goalPlanSchema });
+export const MAX_ONBOARDING_MONTHLY_TARGET_MANWON = 700;
+export const MAX_ONBOARDING_MONTHLY_TARGET_INCREASE_MANWON = 50;
+
+export const onboardingGoalConfirmSchema = z.object({
+  // plan은 구버전 BE·앱과의 호환 및 미션 추천 성향 스냅샷을 위해 유지한다.
+  plan: goalPlanSchema,
+  monthlyTargetManwon: z.number().int().min(0).max(MAX_ONBOARDING_MONTHLY_TARGET_MANWON),
+});
 
 export const onboardingGoalSchema = z.object({
   goalId: z.number().int(),

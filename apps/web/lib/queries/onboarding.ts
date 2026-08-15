@@ -9,6 +9,7 @@ import {
   getOnboardingGoalPlans,
   getOnboardingProfile,
   getOnboardingReport,
+  isOnboardingAlreadyCompletedError,
   patchOnboardingProfile,
   updateOnboardingProfile,
 } from "@/api/onboarding";
@@ -72,16 +73,21 @@ export function updateOnboardingProfileOptions(queryClient: QueryClient) {
  * 넘기지 않고 감싼다 — 안 그러면 API 함수가 쓰지도 않는 context까지 받는다.
  */
 export function confirmOnboardingGoalOptions(queryClient: QueryClient) {
+  const markCompleted = () => {
+    queryClient.setQueryData<OnboardingProfile>(ONBOARDING_PROFILE_QUERY_KEY, (profile) =>
+      profile ? { ...profile, status: "COMPLETED" } : profile,
+    );
+    // queryKey에 DataTag가 붙어 있어 데이터 타입이 options에서 추론된다 — 제네릭 불필요.
+    queryClient.setQueryData(currentUserOptions().queryKey, (currentUser) =>
+      currentUser ? { ...currentUser, onboardingCompleted: true } : currentUser,
+    );
+  };
+
   return mutationOptions({
     mutationFn: (goal: OnboardingGoalConfirm) => confirmOnboardingGoal(goal),
-    onSuccess: ({ status }) => {
-      queryClient.setQueryData<OnboardingProfile>(ONBOARDING_PROFILE_QUERY_KEY, (profile) =>
-        profile ? { ...profile, status } : profile,
-      );
-      // queryKey에 DataTag가 붙어 있어 데이터 타입이 options에서 추론된다 — 제네릭 불필요.
-      queryClient.setQueryData(currentUserOptions().queryKey, (currentUser) =>
-        currentUser ? { ...currentUser, onboardingCompleted: status === "COMPLETED" } : currentUser,
-      );
+    onSuccess: markCompleted,
+    onError: (error) => {
+      if (isOnboardingAlreadyCompletedError(error)) markCompleted();
     },
   });
 }
