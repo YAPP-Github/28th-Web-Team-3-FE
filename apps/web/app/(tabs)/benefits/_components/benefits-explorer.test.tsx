@@ -519,6 +519,11 @@ describe("BenefitsExplorer", () => {
 
     await waitFor(() => expect(fetchPolicies).toHaveBeenCalledTimes(3));
     expect(retryButton).toHaveAttribute("aria-busy", "true");
+    expect(screen.getByText("다음 혜택을 다시 불러오는 중이에요.")).toHaveAttribute(
+      "role",
+      "status",
+    );
+    expect(document.querySelectorAll('[data-slot="benefit-card-skeleton"]')).toHaveLength(0);
     await act(async () => {
       finishRetry?.([policy(99)]);
     });
@@ -548,6 +553,7 @@ describe("BenefitsExplorer", () => {
 
     await waitFor(() => expect(fetchPolicies).toHaveBeenCalledTimes(2));
     expect(retryButton).toHaveAttribute("aria-busy", "true");
+    expect(screen.getByText("혜택을 다시 불러오는 중이에요.")).toHaveAttribute("role", "status");
     await act(async () => {
       finishRetry?.([policy(3)]);
     });

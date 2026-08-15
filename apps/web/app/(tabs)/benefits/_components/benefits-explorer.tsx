@@ -157,8 +157,13 @@ export function BenefitsExplorer() {
         ) : isInitialError || isRetryingInitial ? (
           <div className="flex flex-col items-center py-10 text-center">
             {/* 칩을 눌러 실패했을 때 초점은 칩에 남는다 — alert로 알려야 화면 밖 사용자도 안다. */}
-            <p role="alert" className="text-body-b2-500 text-gray-500">
-              혜택을 불러오지 못했어요. 잠시 후 다시 시도해 주세요.
+            <p
+              role={isRetryingInitial ? "status" : "alert"}
+              className="text-body-b2-500 text-gray-500"
+            >
+              {isRetryingInitial
+                ? "혜택을 다시 불러오는 중이에요."
+                : "혜택을 불러오지 못했어요. 잠시 후 다시 시도해 주세요."}
             </p>
             <Button
               className="mt-4"
@@ -186,11 +191,18 @@ export function BenefitsExplorer() {
             {benefits.map((benefit) => (
               <BenefitCard key={benefit.id} benefit={benefit} onToggleSave={toggleSaved} />
             ))}
-            {!isSavedFilter && isFetchingNextPage ? <BenefitListSkeleton count={1} /> : null}
+            {!isSavedFilter && isFetchingNextPage && !isFetchNextPageError ? (
+              <BenefitListSkeleton count={1} />
+            ) : null}
             {!isSavedFilter && isFetchNextPageError ? (
               <div className="flex flex-col items-center py-5 text-center">
-                <p role="alert" className="text-body-b2-500 text-gray-500">
-                  다음 혜택을 불러오지 못했어요. 다시 시도해 주세요.
+                <p
+                  role={isFetchingNextPage ? "status" : "alert"}
+                  className="text-body-b2-500 text-gray-500"
+                >
+                  {isFetchingNextPage
+                    ? "다음 혜택을 다시 불러오는 중이에요."
+                    : "다음 혜택을 불러오지 못했어요. 다시 시도해 주세요."}
                 </p>
                 <Button
                   className="mt-3"
