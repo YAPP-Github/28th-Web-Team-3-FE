@@ -1,3 +1,4 @@
+import { cn } from "@repo/ui";
 import type { AnimationItem } from "lottie-web";
 import Image from "next/image";
 import type { CSSProperties } from "react";
@@ -90,16 +91,25 @@ function renderAnimation(
 }
 
 interface PigboxProgressGaugeProps {
+  className?: string;
+  completedCount: number;
   progress: number;
 }
 
-export function PigboxProgressGauge({ progress }: PigboxProgressGaugeProps) {
+export function PigboxProgressGauge({
+  className,
+  completedCount,
+  progress,
+}: PigboxProgressGaugeProps) {
   const baseRef = useRef<HTMLDivElement>(null);
   const waterRef = useRef<HTMLDivElement>(null);
   const detailsRef = useRef<HTMLDivElement>(null);
-  const [isReady, setIsReady] = useState(false);
-  const [displayedProgress, setDisplayedProgress] = useState(0);
   const clampedProgress = clampProgress(progress);
+  const previousCompletedCountRef = useRef(completedCount);
+  const previousProgressRef = useRef(clampedProgress);
+  const [isReady, setIsReady] = useState(false);
+  const [isFillAnimating, setIsFillAnimating] = useState(false);
+  const [displayedProgress, setDisplayedProgress] = useState(clampedProgress);
   const style = {
     "--pigbox-fill-top": `${calculatePigboxFillTop(displayedProgress)}%`,
   } as CSSProperties;
@@ -164,24 +174,34 @@ export function PigboxProgressGauge({ progress }: PigboxProgressGaugeProps) {
   }, []);
 
   useEffect(() => {
-    if (!isReady) return;
+    const previousCompletedCount = previousCompletedCountRef.current;
+    const previousProgress = previousProgressRef.current;
+    previousCompletedCountRef.current = completedCount;
+    previousProgressRef.current = clampedProgress;
 
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    const shouldAnimate =
+      completedCount > previousCompletedCount &&
+      clampedProgress > previousProgress &&
+      !window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+    if (!shouldAnimate) {
+      setIsFillAnimating(false);
       setDisplayedProgress(clampedProgress);
       return;
     }
 
+    setIsFillAnimating(true);
     const animationFrame = requestAnimationFrame(() => {
       setDisplayedProgress(clampedProgress);
     });
 
     return () => cancelAnimationFrame(animationFrame);
-  }, [clampedProgress, isReady]);
+  }, [clampedProgress, completedCount]);
 
   return (
     <div
       aria-hidden="true"
-      className="pointer-events-none relative size-32 shrink-0 overflow-hidden"
+      className={cn("pointer-events-none relative size-32 shrink-0 overflow-hidden", className)}
       data-pigbox-progress={Math.round(clampedProgress)}
       style={style}
     >
@@ -199,8 +219,15 @@ export function PigboxProgressGauge({ progress }: PigboxProgressGaugeProps) {
       <div
         ref={waterRef}
         aria-hidden="true"
-        className="absolute inset-0 z-20 transition-[clip-path] duration-700 ease-out motion-reduce:transition-none"
+        className={cn(
+          "absolute inset-0 z-20",
+          isFillAnimating
+            ? "transition-[clip-path] duration-700 ease-out motion-reduce:transition-none"
+            : "transition-none",
+        )}
+        data-pigbox-fill=""
         style={{ clipPath: "inset(var(--pigbox-fill-top) 0 6% 0)" }}
+        onTransitionEnd={() => setIsFillAnimating(false)}
       />
       <div ref={detailsRef} aria-hidden="true" className="absolute inset-0 z-30" />
     </div>
