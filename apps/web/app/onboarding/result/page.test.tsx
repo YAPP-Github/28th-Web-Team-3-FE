@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { getCurrentUser } from "@/api/auth";
 import { confirmOnboardingGoal, getOnboardingProfile } from "@/api/onboarding";
+import { persistAddressConfirmation } from "@/app/onboarding/lib/address-confirmation";
 import { fireEvent, render, screen, waitFor } from "@/lib/test/react";
 import OnboardingResultPage from "./page";
 
@@ -31,6 +32,7 @@ describe("OnboardingResultPage", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     localStorage.clear();
+    persistAddressConfirmation(1);
     vi.mocked(getCurrentUser).mockResolvedValue({ userId: 1, onboardingCompleted: false });
     vi.mocked(getOnboardingProfile).mockResolvedValue(profile);
     vi.mocked(confirmOnboardingGoal).mockResolvedValue({
@@ -87,6 +89,7 @@ describe("OnboardingResultPage", () => {
     await screen.findByText("매달 모을 금액 116만원");
     firstRender.unmount();
     vi.mocked(getCurrentUser).mockResolvedValue({ userId: 2, onboardingCompleted: false });
+    persistAddressConfirmation(2);
 
     render(<OnboardingResultPage />);
 
@@ -121,6 +124,16 @@ describe("OnboardingResultPage", () => {
 
     expect(confirmOnboardingGoal).not.toHaveBeenCalled();
     expect(replace).toHaveBeenCalledWith("/onboarding/check");
+  });
+
+  it("임시 서울을 직접 확인하지 않은 사용자는 목표를 확정하지 못하고 지역 질문으로 돌아간다", async () => {
+    localStorage.clear();
+
+    render(<OnboardingResultPage />);
+
+    expect(await screen.findByRole("status")).toHaveTextContent("결과를 불러오는 중");
+    await waitFor(() => expect(replace).toHaveBeenCalledWith("/onboarding/address"));
+    expect(confirmOnboardingGoal).not.toHaveBeenCalled();
   });
 
   it("서버에 이미 확정된 재시도는 오류에 머물지 않고 홈으로 복구한다", async () => {

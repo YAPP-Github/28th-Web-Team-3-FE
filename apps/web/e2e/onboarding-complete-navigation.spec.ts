@@ -1,5 +1,11 @@
 import { expect, test } from "@playwright/test";
 
+test.beforeEach(async ({ page }) => {
+  await page.addInitScript(() => {
+    localStorage.setItem("onboarding:address-confirmed:1", "true");
+  });
+});
+
 test("온보딩 목표 확정 후 Hook 오류 없이 홈으로 이동한다", async ({ page }) => {
   const pageErrors: string[] = [];
   let confirmedGoal: unknown;

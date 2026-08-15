@@ -1,7 +1,8 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { getOnboardingProfile, patchOnboardingProfile } from "@/api/onboarding";
 import { OnboardingFormProvider } from "@/app/onboarding/(questions)/_components/onboarding-form-provider";
-import { fireEvent, render, screen, waitFor } from "@/lib/test/react";
+import { currentUserOptions } from "@/lib/queries/auth";
+import { act, createTestQueryClient, fireEvent, render, screen, waitFor } from "@/lib/test/react";
 import AddressOnboardingPage from "./page";
 
 const pushMock = vi.fn();
@@ -18,11 +19,12 @@ vi.mock("@/api/onboarding", () => ({
   patchOnboardingProfile: vi.fn().mockResolvedValue({}),
 }));
 
-function renderAddressOnboardingPage() {
+function renderAddressOnboardingPage(queryClient = createTestQueryClient()) {
   return render(
     <OnboardingFormProvider>
       <AddressOnboardingPage />
     </OnboardingFormProvider>,
+    { queryClient },
   );
 }
 
@@ -107,6 +109,38 @@ describe("AddressOnboardingPage", () => {
       "pt-2",
       "pb-6",
     );
+  });
+
+  it("현재 사용자 ID가 바뀌면 이전 사용자의 서울 확인 상태를 이어받지 않는다", async () => {
+    vi.mocked(getOnboardingProfile).mockResolvedValue({
+      status: "IN_PROGRESS",
+      birthDate: "1998-03-01",
+      address: "SEOUL",
+      monthlySalaryManwon: null,
+      monthlySavingManwon: null,
+      netWorthManwon: null,
+      goalPeriodMonths: null,
+    });
+    const queryClient = createTestQueryClient();
+    renderAddressOnboardingPage(queryClient);
+    await waitFor(() =>
+      expect(queryClient.getQueryData(currentUserOptions().queryKey)).toEqual({
+        userId: 1,
+        onboardingCompleted: false,
+      }),
+    );
+    fireEvent.click(screen.getByRole("radio", { name: "서울" }));
+    expect(screen.getByRole("radio", { name: "서울" })).toBeChecked();
+
+    act(() => {
+      queryClient.setQueryData(currentUserOptions().queryKey, {
+        userId: 2,
+        onboardingCompleted: false,
+      });
+    });
+
+    await waitFor(() => expect(screen.getByRole("radio", { name: "서울" })).not.toBeChecked());
+    expect(screen.getByRole("button", { name: "다음" })).toBeDisabled();
   });
 
   it("이전 버튼으로 나이 질문에 돌아간다", () => {

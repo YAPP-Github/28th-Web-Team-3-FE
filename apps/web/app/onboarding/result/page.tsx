@@ -11,6 +11,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { isOnboardingAlreadyCompletedError } from "@/api/onboarding";
 import { OnboardingPageSkeleton } from "@/app/onboarding/_components/onboarding-page-skeleton";
+import { isAddressConfirmed } from "@/app/onboarding/lib/address-confirmation";
 import { formatManwon } from "@/lib/format";
 import { currentUserOptions } from "@/lib/queries/auth";
 import { confirmOnboardingGoalOptions, onboardingProfileOptions } from "@/lib/queries/onboarding";
@@ -303,6 +304,12 @@ export default function OnboardingResultPage() {
   const router = useRouter();
   const { data: profile, isError } = useQuery(onboardingProfileOptions());
   const { data: currentUser, isError: isCurrentUserError } = useQuery(currentUserOptions());
+  const hasConfirmedAddress =
+    profile && currentUser ? isAddressConfirmed(profile.address, currentUser.userId) : undefined;
+
+  useEffect(() => {
+    if (hasConfirmedAddress === false) router.replace("/onboarding/address");
+  }, [hasConfirmedAddress, router]);
 
   if ((isError && !profile) || (isCurrentUserError && !currentUser)) {
     return (
@@ -312,7 +319,7 @@ export default function OnboardingResultPage() {
     );
   }
 
-  if (!profile || !currentUser) {
+  if (!profile || !currentUser || hasConfirmedAddress === false) {
     return <OnboardingPageSkeleton label="결과를 불러오는 중" />;
   }
 

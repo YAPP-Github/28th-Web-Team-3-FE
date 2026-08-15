@@ -1,12 +1,16 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { getOnboardingProfile } from "@/api/onboarding";
-import { fireEvent, render, screen } from "@/lib/test/react";
+import { persistAddressConfirmation } from "@/app/onboarding/lib/address-confirmation";
+import { fireEvent, render, screen, waitFor } from "@/lib/test/react";
 import OnboardingCheckPage from "./page";
 
 const push = vi.fn();
 const replace = vi.fn();
 
 vi.mock("next/navigation", () => ({ useRouter: () => ({ push, replace }) }));
+vi.mock("@/api/auth", () => ({
+  getCurrentUser: vi.fn().mockResolvedValue({ userId: 1, onboardingCompleted: false }),
+}));
 vi.mock("@/api/onboarding", () => ({ getOnboardingProfile: vi.fn() }));
 
 const profile = {
@@ -22,6 +26,8 @@ const profile = {
 describe("OnboardingCheckPage", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    localStorage.clear();
+    persistAddressConfirmation(1);
     vi.mocked(getOnboardingProfile).mockResolvedValue(profile);
   });
 
@@ -60,5 +66,15 @@ describe("OnboardingCheckPage", () => {
 
     expect(await screen.findByRole("button", { name: "완료" })).toBeDisabled();
     expect(screen.getByLabelText("생년월일이 어떻게 되시나요?")).toHaveValue("입력되지 않음");
+  });
+
+  it("임시 서울을 직접 확인하지 않은 사용자는 지역 질문으로 돌려보낸다", async () => {
+    localStorage.clear();
+    vi.mocked(getOnboardingProfile).mockResolvedValue({ ...profile, address: "SEOUL" });
+
+    render(<OnboardingCheckPage />);
+
+    expect(await screen.findByRole("status")).toHaveTextContent("설문 내용을 불러오는 중");
+    await waitFor(() => expect(replace).toHaveBeenCalledWith("/onboarding/address"));
   });
 });

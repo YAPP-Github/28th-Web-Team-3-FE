@@ -4,18 +4,28 @@ import { Button, ButtonGroup } from "@repo/ui";
 import { useQuery } from "@tanstack/react-query";
 import { ChevronLeft } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 import { OnboardingPageSkeleton } from "@/app/onboarding/_components/onboarding-page-skeleton";
 import { getResidentialAreaLabel } from "@/app/onboarding/constants/residential-areas";
+import { isAddressConfirmed } from "@/app/onboarding/lib/address-confirmation";
 import { formatBirthDate, formatGoalPeriod } from "@/app/onboarding/lib/format";
 import { formatManwon } from "@/lib/format";
+import { currentUserOptions } from "@/lib/queries/auth";
 import { onboardingProfileOptions } from "@/lib/queries/onboarding";
 import { ReviewField } from "./-components/review-field";
 
 export default function OnboardingCheckPage() {
   const router = useRouter();
   const { data: profile, isError } = useQuery(onboardingProfileOptions());
+  const { data: currentUser, isError: isCurrentUserError } = useQuery(currentUserOptions());
+  const hasConfirmedAddress =
+    profile && currentUser ? isAddressConfirmed(profile.address, currentUser.userId) : undefined;
 
-  if (isError && !profile) {
+  useEffect(() => {
+    if (hasConfirmedAddress === false) router.replace("/onboarding/address");
+  }, [hasConfirmedAddress, router]);
+
+  if ((isError && !profile) || (isCurrentUserError && !currentUser)) {
     return (
       <div className="flex min-h-dvh items-center justify-center px-5 text-body-b1-500 text-gray-700">
         설문 내용을 불러오지 못했어요. 잠시 후 페이지를 다시 열어주세요.
@@ -23,13 +33,13 @@ export default function OnboardingCheckPage() {
     );
   }
 
-  if (!profile) {
+  if (!profile || !currentUser || hasConfirmedAddress === false) {
     return <OnboardingPageSkeleton label="설문 내용을 불러오는 중" />;
   }
 
   const isComplete =
     profile.birthDate !== null &&
-    profile.address !== null &&
+    hasConfirmedAddress &&
     profile.monthlySalaryManwon !== null &&
     profile.monthlySavingManwon !== null &&
     profile.netWorthManwon !== null &&

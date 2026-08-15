@@ -9,45 +9,28 @@ import { useEffect, useState } from "react";
 import { useFormContext, useWatch } from "react-hook-form";
 import { useSaveOnboardingProfile } from "@/app/onboarding/_hooks/use-save-onboarding-profile";
 import { RESIDENTIAL_AREA_OPTIONS } from "@/app/onboarding/constants/residential-areas";
+import {
+  isAddressConfirmed,
+  persistAddressConfirmation,
+} from "@/app/onboarding/lib/address-confirmation";
 import { currentUserOptions } from "@/lib/queries/auth";
-
-const ADDRESS_CONFIRMATION_STORAGE_KEY_PREFIX = "onboarding:address-confirmed:";
-
-function hasPersistedAddressConfirmation(userId: number) {
-  try {
-    return localStorage.getItem(`${ADDRESS_CONFIRMATION_STORAGE_KEY_PREFIX}${userId}`) === "true";
-  } catch {
-    return false;
-  }
-}
-
-function persistAddressConfirmation(userId: number) {
-  try {
-    localStorage.setItem(`${ADDRESS_CONFIRMATION_STORAGE_KEY_PREFIX}${userId}`, "true");
-  } catch {
-    // 저장소를 쓸 수 없으면 현재 폼 상태로 진행하고, 재진입 시 다시 선택하게 한다.
-  }
-}
 
 export default function AddressOnboardingPage() {
   const router = useRouter();
   const { control, setValue, trigger } = useFormContext<OnboardingFormValues>();
   const address = useWatch({ control, name: "address" });
   const { data: currentUser } = useQuery(currentUserOptions());
-  const [hasAnswered, setHasAnswered] = useState(false);
-  const hasConfirmedAddress = address !== "" && (address !== "SEOUL" || hasAnswered);
+  const [selectedUserId, setSelectedUserId] = useState<number | "pending">();
+  const hasAnswered =
+    selectedUserId === "pending" ||
+    (currentUser !== undefined && selectedUserId === currentUser.userId);
+  const hasConfirmedAddress =
+    hasAnswered || isAddressConfirmed(address === "" ? null : address, currentUser?.userId);
   const { isSaving, saveError, saveProfile } = useSaveOnboardingProfile();
 
   useEffect(() => {
     router.prefetch("/onboarding/month");
   }, [router]);
-
-  useEffect(() => {
-    if (!currentUser) return;
-    setHasAnswered((currentAnswer) =>
-      currentAnswer ? true : hasPersistedAddressConfirmation(currentUser.userId),
-    );
-  }, [currentUser]);
 
   return (
     <div className="min-h-[calc(100dvh-56px)]">
@@ -64,7 +47,7 @@ export default function AddressOnboardingPage() {
             className="grid grid-cols-2 gap-3"
             value={hasConfirmedAddress ? address : ""}
             onValueChange={(value) => {
-              setHasAnswered(true);
+              setSelectedUserId(currentUser?.userId ?? "pending");
               setValue("address", value as ResidentialArea, {
                 shouldDirty: true,
                 shouldTouch: true,
