@@ -19,6 +19,7 @@ const ONBOARDING_PATH = "onboarding";
 const EMPTY_ONBOARDING_PROFILE: OnboardingProfile = {
   status: "IN_PROGRESS",
   birthDate: null,
+  address: null,
   monthlySalaryManwon: null,
   monthlySavingManwon: null,
   netWorthManwon: null,

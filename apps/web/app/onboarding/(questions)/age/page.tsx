@@ -54,7 +54,7 @@ export default function AgeOnboardingPage() {
   const { isSaving, saveError, saveProfile } = useSaveOnboardingProfile();
 
   useEffect(() => {
-    router.prefetch("/onboarding/month");
+    router.prefetch("/onboarding/address");
   }, [router]);
 
   return (
@@ -108,7 +108,7 @@ export default function AgeOnboardingPage() {
         size="cta"
         onClick={async () => {
           if (await trigger("birthDate", { shouldFocus: true })) {
-            if (await saveProfile({ birthDate })) router.push("/onboarding/month");
+            if (await saveProfile({ birthDate })) router.push("/onboarding/address");
           }
         }}
       >

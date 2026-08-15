@@ -19,6 +19,7 @@ import { confirmOnboardingGoalOptions, onboardingProfileOptions } from "./onboar
 const IN_PROGRESS_PROFILE: OnboardingProfile = {
   status: "IN_PROGRESS",
   birthDate: "1998-03-01",
+  address: "SEOUL",
   monthlySalaryManwon: 300,
   monthlySavingManwon: 100,
   netWorthManwon: 1000,

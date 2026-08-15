@@ -32,6 +32,22 @@ describe("QuestionHeader", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "이전 단계" }));
 
-    expect(routerState.pushMock).toHaveBeenCalledWith("/onboarding/age");
+    expect(routerState.pushMock).toHaveBeenCalledWith("/onboarding/address");
+  });
+
+  it("나이 다음 거주지역에서 진행률이 한 단계 증가한다", () => {
+    const { rerender } = render(<QuestionHeader />);
+    expect(screen.getByRole("progressbar", { name: "온보딩 진행률" })).toHaveAttribute(
+      "aria-valuenow",
+      "20",
+    );
+
+    routerState.pathname = "/onboarding/address";
+    rerender(<QuestionHeader />);
+
+    expect(screen.getByRole("progressbar", { name: "온보딩 진행률" })).toHaveAttribute(
+      "aria-valuenow",
+      "40",
+    );
   });
 });

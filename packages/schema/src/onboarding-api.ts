@@ -2,8 +2,28 @@ import { z } from "zod";
 
 export const onboardingStatusSchema = z.enum(["IN_PROGRESS", "COMPLETED"]);
 
+export const residentialAreaSchema = z.enum([
+  "SEOUL",
+  "GYEONGGI",
+  "INCHEON",
+  "BUSAN",
+  "DAEGU",
+  "DAEJEON",
+  "SEJONG",
+  "ULSAN",
+  "CHUNGNAM",
+  "CHUNGBUK",
+  "GYEONGNAM",
+  "GYEONGBUK",
+  "JEONNAM",
+  "JEONBUK",
+  "GANGWON",
+  "JEJU",
+]);
+
 export const onboardingProfilePatchSchema = z.object({
   birthDate: z.iso.date().optional(),
+  address: residentialAreaSchema.optional(),
   monthlySalaryManwon: z.number().int().min(0).max(650).optional(),
   monthlySavingManwon: z.number().int().min(0).max(650).optional(),
   netWorthManwon: z.number().int().min(0).max(10_000).optional(),
@@ -13,6 +33,7 @@ export const onboardingProfilePatchSchema = z.object({
 export const onboardingProfileSchema = onboardingProfilePatchSchema.extend({
   status: onboardingStatusSchema,
   birthDate: z.iso.date().nullable(),
+  address: residentialAreaSchema.nullable(),
   monthlySalaryManwon: z.number().int().nullable(),
   monthlySavingManwon: z.number().int().nullable(),
   netWorthManwon: z.number().int().nullable(),
@@ -92,6 +113,7 @@ export const onboardingGoalSchema = z.object({
 
 export type OnboardingProfilePatch = z.infer<typeof onboardingProfilePatchSchema>;
 export type OnboardingProfile = z.infer<typeof onboardingProfileSchema>;
+export type ResidentialArea = z.infer<typeof residentialAreaSchema>;
 export type OnboardingReport = z.infer<typeof onboardingReportSchema>;
 export type OnboardingGoalPlans = z.infer<typeof onboardingGoalPlansSchema>;
 export type OnboardingGoalConfirm = z.infer<typeof onboardingGoalConfirmSchema>;

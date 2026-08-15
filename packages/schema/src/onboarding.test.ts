@@ -6,6 +6,7 @@ describe("onboardingFormSchema", () => {
     expect(
       onboardingFormSchema.parse({
         birthDate: "1998-03-01",
+        address: "SEOUL",
         monthlySalaryManwon: 300,
         monthlySavingManwon: 100,
         netWorthManwon: 10_000,
@@ -15,6 +16,7 @@ describe("onboardingFormSchema", () => {
     expect(
       onboardingFormSchema.safeParse({
         birthDate: "1998.03.01",
+        address: "GWANGJU",
         monthlySalaryManwon: 651,
         monthlySavingManwon: 100,
         netWorthManwon: 10_001,

@@ -5,17 +5,9 @@ import { ButtonGroup, Slider } from "@repo/ui";
 import { useRouter } from "next/navigation";
 import { Controller, useFormContext, useWatch } from "react-hook-form";
 import { useSaveOnboardingProfile } from "@/app/onboarding/_hooks/use-save-onboarding-profile";
+import { formatGoalPeriod } from "@/app/onboarding/lib/format";
 
 const MAX_GOAL_PERIOD_MONTHS = 36;
-
-function formatGoalPeriod(periodMonths: OnboardingFormValues["goalPeriodMonths"]) {
-  if (periodMonths === "" || periodMonths === 0) return "0년";
-
-  const years = Math.floor(periodMonths / 12);
-  const months = periodMonths % 12;
-  if (years === 0) return `${months}개월`;
-  return months === 0 ? `${years}년` : `${years}년 ${months}개월`;
-}
 
 export default function InvestmentPeriodOnboardingPage() {
   const router = useRouter();
@@ -82,7 +74,7 @@ export default function InvestmentPeriodOnboardingPage() {
           onNext={async () => {
             if (periodMonths !== "" && (await trigger("goalPeriodMonths"))) {
               if (await saveProfile({ goalPeriodMonths: periodMonths })) {
-                router.push("/onboarding/result");
+                router.push("/onboarding/check");
               }
             }
           }}

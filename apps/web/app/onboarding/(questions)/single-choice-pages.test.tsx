@@ -28,7 +28,7 @@ describe("period onboarding page", () => {
 
     await waitFor(() => {
       expect(patchOnboardingProfile).toHaveBeenCalledWith({ goalPeriodMonths: 24 });
-      expect(pushMock).toHaveBeenCalledWith("/onboarding/result");
+      expect(pushMock).toHaveBeenCalledWith("/onboarding/check");
     });
   });
 

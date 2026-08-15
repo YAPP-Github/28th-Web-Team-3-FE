@@ -22,6 +22,7 @@ export function OnboardingFormProvider({ children }: { children: ReactNode }) {
       formMethods.reset(
         {
           birthDate: profile.birthDate ?? "",
+          address: profile.address ?? "",
           monthlySalaryManwon: profile.monthlySalaryManwon ?? 0,
           monthlySavingManwon: profile.monthlySavingManwon ?? 0,
           netWorthManwon: profile.netWorthManwon ?? 0,

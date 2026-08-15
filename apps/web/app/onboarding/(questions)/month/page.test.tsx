@@ -53,7 +53,7 @@ describe("MonthlyIncomeAndSavingsOnboardingPage", () => {
     renderMonthOnboardingPage();
 
     fireEvent.click(screen.getByRole("button", { name: "이전" }));
-    expect(pushMock).toHaveBeenCalledWith("/onboarding/age");
+    expect(pushMock).toHaveBeenCalledWith("/onboarding/address");
   });
 
   it("직접 입력 금액은 백엔드 상한 650만원을 넘을 수 없다", () => {

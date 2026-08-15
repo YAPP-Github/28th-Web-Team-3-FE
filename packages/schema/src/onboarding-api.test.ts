@@ -7,8 +7,14 @@ import {
 
 describe("onboarding API schemas", () => {
   it("accepts a step-specific profile patch", () => {
-    expect(onboardingProfilePatchSchema.parse({ birthDate: "1998-03-01" })).toEqual({
+    expect(
+      onboardingProfilePatchSchema.parse({
+        birthDate: "1998-03-01",
+        address: "SEOUL",
+      }),
+    ).toEqual({
       birthDate: "1998-03-01",
+      address: "SEOUL",
     });
   });
 
@@ -16,6 +22,7 @@ describe("onboarding API schemas", () => {
     expect(() => onboardingProfilePatchSchema.parse({ monthlySalaryManwon: 651 })).toThrow();
     expect(() => onboardingProfilePatchSchema.parse({ netWorthManwon: 10_001 })).toThrow();
     expect(() => onboardingProfilePatchSchema.parse({ goalPeriodMonths: 2 })).toThrow();
+    expect(() => onboardingProfilePatchSchema.parse({ address: "GWANGJU" })).toThrow();
   });
 
   it("parses report and goal-plan response shapes", () => {

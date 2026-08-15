@@ -17,6 +17,7 @@ vi.mock("@/api/client", () => ({
 const profile = {
   status: "IN_PROGRESS",
   birthDate: "1998-03-01",
+  address: "SEOUL",
   monthlySalaryManwon: 300,
   monthlySavingManwon: 100,
   netWorthManwon: 1000,
@@ -87,6 +88,7 @@ describe("onboarding API", () => {
     await expect(getOnboardingProfile()).resolves.toEqual({
       status: "IN_PROGRESS",
       birthDate: null,
+      address: null,
       monthlySalaryManwon: null,
       monthlySavingManwon: null,
       netWorthManwon: null,

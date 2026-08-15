@@ -36,6 +36,7 @@ describe("NetWorthOnboardingPage", () => {
     vi.mocked(getOnboardingProfile).mockResolvedValue({
       status: "IN_PROGRESS",
       birthDate: "1998-03-01",
+      address: "SEOUL",
       monthlySalaryManwon: 300,
       monthlySavingManwon: 100,
       netWorthManwon: 0,
