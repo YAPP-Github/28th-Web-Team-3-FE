@@ -78,7 +78,7 @@ export default function InvestmentPeriodOnboardingPage() {
               }
             }
           }}
-          onPrev={() => router.push("/onboarding/net")}
+          onPrev={() => router.replace("/onboarding/net")}
         />
       </div>
     </div>

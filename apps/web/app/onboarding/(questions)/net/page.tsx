@@ -104,7 +104,7 @@ export default function NetWorthOnboardingPage() {
           nextDisabled={!hasAnswered && !hasStoredAnswer}
           nextPending={isSaving}
           onNext={navigateToInvestmentPeriodQuestion}
-          onPrev={() => router.push("/onboarding/month")}
+          onPrev={() => router.replace("/onboarding/month")}
         />
       </div>
     </div>

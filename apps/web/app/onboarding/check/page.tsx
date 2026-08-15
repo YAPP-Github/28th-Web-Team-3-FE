@@ -42,7 +42,7 @@ export default function OnboardingCheckPage() {
           aria-label="이전 단계"
           size="icon"
           variant="ghost"
-          onClick={() => router.push("/onboarding/period")}
+          onClick={() => router.replace("/onboarding/period")}
         >
           <ChevronLeft aria-hidden="true" className="size-6" strokeWidth="1.6" />
         </Button>
@@ -111,7 +111,7 @@ export default function OnboardingCheckPage() {
           nextDisabled={!isComplete}
           nextLabel="완료"
           onNext={() => router.push("/onboarding/result")}
-          onPrev={() => router.push("/onboarding/period")}
+          onPrev={() => router.replace("/onboarding/period")}
         />
       </div>
     </div>

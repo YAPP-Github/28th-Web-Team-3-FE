@@ -5,9 +5,10 @@ import { fireEvent, render, screen, waitFor } from "@/lib/test/react";
 import AddressOnboardingPage from "./page";
 
 const pushMock = vi.fn();
+const replaceMock = vi.fn();
 
 vi.mock("next/navigation", () => ({
-  useRouter: () => ({ prefetch: vi.fn(), push: pushMock }),
+  useRouter: () => ({ prefetch: vi.fn(), push: pushMock, replace: replaceMock }),
 }));
 vi.mock("@/api/onboarding", () => ({
   getOnboardingProfile: vi.fn().mockRejectedValue(new Error("test")),
@@ -44,7 +45,24 @@ describe("AddressOnboardingPage", () => {
     });
   });
 
-  it("저장된 지역을 복원하면 다시 선택하지 않아도 진행할 수 있다", async () => {
+  it("후속 설문과 함께 저장된 지역은 다시 선택하지 않아도 진행할 수 있다", async () => {
+    vi.mocked(getOnboardingProfile).mockResolvedValue({
+      status: "IN_PROGRESS",
+      birthDate: "1998-03-01",
+      address: "GYEONGGI",
+      monthlySalaryManwon: 300,
+      monthlySavingManwon: 100,
+      netWorthManwon: null,
+      goalPeriodMonths: null,
+    });
+
+    renderAddressOnboardingPage();
+
+    await waitFor(() => expect(screen.getByRole("radio", { name: "경기" })).toBeChecked());
+    expect(screen.getByRole("button", { name: "다음" })).toBeEnabled();
+  });
+
+  it("신규 프로필의 임시 서울 기본값은 사용자가 선택하기 전까지 응답으로 인정하지 않는다", async () => {
     vi.mocked(getOnboardingProfile).mockResolvedValue({
       status: "IN_PROGRESS",
       birthDate: "1998-03-01",
@@ -57,7 +75,12 @@ describe("AddressOnboardingPage", () => {
 
     renderAddressOnboardingPage();
 
-    await waitFor(() => expect(screen.getByRole("radio", { name: "서울" })).toBeChecked());
+    await waitFor(() => expect(screen.getByRole("radio", { name: "서울" })).not.toBeChecked());
+    expect(screen.getByRole("button", { name: "다음" })).toBeDisabled();
+
+    fireEvent.click(screen.getByRole("radio", { name: "서울" }));
+
+    expect(screen.getByRole("radio", { name: "서울" })).toBeChecked();
     expect(screen.getByRole("button", { name: "다음" })).toBeEnabled();
   });
 
@@ -80,6 +103,6 @@ describe("AddressOnboardingPage", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "이전" }));
 
-    expect(pushMock).toHaveBeenCalledWith("/onboarding/age");
+    expect(replaceMock).toHaveBeenCalledWith("/onboarding/age");
   });
 });

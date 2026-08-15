@@ -148,7 +148,7 @@ export default function MonthlyIncomeAndSavingsOnboardingPage() {
           nextDisabled={!hasRequiredMonthlyAmounts || Boolean(amountError)}
           nextPending={isSaving}
           onNext={navigateToNetWorthQuestion}
-          onPrev={() => router.push("/onboarding/address")}
+          onPrev={() => router.replace("/onboarding/address")}
         />
       </div>
     </div>

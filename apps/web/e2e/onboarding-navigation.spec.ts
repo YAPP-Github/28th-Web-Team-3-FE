@@ -6,7 +6,8 @@ test("온보딩에서 뒤로 이동하거나 이탈 후 재진입해도 마지�
   const profile = {
     status: "IN_PROGRESS",
     birthDate: null as string | null,
-    address: null as string | null,
+    // 실제 BE는 신규 프로필에도 임시 기본값 SEOUL을 내려준다.
+    address: "SEOUL" as string | null,
     monthlySalaryManwon: null,
     monthlySavingManwon: null,
     netWorthManwon: null,
@@ -36,6 +37,14 @@ test("온보딩에서 뒤로 이동하거나 이탈 후 재진입해도 마지�
   await page.getByRole("textbox", { name: "생년월일" }).fill("19980301");
   await page.getByRole("button", { name: "다음" }).click();
   await expect(page).toHaveURL("/onboarding/address");
+  await expect(page.getByRole("radio", { name: "서울" })).not.toBeChecked();
+  await expect(page.getByRole("button", { name: "다음" })).toBeDisabled();
+
+  await page.getByRole("button", { name: "이전", exact: true }).click();
+  await expect(page).toHaveURL("/onboarding/age");
+  await page.goBack();
+  await expect(page).toHaveURL("/onboarding/age");
+  await page.goto("/onboarding/address");
 
   await page.getByRole("radio", { name: "경기" }).click();
   await page.getByRole("button", { name: "다음" }).click();

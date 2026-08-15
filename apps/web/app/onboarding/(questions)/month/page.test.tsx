@@ -5,8 +5,11 @@ import { fireEvent, render, screen, waitFor } from "@/lib/test/react";
 import MonthlyIncomeAndSavingsOnboardingPage from "./page";
 
 const pushMock = vi.fn();
+const replaceMock = vi.fn();
 
-vi.mock("next/navigation", () => ({ useRouter: () => ({ push: pushMock }) }));
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({ push: pushMock, replace: replaceMock }),
+}));
 vi.mock("@/api/onboarding", () => ({
   getOnboardingProfile: vi.fn().mockRejectedValue(new Error("test")),
   patchOnboardingProfile: vi.fn().mockResolvedValue({}),
@@ -53,7 +56,7 @@ describe("MonthlyIncomeAndSavingsOnboardingPage", () => {
     renderMonthOnboardingPage();
 
     fireEvent.click(screen.getByRole("button", { name: "이전" }));
-    expect(pushMock).toHaveBeenCalledWith("/onboarding/address");
+    expect(replaceMock).toHaveBeenCalledWith("/onboarding/address");
   });
 
   it("직접 입력 금액은 백엔드 상한 650만원을 넘을 수 없다", () => {

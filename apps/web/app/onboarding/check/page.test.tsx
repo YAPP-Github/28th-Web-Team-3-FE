@@ -4,8 +4,9 @@ import { fireEvent, render, screen } from "@/lib/test/react";
 import OnboardingCheckPage from "./page";
 
 const push = vi.fn();
+const replace = vi.fn();
 
-vi.mock("next/navigation", () => ({ useRouter: () => ({ push }) }));
+vi.mock("next/navigation", () => ({ useRouter: () => ({ push, replace }) }));
 vi.mock("@/api/onboarding", () => ({ getOnboardingProfile: vi.fn() }));
 
 const profile = {
@@ -46,7 +47,7 @@ describe("OnboardingCheckPage", () => {
     render(<OnboardingCheckPage />);
 
     fireEvent.click(await screen.findByRole("button", { name: "이전" }));
-    expect(push).toHaveBeenCalledWith("/onboarding/period");
+    expect(replace).toHaveBeenCalledWith("/onboarding/period");
 
     fireEvent.click(screen.getByRole("button", { name: "완료" }));
     expect(push).toHaveBeenCalledWith("/onboarding/result");
