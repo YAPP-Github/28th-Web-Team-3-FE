@@ -48,21 +48,21 @@ export function BenefitCard({ benefit, onToggleSave }: BenefitCardProps) {
   }
 
   return (
-    <article className="relative flex flex-col gap-1.5 rounded-xl bg-gray-10 p-3.5">
-      <div className="flex items-center justify-between gap-2">
+    <article className="relative flex min-w-0 flex-col gap-1.5 rounded-xl bg-gray-10 p-3.5 transition-[scale] duration-100 has-[:active]:scale-[0.99] motion-reduce:transition-none motion-reduce:has-[:active]:scale-100">
+      <div className="flex min-w-0 items-center justify-between gap-2">
         {benefit.categoryLabel ? (
-          <span className="inline-flex items-center rounded bg-blue-100 px-1.5 py-1 text-caption-c1-700 text-blue-600">
+          <span className="min-w-0 truncate rounded bg-blue-100 px-1.5 py-1 text-caption-c1-700 text-blue-600">
             {benefit.categoryLabel}
           </span>
         ) : (
-          <span />
+          <span className="min-w-0" />
         )}
         <button
           type="button"
           aria-pressed={benefit.saved}
           aria-label={`${benefit.title} 저장`}
           onClick={() => onToggleSave(benefit)}
-          className="-m-1 relative z-10 p-1"
+          className="-m-3 relative z-10 flex size-11 shrink-0 items-center justify-center rounded-full transition-[scale,background-color] duration-100 hover:bg-gray-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring active:scale-[0.92] motion-reduce:transition-none motion-reduce:active:scale-100"
         >
           <Star
             aria-hidden="true"
@@ -70,17 +70,19 @@ export function BenefitCard({ benefit, onToggleSave }: BenefitCardProps) {
           />
         </button>
       </div>
-      <div className="flex flex-col gap-1">
+      <div className="flex min-w-0 flex-col gap-1">
         <button
           type="button"
           aria-busy={isOpening}
           onClick={openApplyPage}
-          className="text-left text-body-b1-700 text-gray-900 after:absolute after:inset-0"
+          className="line-clamp-2 break-words rounded-sm text-left text-body-b1-700 text-gray-900 transition-colors after:absolute after:inset-0 hover:text-gray-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring active:text-gray-600 aria-busy:text-gray-500"
         >
           {benefit.title}
         </button>
         {benefit.description ? (
-          <p className="text-body-b2-500 text-gray-900">{benefit.description}</p>
+          <p className="line-clamp-3 break-words text-body-b2-500 text-gray-900">
+            {benefit.description}
+          </p>
         ) : null}
         {error ? (
           <p aria-live="polite" className="text-caption-c1-500 text-error">
