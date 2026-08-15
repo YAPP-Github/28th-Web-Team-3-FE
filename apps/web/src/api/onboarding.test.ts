@@ -7,10 +7,11 @@ import {
   getOnboardingProfile,
   getOnboardingReport,
   patchOnboardingProfile,
+  updateOnboardingProfile,
 } from "@/api/onboarding";
 
 vi.mock("@/api/client", () => ({
-  http: { get: vi.fn(), patch: vi.fn(), post: vi.fn() },
+  http: { get: vi.fn(), patch: vi.fn(), post: vi.fn(), put: vi.fn() },
 }));
 
 const profile = {
@@ -49,6 +50,33 @@ describe("onboarding API", () => {
       expect.objectContaining({
         body: { birthDate: "1998-03-01" },
         request: expect.anything(),
+      }),
+    );
+  });
+
+  it("완료한 사용자의 profile을 PUT으로 수정한다", async () => {
+    vi.mocked(http.put).mockReturnValue(resolved(profile));
+
+    await updateOnboardingProfile({
+      birthDate: "1998-03-01",
+      monthlySalaryManwon: 300,
+      monthlySavingManwon: 100,
+      netWorthManwon: 1000,
+      goalPeriodMonths: 24,
+    });
+
+    expect(http.put).toHaveBeenCalledWith(
+      "onboarding/profile",
+      expect.objectContaining({
+        body: {
+          birthDate: "1998-03-01",
+          monthlySalaryManwon: 300,
+          monthlySavingManwon: 100,
+          netWorthManwon: 1000,
+          goalPeriodMonths: 24,
+        },
+        request: expect.anything(),
+        response: expect.anything(),
       }),
     );
   });

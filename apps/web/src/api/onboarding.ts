@@ -54,6 +54,17 @@ export function patchOnboardingProfile(
   });
 }
 
+/** PUT /api/onboarding/profile — 온보딩을 완료한 사용자의 내 정보 수정. */
+export function updateOnboardingProfile(
+  profile: OnboardingProfilePatch,
+): Promise<OnboardingProfile> {
+  return http.put(`${ONBOARDING_PATH}/profile`, {
+    body: profile,
+    request: onboardingProfilePatchSchema,
+    response: onboardingProfileSchema,
+  });
+}
+
 export function getOnboardingReport(): Promise<OnboardingReport> {
   return http.get(`${ONBOARDING_PATH}/report`, { response: onboardingReportSchema });
 }

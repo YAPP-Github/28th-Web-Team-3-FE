@@ -25,13 +25,7 @@ vi.mock("@/api/goal", () => ({
   updateSavings: vi.fn(),
 }));
 
-vi.mock("@/api/onboarding", () => ({
-  getOnboardingProfile: vi.fn(),
-  patchOnboardingProfile: vi.fn(),
-}));
-
 import { fetchGoalStatus, updateGoal, updateSavings } from "@/api/goal";
-import { getOnboardingProfile, patchOnboardingProfile } from "@/api/onboarding";
 import { SAVE_FAILED_TEXT } from "@/lib/messages";
 import { goalStatusOptions } from "@/lib/queries/goal";
 import { GoalDetail } from "./goal-detail";
@@ -80,82 +74,11 @@ describe("GoalDetail", () => {
     expect(screen.getByRole("dialog")).toBeInTheDocument();
   });
 
-  it("목표 수정은 목표 API만 사용한다", async () => {
+  it("수정 링크가 공용 내 정보 수정 화면으로 이동한다", async () => {
     render(<GoalDetail />);
 
     await screen.findByText("5,000만원 모으기");
-    fireEvent.click(screen.getByRole("button", { name: /수정/ }));
-    expect(screen.getByRole("dialog", { name: "수정" })).toBeInTheDocument();
-    expect(screen.getByRole("textbox", { name: "목표 금액만원" })).toHaveValue("5000");
-    expect(screen.getByRole("textbox", { name: "목표 기간개월" })).toHaveValue("16");
-    expect(screen.queryByRole("textbox", { name: "월소득만원" })).not.toBeInTheDocument();
-
-    fireEvent.change(screen.getByRole("textbox", { name: "목표 금액만원" }), {
-      target: { value: "6000" },
-    });
-    fireEvent.change(screen.getByRole("textbox", { name: "목표 기간개월" }), {
-      target: { value: "24" },
-    });
-    fireEvent.click(screen.getByRole("button", { name: "완료" }));
-
-    await waitFor(() =>
-      expect(updateGoal).toHaveBeenCalledWith({
-        targetAmountManwon: 6000,
-        periodMonths: 24,
-      }),
-    );
-    expect(getOnboardingProfile).not.toHaveBeenCalled();
-    expect(patchOnboardingProfile).not.toHaveBeenCalled();
-  });
-
-  it("목표 저장이 실패하면 오류를 보여준다", async () => {
-    vi.mocked(updateGoal).mockRejectedValue(new Error("network error"));
-    render(<GoalDetail />);
-
-    await screen.findByText("5,000만원 모으기");
-    fireEvent.click(screen.getByRole("button", { name: /수정/ }));
-    await waitFor(() =>
-      expect(screen.getByRole("textbox", { name: "목표 기간개월" })).toHaveValue("16"),
-    );
-    fireEvent.click(screen.getByRole("button", { name: "완료" }));
-
-    expect(await screen.findByText(SAVE_FAILED_TEXT)).toBeInTheDocument();
-    expect(patchOnboardingProfile).not.toHaveBeenCalled();
-    expect(screen.getByRole("dialog", { name: "수정" })).toBeInTheDocument();
-  });
-
-  it("목표 기간이 하한 미만이면 보내지 않고 오류를 표시한다", async () => {
-    render(<GoalDetail />);
-
-    await screen.findByText("5,000만원 모으기");
-    fireEvent.click(screen.getByRole("button", { name: /수정/ }));
-    await waitFor(() =>
-      expect(screen.getByRole("textbox", { name: "목표 기간개월" })).toHaveValue("16"),
-    );
-
-    fireEvent.change(screen.getByRole("textbox", { name: "목표 기간개월" }), {
-      target: { value: "2" },
-    });
-    fireEvent.click(screen.getByRole("button", { name: "완료" }));
-
-    expect(screen.getByText("목표 기간은 3개월 이상으로 입력해주세요.")).toBeInTheDocument();
-    expect(updateGoal).not.toHaveBeenCalled();
-  });
-
-  it("목표 기간 상한을 넘겨 입력하면 최대값으로 제한한다", async () => {
-    render(<GoalDetail />);
-
-    await screen.findByText("5,000만원 모으기");
-    fireEvent.click(screen.getByRole("button", { name: /수정/ }));
-    await waitFor(() =>
-      expect(screen.getByRole("textbox", { name: "목표 기간개월" })).toHaveValue("16"),
-    );
-
-    fireEvent.change(screen.getByRole("textbox", { name: "목표 기간개월" }), {
-      target: { value: "100" },
-    });
-
-    expect(screen.getByRole("textbox", { name: "목표 기간개월" })).toHaveValue("36");
+    expect(screen.getByRole("link", { name: /수정/ })).toHaveAttribute("href", "/profile/edit");
   });
 
   it("저장에 실패하면 시트에 오류를 표시한다", async () => {
@@ -301,73 +224,6 @@ describe("GoalDetail", () => {
       fireEvent.click(screen.getByRole("button", { name: "현재 저축액 입력" }));
 
       expect(screen.getByRole("textbox", { name: "저축액만원" })).toHaveValue("70");
-    });
-
-    it("목표 금액을 고친 뒤 목표 현황이 갱신돼도 입력을 유지한다", async () => {
-      const queryClient = createTestQueryClient();
-      render(<GoalDetail />, { queryClient });
-
-      await screen.findByText("5,000만원 모으기");
-      fireEvent.click(screen.getByRole("button", { name: /수정/ }));
-      await waitFor(() =>
-        expect(screen.getByRole("textbox", { name: "목표 기간개월" })).toHaveValue("16"),
-      );
-      fireEvent.change(screen.getByRole("textbox", { name: "목표 금액만원" }), {
-        target: { value: "6000" },
-      });
-
-      await refetchGoal(queryClient, { ...MOCK_GOAL, targetAmountManwon: 7000 });
-
-      expect(screen.getByRole("textbox", { name: "목표 금액만원" })).toHaveValue("6000");
-    });
-
-    it("목표 기간을 고친 뒤 목표 현황이 갱신돼도 입력을 유지한다", async () => {
-      const queryClient = createTestQueryClient();
-      render(<GoalDetail />, { queryClient });
-
-      await screen.findByText("5,000만원 모으기");
-      fireEvent.click(screen.getByRole("button", { name: /수정/ }));
-      fireEvent.change(screen.getByRole("textbox", { name: "목표 기간개월" }), {
-        target: { value: "20" },
-      });
-      await refetchGoal(queryClient, {
-        ...MOCK_GOAL,
-        targetAmountManwon: 7000,
-        periodMonths: 24,
-      });
-
-      expect(screen.getByRole("textbox", { name: "목표 기간개월" })).toHaveValue("20");
-    });
-
-    it("목표수정 시트를 다시 열면 최신 값으로 되돌린다", async () => {
-      const queryClient = createTestQueryClient();
-      render(<GoalDetail />, { queryClient });
-
-      await screen.findByText("5,000만원 모으기");
-      fireEvent.click(screen.getByRole("button", { name: /수정/ }));
-      await waitFor(() =>
-        expect(screen.getByRole("textbox", { name: "목표 기간개월" })).toHaveValue("16"),
-      );
-      fireEvent.change(screen.getByRole("textbox", { name: "목표 금액만원" }), {
-        target: { value: "6000" },
-      });
-      fireEvent.change(screen.getByRole("textbox", { name: "목표 기간개월" }), {
-        target: { value: "20" },
-      });
-      fireEvent.keyDown(document, { key: "Escape" });
-      await waitFor(() =>
-        expect(screen.queryByRole("dialog", { name: "수정" })).not.toBeInTheDocument(),
-      );
-
-      await refetchGoal(queryClient, {
-        ...MOCK_GOAL,
-        targetAmountManwon: 7000,
-        periodMonths: 24,
-      });
-      fireEvent.click(screen.getByRole("button", { name: /수정/ }));
-
-      expect(screen.getByRole("textbox", { name: "목표 금액만원" })).toHaveValue("7000");
-      expect(screen.getByRole("textbox", { name: "목표 기간개월" })).toHaveValue("24");
     });
   });
 });

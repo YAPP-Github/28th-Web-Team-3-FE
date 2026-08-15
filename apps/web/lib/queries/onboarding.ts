@@ -10,6 +10,7 @@ import {
   getOnboardingProfile,
   getOnboardingReport,
   patchOnboardingProfile,
+  updateOnboardingProfile,
 } from "@/api/onboarding";
 import { currentUserOptions } from "@/lib/queries/auth";
 
@@ -49,6 +50,14 @@ export function onboardingGoalPlansOptions() {
 export function patchOnboardingProfileOptions(queryClient: QueryClient) {
   return mutationOptions({
     mutationFn: (profile: OnboardingProfilePatch) => patchOnboardingProfile(profile),
+    onSuccess: (profile) => queryClient.setQueryData(ONBOARDING_PROFILE_QUERY_KEY, profile),
+  });
+}
+
+/** 완료 사용자의 프로필 수정 — 성공하면 프로필 캐시를 응답값으로 갱신한다. */
+export function updateOnboardingProfileOptions(queryClient: QueryClient) {
+  return mutationOptions({
+    mutationFn: (profile: OnboardingProfilePatch) => updateOnboardingProfile(profile),
     onSuccess: (profile) => queryClient.setQueryData(ONBOARDING_PROFILE_QUERY_KEY, profile),
   });
 }
