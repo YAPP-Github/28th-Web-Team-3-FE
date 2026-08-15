@@ -1,6 +1,10 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { getCurrentUser } from "@/api/auth";
-import { confirmOnboardingGoal, getOnboardingProfile } from "@/api/onboarding";
+import {
+  confirmOnboardingGoal,
+  getOnboardingGoalPreview,
+  getOnboardingProfile,
+} from "@/api/onboarding";
 import { persistAddressConfirmation } from "@/app/onboarding/lib/address-confirmation";
 import { fireEvent, render, screen, waitFor } from "@/lib/test/react";
 import OnboardingResultPage from "./page";
@@ -14,6 +18,7 @@ vi.mock("next/navigation", () => ({ useRouter: () => ({ replace }) }));
 vi.mock("@/api/auth", () => ({ getCurrentUser: vi.fn() }));
 vi.mock("@/api/onboarding", () => ({
   confirmOnboardingGoal: vi.fn(),
+  getOnboardingGoalPreview: vi.fn(),
   getOnboardingProfile: vi.fn(),
   isOnboardingAlreadyCompletedError: (error: unknown) => error === ALREADY_COMPLETED_ERROR,
 }));
@@ -26,6 +31,20 @@ const profile = {
   monthlySavingManwon: 100,
   netWorthManwon: 2500,
   goalPeriodMonths: 24,
+};
+
+const goalPreview = {
+  monthlySavingManwon: 115,
+  currentMonthlySavingManwon: 100,
+  minMonthlySavingManwon: 100,
+  maxMonthlySavingManwon: 150,
+  recommendedMonthlySavingManwon: 115,
+  periodMonths: 24,
+  baseAmountManwon: 2500,
+  additionalSavingManwon: 2760,
+  expectedAmountManwon: 5260,
+  extraMonthlyManwon: 15,
+  extraPercent: 15,
 };
 
 async function waitForSavedDraft(monthlyTargetManwon: number) {
@@ -43,11 +62,11 @@ describe("OnboardingResultPage", () => {
     persistAddressConfirmation(1);
     vi.mocked(getCurrentUser).mockResolvedValue({ userId: 1, onboardingCompleted: false });
     vi.mocked(getOnboardingProfile).mockResolvedValue(profile);
+    vi.mocked(getOnboardingGoalPreview).mockResolvedValue(goalPreview);
     vi.mocked(confirmOnboardingGoal).mockResolvedValue({
       goalId: 1,
-      plan: "PLAN_1",
       periodMonths: 24,
-      targetAmountManwon: 2760,
+      targetAmountManwon: 5260,
       status: "COMPLETED",
     });
   });
@@ -67,8 +86,11 @@ describe("OnboardingResultPage", () => {
     );
   });
 
-  it("슬라이더 최댓값은 기존 월 저축액의 1.5배와 월급 중 작은 값이다", async () => {
-    vi.mocked(getOnboardingProfile).mockResolvedValue({ ...profile, monthlySalaryManwon: 120 });
+  it("서버 미리보기의 슬라이더 최댓값을 사용한다", async () => {
+    vi.mocked(getOnboardingGoalPreview).mockResolvedValue({
+      ...goalPreview,
+      maxMonthlySavingManwon: 120,
+    });
 
     render(<OnboardingResultPage />);
 
@@ -87,7 +109,6 @@ describe("OnboardingResultPage", () => {
 
     await waitFor(() =>
       expect(confirmOnboardingGoal).toHaveBeenCalledWith({
-        plan: "PLAN_1",
         monthlySavingManwon: 116,
       }),
     );

@@ -1,7 +1,4 @@
-import {
-  MAX_ONBOARDING_MONTHLY_TARGET_MANWON,
-  type OnboardingProfile,
-} from "@repo/schema/onboarding-api";
+import type { OnboardingGoalPreview, OnboardingProfile } from "@repo/schema/onboarding-api";
 
 export interface GoalReadyProfile {
   monthlySalaryManwon: number;
@@ -38,29 +35,15 @@ export function getGoalReadyProfile(profile: OnboardingProfile): GoalReadyProfil
   };
 }
 
-export function getMaxMonthlyTarget(currentMonthlySaving: number, monthlySalary: number): number {
-  return Math.min(
-    MAX_ONBOARDING_MONTHLY_TARGET_MANWON,
-    monthlySalary,
-    Math.floor(currentMonthlySaving * 1.5),
-  );
-}
-
-export function getDefaultMonthlyTarget(
-  currentMonthlySaving: number,
-  monthlySalary: number,
-): number {
-  const recommendedTarget = Math.round(currentMonthlySaving * 1.15);
-  return Math.min(getMaxMonthlyTarget(currentMonthlySaving, monthlySalary), recommendedTarget);
-}
-
 function getProfileFingerprint({
-  monthlySalaryManwon,
-  monthlySavingManwon,
-  netWorthManwon,
-  goalPeriodMonths,
-}: GoalReadyProfile) {
-  const source = `${monthlySalaryManwon}:${monthlySavingManwon}:${netWorthManwon}:${goalPeriodMonths}`;
+  currentMonthlySavingManwon,
+  minMonthlySavingManwon,
+  maxMonthlySavingManwon,
+  recommendedMonthlySavingManwon,
+  periodMonths,
+  baseAmountManwon,
+}: OnboardingGoalPreview) {
+  const source = `${currentMonthlySavingManwon}:${minMonthlySavingManwon}:${maxMonthlySavingManwon}:${recommendedMonthlySavingManwon}:${periodMonths}:${baseAmountManwon}`;
   let hash = 2_166_136_261;
 
   for (const character of source) {
@@ -71,24 +54,23 @@ function getProfileFingerprint({
   return (hash >>> 0).toString(36);
 }
 
-export function readMonthlyTargetDraft(profile: GoalReadyProfile, userId: number): number | null {
+export function readMonthlyTargetDraft(
+  preview: OnboardingGoalPreview,
+  userId: number,
+): number | null {
   try {
     const storedDraft = localStorage.getItem(MONTHLY_TARGET_DRAFT_STORAGE_KEY);
     if (!storedDraft) return null;
 
     const draft = JSON.parse(storedDraft) as Partial<MonthlyTargetDraft>;
-    const maxMonthlyTarget = getMaxMonthlyTarget(
-      profile.monthlySavingManwon,
-      profile.monthlySalaryManwon,
-    );
     const isCurrentProfile =
-      draft.userId === userId && draft.profileFingerprint === getProfileFingerprint(profile);
+      draft.userId === userId && draft.profileFingerprint === getProfileFingerprint(preview);
     const monthlyTargetManwon = draft.monthlyTargetManwon;
     const isValidTarget =
       typeof monthlyTargetManwon === "number" &&
       Number.isInteger(monthlyTargetManwon) &&
-      monthlyTargetManwon >= profile.monthlySavingManwon &&
-      monthlyTargetManwon <= maxMonthlyTarget;
+      monthlyTargetManwon >= preview.minMonthlySavingManwon &&
+      monthlyTargetManwon <= preview.maxMonthlySavingManwon;
 
     if (isCurrentProfile && isValidTarget) return monthlyTargetManwon;
     localStorage.removeItem(MONTHLY_TARGET_DRAFT_STORAGE_KEY);
@@ -100,13 +82,13 @@ export function readMonthlyTargetDraft(profile: GoalReadyProfile, userId: number
 }
 
 export function saveMonthlyTargetDraft(
-  profile: GoalReadyProfile,
+  preview: OnboardingGoalPreview,
   userId: number,
   monthlyTargetManwon: number,
 ) {
   const draft: MonthlyTargetDraft = {
     userId,
-    profileFingerprint: getProfileFingerprint(profile),
+    profileFingerprint: getProfileFingerprint(preview),
     monthlyTargetManwon,
   };
 

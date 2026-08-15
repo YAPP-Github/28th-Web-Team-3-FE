@@ -104,17 +104,28 @@ export const onboardingGoalPlansSchema = z.object({
 export const MAX_ONBOARDING_MONTHLY_TARGET_MANWON = 650;
 
 export const onboardingGoalConfirmSchema = z.object({
-  // plan은 구버전 BE·앱과의 호환 및 미션 추천 성향 스냅샷을 위해 유지한다.
-  plan: goalPlanSchema,
   monthlySavingManwon: z.number().int().min(0).max(MAX_ONBOARDING_MONTHLY_TARGET_MANWON),
 });
 
 export const onboardingGoalSchema = z.object({
   goalId: z.number().int(),
-  plan: goalPlanSchema,
   periodMonths: z.number().int(),
   targetAmountManwon: z.number().int(),
   status: z.literal("COMPLETED"),
+});
+
+export const onboardingGoalPreviewSchema = z.object({
+  monthlySavingManwon: z.number().int(),
+  currentMonthlySavingManwon: z.number().int(),
+  minMonthlySavingManwon: z.number().int(),
+  maxMonthlySavingManwon: z.number().int(),
+  recommendedMonthlySavingManwon: z.number().int(),
+  periodMonths: z.number().int(),
+  baseAmountManwon: z.number().int(),
+  additionalSavingManwon: z.number().int(),
+  expectedAmountManwon: z.number().int(),
+  extraMonthlyManwon: z.number().int(),
+  extraPercent: z.number().int(),
 });
 
 export type OnboardingProfilePatch = z.infer<typeof onboardingProfilePatchSchema>;
@@ -124,3 +135,4 @@ export type OnboardingReport = z.infer<typeof onboardingReportSchema>;
 export type OnboardingGoalPlans = z.infer<typeof onboardingGoalPlansSchema>;
 export type OnboardingGoalConfirm = z.infer<typeof onboardingGoalConfirmSchema>;
 export type OnboardingGoal = z.infer<typeof onboardingGoalSchema>;
+export type OnboardingGoalPreview = z.infer<typeof onboardingGoalPreviewSchema>;

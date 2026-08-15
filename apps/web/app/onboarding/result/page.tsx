@@ -1,5 +1,6 @@
 "use client";
 
+import type { OnboardingGoalPreview } from "@repo/schema/onboarding-api";
 import { Button, ButtonGroup, Slider } from "@repo/ui";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ChevronLeft } from "lucide-react";
@@ -11,86 +12,60 @@ import { isAddressConfirmed } from "@/app/onboarding/lib/address-confirmation";
 import { formatManwon } from "@/lib/format";
 import { useDebounce } from "@/lib/hooks/use-debounce";
 import { currentUserOptions } from "@/lib/queries/auth";
-import { confirmOnboardingGoalOptions, onboardingProfileOptions } from "@/lib/queries/onboarding";
+import {
+  confirmOnboardingGoalOptions,
+  onboardingGoalPreviewOptions,
+  onboardingProfileOptions,
+} from "@/lib/queries/onboarding";
 import { AnimatedNumber } from "./_components/animated-number";
 import {
   clearMonthlyTargetDraft,
-  type GoalReadyProfile,
-  getDefaultMonthlyTarget,
   getGoalReadyProfile,
-  getMaxMonthlyTarget,
   readMonthlyTargetDraft,
   saveMonthlyTargetDraft,
 } from "./utils";
 
 function OnboardingGoalResult({
   userId,
-  monthlySalaryManwon,
-  monthlySavingManwon,
-  netWorthManwon,
-  goalPeriodMonths,
-}: GoalReadyProfile & { userId: number }) {
+  preview,
+}: {
+  userId: number;
+  preview: OnboardingGoalPreview;
+}) {
   const router = useRouter();
   const queryClient = useQueryClient();
   const { mutateAsync: confirmGoal, isPending } = useMutation(
     confirmOnboardingGoalOptions(queryClient),
   );
-  const [monthlyTargetManwon, setMonthlyTargetManwon] = useState(() =>
-    getDefaultMonthlyTarget(monthlySavingManwon, monthlySalaryManwon),
+  const [monthlyTargetManwon, setMonthlyTargetManwon] = useState(
+    preview.recommendedMonthlySavingManwon,
   );
   const [isDraftHydrated, setIsDraftHydrated] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string>();
   const debouncedMonthlyTargetManwon = useDebounce(monthlyTargetManwon, 300);
-  const maxMonthlyTarget = getMaxMonthlyTarget(monthlySavingManwon, monthlySalaryManwon);
-  const monthlyIncrease = monthlyTargetManwon - monthlySavingManwon;
-  const additionalSavings = monthlyTargetManwon * goalPeriodMonths;
-  const expectedTotal = netWorthManwon + additionalSavings;
+  const monthlyIncrease = monthlyTargetManwon - preview.currentMonthlySavingManwon;
+  const additionalSavings = monthlyTargetManwon * preview.periodMonths;
+  const expectedTotal = preview.baseAmountManwon + additionalSavings;
 
   const goBackToCheck = () => router.replace("/onboarding/check");
 
   useEffect(
     function hydrateMonthlyTargetDraft() {
       setMonthlyTargetManwon(
-        readMonthlyTargetDraft(
-          {
-            monthlySalaryManwon,
-            monthlySavingManwon,
-            netWorthManwon,
-            goalPeriodMonths,
-          },
-          userId,
-        ) ?? getDefaultMonthlyTarget(monthlySavingManwon, monthlySalaryManwon),
+        readMonthlyTargetDraft(preview, userId) ?? preview.recommendedMonthlySavingManwon,
       );
       setIsDraftHydrated(true);
     },
-    [goalPeriodMonths, monthlySalaryManwon, monthlySavingManwon, netWorthManwon, userId],
+    [preview, userId],
   );
 
   useEffect(
     function persistDebouncedMonthlyTargetDraft() {
       if (!isDraftHydrated || debouncedMonthlyTargetManwon !== monthlyTargetManwon) return;
 
-      saveMonthlyTargetDraft(
-        {
-          monthlySalaryManwon,
-          monthlySavingManwon,
-          netWorthManwon,
-          goalPeriodMonths,
-        },
-        userId,
-        debouncedMonthlyTargetManwon,
-      );
+      saveMonthlyTargetDraft(preview, userId, debouncedMonthlyTargetManwon);
     },
-    [
-      debouncedMonthlyTargetManwon,
-      goalPeriodMonths,
-      isDraftHydrated,
-      monthlySalaryManwon,
-      monthlySavingManwon,
-      monthlyTargetManwon,
-      netWorthManwon,
-      userId,
-    ],
+    [debouncedMonthlyTargetManwon, isDraftHydrated, monthlyTargetManwon, preview, userId],
   );
 
   return (
@@ -119,16 +94,16 @@ function OnboardingGoalResult({
           <section className="flex flex-col items-center gap-2.5 rounded-2xl bg-gray-10 px-4 py-6 text-center">
             <div className="flex flex-col items-center">
               <h2 className="text-title-t2-700 text-blue-600">
-                {goalPeriodMonths}개월 뒤 목표 금액
+                {preview.periodMonths}개월 뒤 목표 금액
               </h2>
               <p className="font-bold text-[32px] leading-[38px] text-gray-900 tabular-nums">
                 <AnimatedNumber format={formatManwon} value={expectedTotal} />
               </p>
             </div>
             <p className="text-body-b2-500 text-gray-500">
-              현재 순자산 {formatManwon(netWorthManwon)} + 월 저축액{" "}
+              현재 순자산 {formatManwon(preview.baseAmountManwon)} + 월 저축액{" "}
               <AnimatedNumber format={formatManwon} value={monthlyTargetManwon} /> x{" "}
-              {goalPeriodMonths}개월
+              {preview.periodMonths}개월
             </p>
           </section>
         </div>
@@ -144,8 +119,8 @@ function OnboardingGoalResult({
             <div className="flex flex-col">
               <Slider
                 className="h-8"
-                max={maxMonthlyTarget}
-                min={monthlySavingManwon}
+                max={preview.maxMonthlySavingManwon}
+                min={preview.minMonthlySavingManwon}
                 step={1}
                 thumbLabels={["매달 모을 금액"]}
                 value={[monthlyTargetManwon]}
@@ -154,8 +129,8 @@ function OnboardingGoalResult({
                 }}
               />
               <div className="flex justify-between gap-4 text-body-b2-500 text-gray-400">
-                <span>현재 저축액 {formatManwon(monthlySavingManwon)}</span>
-                <span>최대 {formatManwon(maxMonthlyTarget)}</span>
+                <span>현재 저축액 {formatManwon(preview.currentMonthlySavingManwon)}</span>
+                <span>최대 {formatManwon(preview.maxMonthlySavingManwon)}</span>
               </div>
             </div>
           </section>
@@ -195,7 +170,6 @@ function OnboardingGoalResult({
             setErrorMessage(undefined);
             try {
               await confirmGoal({
-                plan: "PLAN_1",
                 monthlySavingManwon: monthlyTargetManwon,
               });
               clearMonthlyTargetDraft();
@@ -222,6 +196,11 @@ export default function OnboardingResultPage() {
   const { data: currentUser, isError: isCurrentUserError } = useQuery(currentUserOptions());
   const hasConfirmedAddress =
     profile && currentUser ? isAddressConfirmed(profile.address, currentUser.userId) : undefined;
+  const goalReadyProfile = profile ? getGoalReadyProfile(profile) : null;
+  const { data: goalPreview, isError: isGoalPreviewError } = useQuery({
+    ...onboardingGoalPreviewOptions(),
+    enabled: Boolean(goalReadyProfile && hasConfirmedAddress),
+  });
 
   useEffect(
     function redirectWhenAddressIsUnconfirmed() {
@@ -230,7 +209,11 @@ export default function OnboardingResultPage() {
     [hasConfirmedAddress, router],
   );
 
-  if ((isError && !profile) || (isCurrentUserError && !currentUser)) {
+  if (
+    (isError && !profile) ||
+    (isCurrentUserError && !currentUser) ||
+    (isGoalPreviewError && !goalPreview)
+  ) {
     return (
       <div className="flex min-h-dvh items-center justify-center px-5 text-center text-body-b1-500 text-gray-700">
         결과를 불러오지 못했어요. 잠시 후 페이지를 다시 열어주세요.
@@ -242,7 +225,6 @@ export default function OnboardingResultPage() {
     return <OnboardingPageSkeleton label="결과를 불러오는 중" />;
   }
 
-  const goalReadyProfile = getGoalReadyProfile(profile);
   if (!goalReadyProfile) {
     return (
       <div className="flex min-h-dvh flex-col items-center justify-center gap-5 px-5 text-center">
@@ -254,5 +236,9 @@ export default function OnboardingResultPage() {
     );
   }
 
-  return <OnboardingGoalResult {...goalReadyProfile} userId={currentUser.userId} />;
+  if (!goalPreview) {
+    return <OnboardingPageSkeleton label="목표 금액을 계산하는 중" />;
+  }
+
+  return <OnboardingGoalResult preview={goalPreview} userId={currentUser.userId} />;
 }

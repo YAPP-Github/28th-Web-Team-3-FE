@@ -7,6 +7,7 @@ import { mutationOptions, type QueryClient, queryOptions } from "@tanstack/react
 import {
   confirmOnboardingGoal,
   getOnboardingGoalPlans,
+  getOnboardingGoalPreview,
   getOnboardingProfile,
   getOnboardingReport,
   isOnboardingAlreadyCompletedError,
@@ -19,6 +20,7 @@ import { currentUserOptions } from "@/lib/queries/auth";
 const ONBOARDING_PROFILE_QUERY_KEY = ["onboarding", "profile"] as const;
 const ONBOARDING_REPORT_QUERY_KEY = ["onboarding", "report"] as const;
 const ONBOARDING_GOAL_PLANS_QUERY_KEY = ["onboarding", "goal-plans"] as const;
+const ONBOARDING_GOAL_PREVIEW_QUERY_KEY = ["onboarding", "goal-preview", "v2"] as const;
 
 /**
  * 온보딩 프로필 조회. 홈의 온보딩 완료 판정과 질문 퍼널의 초기값 복원이
@@ -47,6 +49,14 @@ export function onboardingGoalPlansOptions() {
   });
 }
 
+/** v2 목표 설정 화면의 추천값과 슬라이더 범위를 조회한다. */
+export function onboardingGoalPreviewOptions() {
+  return queryOptions({
+    queryKey: ONBOARDING_GOAL_PREVIEW_QUERY_KEY,
+    queryFn: getOnboardingGoalPreview,
+  });
+}
+
 /** 프로필 부분 저장 — 성공하면 프로필 캐시를 갱신해 다른 화면이 최신값을 본다. */
 export function patchOnboardingProfileOptions(queryClient: QueryClient) {
   return mutationOptions({
@@ -64,7 +74,7 @@ export function updateOnboardingProfileOptions(queryClient: QueryClient) {
 }
 
 /**
- * 목표 플랜 확정 — 온보딩의 마지막 단계다.
+ * 선택한 월 저축 목표 확정 — 온보딩의 마지막 단계다.
  *
  * 성공하면 프로필과 현재 사용자 캐시의 완료 상태를 함께 올린다. 확정 직후 홈으로
  * replace할 때 기존 미완료 캐시가 남아 있으면 라우트 가드가 온보딩으로 되돌려 보낸다.

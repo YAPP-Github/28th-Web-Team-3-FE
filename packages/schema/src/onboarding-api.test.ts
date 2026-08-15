@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   onboardingGoalConfirmSchema,
   onboardingGoalPlansSchema,
+  onboardingGoalPreviewSchema,
   onboardingProfilePatchSchema,
   onboardingReportSchema,
 } from "./onboarding-api";
@@ -24,15 +25,31 @@ describe("onboarding API schemas", () => {
     expect(() => onboardingProfilePatchSchema.parse({ netWorthManwon: 10_001 })).toThrow();
     expect(() => onboardingProfilePatchSchema.parse({ goalPeriodMonths: 2 })).toThrow();
     expect(() => onboardingProfilePatchSchema.parse({ address: "GWANGJU" })).toThrow();
-    expect(() =>
-      onboardingGoalConfirmSchema.parse({ plan: "PLAN_1", monthlySavingManwon: 651 }),
-    ).toThrow();
+    expect(() => onboardingGoalConfirmSchema.parse({ monthlySavingManwon: 651 })).toThrow();
   });
 
-  it("accepts a monthly target with the legacy plan", () => {
-    expect(onboardingGoalConfirmSchema.parse({ plan: "PLAN_1", monthlySavingManwon: 115 })).toEqual(
-      { plan: "PLAN_1", monthlySavingManwon: 115 },
-    );
+  it("plan 없이 v2 월 목표를 검증한다", () => {
+    expect(onboardingGoalConfirmSchema.parse({ monthlySavingManwon: 115 })).toEqual({
+      monthlySavingManwon: 115,
+    });
+  });
+
+  it("v2 목표 미리보기 응답을 검증한다", () => {
+    expect(
+      onboardingGoalPreviewSchema.parse({
+        monthlySavingManwon: 115,
+        currentMonthlySavingManwon: 100,
+        minMonthlySavingManwon: 100,
+        maxMonthlySavingManwon: 150,
+        recommendedMonthlySavingManwon: 115,
+        periodMonths: 24,
+        baseAmountManwon: 2500,
+        additionalSavingManwon: 2760,
+        expectedAmountManwon: 5260,
+        extraMonthlyManwon: 15,
+        extraPercent: 15,
+      }).expectedAmountManwon,
+    ).toBe(5260);
   });
 
   it("parses report and goal-plan response shapes", () => {

@@ -2,11 +2,13 @@ import {
   type OnboardingGoal,
   type OnboardingGoalConfirm,
   type OnboardingGoalPlans,
+  type OnboardingGoalPreview,
   type OnboardingProfile,
   type OnboardingProfilePatch,
   type OnboardingReport,
   onboardingGoalConfirmSchema,
   onboardingGoalPlansSchema,
+  onboardingGoalPreviewSchema,
   onboardingGoalSchema,
   onboardingProfilePatchSchema,
   onboardingProfileSchema,
@@ -16,6 +18,7 @@ import { HTTPError } from "ky";
 import { http } from "@/api/client";
 
 const ONBOARDING_PATH = "onboarding";
+const ONBOARDING_V2_PATH = "v2/onboarding";
 const EMPTY_ONBOARDING_PROFILE: OnboardingProfile = {
   status: "IN_PROGRESS",
   birthDate: null,
@@ -85,8 +88,14 @@ export function getOnboardingGoalPlans(): Promise<OnboardingGoalPlans> {
   return http.get(`${ONBOARDING_PATH}/goal-plans`, { response: onboardingGoalPlansSchema });
 }
 
+export function getOnboardingGoalPreview(): Promise<OnboardingGoalPreview> {
+  return http.get(`${ONBOARDING_V2_PATH}/goal-preview`, {
+    response: onboardingGoalPreviewSchema,
+  });
+}
+
 export function confirmOnboardingGoal(goal: OnboardingGoalConfirm): Promise<OnboardingGoal> {
-  return http.post(`${ONBOARDING_PATH}/goal`, {
+  return http.post(`${ONBOARDING_V2_PATH}/goal`, {
     body: goal,
     request: onboardingGoalConfirmSchema,
     response: onboardingGoalSchema,

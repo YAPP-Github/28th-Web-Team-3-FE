@@ -4,6 +4,7 @@ import { http } from "@/api/client";
 import {
   confirmOnboardingGoal,
   getOnboardingGoalPlans,
+  getOnboardingGoalPreview,
   getOnboardingProfile,
   getOnboardingReport,
   isOnboardingAlreadyCompletedError,
@@ -109,20 +110,22 @@ describe("onboarding API", () => {
     );
   });
 
-  it("report, goal-plans, goal 계약 경로를 호출한다", async () => {
+  it("기존 조회와 v2 목표 미리보기·확정 계약 경로를 호출한다", async () => {
     vi.mocked(http.get).mockReturnValue(resolved({}));
     vi.mocked(http.post).mockReturnValue(resolved({}));
 
     await getOnboardingReport();
     await getOnboardingGoalPlans();
-    await confirmOnboardingGoal({ plan: "PLAN_1", monthlySavingManwon: 115 });
+    await getOnboardingGoalPreview();
+    await confirmOnboardingGoal({ monthlySavingManwon: 115 });
 
     expect(http.get).toHaveBeenNthCalledWith(1, "onboarding/report", expect.anything());
     expect(http.get).toHaveBeenNthCalledWith(2, "onboarding/goal-plans", expect.anything());
+    expect(http.get).toHaveBeenNthCalledWith(3, "v2/onboarding/goal-preview", expect.anything());
     expect(http.post).toHaveBeenCalledWith(
-      "onboarding/goal",
+      "v2/onboarding/goal",
       expect.objectContaining({
-        body: { plan: "PLAN_1", monthlySavingManwon: 115 },
+        body: { monthlySavingManwon: 115 },
         request: expect.anything(),
       }),
     );

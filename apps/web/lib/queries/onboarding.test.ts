@@ -46,7 +46,6 @@ describe("confirmOnboardingGoalOptions", () => {
     queryClient.setQueryData(currentUserOptions().queryKey, INCOMPLETE_CURRENT_USER);
     vi.mocked(confirmOnboardingGoal).mockResolvedValue({
       goalId: 1,
-      plan: "PLAN_1",
       periodMonths: 12,
       targetAmountManwon: 1440,
       status: "COMPLETED",
@@ -56,7 +55,7 @@ describe("confirmOnboardingGoalOptions", () => {
       queryClient,
     });
     await act(async () => {
-      await result.current.mutateAsync({ plan: "PLAN_1", monthlySavingManwon: 115 });
+      await result.current.mutateAsync({ monthlySavingManwon: 115 });
     });
 
     expect(queryClient.getQueryData(onboardingProfileOptions().queryKey)).toEqual({
@@ -73,7 +72,6 @@ describe("confirmOnboardingGoalOptions", () => {
     const queryClient = createTestQueryClient();
     vi.mocked(confirmOnboardingGoal).mockResolvedValue({
       goalId: 1,
-      plan: "PLAN_1",
       periodMonths: 12,
       targetAmountManwon: 1440,
       status: "COMPLETED",
@@ -83,7 +81,7 @@ describe("confirmOnboardingGoalOptions", () => {
       queryClient,
     });
     await act(async () => {
-      await result.current.mutateAsync({ plan: "PLAN_1", monthlySavingManwon: 115 });
+      await result.current.mutateAsync({ monthlySavingManwon: 115 });
     });
 
     expect(queryClient.getQueryData(onboardingProfileOptions().queryKey)).toBeUndefined();
@@ -105,9 +103,9 @@ describe("confirmOnboardingGoalOptions", () => {
       queryClient,
     });
     await act(async () => {
-      await expect(
-        result.current.mutateAsync({ plan: "PLAN_1", monthlySavingManwon: 115 }),
-      ).rejects.toBe(ALREADY_COMPLETED_ERROR);
+      await expect(result.current.mutateAsync({ monthlySavingManwon: 115 })).rejects.toBe(
+        ALREADY_COMPLETED_ERROR,
+      );
     });
 
     expect(queryClient.getQueryData(onboardingProfileOptions().queryKey)).toEqual({

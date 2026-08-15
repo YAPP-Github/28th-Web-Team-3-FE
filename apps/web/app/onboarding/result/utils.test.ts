@@ -2,9 +2,7 @@ import type { OnboardingProfile } from "@repo/schema/onboarding-api";
 import { beforeEach, describe, expect, it } from "vitest";
 import {
   clearMonthlyTargetDraft,
-  getDefaultMonthlyTarget,
   getGoalReadyProfile,
-  getMaxMonthlyTarget,
   readMonthlyTargetDraft,
   saveMonthlyTargetDraft,
 } from "./utils";
@@ -17,6 +15,20 @@ const profile: OnboardingProfile = {
   monthlySavingManwon: 100,
   netWorthManwon: 2500,
   goalPeriodMonths: 24,
+};
+
+const preview = {
+  monthlySavingManwon: 115,
+  currentMonthlySavingManwon: 100,
+  minMonthlySavingManwon: 100,
+  maxMonthlySavingManwon: 150,
+  recommendedMonthlySavingManwon: 115,
+  periodMonths: 24,
+  baseAmountManwon: 2500,
+  additionalSavingManwon: 2760,
+  expectedAmountManwon: 5260,
+  extraMonthlyManwon: 15,
+  extraPercent: 15,
 };
 
 describe("onboarding result utils", () => {
@@ -32,31 +44,17 @@ describe("onboarding result utils", () => {
     expect(getGoalReadyProfile({ ...profile, netWorthManwon: null })).toBeNull();
   });
 
-  it("월 목표 기본값과 상한을 기존 저축액 및 월급으로 계산한다", () => {
-    expect(getDefaultMonthlyTarget(100, 300)).toBe(115);
-    expect(getMaxMonthlyTarget(100, 300)).toBe(150);
-    expect(getMaxMonthlyTarget(100, 120)).toBe(120);
-  });
+  it("현재 사용자와 미리보기 범위에 해당하는 월 목표 draft만 복원한다", () => {
+    saveMonthlyTargetDraft(preview, 1, 125);
 
-  it("현재 사용자와 프로필에 해당하는 월 목표 draft만 복원한다", () => {
-    const goalReadyProfile = getGoalReadyProfile(profile);
-    expect(goalReadyProfile).not.toBeNull();
-    if (!goalReadyProfile) return;
-
-    saveMonthlyTargetDraft(goalReadyProfile, 1, 125);
-
-    expect(readMonthlyTargetDraft(goalReadyProfile, 1)).toBe(125);
-    expect(readMonthlyTargetDraft(goalReadyProfile, 2)).toBeNull();
+    expect(readMonthlyTargetDraft(preview, 1)).toBe(125);
+    expect(readMonthlyTargetDraft(preview, 2)).toBeNull();
   });
 
   it("월 목표 draft를 제거한다", () => {
-    const goalReadyProfile = getGoalReadyProfile(profile);
-    expect(goalReadyProfile).not.toBeNull();
-    if (!goalReadyProfile) return;
-
-    saveMonthlyTargetDraft(goalReadyProfile, 1, 125);
+    saveMonthlyTargetDraft(preview, 1, 125);
     clearMonthlyTargetDraft();
 
-    expect(readMonthlyTargetDraft(goalReadyProfile, 1)).toBeNull();
+    expect(readMonthlyTargetDraft(preview, 1)).toBeNull();
   });
 });
