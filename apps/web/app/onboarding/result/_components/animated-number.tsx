@@ -1,7 +1,7 @@
 "use client";
 
 import { cn } from "@repo/ui";
-import { useLayoutEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 
 interface AnimatedNumberProps {
   className?: string;
@@ -10,40 +10,58 @@ interface AnimatedNumberProps {
 }
 
 const defaultFormat = (value: number) => String(value);
+const ANIMATION_DURATION_MS = 240;
 
-/** 숫자가 바뀔 때 새 값을 짧게 띄워 보여준다. reduced-motion에서는 즉시 교체한다. */
+function easeOutCubic(progress: number) {
+  return 1 - (1 - progress) ** 3;
+}
+
+/** 숫자가 바뀌면 현재 표시값부터 새 값까지 부드럽게 보간한다. */
 export function AnimatedNumber({ className, format = defaultFormat, value }: AnimatedNumberProps) {
-  const elementRef = useRef<HTMLSpanElement>(null);
-  const previousValueRef = useRef(value);
+  const [displayValue, setDisplayValue] = useState(value);
+  const displayValueRef = useRef(value);
 
-  useLayoutEffect(() => {
-    const previousValue = previousValueRef.current;
-    previousValueRef.current = value;
-    if (previousValue === value) return;
+  useEffect(
+    function animateDisplayedNumber() {
+      const startValue = displayValueRef.current;
+      if (startValue === value) return;
 
-    const element = elementRef.current;
-    if (
-      !element ||
-      typeof element.animate !== "function" ||
-      window.matchMedia?.("(prefers-reduced-motion: reduce)").matches
-    ) {
-      return;
-    }
+      if (
+        typeof window.requestAnimationFrame !== "function" ||
+        window.matchMedia?.("(prefers-reduced-motion: reduce)").matches
+      ) {
+        displayValueRef.current = value;
+        setDisplayValue(value);
+        return;
+      }
 
-    const offset = value > previousValue ? 4 : -4;
-    const animation = element.animate(
-      [
-        { opacity: 0.35, transform: `translateY(${offset}px)` },
-        { opacity: 1, transform: "translateY(0)" },
-      ],
-      { duration: 180, easing: "cubic-bezier(0.16, 1, 0.3, 1)" },
-    );
-    return () => animation.cancel();
-  }, [value]);
+      let animationFrameId = 0;
+      let startedAt: number | undefined;
+
+      function updateDisplayedNumber(timestamp: number) {
+        startedAt ??= timestamp;
+        const progress = Math.min((timestamp - startedAt) / ANIMATION_DURATION_MS, 1);
+        const nextValue = Math.round(startValue + (value - startValue) * easeOutCubic(progress));
+
+        if (nextValue !== displayValueRef.current) {
+          displayValueRef.current = nextValue;
+          setDisplayValue(nextValue);
+        }
+
+        if (progress < 1) {
+          animationFrameId = window.requestAnimationFrame(updateDisplayedNumber);
+        }
+      }
+
+      animationFrameId = window.requestAnimationFrame(updateDisplayedNumber);
+      return () => window.cancelAnimationFrame(animationFrameId);
+    },
+    [value],
+  );
 
   return (
-    <span className={cn("inline-block tabular-nums", className)} ref={elementRef}>
-      {format(value)}
-    </span>
+    <output aria-label={format(value)} aria-live="off" className={cn("tabular-nums", className)}>
+      <span aria-hidden="true">{format(displayValue)}</span>
+    </output>
   );
 }
