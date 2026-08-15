@@ -1,12 +1,8 @@
 "use client";
 
-import {
-  MAX_ONBOARDING_MONTHLY_TARGET_MANWON,
-  type OnboardingProfile,
-} from "@repo/schema/onboarding-api";
 import { Button, ButtonGroup, Slider } from "@repo/ui";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { ChevronLeft, Info } from "lucide-react";
+import { ChevronLeft } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { isOnboardingAlreadyCompletedError } from "@/api/onboarding";
@@ -17,122 +13,15 @@ import { useDebounce } from "@/lib/hooks/use-debounce";
 import { currentUserOptions } from "@/lib/queries/auth";
 import { confirmOnboardingGoalOptions, onboardingProfileOptions } from "@/lib/queries/onboarding";
 import { AnimatedNumber } from "./_components/animated-number";
-
-interface GoalReadyProfile {
-  monthlySalaryManwon: number;
-  monthlySavingManwon: number;
-  netWorthManwon: number;
-  goalPeriodMonths: number;
-}
-
-interface MonthlyTargetDraft {
-  userId: number;
-  profileFingerprint: string;
-  monthlyTargetManwon: number;
-}
-
-const MONTHLY_TARGET_DRAFT_STORAGE_KEY = "onboarding:monthly-target-draft";
-
-function getGoalReadyProfile(profile: OnboardingProfile): GoalReadyProfile | null {
-  if (
-    profile.birthDate === null ||
-    profile.address === null ||
-    profile.monthlySalaryManwon === null ||
-    profile.monthlySavingManwon === null ||
-    profile.netWorthManwon === null ||
-    profile.goalPeriodMonths === null
-  ) {
-    return null;
-  }
-
-  return {
-    monthlySalaryManwon: profile.monthlySalaryManwon,
-    monthlySavingManwon: profile.monthlySavingManwon,
-    netWorthManwon: profile.netWorthManwon,
-    goalPeriodMonths: profile.goalPeriodMonths,
-  };
-}
-
-function getMaxMonthlyTarget(currentMonthlySaving: number, monthlySalary: number): number {
-  return Math.min(
-    MAX_ONBOARDING_MONTHLY_TARGET_MANWON,
-    monthlySalary,
-    Math.floor(currentMonthlySaving * 1.5),
-  );
-}
-
-function getDefaultMonthlyTarget(currentMonthlySaving: number, monthlySalary: number): number {
-  const recommendedTarget = Math.round(currentMonthlySaving * 1.15);
-  return Math.min(getMaxMonthlyTarget(currentMonthlySaving, monthlySalary), recommendedTarget);
-}
-
-function getProfileFingerprint({
-  monthlySalaryManwon,
-  monthlySavingManwon,
-  netWorthManwon,
-  goalPeriodMonths,
-}: GoalReadyProfile) {
-  const source = `${monthlySalaryManwon}:${monthlySavingManwon}:${netWorthManwon}:${goalPeriodMonths}`;
-  let hash = 2_166_136_261;
-
-  for (const character of source) {
-    hash ^= character.charCodeAt(0);
-    hash = Math.imul(hash, 16_777_619);
-  }
-
-  return (hash >>> 0).toString(36);
-}
-
-function readMonthlyTargetDraft(
-  { monthlySalaryManwon, monthlySavingManwon, netWorthManwon, goalPeriodMonths }: GoalReadyProfile,
-  userId: number,
-): number | null {
-  try {
-    const storedDraft = localStorage.getItem(MONTHLY_TARGET_DRAFT_STORAGE_KEY);
-    if (!storedDraft) return null;
-
-    const draft = JSON.parse(storedDraft) as Partial<MonthlyTargetDraft>;
-    const maxMonthlyTarget = getMaxMonthlyTarget(monthlySavingManwon, monthlySalaryManwon);
-    const isCurrentProfile =
-      draft.userId === userId &&
-      draft.profileFingerprint ===
-        getProfileFingerprint({
-          monthlySalaryManwon,
-          monthlySavingManwon,
-          netWorthManwon,
-          goalPeriodMonths,
-        });
-    const monthlyTargetManwon = draft.monthlyTargetManwon;
-    const isValidTarget =
-      typeof monthlyTargetManwon === "number" &&
-      Number.isInteger(monthlyTargetManwon) &&
-      monthlyTargetManwon >= monthlySavingManwon &&
-      monthlyTargetManwon <= maxMonthlyTarget;
-
-    if (isCurrentProfile && isValidTarget) return monthlyTargetManwon;
-    localStorage.removeItem(MONTHLY_TARGET_DRAFT_STORAGE_KEY);
-  } catch {
-    // 손상된 값이거나 저장소 접근이 막힌 환경이면 기본 추천값을 사용한다.
-  }
-
-  return null;
-}
-
-function saveMonthlyTargetDraft(draft: MonthlyTargetDraft) {
-  try {
-    localStorage.setItem(MONTHLY_TARGET_DRAFT_STORAGE_KEY, JSON.stringify(draft));
-  } catch {
-    // 저장 공간을 사용할 수 없어도 현재 화면의 목표 설정은 계속할 수 있다.
-  }
-}
-
-function clearMonthlyTargetDraft() {
-  try {
-    localStorage.removeItem(MONTHLY_TARGET_DRAFT_STORAGE_KEY);
-  } catch {
-    // 목표 확정 자체는 로컬 저장소 상태와 무관하게 완료한다.
-  }
-}
+import {
+  clearMonthlyTargetDraft,
+  type GoalReadyProfile,
+  getDefaultMonthlyTarget,
+  getGoalReadyProfile,
+  getMaxMonthlyTarget,
+  readMonthlyTargetDraft,
+  saveMonthlyTargetDraft,
+} from "./utils";
 
 function OnboardingGoalResult({
   userId,
@@ -159,39 +48,50 @@ function OnboardingGoalResult({
 
   const goBackToCheck = () => router.replace("/onboarding/check");
 
-  useEffect(() => {
-    setMonthlyTargetManwon(
-      readMonthlyTargetDraft(
-        { monthlySalaryManwon, monthlySavingManwon, netWorthManwon, goalPeriodMonths },
+  useEffect(
+    function hydrateMonthlyTargetDraft() {
+      setMonthlyTargetManwon(
+        readMonthlyTargetDraft(
+          {
+            monthlySalaryManwon,
+            monthlySavingManwon,
+            netWorthManwon,
+            goalPeriodMonths,
+          },
+          userId,
+        ) ?? getDefaultMonthlyTarget(monthlySavingManwon, monthlySalaryManwon),
+      );
+      setIsDraftHydrated(true);
+    },
+    [goalPeriodMonths, monthlySalaryManwon, monthlySavingManwon, netWorthManwon, userId],
+  );
+
+  useEffect(
+    function persistDebouncedMonthlyTargetDraft() {
+      if (!isDraftHydrated || debouncedMonthlyTargetManwon !== monthlyTargetManwon) return;
+
+      saveMonthlyTargetDraft(
+        {
+          monthlySalaryManwon,
+          monthlySavingManwon,
+          netWorthManwon,
+          goalPeriodMonths,
+        },
         userId,
-      ) ?? getDefaultMonthlyTarget(monthlySavingManwon, monthlySalaryManwon),
-    );
-    setIsDraftHydrated(true);
-  }, [goalPeriodMonths, monthlySalaryManwon, monthlySavingManwon, netWorthManwon, userId]);
-
-  useEffect(() => {
-    if (!isDraftHydrated || debouncedMonthlyTargetManwon !== monthlyTargetManwon) return;
-
-    saveMonthlyTargetDraft({
+        debouncedMonthlyTargetManwon,
+      );
+    },
+    [
+      debouncedMonthlyTargetManwon,
+      goalPeriodMonths,
+      isDraftHydrated,
+      monthlySalaryManwon,
+      monthlySavingManwon,
+      monthlyTargetManwon,
+      netWorthManwon,
       userId,
-      profileFingerprint: getProfileFingerprint({
-        monthlySalaryManwon,
-        monthlySavingManwon,
-        netWorthManwon,
-        goalPeriodMonths,
-      }),
-      monthlyTargetManwon: debouncedMonthlyTargetManwon,
-    });
-  }, [
-    debouncedMonthlyTargetManwon,
-    goalPeriodMonths,
-    isDraftHydrated,
-    monthlySalaryManwon,
-    monthlySavingManwon,
-    monthlyTargetManwon,
-    netWorthManwon,
-    userId,
-  ]);
+    ],
+  );
 
   return (
     <div className="mx-auto min-h-dvh w-full max-w-md bg-gray-0 pb-[126px]">
@@ -261,7 +161,6 @@ function OnboardingGoalResult({
           </section>
 
           <section className="flex items-start justify-center gap-2 rounded-[14px] bg-gradient-to-r from-[#e6ebff] to-[#e2f8ff] px-5 py-4 text-center">
-            <Info aria-hidden="true" className="mt-0.5 size-4 shrink-0 text-blue-500" />
             {monthlyIncrease > 0 ? (
               <p className="text-body-b1-500 text-gray-800">
                 현재 저축액에서 매달 더 모으는{" "}
@@ -295,7 +194,10 @@ function OnboardingGoalResult({
           onNext={async () => {
             setErrorMessage(undefined);
             try {
-              await confirmGoal({ plan: "PLAN_1", monthlySavingManwon: monthlyTargetManwon });
+              await confirmGoal({
+                plan: "PLAN_1",
+                monthlySavingManwon: monthlyTargetManwon,
+              });
               clearMonthlyTargetDraft();
               router.replace("/");
             } catch (error) {
@@ -321,9 +223,12 @@ export default function OnboardingResultPage() {
   const hasConfirmedAddress =
     profile && currentUser ? isAddressConfirmed(profile.address, currentUser.userId) : undefined;
 
-  useEffect(() => {
-    if (hasConfirmedAddress === false) router.replace("/onboarding/address");
-  }, [hasConfirmedAddress, router]);
+  useEffect(
+    function redirectWhenAddressIsUnconfirmed() {
+      if (hasConfirmedAddress === false) router.replace("/onboarding/address");
+    },
+    [hasConfirmedAddress, router],
+  );
 
   if ((isError && !profile) || (isCurrentUserError && !currentUser)) {
     return (
