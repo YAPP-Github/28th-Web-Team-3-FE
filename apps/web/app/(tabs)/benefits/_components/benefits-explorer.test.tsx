@@ -1,12 +1,10 @@
 import type { SavedContent } from "@repo/schema/bookmark";
 import type { PolicyDetail, PolicySummary } from "@repo/schema/policy";
-import { within } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { fetchSavedPolicies } from "@/api/bookmark";
 import { bookmarkPolicy, fetchPolicies, fetchPolicyDetail, unbookmarkPolicy } from "@/api/policy";
-import { savedPoliciesOptions } from "@/lib/queries/bookmark";
 import { POLICY_PAGE_SIZE } from "@/lib/queries/policy";
-import { act, createTestQueryClient, fireEvent, render, screen, waitFor } from "@/lib/test/react";
+import { act, fireEvent, render, screen, waitFor } from "@/lib/test/react";
 import { BenefitsExplorer } from "./benefits-explorer";
 
 vi.mock("@/api/policy", () => ({
@@ -124,170 +122,6 @@ describe("BenefitsExplorer", () => {
     expect(screen.queryByText("불러오는 중…")).not.toBeInTheDocument();
     expect(screen.getByText("혜택 목록을 불러오는 중")).toHaveClass("sr-only");
     expect(container.querySelectorAll('[data-slot="benefit-card-skeleton"]')).toHaveLength(3);
-  });
-
-  it("저장 칩은 저장 목록 API를 쓴다", async () => {
-    render(<BenefitsExplorer />);
-    await screen.findByText("혜택 1");
-
-    fireEvent.click(screen.getByRole("link", { name: "저장" }));
-
-    expect(await screen.findByText("저장한 혜택")).toBeInTheDocument();
-    expect(fetchSavedPolicies).toHaveBeenCalled();
-    // 저장 목록의 항목은 전부 저장된 상태로 보여야 한다.
-    expect(screen.getByRole("button", { name: "저장한 혜택 저장" })).toHaveAttribute(
-      "aria-pressed",
-      "true",
-    );
-  });
-
-  it("저장 탭도 정책 상세의 4분류 category를 태그로 쓴다", async () => {
-    vi.mocked(fetchSavedPolicies).mockResolvedValue([
-      {
-        contentType: "POLICY",
-        id: 7,
-        title: "농식품 바우처",
-        category: "금융·복지·문화",
-        description: "설명",
-      },
-    ]);
-    vi.mocked(fetchPolicyDetail).mockResolvedValue(
-      policyDetail(7, { title: "농식품 바우처", category: "복지" }),
-    );
-    window.history.replaceState(null, "", "/benefits?category=saved");
-
-    render(<BenefitsExplorer />);
-
-    const card = (await screen.findByText("농식품 바우처")).closest("article");
-    expect(card).not.toBeNull();
-    expect(within(card as HTMLElement).getByText("복지")).toBeInTheDocument();
-    expect(within(card as HTMLElement).queryByText("금융·복지·문화")).not.toBeInTheDocument();
-  });
-
-  it("저장 정책 상세가 늦어도 저장 목록부터 보여준다", async () => {
-    let finishDetail: ((detail: PolicyDetail) => void) | undefined;
-    vi.mocked(fetchPolicyDetail).mockImplementation(
-      () =>
-        new Promise((resolve) => {
-          finishDetail = resolve;
-        }),
-    );
-    window.history.replaceState(null, "", "/benefits?category=saved");
-
-    render(<BenefitsExplorer />);
-
-    const card = (await screen.findByText("저장한 혜택")).closest("article");
-    expect(card).not.toBeNull();
-    expect(screen.queryByText("혜택 목록을 불러오는 중")).not.toBeInTheDocument();
-    expect(within(card as HTMLElement).queryByText("복지")).not.toBeInTheDocument();
-
-    await act(async () => {
-      finishDetail?.(policyDetail(7, { category: "복지" }));
-    });
-
-    await waitFor(() => expect(within(card as HTMLElement).getByText("복지")).toBeInTheDocument());
-  });
-
-  it("저장한 게 없으면 안내를 띄운다", async () => {
-    vi.mocked(fetchSavedPolicies).mockResolvedValue([]);
-    window.history.replaceState(null, "", "/benefits?category=saved");
-    render(<BenefitsExplorer />);
-
-    expect(await screen.findByText(/저장한 혜택이 없어요/)).toBeInTheDocument();
-  });
-
-  it("저장 탭에서 해제한 카드를 성공 직후 다시 보여주지 않는다", async () => {
-    let finishUnbookmark: (() => void) | undefined;
-    vi.mocked(unbookmarkPolicy).mockImplementation(
-      () =>
-        new Promise<void>((resolve) => {
-          finishUnbookmark = resolve;
-        }),
-    );
-    window.history.replaceState(null, "", "/benefits?category=saved");
-    const queryClient = createTestQueryClient();
-    render(<BenefitsExplorer />, { queryClient });
-
-    const star = await screen.findByRole("button", { name: "저장한 혜택 저장" });
-    fireEvent.click(star);
-    expect(screen.queryByText("저장한 혜택")).not.toBeInTheDocument();
-
-    await waitFor(() => expect(unbookmarkPolicy).toHaveBeenCalledWith(7));
-    await act(async () => {
-      finishUnbookmark?.();
-    });
-    await waitFor(() => expect(queryClient.isMutating()).toBe(0));
-    await waitFor(() => expect(queryClient.isFetching()).toBe(0));
-
-    expect(screen.queryByText("저장한 혜택")).not.toBeInTheDocument();
-  });
-
-  it("해제 전에 시작한 이전 목록 조회가 늦게 끝나도 카드를 다시 보여주지 않는다", async () => {
-    let finishStaleFetch: (() => void) | undefined;
-    vi.mocked(fetchSavedPolicies)
-      .mockResolvedValueOnce(SAVED)
-      .mockImplementationOnce(
-        () =>
-          new Promise((resolve) => {
-            finishStaleFetch = () => resolve(SAVED);
-          }),
-      );
-    window.history.replaceState(null, "", "/benefits?category=saved");
-    const queryClient = createTestQueryClient();
-    render(<BenefitsExplorer />, { queryClient });
-
-    const star = await screen.findByRole("button", { name: "저장한 혜택 저장" });
-    void queryClient.refetchQueries({ queryKey: savedPoliciesOptions().queryKey });
-    await waitFor(() => expect(fetchSavedPolicies).toHaveBeenCalledTimes(2));
-
-    fireEvent.click(star);
-    expect(screen.queryByText("저장한 혜택")).not.toBeInTheDocument();
-
-    await act(async () => {
-      finishStaleFetch?.();
-    });
-    await waitFor(() => expect(queryClient.isFetching()).toBe(0));
-
-    expect(screen.queryByText("저장한 혜택")).not.toBeInTheDocument();
-  });
-
-  it("해제 뒤 시작한 이전 목록 조회도 성공 상태를 덮어쓰지 않는다", async () => {
-    let finishUnbookmark: (() => void) | undefined;
-    let finishStaleFetch: (() => void) | undefined;
-    vi.mocked(unbookmarkPolicy).mockImplementation(
-      () =>
-        new Promise<void>((resolve) => {
-          finishUnbookmark = resolve;
-        }),
-    );
-    vi.mocked(fetchSavedPolicies)
-      .mockResolvedValueOnce(SAVED)
-      .mockImplementationOnce(
-        () =>
-          new Promise((resolve) => {
-            finishStaleFetch = () => resolve(SAVED);
-          }),
-      );
-    window.history.replaceState(null, "", "/benefits?category=saved");
-    const queryClient = createTestQueryClient();
-    render(<BenefitsExplorer />, { queryClient });
-
-    const star = await screen.findByRole("button", { name: "저장한 혜택 저장" });
-    fireEvent.click(star);
-    void queryClient.refetchQueries({ queryKey: savedPoliciesOptions().queryKey });
-    await waitFor(() => expect(fetchSavedPolicies).toHaveBeenCalledTimes(2));
-
-    await act(async () => {
-      finishStaleFetch?.();
-    });
-    await waitFor(() => expect(queryClient.isFetching()).toBe(0));
-    await waitFor(() => expect(unbookmarkPolicy).toHaveBeenCalledWith(7));
-    await act(async () => {
-      finishUnbookmark?.();
-    });
-    await waitFor(() => expect(queryClient.isMutating()).toBe(0));
-
-    expect(screen.queryByText("저장한 혜택")).not.toBeInTheDocument();
   });
 
   it("별을 누르면 저장하고, 저장된 항목은 취소한다", async () => {
@@ -567,6 +401,29 @@ describe("BenefitsExplorer", () => {
     await screen.findByText("혜택 1");
 
     const housingFilter = screen.getByRole("link", { name: "주거" });
-    expect(housingFilter).toHaveClass("text-gray-600", "focus-visible:ring-2");
+    expect(housingFilter).toHaveClass("text-gray-300", "focus-visible:ring-2");
+  });
+
+  /** 팁 탭은 화면만 있고 서버가 없다 — 빈 목록이 아니라 준비 중이라고 말해야 한다. */
+  it("블로그 팁 탭은 준비 중이라고 알리고 정책 목록을 조회하지 않는다", async () => {
+    render(<BenefitsExplorer />);
+    await screen.findByText("혜택 1");
+    vi.mocked(fetchPolicies).mockClear();
+
+    fireEvent.click(screen.getByRole("tab", { name: "블로그 팁" }));
+
+    expect(screen.getByText(/블로그 팁은 준비 중이에요/)).toBeInTheDocument();
+    expect(screen.queryByText("혜택 1")).not.toBeInTheDocument();
+    expect(fetchPolicies).not.toHaveBeenCalled();
+  });
+
+  it("탭을 되돌리면 정책 목록이 다시 보인다", async () => {
+    render(<BenefitsExplorer />);
+    await screen.findByText("혜택 1");
+
+    fireEvent.click(screen.getByRole("tab", { name: "블로그 팁" }));
+    fireEvent.click(screen.getByRole("tab", { name: "정책 혜택" }));
+
+    expect(await screen.findByText("혜택 1")).toBeInTheDocument();
   });
 });

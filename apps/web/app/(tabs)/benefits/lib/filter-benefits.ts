@@ -2,7 +2,12 @@ import type { PolicyCategory } from "@repo/schema/policy";
 import { BENEFIT_FILTERS } from "@/app/(tabs)/benefits/constants";
 import { BENEFIT_FILTER_VALUES, type BenefitFilter } from "@/app/(tabs)/benefits/types";
 
-/** URL 쿼리의 category 값을 허용된 값으로 좁힌다. 알 수 없는 값은 전체("all")로 처리한다. */
+/**
+ * URL 쿼리의 category 값을 허용된 값으로 좁힌다. 알 수 없는 값은 전체("all")로 처리한다.
+ *
+ * 예전에 칩이던 "saved"도 이제 여기 없어 "all"로 떨어진다 — 저장 목록은 별도 화면이라
+ * 옛 링크(`/benefits?category=saved`)는 `page.tsx`에서 그쪽으로 보낸다.
+ */
 export function parseBenefitFilter(value: string | string[] | undefined): BenefitFilter {
   if (typeof value !== "string") return "all";
   return BENEFIT_FILTER_VALUES.includes(value as BenefitFilter) ? (value as BenefitFilter) : "all";

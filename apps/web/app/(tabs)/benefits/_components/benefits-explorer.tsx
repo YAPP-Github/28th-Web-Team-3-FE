@@ -1,41 +1,33 @@
 "use client";
 
 import { Button } from "@repo/ui";
-import {
-  useInfiniteQuery,
-  useMutation,
-  useQueries,
-  useQuery,
-  useQueryClient,
-} from "@tanstack/react-query";
+import { useInfiniteQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { useSavedToggleQueue } from "@/app/(tabs)/benefits/_hooks/use-saved-toggle-queue";
-import { toBenefitItem, toSavedBenefitItem } from "@/app/(tabs)/benefits/lib/benefit-items";
+import { toBenefitItem } from "@/app/(tabs)/benefits/lib/benefit-items";
 import {
   getBenefitFilterCategory,
   parseBenefitFilter,
 } from "@/app/(tabs)/benefits/lib/filter-benefits";
 import { getBenefitFilterHref } from "@/app/(tabs)/benefits/lib/filter-href";
-import type { BenefitFilter, BenefitItem } from "@/app/(tabs)/benefits/types";
-import { savedPoliciesOptions } from "@/lib/queries/bookmark";
-import {
-  policiesOptions,
-  policyDetailOptions,
-  togglePolicyBookmarkOptions,
-} from "@/lib/queries/policy";
+import type { BenefitContentType, BenefitFilter, BenefitItem } from "@/app/(tabs)/benefits/types";
+import { policiesOptions, togglePolicyBookmarkOptions } from "@/lib/queries/policy";
 import { BenefitCard } from "./benefit-card";
 import { BenefitFilters } from "./benefit-filters";
 import { BenefitListSkeleton } from "./benefit-list-skeleton";
+import { ContentTypeTabs } from "./content-type-tabs";
 
 /**
- * 필터 칩 + 혜택 목록. 필터링·페이지네이션은 서버(`/api/policies`)가 하고, "저장" 칩만
- * 저장 목록(`/api/bookmarks`)이라 다른 쿼리를 탄다. URL은 history.replaceState로만
- * 동기화해(서버 재렌더 없음) 공유·딥링크는 유지하되 전환은 끊김 없이 반영된다.
- * 초기 필터는 클라이언트에서 searchParams를 읽어 정한다.
+ * 종류 탭 + 필터 칩 + 혜택 목록. 필터링·페이지네이션은 서버(`/api/policies`)가 한다.
+ * URL은 history.replaceState로만 동기화해(서버 재렌더 없음) 공유·딥링크는 유지하되 전환은
+ * 끊김 없이 반영된다. 초기 필터는 클라이언트에서 searchParams를 읽어 정한다.
+ *
+ * 저장 목록은 여기 없다 — 별도 화면(`/benefits/saved`)이다.
  */
 export function BenefitsExplorer() {
   const searchParams = useSearchParams();
+  const [contentType, setContentType] = useState<BenefitContentType>("policy");
   const [filter, setFilter] = useState<BenefitFilter>(() => {
     const categories = searchParams.getAll("category");
     return parseBenefitFilter(categories.length === 1 ? categories[0] : undefined);
@@ -49,27 +41,16 @@ export function BenefitsExplorer() {
     queryClient,
     toggleBookmark.mutate,
   );
-  const isSavedFilter = filter === "saved";
+  const isTipTab = contentType === "tip";
 
   const policies = useInfiniteQuery({
     ...policiesOptions(getBenefitFilterCategory(filter)),
-    enabled: !isSavedFilter,
-  });
-  const saved = useQuery({ ...savedPoliciesOptions(), enabled: isSavedFilter });
-  const savedPolicyDetails = useQueries({
-    queries: (saved.data ?? []).map(({ id }) => ({
-      ...policyDetailOptions(id),
-      enabled: isSavedFilter,
-    })),
+    enabled: !isTipTab,
   });
 
-  const benefits: readonly BenefitItem[] = isSavedFilter
-    ? (saved.data ?? []).map((item, index) =>
-        toSavedBenefitItem(item, savedPolicyDetails[index]?.data?.category),
-      )
-    : (policies.data?.pages.flat() ?? []).map(toBenefitItem);
-  const isPending = isSavedFilter ? saved.isPending : policies.isPending;
-  const isInitialError = isSavedFilter ? saved.isError : policies.isError && benefits.length === 0;
+  const benefits: readonly BenefitItem[] = (policies.data?.pages.flat() ?? []).map(toBenefitItem);
+  const isPending = policies.isPending;
+  const isInitialError = policies.isError && benefits.length === 0;
 
   const { fetchNextPage, hasNextPage, isFetchNextPageError, isFetchingNextPage } = policies;
   const loadMoreRef = useRef<HTMLDivElement>(null);
@@ -106,7 +87,7 @@ export function BenefitsExplorer() {
   async function retryInitialPage() {
     const retryFilter = filter;
     setIsRetryingInitial(true);
-    const result = await (isSavedFilter ? saved.refetch() : policies.refetch());
+    const result = await policies.refetch();
     if (activeFilterRef.current !== retryFilter) return;
     setIsRetryingInitial(false);
     if (result.isSuccess) focusBenefitsList();
@@ -117,109 +98,118 @@ export function BenefitsExplorer() {
     if (result.isSuccess) focusBenefitsList();
   }
 
+  if (isTipTab) {
+    return (
+      <>
+        <ContentTypeTabs selected={contentType} onSelect={setContentType} />
+        <div id="benefit-content-panel" role="tabpanel" aria-labelledby="benefit-content-tab-tip">
+          <p className="px-5 py-20 text-center text-body-b2-500 text-gray-500">
+            블로그 팁은 준비 중이에요.
+            <br />
+            조금만 기다려 주세요.
+          </p>
+        </div>
+      </>
+    );
+  }
+
   return (
     <>
-      <h2 className="mt-[17px] px-5 text-title-t2-700 text-gray-900">맞춤 추천 혜택</h2>
-      <div className="mt-[18px]">
-        <BenefitFilters selected={filter} onSelect={selectFilter} />
-      </div>
-      {/*
+      <ContentTypeTabs selected={contentType} onSelect={setContentType} />
+      <div id="benefit-content-panel" role="tabpanel" aria-labelledby="benefit-content-tab-policy">
+        <div className="mt-[18px]">
+          <BenefitFilters selected={filter} onSelect={selectFilter} />
+        </div>
+        {/*
         칩을 눌러도 초점은 칩에 남으므로 결과가 바뀐 것을 따로 알린다. 목록 자체를 live
         region으로 만들면 안 된다 — 카드가 빠지기만 하는 변경은 안 읽히고, 카테고리를 바꾸면
         추가된 카드의 제목·설명·버튼이 통째로 읽히며, 별 버튼의 aria-pressed 변화까지
         region 안에서 일어난다. 짧은 상태 문구만 따로 둔다(W3C ARIA22).
       */}
-      {/*
+        {/*
         개수는 싣지 않는다 — 무한 스크롤로 목록이 늘 때마다 문구가 바뀌어 "20개를 찾았어요",
         "40개를 찾았어요"가 스크롤 내내 읽힌다. 칩을 바꿔 결과 유무가 달라질 때만 바뀌게 둔다.
       */}
-      <p role="status" className="sr-only">
-        {isPending || isInitialError || isRetryingInitial
-          ? ""
-          : benefits.length > 0
-            ? "혜택 목록을 불러왔어요."
-            : "조건에 맞는 혜택이 없어요."}
-      </p>
-      <section
-        ref={benefitsListRef}
-        id="benefits-list"
-        aria-label="정책 목록"
-        className="mt-5 flex flex-col gap-3 px-5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-        tabIndex={-1}
-      >
-        {saveError ? (
-          <p aria-live="polite" className="text-body-b2-500 text-error">
-            {saveError}
-          </p>
-        ) : null}
-        {isPending && !isRetryingInitial ? (
-          <BenefitListSkeleton />
-        ) : isInitialError || isRetryingInitial ? (
-          <div className="flex flex-col items-center py-10 text-center">
-            {/* 칩을 눌러 실패했을 때 초점은 칩에 남는다 — alert로 알려야 화면 밖 사용자도 안다. */}
-            <p
-              role={isRetryingInitial ? "status" : "alert"}
-              className="text-body-b2-500 text-gray-500"
-            >
-              {isRetryingInitial
-                ? "혜택을 다시 불러오는 중이에요."
-                : "혜택을 불러오지 못했어요. 잠시 후 다시 시도해 주세요."}
+        <p role="status" className="sr-only">
+          {isPending || isInitialError || isRetryingInitial
+            ? ""
+            : benefits.length > 0
+              ? "혜택 목록을 불러왔어요."
+              : "조건에 맞는 혜택이 없어요."}
+        </p>
+        <section
+          ref={benefitsListRef}
+          id="benefits-list"
+          aria-label="정책 목록"
+          className="mt-5 flex flex-col gap-3 px-5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          tabIndex={-1}
+        >
+          {saveError ? (
+            <p aria-live="polite" className="text-body-b2-500 text-error">
+              {saveError}
             </p>
-            <Button
-              className="mt-4"
-              pending={isRetryingInitial}
-              size="sm"
-              onClick={() => void retryInitialPage()}
-            >
-              다시 시도
-            </Button>
-          </div>
-        ) : benefits.length === 0 ? (
-          <p className="py-10 text-center text-body-b2-500 text-gray-500">
-            {isSavedFilter ? (
-              <>
-                저장한 혜택이 없어요.
-                <br />
-                관심 있는 혜택의 별을 눌러 저장해보세요.
-              </>
-            ) : (
-              "해당하는 혜택이 없어요."
-            )}
-          </p>
-        ) : (
-          <>
-            {benefits.map((benefit) => (
-              <BenefitCard key={benefit.id} benefit={benefit} onToggleSave={toggleSaved} />
-            ))}
-            {!isSavedFilter && isFetchingNextPage && !isFetchNextPageError ? (
-              <BenefitListSkeleton count={1} />
-            ) : null}
-            {!isSavedFilter && isFetchNextPageError ? (
-              <div className="flex flex-col items-center py-5 text-center">
-                <p
-                  role={isFetchingNextPage ? "status" : "alert"}
-                  className="text-body-b2-500 text-gray-500"
-                >
-                  {isFetchingNextPage
-                    ? "다음 혜택을 다시 불러오는 중이에요."
-                    : "다음 혜택을 불러오지 못했어요. 다시 시도해 주세요."}
-                </p>
-                <Button
-                  className="mt-3"
-                  pending={isFetchingNextPage}
-                  size="sm"
-                  variant="secondary"
-                  onClick={() => void retryNextPage()}
-                >
-                  다시 시도
-                </Button>
-              </div>
-            ) : null}
-          </>
-        )}
-        {/* 다음 페이지 감지용. 저장 목록은 한 번에 다 오므로 목록 쿼리일 때만 둔다. */}
-        {!isSavedFilter && hasNextPage ? <div ref={loadMoreRef} aria-hidden="true" /> : null}
-      </section>
+          ) : null}
+          {isPending && !isRetryingInitial ? (
+            <BenefitListSkeleton />
+          ) : isInitialError || isRetryingInitial ? (
+            <div className="flex flex-col items-center py-10 text-center">
+              {/* 칩을 눌러 실패했을 때 초점은 칩에 남는다 — alert로 알려야 화면 밖 사용자도 안다. */}
+              <p
+                role={isRetryingInitial ? "status" : "alert"}
+                className="text-body-b2-500 text-gray-500"
+              >
+                {isRetryingInitial
+                  ? "혜택을 다시 불러오는 중이에요."
+                  : "혜택을 불러오지 못했어요. 잠시 후 다시 시도해 주세요."}
+              </p>
+              <Button
+                className="mt-4"
+                pending={isRetryingInitial}
+                size="sm"
+                onClick={() => void retryInitialPage()}
+              >
+                다시 시도
+              </Button>
+            </div>
+          ) : benefits.length === 0 ? (
+            <p className="py-10 text-center text-body-b2-500 text-gray-500">
+              해당하는 혜택이 없어요.
+            </p>
+          ) : (
+            <>
+              {benefits.map((benefit) => (
+                <BenefitCard key={benefit.id} benefit={benefit} onToggleSave={toggleSaved} />
+              ))}
+              {isFetchingNextPage && !isFetchNextPageError ? (
+                <BenefitListSkeleton count={1} />
+              ) : null}
+              {isFetchNextPageError ? (
+                <div className="flex flex-col items-center py-5 text-center">
+                  <p
+                    role={isFetchingNextPage ? "status" : "alert"}
+                    className="text-body-b2-500 text-gray-500"
+                  >
+                    {isFetchingNextPage
+                      ? "다음 혜택을 다시 불러오는 중이에요."
+                      : "다음 혜택을 불러오지 못했어요. 다시 시도해 주세요."}
+                  </p>
+                  <Button
+                    className="mt-3"
+                    pending={isFetchingNextPage}
+                    size="sm"
+                    variant="secondary"
+                    onClick={() => void retryNextPage()}
+                  >
+                    다시 시도
+                  </Button>
+                </div>
+              ) : null}
+            </>
+          )}
+          {/* 다음 페이지 감지용. */}
+          {hasNextPage ? <div ref={loadMoreRef} aria-hidden="true" /> : null}
+        </section>
+      </div>
     </>
   );
 }
