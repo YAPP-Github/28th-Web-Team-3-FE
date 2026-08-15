@@ -1,10 +1,12 @@
 "use client";
 
+import { cn } from "@repo/ui";
 import { BENEFIT_CONTENT_TYPES, type BenefitContentType } from "@/app/(tabs)/benefits/types";
 
 interface ContentTypeTabsProps {
   selected: BenefitContentType;
   onSelect: (value: BenefitContentType) => void;
+  className?: string;
   /** 패널을 잇는 id 접두사 — 한 화면에 두 벌이 뜨지 않으므로 기본값으로 충분하다. */
   idPrefix?: string;
 }
@@ -21,6 +23,7 @@ interface ContentTypeTabsProps {
 export function ContentTypeTabs({
   selected,
   onSelect,
+  className,
   idPrefix = "benefit-content",
 }: ContentTypeTabsProps) {
   function moveToOther() {
@@ -29,7 +32,7 @@ export function ContentTypeTabs({
   }
 
   return (
-    <div className="border-gray-100 border-b">
+    <div className={cn("border-gray-100 border-b", className)}>
       <div
         aria-label="혜택 종류"
         className="mx-auto flex w-[335px] max-w-full"

@@ -101,7 +101,7 @@ export function BenefitsExplorer() {
   if (isTipTab) {
     return (
       <>
-        <ContentTypeTabs selected={contentType} onSelect={setContentType} />
+        <ContentTypeTabs className="pt-2.5" selected={contentType} onSelect={setContentType} />
         <div id="benefit-content-panel" role="tabpanel" aria-labelledby="benefit-content-tab-tip">
           <p className="px-5 py-20 text-center text-body-b2-500 text-gray-500">
             블로그 팁은 준비 중이에요.
@@ -115,9 +115,9 @@ export function BenefitsExplorer() {
 
   return (
     <>
-      <ContentTypeTabs selected={contentType} onSelect={setContentType} />
+      <ContentTypeTabs className="pt-2.5" selected={contentType} onSelect={setContentType} />
       <div id="benefit-content-panel" role="tabpanel" aria-labelledby="benefit-content-tab-policy">
-        <div className="mt-[18px]">
+        <div className="mt-[23px]">
           <BenefitFilters selected={filter} onSelect={selectFilter} />
         </div>
         {/*
