@@ -1,6 +1,12 @@
 import { render } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
-import { SemicircleGauge } from "./semicircle-gauge";
+import {
+  ARC_END_X,
+  ARC_PATH,
+  ARC_START_X,
+  SemicircleGauge,
+  VIEWBOX_WIDTH,
+} from "./semicircle-gauge";
 
 describe("SemicircleGauge", () => {
   it("percent가 0이면 진행 path를 그리지 않는다(둥근 캡 점 방지)", () => {
@@ -55,17 +61,37 @@ describe("SemicircleGauge", () => {
       <SemicircleGauge maxLabel="5,000만원" minLabel="0" percent={39} savedLabel="1,950만원" />,
     );
 
-    expect(Number.parseFloat(getByText("0").style.left)).toBeCloseTo((7.6 / 260) * 100, 1);
-    expect(Number.parseFloat(getByText("5,000만원").style.left)).toBeCloseTo(
-      (252.4 / 260) * 100,
-      1,
+    expect(Number.parseFloat(getByText("0").style.left)).toBeCloseTo(
+      (ARC_START_X / VIEWBOX_WIDTH) * 100,
+      3,
     );
+    expect(Number.parseFloat(getByText("5,000만원").style.left)).toBeCloseTo(
+      (ARC_END_X / VIEWBOX_WIDTH) * 100,
+      3,
+    );
+  });
+
+  /**
+   * 끝점이 반지름과 어긋나면 브라우저가 중심을 다시 잡아 정점이 뷰박스 위로 올라가 잘린다.
+   * 시안 링은 중심 (130,130)·반지름 122.5이고 180°를 넘으므로 large-arc-flag가 1이다.
+   */
+  it("호가 시안 링과 같은 원 위에 있다", () => {
+    const { container } = render(
+      <SemicircleGauge maxLabel="5,000만원" minLabel="0" percent={0} savedLabel="0만원" />,
+    );
+
+    expect(container.querySelector("svg")).toHaveAttribute("viewBox", "0 0 260 142");
+    expect(container.querySelector("path")).toHaveAttribute("d", ARC_PATH);
+    expect(ARC_PATH).toContain("A 122.5 122.5 0 1 1");
+    // 끝점과 중심(130,130)의 거리가 반지름과 같아야 한다.
+    expect(Math.hypot(ARC_END_X - 130, 134.5 - 130)).toBeCloseTo(122.5, 6);
   });
 
   // 트랙은 시안에서 Gray/100이다. Gray/200을 쓰면 채운 부분과의 대비가 과하게 세다.
   it("트랙을 시안 색으로 그린다", () => {
+    // percent 0이면 path가 트랙 하나뿐이라 렌더 순서에 기대지 않는다.
     const { container } = render(
-      <SemicircleGauge maxLabel="5,000만원" minLabel="0" percent={39} savedLabel="1,950만원" />,
+      <SemicircleGauge maxLabel="5,000만원" minLabel="0" percent={0} savedLabel="0만원" />,
     );
 
     expect(container.querySelector("path")).toHaveAttribute("stroke", "var(--color-gray-100)");

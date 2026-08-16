@@ -11,16 +11,22 @@ interface SemicircleGaugeProps {
  * 중심선 반지름은 122.5, 중심은 (130,130)이다. 반원보다 조금 길어 양 끝이 수평선보다
  * 2.1° 아래로 내려오고, 둥근 끝(round cap)이 y=142까지 닿아 뷰박스 높이가 142다.
  */
-const VIEWBOX_WIDTH = 260;
+export const VIEWBOX_WIDTH = 260;
 const VIEWBOX_HEIGHT = 142;
 const STROKE_WIDTH = 15;
+const ARC_CENTER = 130;
 const ARC_RADIUS = 122.5;
-/** 호 끝점(중심선 기준). 라벨도 이 x에 맞춰 세운다. */
-const ARC_START_X = 7.6;
-const ARC_END_X = 252.4;
-const ARC_END_Y = 134.5;
+/** 양 끝점의 y. 중심보다 4.5 아래라 호가 반원보다 조금 길다. */
+const ARC_ENDPOINT_Y = 134.5;
+/**
+ * 끝점 x는 반지름과 끝점 y에서 유도한다. 소수점 아래를 반올림해 적으면 현(chord)과 반지름이
+ * 어긋나 브라우저가 중심을 다시 잡고, 그만큼 정점이 뷰박스 위로 올라가 잘린다.
+ */
+const ARC_HALF_WIDTH = Math.sqrt(ARC_RADIUS ** 2 - (ARC_ENDPOINT_Y - ARC_CENTER) ** 2);
+export const ARC_START_X = ARC_CENTER - ARC_HALF_WIDTH;
+export const ARC_END_X = ARC_CENTER + ARC_HALF_WIDTH;
 // 180°를 넘으므로 large-arc-flag는 1이다. sweep-flag 1이라 왼쪽 끝에서 위를 지나 오른쪽으로 간다.
-const ARC_PATH = `M ${ARC_START_X} ${ARC_END_Y} A ${ARC_RADIUS} ${ARC_RADIUS} 0 1 1 ${ARC_END_X} ${ARC_END_Y}`;
+export const ARC_PATH = `M ${ARC_START_X} ${ARC_ENDPOINT_Y} A ${ARC_RADIUS} ${ARC_RADIUS} 0 1 1 ${ARC_END_X} ${ARC_ENDPOINT_Y}`;
 
 /** 끝 라벨은 시안대로 호 끝점 바로 아래에 가운데를 맞춘다. */
 const MIN_LABEL_LEFT = `${(ARC_START_X / VIEWBOX_WIDTH) * 100}%`;
@@ -75,7 +81,10 @@ export function SemicircleGauge({ percent, savedLabel, minLabel, maxLabel }: Sem
 
         {/* 라벨은 호 양 끝 위에 세우느라 박스 밖으로 조금 나간다 — 자르는 조상이 없어야 한다. */}
         <div className="relative mt-1.5 h-[18px] text-caption-c1-500 text-gray-400">
-          <span className="-translate-x-1/2 absolute" style={{ left: MIN_LABEL_LEFT }}>
+          <span
+            className="-translate-x-1/2 absolute whitespace-nowrap"
+            style={{ left: MIN_LABEL_LEFT }}
+          >
             {minLabel}
           </span>
           <span
