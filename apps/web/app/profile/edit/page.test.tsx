@@ -1,3 +1,4 @@
+import type { GoalSummary } from "@repo/schema/goal";
 import type { OnboardingProfile } from "@repo/schema/onboarding-api";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { SAVE_FAILED_TEXT } from "@/lib/messages";
@@ -14,6 +15,16 @@ const PROFILE: OnboardingProfile = {
   monthlySavingManwon: 100,
   netWorthManwon: 5000,
   goalPeriodMonths: 24,
+};
+
+const GOAL: GoalSummary = {
+  targetAmountManwon: 5000,
+  periodMonths: 24,
+  totalSavedManwon: 1950,
+  progressPercent: 39,
+  usageMonths: 8,
+  deadlineDDay: 486,
+  thisMonth: { targetManwon: 82, savedManwon: 67, progressPercent: 82, dDay: 12 },
 };
 
 vi.mock("next/navigation", () => ({ useRouter: () => navigation }));
@@ -46,6 +57,7 @@ describe("ProfileEditPage", () => {
     vi.mocked(getOnboardingProfile).mockResolvedValue(PROFILE);
     vi.mocked(patchOnboardingProfile).mockResolvedValue(PROFILE);
     vi.mocked(updateOnboardingProfile).mockResolvedValue(PROFILE);
+    vi.mocked(updateGoal).mockResolvedValue(GOAL);
   });
 
   it("프로필을 채워 보여주고 변경한 전체 정보와 목표 기간을 저장한다", async () => {
@@ -82,19 +94,76 @@ describe("ProfileEditPage", () => {
       }),
     );
     expect(patchOnboardingProfile).not.toHaveBeenCalled();
-    expect(updateGoal).not.toHaveBeenCalled();
+    // 목표 기간은 프로필과 목표에 따로 저장된다 — 목표 쪽도 같이 맞춰야 D-day가 따라온다.
+    expect(updateGoal).toHaveBeenCalledWith({ targetAmountManwon: null, periodMonths: 36 });
     expect(navigation.back).toHaveBeenCalledOnce();
   });
 
-  it("목표 기간을 바꾸지 않아도 완료 사용자용 PUT으로 저장한다", async () => {
+  /**
+   * 기간을 건드리지 않았는데 프로필 값을 목표에 밀어넣으면, 목표 쪽에서 따로 바꾼 기간이
+   * 손대지도 않은 옛 값으로 되돌아간다.
+   */
+  it("기간을 고르지 않았으면 목표는 건드리지 않는다", async () => {
     render(<ProfileEditPage />);
 
     await screen.findByRole("textbox", { name: "생년월일" });
+    fireEvent.change(screen.getByRole("textbox", { name: "월급" }), { target: { value: "550" } });
     fireEvent.click(screen.getByRole("button", { name: "완료" }));
 
-    await waitFor(() => expect(updateOnboardingProfile).toHaveBeenCalledOnce());
+    await waitFor(() => expect(navigation.back).toHaveBeenCalledOnce());
+    expect(updateOnboardingProfile).toHaveBeenCalledOnce();
     expect(patchOnboardingProfile).not.toHaveBeenCalled();
     expect(updateGoal).not.toHaveBeenCalled();
+  });
+
+  it("현재 목표 기간을 다시 선택하면 목표는 건드리지 않는다", async () => {
+    render(<ProfileEditPage />);
+
+    await screen.findByRole("textbox", { name: "생년월일" });
+    fireEvent.click(screen.getByRole("button", { name: "2년 미만" }));
+    fireEvent.click(screen.getByRole("button", { name: "완료" }));
+
+    await waitFor(() => expect(navigation.back).toHaveBeenCalledOnce());
+    expect(updateOnboardingProfile).toHaveBeenCalledOnce();
+    expect(updateGoal).not.toHaveBeenCalled();
+  });
+
+  // 목표는 온보딩을 확정해야 생긴다 — 진행 중인 사용자에게 보내면 서버가 거절한다.
+  it("온보딩이 끝나지 않았으면 목표는 건드리지 않는다", async () => {
+    const inProgress: OnboardingProfile = { ...PROFILE, status: "IN_PROGRESS" };
+    vi.mocked(getOnboardingProfile).mockResolvedValue(inProgress);
+    vi.mocked(updateOnboardingProfile).mockResolvedValue(inProgress);
+    render(<ProfileEditPage />);
+
+    await screen.findByRole("textbox", { name: "생년월일" });
+    fireEvent.click(screen.getByRole("button", { name: "3년 미만" }));
+    fireEvent.click(screen.getByRole("button", { name: "완료" }));
+
+    await waitFor(() => expect(navigation.back).toHaveBeenCalledOnce());
+    expect(updateOnboardingProfile).toHaveBeenCalledOnce();
+    expect(updateGoal).not.toHaveBeenCalled();
+  });
+
+  it("목표 기간 반영에 실패하면 저장은 됐다고 알리고 화면에 남는다", async () => {
+    vi.mocked(updateGoal).mockRejectedValueOnce(new Error("network error"));
+    render(<ProfileEditPage />);
+
+    await screen.findByRole("textbox", { name: "생년월일" });
+    fireEvent.click(screen.getByRole("button", { name: "3년 미만" }));
+    fireEvent.click(screen.getByRole("button", { name: "완료" }));
+
+    expect(
+      await screen.findByText(
+        "내 정보는 저장했지만 목표 기간을 바꾸지 못했어요. 잠시 후 다시 시도해 주세요.",
+      ),
+    ).toBeInTheDocument();
+    expect(navigation.back).not.toHaveBeenCalled();
+
+    fireEvent.click(screen.getByRole("button", { name: "완료" }));
+
+    await waitFor(() => expect(updateGoal).toHaveBeenCalledTimes(2));
+    expect(updateOnboardingProfile).toHaveBeenCalledOnce();
+    expect(navigation.back).toHaveBeenCalledOnce();
   });
 
   it("월 저축액이 월급보다 크면 저장하지 않는다", async () => {
@@ -145,7 +214,7 @@ describe("ProfileEditPage", () => {
     fireEvent.click(screen.getByRole("button", { name: "완료" }));
 
     await waitFor(() => expect(updateOnboardingProfile).toHaveBeenCalledTimes(2));
-    expect(updateGoal).not.toHaveBeenCalled();
+    expect(updateGoal).toHaveBeenCalledOnce();
     expect(navigation.back).toHaveBeenCalledOnce();
   });
 });

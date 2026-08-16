@@ -1,4 +1,5 @@
 import type { CurrentUser } from "@repo/schema/auth";
+import type { GoalStatus } from "@repo/schema/goal";
 import type { OnboardingProfile } from "@repo/schema/onboarding-api";
 import { useMutation } from "@tanstack/react-query";
 import { beforeEach, describe, expect, it, vi } from "vitest";
@@ -15,11 +16,24 @@ vi.mock("@/api/onboarding", () => ({
   getOnboardingReport: vi.fn(),
   isOnboardingAlreadyCompletedError: (error: unknown) => error === ALREADY_COMPLETED_ERROR,
   patchOnboardingProfile: vi.fn(),
+  updateOnboardingProfile: vi.fn(),
 }));
 
-import { confirmOnboardingGoal } from "@/api/onboarding";
+vi.mock("@/api/goal", () => ({
+  fetchGoalStatus: vi.fn(),
+  updateGoal: vi.fn(),
+  updateSavings: vi.fn(),
+}));
+
+import { fetchGoalStatus } from "@/api/goal";
+import { confirmOnboardingGoal, updateOnboardingProfile } from "@/api/onboarding";
 import { currentUserOptions } from "@/lib/queries/auth";
-import { confirmOnboardingGoalOptions, onboardingProfileOptions } from "./onboarding";
+import { goalStatusOptions } from "@/lib/queries/goal";
+import {
+  confirmOnboardingGoalOptions,
+  onboardingProfileOptions,
+  updateOnboardingProfileOptions,
+} from "./onboarding";
 
 const IN_PROGRESS_PROFILE: OnboardingProfile = {
   status: "IN_PROGRESS",
@@ -116,5 +130,50 @@ describe("confirmOnboardingGoalOptions", () => {
       ...INCOMPLETE_CURRENT_USER,
       onboardingCompleted: true,
     });
+  });
+});
+
+describe("updateOnboardingProfileOptions", () => {
+  const COMPLETED_PROFILE: OnboardingProfile = { ...IN_PROGRESS_PROFILE, status: "COMPLETED" };
+  const GOAL: GoalStatus = {
+    targetAmountManwon: 5000,
+    periodMonths: 24,
+    totalSavedManwon: 1950,
+    progressPercent: 39,
+    usageMonths: 8,
+    deadlineDDay: 486,
+    thisMonth: { targetManwon: 82, savedManwon: 67, progressPercent: 82, dDay: 12 },
+    monthlySavings: [{ yearMonth: "2026-08", savedManwon: 67, current: true }],
+  };
+
+  beforeEach(() => vi.clearAllMocks());
+
+  /**
+   * 목표 총 저축액은 "온보딩 순자산 + 누적 저축"이라 순자산만 고쳐도 서버 값이 달라진다.
+   * 목표 캐시는 staleTime이 60초라, 무효화하지 않으면 저장 직후 돌아온 화면이 옛 값을 보여준다.
+   */
+  it("프로필을 저장하면 목표 현황 캐시를 무효화한다", async () => {
+    vi.mocked(updateOnboardingProfile).mockResolvedValue(COMPLETED_PROFILE);
+    vi.mocked(fetchGoalStatus).mockResolvedValue(GOAL);
+    const queryClient = createTestQueryClient();
+    // 테스트 클라이언트는 gcTime이 0이라 관찰자 없는 쿼리가 즉시 사라진다.
+    queryClient.setQueryDefaults(goalStatusOptions().queryKey, {
+      gcTime: Number.POSITIVE_INFINITY,
+    });
+    await queryClient.fetchQuery(goalStatusOptions());
+    expect(queryClient.getQueryState(goalStatusOptions().queryKey)?.isInvalidated).toBe(false);
+
+    const { result } = renderHook(() => useMutation(updateOnboardingProfileOptions(queryClient)), {
+      queryClient,
+    });
+    await act(async () => {
+      await result.current.mutateAsync({ netWorthManwon: 2500 });
+    });
+
+    // 목표 화면을 벗어나 있어 관찰자가 없다 — 무효화만 해두면 돌아갈 때 다시 조회한다.
+    expect(queryClient.getQueryState(goalStatusOptions().queryKey)?.isInvalidated).toBe(true);
+    expect(queryClient.getQueryData(onboardingProfileOptions().queryKey)).toEqual(
+      COMPLETED_PROFILE,
+    );
   });
 });
