@@ -4,6 +4,9 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const fetchGenerationJobStatus = vi.fn();
 const replaceMock = vi.fn();
+const redirectMock = vi.fn((_href: string) => {
+  throw new Error("redirect");
+});
 
 vi.mock("@/api/mission-generation", () => ({
   requestGenerationJob: vi.fn(),
@@ -13,15 +16,21 @@ vi.mock("@/api/mission-generation", () => ({
   confirmGenerationJob: vi.fn(),
 }));
 
-vi.mock("next/navigation", () => ({ useRouter: () => ({ replace: replaceMock, push: vi.fn() }) }));
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({ replace: replaceMock, push: vi.fn() }),
+  redirect: (href: string) => redirectMock(href),
+}));
 
-import { MissionGenerating } from "@/app/mission/_components/mission-generating";
+import { MissionLoading } from "@/app/mission/_components/mission-loading";
+import MissionLoadingPage from "./page";
 
 function renderWithClient() {
-  const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+  const client = new QueryClient({
+    defaultOptions: { queries: { retry: false } },
+  });
   return render(
     <QueryClientProvider client={client}>
-      <MissionGenerating jobId="job-1" />
+      <MissionLoading jobId="job-1" />
     </QueryClientProvider>,
   );
 }
@@ -37,7 +46,7 @@ const PENDING_JOB = {
   pollingIntervalMillis: 2000,
 };
 
-describe("MissionGenerating", () => {
+describe("MissionLoading", () => {
   beforeEach(() => {
     vi.useFakeTimers();
   });
@@ -45,6 +54,14 @@ describe("MissionGenerating", () => {
   afterEach(() => {
     vi.useRealTimers();
     vi.clearAllMocks();
+  });
+
+  it("반복된 jobId 쿼리는 미션 생성 시작 화면으로 돌려보낸다", async () => {
+    await expect(
+      MissionLoadingPage({ searchParams: Promise.resolve({ jobId: ["job-1", "job-2"] }) }),
+    ).rejects.toThrow("redirect");
+
+    expect(redirectMock).toHaveBeenCalledWith("/mission/new");
   });
 
   it("jobId로 5초 간격 상태를 반복 조회한다", async () => {
