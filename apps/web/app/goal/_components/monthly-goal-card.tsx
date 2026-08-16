@@ -30,16 +30,20 @@ export function MonthlyGoalCard({
         </span>
       </div>
 
-      <p className="mt-3 flex items-center gap-1">
-        <span className="text-headline-h2-700 text-gray-900">{currentLabel}</span>
-        <span className="text-body-b1-700 text-gray-500">/ {targetLabel}</span>
+      {/* 이번 달 저축액은 시안에서 파란색이다 — 목표 금액과 같은 회색으로 두면 무엇이
+          내가 채운 값인지 안 드러난다. */}
+      <p className="mt-3 flex items-center gap-0.5">
+        <span className="text-headline-h2-700 text-blue-500">{currentLabel}</span>
+        <span className="text-body-b2-500 text-gray-500">/ {targetLabel}</span>
       </p>
 
       <div className="mt-3 h-4 overflow-hidden rounded-full bg-gray-200" data-monthly-progress>
         <div className="h-full rounded-full bg-blue-500" style={{ width: `${percent}%` }} />
       </div>
       <Button
-        className="mt-4 h-[42px] border-[0.5px] border-gray-200 bg-white text-body-b2-500 text-gray-800"
+        // `font-bold`를 함께 준다 — Button 기본 스타일의 `font-medium`이 타이포 토큰과 다른
+        // 그룹이라 twMerge가 지우지 못하고, CSS 순서상 뒤에 있어 굵기만 500으로 남는다.
+        className="mt-4 h-[42px] rounded-lg border-[0.5px] border-gray-200 bg-white font-bold text-body-b2-700 text-gray-700"
         disabled={savePending}
         onClick={onSaveClick}
         type="button"

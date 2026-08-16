@@ -19,9 +19,13 @@ export function GoalDetailSkeleton() {
         <Skeleton className="h-6 w-14 shrink-0" />
       </div>
 
-      {/* 반원 게이지 — viewBox 240×128의 세로비를 따라간다. */}
-      <div className="px-5 pt-12">
-        <Skeleton className="aspect-[240/128] w-full rounded-2xl" />
+      {/* 게이지 — 실제 호와 같은 폭(78%)·세로비(260×142)에 끝 라벨 줄까지 맞춘다.
+          어긋나면 데이터가 도착할 때 아래 카드가 그 차이만큼 밀린다. */}
+      <div className="flex flex-col items-center px-5 pt-12">
+        <div className="w-full max-w-[78%]">
+          <Skeleton className="aspect-[260/142] w-full rounded-2xl" />
+          <Skeleton className="mt-1.5 h-[18px] w-full" />
+        </div>
       </div>
 
       <div className="flex flex-col gap-4 px-5 pt-8">
@@ -45,7 +49,7 @@ export function GoalDetailSkeleton() {
           </div>
           <Skeleton className="mt-3 h-9 w-36 bg-gray-100" />
           <Skeleton className="mt-3 h-4 w-full rounded-full bg-gray-100" />
-          <Skeleton className="mt-4 h-[42px] w-full rounded-md bg-gray-100" />
+          <Skeleton className="mt-4 h-[42px] w-full rounded-lg bg-gray-100" />
         </section>
       </div>
 
