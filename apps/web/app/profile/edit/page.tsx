@@ -9,7 +9,15 @@ import { useRouter } from "next/navigation";
 import { type FormEvent, useEffect, useState } from "react";
 import { SAVE_FAILED_TEXT } from "@/lib/messages";
 import { onlyDigits } from "@/lib/number";
+import { updateGoalOptions } from "@/lib/queries/goal";
 import { onboardingProfileOptions, updateOnboardingProfileOptions } from "@/lib/queries/onboarding";
+
+/**
+ * 목표 기간은 프로필과 목표에 따로 저장된다 — 프로필 수정만으로는 목표의 기간·D-day가
+ * 그대로다(서버가 목표를 다시 계산하지 않는다). 저장할 때 목표 쪽도 같이 맞춘다.
+ */
+const GOAL_SYNC_FAILED_TEXT =
+  "내 정보는 저장했지만 목표 기간을 바꾸지 못했어요. 잠시 후 다시 시도해 주세요.";
 
 interface ProfileDraft {
   birthDate: string;
@@ -104,6 +112,9 @@ export default function ProfileEditPage() {
   const { mutateAsync: updateProfile, isPending: isUpdatingProfile } = useMutation(
     updateOnboardingProfileOptions(queryClient),
   );
+  const { mutateAsync: updateGoal, isPending: isUpdatingGoal } = useMutation(
+    updateGoalOptions(queryClient),
+  );
   const [draft, setDraft] = useState<ProfileDraft>();
   const [submitError, setSubmitError] = useState<string>();
 
@@ -166,6 +177,19 @@ export default function ProfileEditPage() {
     } catch {
       setSubmitError(SAVE_FAILED_TEXT);
       return;
+    }
+
+    // 목표는 온보딩을 확정해야 생긴다 — 진행 중인 사용자에게 보내면 서버가 거절한다.
+    if (profile.status === "COMPLETED") {
+      try {
+        // 바뀌었을 때만이 아니라 매번 같은 값을 보낸다. 프로필 저장은 성공하고 이 호출만
+        // 실패했을 때, 다시 눌러도 "직전 프로필 값"이 이미 갱신돼 있어 변경 감지로는
+        // 재시도가 안 된다. 같은 값을 넣는 요청이라 반복해도 결과가 같다.
+        await updateGoal({ targetAmountManwon: null, periodMonths: draft.goalPeriodMonths });
+      } catch {
+        setSubmitError(GOAL_SYNC_FAILED_TEXT);
+        return;
+      }
     }
 
     router.back();
@@ -275,7 +299,7 @@ export default function ProfileEditPage() {
           ) : null}
           <Button
             className={submitError ? "mt-3" : "mt-auto"}
-            pending={isUpdatingProfile}
+            pending={isUpdatingProfile || isUpdatingGoal}
             size="cta"
             type="submit"
           >

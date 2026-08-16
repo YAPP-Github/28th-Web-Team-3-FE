@@ -15,6 +15,7 @@ import {
   updateOnboardingProfile,
 } from "@/api/onboarding";
 import { currentUserOptions } from "@/lib/queries/auth";
+import { goalStatusOptions } from "@/lib/queries/goal";
 
 /** 프로필 캐시 키. 밖에서는 `onboardingProfileOptions().queryKey`로 꺼낸다. */
 const ONBOARDING_PROFILE_QUERY_KEY = ["onboarding", "profile"] as const;
@@ -65,11 +66,30 @@ export function patchOnboardingProfileOptions(queryClient: QueryClient) {
   });
 }
 
+/**
+ * 프로필에서 파생되는 서버 값들을 함께 무효화한다.
+ *
+ * 목표 현황의 총 저축액이 "온보딩 순자산 + 누적 저축"이라 순자산만 고쳐도 진행률이 움직이고,
+ * 리포트·목표 미리보기도 월급·월저축·기간을 재료로 쓴다. 목표 캐시는 staleTime이 60초라
+ * 무효화하지 않으면 저장 직후 돌아온 화면이 1분 동안 옛 값을 보여준다.
+ */
+function invalidateProfileDerived(queryClient: QueryClient) {
+  return Promise.all([
+    queryClient.invalidateQueries({ queryKey: goalStatusOptions().queryKey }),
+    queryClient.invalidateQueries({ queryKey: ONBOARDING_REPORT_QUERY_KEY }),
+    queryClient.invalidateQueries({ queryKey: ONBOARDING_GOAL_PREVIEW_QUERY_KEY }),
+    queryClient.invalidateQueries({ queryKey: ONBOARDING_GOAL_PLANS_QUERY_KEY }),
+  ]);
+}
+
 /** 완료 사용자의 프로필 수정 — 성공하면 프로필 캐시를 응답값으로 갱신한다. */
 export function updateOnboardingProfileOptions(queryClient: QueryClient) {
   return mutationOptions({
     mutationFn: (profile: OnboardingProfilePatch) => updateOnboardingProfile(profile),
-    onSuccess: (profile) => queryClient.setQueryData(ONBOARDING_PROFILE_QUERY_KEY, profile),
+    onSuccess: (profile) => {
+      queryClient.setQueryData(ONBOARDING_PROFILE_QUERY_KEY, profile);
+      return invalidateProfileDerived(queryClient);
+    },
   });
 }
 
