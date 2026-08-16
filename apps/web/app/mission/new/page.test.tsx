@@ -142,4 +142,18 @@ describe("NewMissionPage", () => {
 
     expect(await screen.findByRole("alert")).toHaveTextContent("미션 생성을 시작하지 못했어요.");
   });
+
+  it("직접 입력한 횟수가 범위를 벗어나면 오류를 입력창에 연결한다", async () => {
+    render(<NewMissionPage />);
+    await chooseMealAndDelivery();
+
+    fireEvent.click(await screen.findByRole("button", { name: "직접입력" }, { timeout: 1_500 }));
+    const frequencyInput = screen.getByLabelText("평소 이용 횟수");
+    fireEvent.change(frequencyInput, { target: { value: "11" } });
+
+    const error = await screen.findByText("1회 이상 10회 이하로 입력해주세요.");
+    expect(error).toHaveAttribute("role", "alert");
+    expect(frequencyInput).toHaveAttribute("aria-describedby", error.id);
+    expect(screen.getByRole("button", { name: "답변 보내기" })).toBeDisabled();
+  });
 });

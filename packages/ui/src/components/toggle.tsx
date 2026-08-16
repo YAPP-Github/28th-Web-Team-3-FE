@@ -16,7 +16,7 @@ const toggleVariants = cva(
           "border border-input bg-background hover:bg-secondary hover:text-secondary-foreground data-[state=on]:bg-primary data-[state=on]:text-primary-foreground",
         onboarding:
           "border border-gray-100 bg-background text-body-b1-500 text-gray-900 hover:bg-background hover:text-gray-900 data-[state=on]:border-primary data-[state=on]:bg-blue-50 data-[state=on]:text-gray-900",
-        chat: "bg-background text-body-b2-500 text-gray-900 hover:bg-background data-[state=on]:bg-background data-[state=on]:text-gray-900 disabled:bg-gray-100 disabled:text-gray-300 disabled:opacity-100 disabled:data-[state=on]:bg-gray-100 disabled:data-[state=on]:text-gray-300",
+        chat: "border border-transparent bg-background text-body-b2-500 text-gray-900 hover:bg-background data-[state=on]:border-primary data-[state=on]:bg-blue-50 data-[state=on]:text-blue-700 disabled:bg-gray-100 disabled:text-gray-300 disabled:opacity-100 disabled:data-[state=on]:border-transparent disabled:data-[state=on]:bg-gray-100 disabled:data-[state=on]:text-gray-300",
       },
       size: {
         default: "h-10 min-w-10 px-3",

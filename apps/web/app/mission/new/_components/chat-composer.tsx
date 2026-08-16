@@ -2,6 +2,7 @@ import { Button, Input } from "@repo/ui";
 import { ArrowUp } from "lucide-react";
 
 interface ChatComposerProps {
+  ariaDescribedBy?: string;
   ariaInvalid: boolean;
   disabled: boolean;
   label: string;
@@ -14,6 +15,7 @@ interface ChatComposerProps {
 }
 
 export function ChatComposer({
+  ariaDescribedBy,
   ariaInvalid,
   disabled,
   label,
@@ -30,6 +32,7 @@ export function ChatComposer({
         {label}
       </label>
       <Input
+        aria-describedby={ariaDescribedBy}
         aria-invalid={ariaInvalid}
         autoComplete="off"
         className="h-[46px] rounded-full border-0 bg-gray-50 pr-12 text-body-b1-700 placeholder:text-gray-300 focus-visible:border-0"

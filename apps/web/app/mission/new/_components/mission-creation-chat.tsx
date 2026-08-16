@@ -391,28 +391,39 @@ export function MissionCreationChat() {
             render={({ field }) => {
               const isAmount = activeStep === 3;
               const displayValue = isAmount ? formatWonInput(field.value) : field.value;
+              const fieldError = isAmount ? errors.baselineAmountWon : errors.baselineFrequency;
+              const errorMessage = isAmount
+                ? "1원 이상 2,000,000원 이하로 입력해주세요."
+                : "1회 이상 10회 이하로 입력해주세요.";
               return (
-                <ChatComposer
-                  ariaInvalid={Boolean(
-                    isAmount ? errors.baselineAmountWon : errors.baselineFrequency,
-                  )}
-                  disabled={
-                    !field.value ||
-                    Boolean(isAmount ? errors.baselineAmountWon : errors.baselineFrequency)
-                  }
-                  label={isAmount ? "평소 소비 금액" : "평소 이용 횟수"}
-                  maxLength={isAmount ? 9 : 2}
-                  name={field.name}
-                  placeholder={
-                    isAmount ? `${selectedItemLabel ?? "소비"}비 입력` : "이용 횟수 입력"
-                  }
-                  value={displayValue}
-                  onFocus={scrollComposerIntoView}
-                  onValueChange={(value) => {
-                    const digits = digitsOnly(value).slice(0, isAmount ? 7 : 2);
-                    field.onChange(digits);
-                  }}
-                />
+                <div className="flex flex-col gap-1">
+                  <ChatComposer
+                    ariaDescribedBy={fieldError ? "mission-chat-input-error" : undefined}
+                    ariaInvalid={Boolean(fieldError)}
+                    disabled={!field.value || Boolean(fieldError)}
+                    label={isAmount ? "평소 소비 금액" : "평소 이용 횟수"}
+                    maxLength={isAmount ? 9 : 2}
+                    name={field.name}
+                    placeholder={
+                      isAmount ? `${selectedItemLabel ?? "소비"}비 입력` : "이용 횟수 입력"
+                    }
+                    value={displayValue}
+                    onFocus={scrollComposerIntoView}
+                    onValueChange={(value) => {
+                      const digits = digitsOnly(value).slice(0, isAmount ? 7 : 2);
+                      field.onChange(digits);
+                    }}
+                  />
+                  {fieldError ? (
+                    <p
+                      className="px-3 text-caption-c1-500 text-error"
+                      id="mission-chat-input-error"
+                      role="alert"
+                    >
+                      {errorMessage}
+                    </p>
+                  ) : null}
+                </div>
               );
             }}
           />
