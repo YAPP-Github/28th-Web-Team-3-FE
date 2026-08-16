@@ -1,3 +1,4 @@
+import { manualMissionCreateRequestSchema, missionSchema } from "@repo/schema/mission";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("@/api/client", () => ({
@@ -28,8 +29,8 @@ describe("mission API", () => {
       "missions/manual",
       expect.objectContaining({
         body,
-        request: expect.anything(),
-        response: expect.anything(),
+        request: manualMissionCreateRequestSchema,
+        response: missionSchema,
       }),
     );
   });

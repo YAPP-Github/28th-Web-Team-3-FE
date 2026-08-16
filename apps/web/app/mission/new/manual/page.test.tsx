@@ -40,7 +40,7 @@ describe("ManualMissionPage", () => {
       target: { value: "  저녁은 집밥으로 해결하기  " },
     });
     expect(screen.getByText("17/30")).toBeInTheDocument();
-    expect(submitButton).toBeEnabled();
+    await waitFor(() => expect(submitButton).toBeEnabled());
 
     fireEvent.click(submitButton);
 
@@ -74,7 +74,9 @@ describe("ManualMissionPage", () => {
     fireEvent.change(screen.getByRole("textbox", { name: "미션 내용" }), {
       target: { value: "무지출 데이 만들기" },
     });
-    fireEvent.click(screen.getByRole("button", { name: "완료" }));
+    const submitButton = screen.getByRole("button", { name: "완료" });
+    await waitFor(() => expect(submitButton).toBeEnabled());
+    fireEvent.click(submitButton);
 
     expect(await screen.findByRole("alert")).toHaveTextContent(
       "미션을 추가하지 못했어요. 잠시 후 다시 시도해 주세요.",
