@@ -22,8 +22,8 @@ const MOCK_MISSIONS: Mission[] = [
   {
     id: "m2",
     source: "RECOMMENDED",
-    category: "TRANSPORT",
-    title: "가까운 거리 걸어다니기 1회",
+    category: "LIVING",
+    title: "생활용품 구매 미루기",
     targetCount: 1,
     targetUnit: "TIMES_PER_WEEK",
     estimatedSavingsWon: 3000,
@@ -88,18 +88,17 @@ describe("WeeklyMissionSection", () => {
     expect(await screen.findByText(/\d+% 달성/)).toBeInTheDocument();
     expect(container.querySelector('[data-pigbox-progress="0"]')).toBeInTheDocument();
     expect(screen.getByText("이번 주 배달음식 2회 이하로 주문")).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "교통" })).not.toBeInTheDocument();
 
-    fireEvent.click(screen.getByRole("button", { name: "교통" }));
+    fireEvent.click(screen.getByRole("button", { name: "생활" }));
     await waitFor(() =>
       expect(screen.queryByText("이번 주 배달음식 2회 이하로 주문")).not.toBeInTheDocument(),
     );
-    expect(screen.getByText("가까운 거리 걸어다니기 1회")).toBeInTheDocument();
+    expect(screen.getByText("생활용품 구매 미루기")).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("button", { name: "취미" }));
     expect(await screen.findByText("취미 구독 점검하기")).toBeInTheDocument();
-    await waitFor(() =>
-      expect(screen.queryByText("가까운 거리 걸어다니기 1회")).not.toBeInTheDocument(),
-    );
+    await waitFor(() => expect(screen.queryByText("생활용품 구매 미루기")).not.toBeInTheDocument());
   });
 
   it("카테고리 조회 중에는 직전 목록을 placeholder로 유지한다", async () => {

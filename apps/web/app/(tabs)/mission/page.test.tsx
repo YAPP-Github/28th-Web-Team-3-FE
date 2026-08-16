@@ -69,6 +69,13 @@ describe("MissionPage", () => {
     render(<MissionPage />);
 
     await screen.findByText("33% 달성");
+    expect(screen.getAllByRole("tab").map((tab) => tab.textContent)).toEqual([
+      "전체",
+      "식비",
+      "생활",
+      "취미",
+    ]);
+    expect(screen.queryByRole("tab", { name: "교통" })).not.toBeInTheDocument();
     fireEvent.click(screen.getByRole("tab", { name: "식비" }));
     expect(screen.getByText("이번 주 배달음식 2회 이하로 주문")).toBeInTheDocument();
     expect(screen.queryByText("가까운 거리 걸어다니기 1회")).not.toBeInTheDocument();
@@ -76,8 +83,8 @@ describe("MissionPage", () => {
     fireEvent.click(screen.getByRole("button", { name: /이번 주 배달음식/ }));
     expect(screen.getByText("약 5,000원 절약 예상")).toBeInTheDocument();
 
-    fireEvent.click(screen.getByRole("tab", { name: "교통" }));
-    expect(screen.queryByText("불필요한 구독 해지 1회")).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole("tab", { name: "생활" }));
+    expect(screen.getByText("불필요한 구독 해지 1회")).toBeInTheDocument();
   });
 
   it("체크 아이콘 확인 모달에서 완료를 요청한다", async () => {
