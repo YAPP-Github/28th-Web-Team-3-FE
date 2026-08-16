@@ -13,15 +13,19 @@ vi.mock("@/api/mission-generation", () => ({
   confirmGenerationJob: vi.fn(),
 }));
 
-vi.mock("next/navigation", () => ({ useRouter: () => ({ replace: replaceMock, push: vi.fn() }) }));
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({ replace: replaceMock, push: vi.fn() }),
+}));
 
-import { MissionGenerating } from "@/app/mission/_components/mission-generating";
+import { MissionLoading } from "@/app/mission/_components/mission-loading";
 
 function renderWithClient() {
-  const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+  const client = new QueryClient({
+    defaultOptions: { queries: { retry: false } },
+  });
   return render(
     <QueryClientProvider client={client}>
-      <MissionGenerating jobId="job-1" />
+      <MissionLoading jobId="job-1" />
     </QueryClientProvider>,
   );
 }
@@ -37,7 +41,7 @@ const PENDING_JOB = {
   pollingIntervalMillis: 2000,
 };
 
-describe("MissionGenerating", () => {
+describe("MissionLoading", () => {
   beforeEach(() => {
     vi.useFakeTimers();
   });
