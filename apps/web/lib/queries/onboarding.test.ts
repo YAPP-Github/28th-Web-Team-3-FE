@@ -157,9 +157,11 @@ describe("updateOnboardingProfileOptions", () => {
     vi.mocked(fetchGoalStatus).mockResolvedValue(GOAL);
     const queryClient = createTestQueryClient();
     // 테스트 클라이언트는 gcTime이 0이라 관찰자 없는 쿼리가 즉시 사라진다.
-    queryClient.setQueryDefaults(goalStatusOptions().queryKey, {
-      gcTime: Number.POSITIVE_INFINITY,
-    });
+    // 아래에서 값을 확인하는 두 키 모두에 걸어야 한다 — 프로필 키를 빼두면 mutation이
+    // 써 넣은 값이 단언 전에 수거돼, 느린 CI에서만 undefined로 실패한다.
+    for (const queryKey of [goalStatusOptions().queryKey, onboardingProfileOptions().queryKey]) {
+      queryClient.setQueryDefaults(queryKey, { gcTime: Number.POSITIVE_INFINITY });
+    }
     await queryClient.fetchQuery(goalStatusOptions());
     expect(queryClient.getQueryState(goalStatusOptions().queryKey)?.isInvalidated).toBe(false);
 
