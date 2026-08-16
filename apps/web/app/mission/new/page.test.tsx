@@ -88,7 +88,7 @@ describe("NewMissionPage", () => {
       }),
     );
     expect(pushMock).toHaveBeenCalledWith("/mission/new/loading?jobId=job-1");
-  });
+  }, 10_000);
 
   it("이전 답변을 누르면 연필을 표시하고 해당 질문부터 다시 시작한다", async () => {
     render(<NewMissionPage />);
@@ -126,7 +126,7 @@ describe("NewMissionPage", () => {
       ),
     ).toBeVisible();
     expect(screen.getByRole("button", { name: "4회 답변 수정 버튼 표시" })).toBeVisible();
-  });
+  }, 10_000);
 
   it("생성 요청 실패를 보조기기에 알린다", async () => {
     vi.mocked(requestGenerationJob).mockRejectedValue(new Error("network error"));

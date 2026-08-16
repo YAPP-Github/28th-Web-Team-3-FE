@@ -24,6 +24,18 @@ function drag(target: Element, distance: number) {
 }
 
 describe("SavingsInputSheet 끌어서 닫기", () => {
+  it("닫힌 상태에서 unmount하면 키보드 inset 초기화 타이머를 정리한다", () => {
+    vi.useFakeTimers();
+    const { unmount } = render(
+      <SavingsInputSheet open={false} onOpenChange={() => {}} initialManwon={0} />,
+    );
+
+    unmount();
+
+    expect(vi.getTimerCount()).toBe(0);
+    vi.useRealTimers();
+  });
+
   it("위쪽을 충분히 끌어내리면 닫힌다", () => {
     const onOpenChange = vi.fn();
     render(<SavingsInputSheet open onOpenChange={onOpenChange} initialManwon={0} />);
