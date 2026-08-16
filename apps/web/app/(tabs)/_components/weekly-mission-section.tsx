@@ -19,10 +19,12 @@ import { MISSION_CATEGORY_VALUES } from "@/app/(tabs)/mission/constants/mission"
 import {
   calculateProgressPercent,
   countCompletedMissions,
+  formatSavedWon,
   formatWeekDday,
+  sumCompletedSavingsWon,
 } from "@/app/(tabs)/mission/lib/format";
 import { calculateGoalTotalTargetManwon } from "@/app/goal/lib/progress";
-import { formatManwon, formatNumber } from "@/lib/format";
+import { formatManwon } from "@/lib/format";
 import { goalStatusOptions } from "@/lib/queries/goal";
 import { completeMissionOptions, missionsOptions } from "@/lib/queries/mission";
 import { PigboxProgressGauge } from "./pigbox-progress-gauge";
@@ -37,19 +39,6 @@ const missionColumnHelper = createColumnHelper<typeof HOME_MISSION_TABLE_FEATURE
 const HOME_MISSION_COLUMNS = missionColumnHelper.columns([
   missionColumnHelper.accessor("id", { header: "미션" }),
 ]);
-
-function formatSavedWon(won: number): string {
-  if (won >= 10_000 && won % 10_000 === 0) return `${formatNumber(won / 10_000)}만원`;
-  return `${formatNumber(won)}원`;
-}
-
-function sumCompletedSavingsWon(missions: readonly Mission[]): number {
-  return missions.reduce(
-    (total, mission) =>
-      mission.status === "COMPLETED" ? total + (mission.estimatedSavingsWon ?? 0) : total,
-    0,
-  );
-}
 
 export function WeeklyMissionSection() {
   const queryClient = useQueryClient();
@@ -305,7 +294,7 @@ function HomeMissionCard({ expanded, mission, onComplete, onToggle }: HomeMissio
       {expanded ? (
         <div className="flex items-start gap-3 pl-7">
           <span className="shrink-0 rounded bg-blue-100 px-1.5 py-1 text-caption-c1-700 text-blue-600">
-            {mission.savingsLabel ? "달성 시" : "직접 추가"}
+            달성 시
           </span>
           <p className="min-w-0 flex-1 text-body-b2-500 text-gray-600">{savingsLabel}</p>
         </div>

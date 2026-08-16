@@ -1,5 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { missionCatalogResponseSchema, missionsResponseSchema } from "./mission";
+import {
+  MAX_MANUAL_MISSION_TEXT_LENGTH,
+  manualMissionCreateRequestSchema,
+  missionCatalogResponseSchema,
+  missionsResponseSchema,
+} from "./mission";
 
 const commonMission = {
   id: "mission-1",
@@ -35,6 +40,19 @@ describe("mission API schemas", () => {
             items: [{ code: "GAME", label: "게임" }],
           },
         ],
+      }),
+    ).toThrow();
+  });
+
+  it("수동 미션 요청의 공백을 정리하고 30자까지만 허용한다", () => {
+    expect(
+      manualMissionCreateRequestSchema.parse({ category: "MEAL", text: "  집밥 먹기  " }),
+    ).toEqual({ category: "MEAL", text: "집밥 먹기" });
+
+    expect(() =>
+      manualMissionCreateRequestSchema.parse({
+        category: "MEAL",
+        text: "가".repeat(MAX_MANUAL_MISSION_TEXT_LENGTH + 1),
       }),
     ).toThrow();
   });

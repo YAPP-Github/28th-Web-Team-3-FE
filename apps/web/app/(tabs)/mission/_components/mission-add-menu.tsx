@@ -1,4 +1,5 @@
-import { Plus, X } from "lucide-react";
+import { cn } from "@repo/ui";
+import { Plus } from "lucide-react";
 import Link from "next/link";
 
 interface MissionAddMenuProps {
@@ -11,33 +12,45 @@ const MENU_ID = "mission-add-menu";
 export function MissionAddMenu({ isOpen, onToggle }: MissionAddMenuProps) {
   return (
     <div className="fixed inset-x-0 bottom-24 z-10 mx-auto flex w-full max-w-md flex-col items-end gap-3 px-5">
-      {isOpen ? (
-        <div
-          id={MENU_ID}
-          className="flex w-[184px] flex-col gap-2 rounded-xl bg-gray-0 py-3 shadow-[0_2px_6px_rgba(35,37,41,0.15)]"
+      <div
+        id={MENU_ID}
+        aria-hidden={!isOpen}
+        className={cn(
+          "flex w-[184px] origin-bottom-right flex-col gap-2 rounded-xl bg-gray-0 py-3 shadow-[0_2px_6px_rgba(35,37,41,0.15)] transition-[opacity,scale,translate] duration-200 ease-out motion-reduce:transition-none",
+          isOpen
+            ? "translate-y-0 scale-100 opacity-100"
+            : "pointer-events-none translate-y-2 scale-95 opacity-0",
+        )}
+        inert={!isOpen ? true : undefined}
+      >
+        <Link
+          className="w-full px-4 py-1 text-left text-body-b1-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          href="/mission/new"
         >
-          {/*
-            직접입력은 구현 전이라 메뉴에 두지 않는다. 눌리지 않는 항목이 보이면 앱이
-            미완성으로 읽힌다(App Store 2.1). 구현되면 추천받기 아래에 다시 넣는다.
-          */}
-          <Link
-            className="w-full px-4 py-1 text-left text-body-b1-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-            href="/mission/new"
-          >
-            추천받기
-          </Link>
-        </div>
-      ) : null}
+          추천받기
+        </Link>
+        <Link
+          className="w-full px-4 py-1 text-left text-body-b1-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          href="/mission/new/manual"
+        >
+          직접입력
+        </Link>
+      </div>
       <button
         // aria-expanded만 있으면 무엇이 펼쳐졌는지 가리키는 곳이 없다.
         aria-controls={MENU_ID}
         aria-expanded={isOpen}
         aria-label={isOpen ? "미션 추가 메뉴 닫기" : "미션 추가 메뉴 열기"}
-        className="flex size-[52px] items-center justify-center rounded-full bg-blue-500 text-gray-0 shadow-[0_2px_12px_rgba(35,37,41,0.15)] hover:bg-blue-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        className={cn(
+          "flex size-[52px] items-center justify-center rounded-full shadow-[0_2px_12px_rgba(35,37,41,0.15)] transition-[rotate,background-color,color] duration-200 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring motion-reduce:transition-none",
+          isOpen
+            ? "rotate-45 bg-gray-0 text-gray-900 hover:bg-gray-50"
+            : "rotate-0 bg-blue-500 text-gray-0 hover:bg-blue-600",
+        )}
         type="button"
         onClick={onToggle}
       >
-        {isOpen ? <X className="size-7" /> : <Plus className="size-7" />}
+        <Plus aria-hidden="true" className="size-6" />
       </button>
     </div>
   );

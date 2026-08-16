@@ -1,4 +1,5 @@
 import type { Mission } from "@repo/schema/mission";
+import { formatNumber } from "@/lib/format";
 
 const DAY_MS = 1000 * 60 * 60 * 24;
 
@@ -18,4 +19,19 @@ export function countCompletedMissions(missions: readonly Mission[]): number {
 export function calculateProgressPercent(missions: readonly Mission[]): number {
   if (missions.length === 0) return 0;
   return Math.round((countCompletedMissions(missions) / missions.length) * 100);
+}
+
+/** 완료 미션의 예상 절약액 합계. 예상액이 없는 직접 입력 미션은 0원으로 센다. */
+export function sumCompletedSavingsWon(missions: readonly Mission[]): number {
+  return missions.reduce(
+    (total, mission) =>
+      mission.status === "COMPLETED" ? total + (mission.estimatedSavingsWon ?? 0) : total,
+    0,
+  );
+}
+
+/** 원 단위 금액을 미션 요약 문구에 맞는 축약형으로 표시한다. */
+export function formatSavedWon(won: number): string {
+  if (won >= 10_000 && won % 10_000 === 0) return `${formatNumber(won / 10_000)}만원`;
+  return `${formatNumber(won)}원`;
 }
