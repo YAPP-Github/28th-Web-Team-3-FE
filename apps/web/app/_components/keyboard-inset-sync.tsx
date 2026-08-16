@@ -40,10 +40,15 @@ export function KeyboardInsetSync() {
     apply();
     viewport.addEventListener("resize", apply);
     viewport.addEventListener("scroll", apply);
+    // 계산에 `window.innerHeight`가 들어가므로 레이아웃 뷰포트가 바뀌는 경우도 받는다.
+    // 회전이나 네이티브 셸이 웹뷰 크기를 바꿀 때처럼 visualViewport 쪽 이벤트만으로는
+    // 놓칠 수 있는 변화가 있다. 값이 그대로면 아래에서 조기 반환하므로 덧붙는 비용은 없다.
+    window.addEventListener("resize", apply);
     return () => {
       if (frame !== null) cancelAnimationFrame(frame);
       viewport.removeEventListener("resize", apply);
       viewport.removeEventListener("scroll", apply);
+      window.removeEventListener("resize", apply);
       root.style.removeProperty("--keyboard-inset");
     };
   }, []);
