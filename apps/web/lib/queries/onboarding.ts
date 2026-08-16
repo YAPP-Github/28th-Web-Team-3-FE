@@ -70,15 +70,16 @@ export function patchOnboardingProfileOptions(queryClient: QueryClient) {
  * 프로필에서 파생되는 서버 값들을 함께 무효화한다.
  *
  * 목표 현황의 총 저축액이 "온보딩 순자산 + 누적 저축"이라 순자산만 고쳐도 진행률이 움직이고,
- * 리포트·목표 미리보기도 월급·월저축·기간을 재료로 쓴다. 목표 캐시는 staleTime이 60초라
- * 무효화하지 않으면 저장 직후 돌아온 화면이 1분 동안 옛 값을 보여준다.
+ * 리포트도 월급·월저축을 재료로 쓴다. 목표 캐시는 staleTime이 60초라 무효화하지 않으면
+ * 저장 직후 돌아온 화면이 1분 동안 옛 값을 보여준다.
+ *
+ * 온보딩 퍼널 전용 캐시(목표 미리보기·플랜)는 여기서 건드리지 않는다 — 이 경로는 완료
+ * 사용자의 "내 정보 수정"이라 그 화면으로 돌아가지 않는다.
  */
 function invalidateProfileDerived(queryClient: QueryClient) {
   return Promise.all([
     queryClient.invalidateQueries({ queryKey: goalStatusOptions().queryKey }),
     queryClient.invalidateQueries({ queryKey: ONBOARDING_REPORT_QUERY_KEY }),
-    queryClient.invalidateQueries({ queryKey: ONBOARDING_GOAL_PREVIEW_QUERY_KEY }),
-    queryClient.invalidateQueries({ queryKey: ONBOARDING_GOAL_PLANS_QUERY_KEY }),
   ]);
 }
 

@@ -100,18 +100,20 @@ describe("ProfileEditPage", () => {
   });
 
   /**
-   * 바뀌었을 때만 보내면, 프로필 저장은 성공하고 목표 호출만 실패한 뒤의 재시도가 막힌다 —
-   * 그 시점엔 프로필 캐시가 이미 새 값이라 "바뀌었나" 비교가 거짓이 된다.
+   * 기간을 건드리지 않았는데 프로필 값을 목표에 밀어넣으면, 목표 쪽에서 따로 바꾼 기간이
+   * 손대지도 않은 옛 값으로 되돌아간다.
    */
-  it("목표 기간을 바꾸지 않아도 목표에 같은 값을 다시 맞춘다", async () => {
+  it("기간을 고르지 않았으면 목표는 건드리지 않는다", async () => {
     render(<ProfileEditPage />);
 
     await screen.findByRole("textbox", { name: "생년월일" });
+    fireEvent.change(screen.getByRole("textbox", { name: "월급" }), { target: { value: "550" } });
     fireEvent.click(screen.getByRole("button", { name: "완료" }));
 
-    await waitFor(() => expect(updateOnboardingProfile).toHaveBeenCalledOnce());
+    await waitFor(() => expect(navigation.back).toHaveBeenCalledOnce());
+    expect(updateOnboardingProfile).toHaveBeenCalledOnce();
     expect(patchOnboardingProfile).not.toHaveBeenCalled();
-    expect(updateGoal).toHaveBeenCalledWith({ targetAmountManwon: null, periodMonths: 24 });
+    expect(updateGoal).not.toHaveBeenCalled();
   });
 
   // 목표는 온보딩을 확정해야 생긴다 — 진행 중인 사용자에게 보내면 서버가 거절한다.
@@ -122,9 +124,11 @@ describe("ProfileEditPage", () => {
     render(<ProfileEditPage />);
 
     await screen.findByRole("textbox", { name: "생년월일" });
+    fireEvent.click(screen.getByRole("button", { name: "3년 미만" }));
     fireEvent.click(screen.getByRole("button", { name: "완료" }));
 
-    await waitFor(() => expect(updateOnboardingProfile).toHaveBeenCalledOnce());
+    await waitFor(() => expect(navigation.back).toHaveBeenCalledOnce());
+    expect(updateOnboardingProfile).toHaveBeenCalledOnce();
     expect(updateGoal).not.toHaveBeenCalled();
   });
 
@@ -133,6 +137,7 @@ describe("ProfileEditPage", () => {
     render(<ProfileEditPage />);
 
     await screen.findByRole("textbox", { name: "생년월일" });
+    fireEvent.click(screen.getByRole("button", { name: "3년 미만" }));
     fireEvent.click(screen.getByRole("button", { name: "완료" }));
 
     expect(

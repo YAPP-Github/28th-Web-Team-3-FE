@@ -116,6 +116,8 @@ export default function ProfileEditPage() {
     updateGoalOptions(queryClient),
   );
   const [draft, setDraft] = useState<ProfileDraft>();
+  // 기간 칩을 실제로 눌렀는지. 목표에 기간을 밀어넣을지 여부가 여기에 달려 있다.
+  const [isPeriodEdited, setIsPeriodEdited] = useState(false);
   const [submitError, setSubmitError] = useState<string>();
 
   useEffect(() => {
@@ -180,13 +182,13 @@ export default function ProfileEditPage() {
     }
 
     // 목표는 온보딩을 확정해야 생긴다 — 진행 중인 사용자에게 보내면 서버가 거절한다.
-    if (profile.status === "COMPLETED") {
+    // 이 화면에서 기간을 직접 고른 경우에만 목표에 반영한다. 프로필 값과 목표 값을 비교해
+    // 보내면, 목표 쪽에서 따로 바꾼 기간을 손대지도 않은 프로필의 옛 값으로 덮어쓴다.
+    if (profile.status === "COMPLETED" && isPeriodEdited) {
       try {
-        // 바뀌었을 때만이 아니라 매번 같은 값을 보낸다. 프로필 저장은 성공하고 이 호출만
-        // 실패했을 때, 다시 눌러도 "직전 프로필 값"이 이미 갱신돼 있어 변경 감지로는
-        // 재시도가 안 된다. 같은 값을 넣는 요청이라 반복해도 결과가 같다.
         await updateGoal({ targetAmountManwon: null, periodMonths: draft.goalPeriodMonths });
       } catch {
+        // 프로필은 이미 저장됐다. 화면에 남겨 두면 완료를 다시 눌러 목표만 재시도할 수 있다.
         setSubmitError(GOAL_SYNC_FAILED_TEXT);
         return;
       }
@@ -282,7 +284,10 @@ export default function ProfileEditPage() {
                       )}
                       key={months}
                       type="button"
-                      onClick={() => setDraft({ ...draft, goalPeriodMonths: months })}
+                      onClick={() => {
+                        setIsPeriodEdited(true);
+                        setDraft({ ...draft, goalPeriodMonths: months });
+                      }}
                     >
                       {label}
                     </button>
