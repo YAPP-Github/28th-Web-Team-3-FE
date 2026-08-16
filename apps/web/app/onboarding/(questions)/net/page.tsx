@@ -35,7 +35,7 @@ export default function NetWorthOnboardingPage() {
   }
 
   return (
-    <div className="flex min-h-[calc(100dvh-56px)] flex-col justify-between px-5 pt-7">
+    <div className="flex min-h-[calc(100dvh-56px-var(--keyboard-inset,0px))] flex-col justify-between px-5 pt-7">
       <div className="flex flex-col gap-12">
         <section className="flex flex-col gap-12">
           <div className="flex flex-col gap-1">

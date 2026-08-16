@@ -230,7 +230,10 @@ export default function ProfileEditPage() {
       ) : null}
 
       {draft ? (
-        <form className="flex min-h-[calc(100dvh-44px)] flex-col px-5 pt-4 pb-6" onSubmit={submit}>
+        <form
+          className="flex min-h-[calc(100dvh-44px-var(--keyboard-inset,0px))] flex-col px-5 pt-4 pb-6"
+          onSubmit={submit}
+        >
           <div className="flex flex-col gap-6">
             <div className="flex flex-col gap-1">
               <label className="text-body-b2-500 text-gray-700" htmlFor="birth-date">
