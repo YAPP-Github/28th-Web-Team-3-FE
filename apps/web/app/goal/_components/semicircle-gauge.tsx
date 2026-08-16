@@ -6,31 +6,46 @@ interface SemicircleGaugeProps {
   maxLabel: string;
 }
 
-// 반원 호: 반지름 104, 중심 (120,120). 좌(16,120) → 위로 볼록 → 우(224,120).
-// stroke 16이라 위/좌우 여백을 8 이상 둬 잘리지 않게 한다.
-const ARC_PATH = "M 16 120 A 104 104 0 0 1 224 120";
+/**
+ * 시안(node 2215:20075)에서 내보낸 링을 그대로 옮긴 좌표계다. 바깥지름 260, 두께 15이므로
+ * 중심선 반지름은 122.5, 중심은 (130,130)이다. 반원보다 조금 길어 양 끝이 수평선보다
+ * 2.1° 아래로 내려오고, 둥근 끝(round cap)이 y=142까지 닿아 뷰박스 높이가 142다.
+ */
+const VIEWBOX_WIDTH = 260;
+const VIEWBOX_HEIGHT = 142;
+const STROKE_WIDTH = 15;
+const ARC_RADIUS = 122.5;
+/** 호 끝점(중심선 기준). 라벨도 이 x에 맞춰 세운다. */
+const ARC_START_X = 7.6;
+const ARC_END_X = 252.4;
+const ARC_END_Y = 134.5;
+// 180°를 넘으므로 large-arc-flag는 1이다. sweep-flag 1이라 왼쪽 끝에서 위를 지나 오른쪽으로 간다.
+const ARC_PATH = `M ${ARC_START_X} ${ARC_END_Y} A ${ARC_RADIUS} ${ARC_RADIUS} 0 1 1 ${ARC_END_X} ${ARC_END_Y}`;
 
-/** 저축 진행 반원 게이지. recharts 없이 SVG stroke-dasharray로 그린다(정적·경량). */
+/** 끝 라벨은 시안대로 호 끝점 바로 아래에 가운데를 맞춘다. */
+const MIN_LABEL_LEFT = `${(ARC_START_X / VIEWBOX_WIDTH) * 100}%`;
+const MAX_LABEL_LEFT = `${(ARC_END_X / VIEWBOX_WIDTH) * 100}%`;
+
+/** 저축 진행 게이지. recharts 없이 SVG stroke-dasharray로 그린다(정적·경량). */
 export function SemicircleGauge({ percent, savedLabel, minLabel, maxLabel }: SemicircleGaugeProps) {
   return (
     <div className="flex flex-col items-center">
-      {/* 피그마 목표 상세(node 2215:20074)는 호를 카드 폭 그대로 채우지 않는다 — 호(260)가
-          콘텐츠 폭(335)의 78%만 차지하고 양옆에 여백을 둔다. w-full로 꽉 채우면 실제보다
-          굵고 넓어 보인다. */}
+      {/* 시안은 호를 카드 폭 그대로 채우지 않는다 — 호(260)가 콘텐츠 폭(335)의 78%만
+          차지하고 양옆에 여백을 둔다. w-full로 꽉 채우면 실제보다 굵고 넓어 보인다. */}
       <div className="w-full max-w-[78%]">
         <div className="relative w-full">
           <svg
             aria-hidden="true"
             className="w-full"
             fill="none"
-            viewBox="0 0 240 128"
+            viewBox={`0 0 ${VIEWBOX_WIDTH} ${VIEWBOX_HEIGHT}`}
             xmlns="http://www.w3.org/2000/svg"
           >
             <path
               d={ARC_PATH}
-              stroke="var(--color-gray-200)"
+              stroke="var(--color-gray-100)"
               strokeLinecap="round"
-              strokeWidth={16}
+              strokeWidth={STROKE_WIDTH}
             />
             {/* percent 0이면 그리지 않는다 — 길이 0 대시 + round 캡이 시작점에 점으로 남는다. */}
             {percent > 0 && (
@@ -40,7 +55,7 @@ export function SemicircleGauge({ percent, savedLabel, minLabel, maxLabel }: Sem
                 stroke="var(--color-blue-500)"
                 strokeDasharray={`${percent} 100`}
                 strokeLinecap="round"
-                strokeWidth={16}
+                strokeWidth={STROKE_WIDTH}
               />
             )}
           </svg>
@@ -58,9 +73,17 @@ export function SemicircleGauge({ percent, savedLabel, minLabel, maxLabel }: Sem
           </div>
         </div>
 
-        <div className="mt-1.5 flex w-full justify-between px-1.5 text-caption-c1-500 text-gray-400">
-          <span>{minLabel}</span>
-          <span>{maxLabel}</span>
+        {/* 라벨은 호 양 끝 위에 세우느라 박스 밖으로 조금 나간다 — 자르는 조상이 없어야 한다. */}
+        <div className="relative mt-1.5 h-[18px] text-caption-c1-500 text-gray-400">
+          <span className="-translate-x-1/2 absolute" style={{ left: MIN_LABEL_LEFT }}>
+            {minLabel}
+          </span>
+          <span
+            className="-translate-x-1/2 absolute whitespace-nowrap"
+            style={{ left: MAX_LABEL_LEFT }}
+          >
+            {maxLabel}
+          </span>
         </div>
       </div>
     </div>

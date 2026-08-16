@@ -36,13 +36,38 @@ describe("SemicircleGauge", () => {
     expect(container.querySelector(".max-w-\\[78\\%\\]")).toBeInTheDocument();
   });
 
-  it("중앙 수치와 양끝 라벨을 피그마 간격에 맞춘다", () => {
+  it("중앙 수치를 피그마 위치에 맞춘다", () => {
     const { container, getByText } = render(
       <SemicircleGauge maxLabel="5,000만원" minLabel="0" percent={39} savedLabel="1,950만원" />,
     );
 
     expect(container.querySelector(".top-\\[44\\%\\]")).toBeInTheDocument();
-    expect(container.querySelector(".mt-1\\.5.px-1\\.5")).toBeInTheDocument();
     expect(getByText("1,950만원")).toHaveClass("whitespace-nowrap");
+  });
+
+  /**
+   * 시안은 끝 라벨을 호 끝점 바로 아래 가운데에 둔다. 좌우 정렬(justify-between)로 두면
+   * "0"이 호 끝보다 안쪽으로 들어오고 최대 라벨은 호 끝에서 15px 넘게 밀린다.
+   * 호 끝점은 뷰박스(260) 기준 x=7.6과 x=252.4다.
+   */
+  it("끝 라벨을 호 끝점에 맞춰 세운다", () => {
+    const { getByText } = render(
+      <SemicircleGauge maxLabel="5,000만원" minLabel="0" percent={39} savedLabel="1,950만원" />,
+    );
+
+    expect(Number.parseFloat(getByText("0").style.left)).toBeCloseTo((7.6 / 260) * 100, 1);
+    expect(Number.parseFloat(getByText("5,000만원").style.left)).toBeCloseTo(
+      (252.4 / 260) * 100,
+      1,
+    );
+  });
+
+  // 트랙은 시안에서 Gray/100이다. Gray/200을 쓰면 채운 부분과의 대비가 과하게 세다.
+  it("트랙을 시안 색으로 그린다", () => {
+    const { container } = render(
+      <SemicircleGauge maxLabel="5,000만원" minLabel="0" percent={39} savedLabel="1,950만원" />,
+    );
+
+    expect(container.querySelector("path")).toHaveAttribute("stroke", "var(--color-gray-100)");
   });
 });
