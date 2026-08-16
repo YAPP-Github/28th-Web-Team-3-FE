@@ -48,6 +48,7 @@
     "lint": {},
     "typecheck": {
       "dependsOn": ["^typecheck"],
+      "env": ["BACKEND_API_URL"],
       "outputs": ["**/*.tsbuildinfo", ".next/types/**"]
     },
     "test": {

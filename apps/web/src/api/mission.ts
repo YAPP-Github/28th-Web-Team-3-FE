@@ -1,8 +1,11 @@
 import {
+  type ManualMissionCreateRequest,
   type Mission,
   type MissionCategory,
   type MissionSource,
   type MissionStatus,
+  manualMissionCreateRequestSchema,
+  missionSchema,
   missionsResponseSchema,
 } from "@repo/schema/mission";
 import { http } from "@/api/client";
@@ -28,6 +31,15 @@ export async function fetchMissions(params: MissionListParams = {}): Promise<Mis
     response: missionsResponseSchema,
   });
   return missions;
+}
+
+/** POST /api/missions/manual — 사용자가 입력한 미션을 이번 주 미션으로 생성한다. */
+export function createManualMission(body: ManualMissionCreateRequest): Promise<Mission> {
+  return http.post("missions/manual", {
+    body,
+    request: manualMissionCreateRequestSchema,
+    response: missionSchema,
+  });
 }
 
 /** PATCH /api/missions/{source}/{missionId}/complete — 미션 완료 처리. */

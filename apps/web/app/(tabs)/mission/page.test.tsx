@@ -56,13 +56,30 @@ describe("MissionPage", () => {
     vi.mocked(deleteRecommendedMission).mockResolvedValue(undefined);
   });
 
-  it("코인 수는 완료한 미션 개수를 따른다", async () => {
+  it("달성률과 완료 미션의 절약액을 요약한다", async () => {
     const { container } = render(<MissionPage />);
 
-    // 목 데이터는 3건 중 1건 완료 — 진행률과 코인이 같은 데이터에서 나온다.
     expect(await screen.findByText("33% 달성")).toBeInTheDocument();
-    expect(screen.getByText("+1")).toBeInTheDocument();
+    expect(screen.getByText("약 0원 절약했어요")).toBeInTheDocument();
     expect(container.querySelector('[data-pigbox-progress="33"]')).toBeInTheDocument();
+  });
+
+  it("미션이 하나도 없으면 필터와 목록 제목 없이 빈 상태를 표시한다", async () => {
+    vi.mocked(fetchMissions).mockResolvedValue([]);
+    render(<MissionPage />);
+
+    expect(await screen.findByText("0% 달성")).toHaveClass("text-gray-900");
+    expect(screen.getByText("약 0원 절약했어요")).toBeInTheDocument();
+    expect(
+      screen.getByText((_, element) =>
+        Boolean(
+          element?.tagName === "P" &&
+            element.textContent === "미션이 없어요.절약 미션을 추가하고 달성해보세요.",
+        ),
+      ),
+    ).toBeInTheDocument();
+    expect(screen.queryByRole("tablist")).not.toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: "진행 중" })).not.toBeInTheDocument();
   });
 
   it("카테고리를 필터링하고 미션 상세를 펼친다", async () => {
@@ -85,6 +102,25 @@ describe("MissionPage", () => {
 
     fireEvent.click(screen.getByRole("tab", { name: "생활" }));
     expect(screen.getByText("불필요한 구독 해지 1회")).toBeInTheDocument();
+  });
+
+  it("직접 입력한 미션 카드도 조건 라벨을 달성 시로 표시한다", async () => {
+    vi.mocked(fetchMissions).mockResolvedValue([
+      {
+        id: "manual-active-1",
+        source: "MANUAL",
+        category: "LIVING",
+        title: "무지출 데이 만들기",
+        status: "ACTIVE",
+        weekEndsAt: "2099-01-01T00:00:00Z",
+      },
+    ]);
+    render(<MissionPage />);
+
+    fireEvent.click(await screen.findByRole("button", { name: "무지출 데이 만들기" }));
+
+    expect(screen.getByText("달성 시")).toBeInTheDocument();
+    expect(screen.queryByText("직접 추가")).not.toBeInTheDocument();
   });
 
   it("체크 아이콘 확인 모달에서 완료를 요청한다", async () => {
@@ -163,11 +199,19 @@ describe("MissionPage", () => {
     render(<MissionPage />);
 
     await screen.findByText("33% 달성");
-    fireEvent.click(screen.getByRole("button", { name: "미션 추가 메뉴 열기" }));
+    const openButton = screen.getByRole("button", { name: "미션 추가 메뉴 열기" });
+    fireEvent.click(openButton);
+
     expect(screen.getByRole("link", { name: "추천받기" })).toBeInTheDocument();
-    // 직접입력은 구현 전이라 메뉴에 없다 — 눌리지 않는 항목을 보이면 앱이 미완성으로 읽힌다.
-    // 정확 일치로 보면 "직접입력 준비 중" 같은 잔재를 놓친다.
-    expect(screen.queryByText(/직접입력/)).not.toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "직접입력" })).toHaveAttribute(
+      "href",
+      "/mission/new/manual",
+    );
+    expect(openButton).toHaveClass("rotate-45", "bg-gray-0");
+
+    fireEvent.click(screen.getByRole("button", { name: "미션 추가 메뉴 닫기" }));
+    expect(screen.queryByRole("link", { name: "추천받기" })).not.toBeInTheDocument();
+    expect(openButton).toHaveClass("rotate-0", "bg-blue-500");
   });
 
   // 상단 safe-area 밴드는 경로만 보고 gray-50을 깐다. 히어로가 없는 화면이 흰색이면

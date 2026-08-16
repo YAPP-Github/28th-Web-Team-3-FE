@@ -89,6 +89,14 @@ export type MissionSource = z.infer<typeof missionSourceSchema>;
 export const missionStatusSchema = z.enum(["ACTIVE", "COMPLETED", "INCOMPLETE"]);
 export type MissionStatus = z.infer<typeof missionStatusSchema>;
 
+/** POST /api/missions/manual 요청. 백엔드의 수동 미션 길이 제한과 같다. */
+export const MAX_MANUAL_MISSION_TEXT_LENGTH = 30;
+export const manualMissionCreateRequestSchema = z.object({
+  category: activeMissionCategorySchema,
+  text: z.string().trim().min(1).max(MAX_MANUAL_MISSION_TEXT_LENGTH),
+});
+export type ManualMissionCreateRequest = z.infer<typeof manualMissionCreateRequestSchema>;
+
 const missionBaseSchema = z.object({
   id: z.string(),
   category: missionCategorySchema,

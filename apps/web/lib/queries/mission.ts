@@ -7,6 +7,7 @@ import {
 } from "@tanstack/react-query";
 import {
   completeMission,
+  createManualMission,
   deleteRecommendedMission,
   fetchMissions,
   type MissionListParams,
@@ -25,6 +26,14 @@ export function missionsOptions(params: MissionListParams = {}) {
       : MISSIONS_QUERY_KEY,
     queryFn: () => fetchMissions(params),
     placeholderData: filtered ? keepPreviousData : undefined,
+  });
+}
+
+/** 직접 입력 미션을 만든 뒤 미션 목록을 갱신한다. */
+export function createManualMissionOptions(queryClient: QueryClient) {
+  return mutationOptions({
+    mutationFn: (body: Parameters<typeof createManualMission>[0]) => createManualMission(body),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: MISSIONS_QUERY_KEY }),
   });
 }
 

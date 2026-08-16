@@ -178,7 +178,7 @@ describe("WeeklyMissionSection", () => {
     render(<WeeklyMissionSection />);
 
     fireEvent.click(await screen.findByRole("button", { name: "사용하지 않는 구독 정리하기" }));
-    expect(screen.getByText("직접 추가")).toBeInTheDocument();
+    expect(screen.getByText("달성 시")).toBeInTheDocument();
     expect(screen.getByText("예상 절약 금액이 없는 직접 추가 미션이에요.")).toBeInTheDocument();
   });
 

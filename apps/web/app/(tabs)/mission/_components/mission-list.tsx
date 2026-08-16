@@ -72,7 +72,7 @@ export function MissionList({
                     <>
                       <p className="flex gap-3 pl-0 text-body-b2-500 text-gray-700">
                         <span className="h-fit shrink-0 rounded bg-blue-100 px-1.5 py-1 text-caption-c1-700 text-blue-600">
-                          {mission.savingsLabel ? "달성 시" : "직접 추가"}
+                          달성 시
                         </span>
                         <span>{savingsLabel}</span>
                       </p>

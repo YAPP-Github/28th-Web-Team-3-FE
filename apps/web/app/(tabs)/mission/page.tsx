@@ -16,7 +16,12 @@ import { MissionDeleteDialog } from "./_components/mission-delete-dialog";
 import { MissionHero } from "./_components/mission-hero";
 import { MissionList } from "./_components/mission-list";
 import { MISSION_CATEGORY_LABELS, type MissionCategory } from "./constants/mission";
-import { calculateProgressPercent, countCompletedMissions, formatWeekDday } from "./lib/format";
+import {
+  calculateProgressPercent,
+  countCompletedMissions,
+  formatWeekDday,
+  sumCompletedSavingsWon,
+} from "./lib/format";
 
 export default function MissionPage() {
   const queryClient = useQueryClient();
@@ -71,22 +76,33 @@ export default function MissionPage() {
         completedCount={countCompletedMissions(missions)}
         ddayLabel={formatWeekDday(missions[0]?.weekEndsAt)}
         percent={calculateProgressPercent(missions)}
+        savedWon={sumCompletedSavingsWon(missions)}
       />
-      <section className="flex flex-col gap-5 px-5 pt-6">
-        <MissionCategoryFilter activeCategory={activeCategory} onChange={setActiveCategory} />
-        <MissionList
-          expandedMissionId={expandedMissionId}
-          completedMissions={visibleCompletedMissions}
-          deletingMissionId={deleteMission.isPending ? deleteMission.variables?.missionId : null}
-          missions={visibleActiveMissions}
-          onComplete={setMissionToComplete}
-          onDelete={(mission) => {
-            setDeleteError(undefined);
-            setMissionToDelete(mission);
-          }}
-          onToggle={(id) => setExpandedMissionId((expandedId) => (expandedId === id ? null : id))}
-        />
-      </section>
+      {missions.length === 0 ? (
+        <section className="flex flex-1 items-start justify-center px-5 pt-[127px] text-center">
+          <p className="text-body-b1-500 text-gray-600">
+            미션이 없어요.
+            <br />
+            절약 미션을 추가하고 달성해보세요.
+          </p>
+        </section>
+      ) : (
+        <section className="flex flex-col gap-5 px-5 pt-6">
+          <MissionCategoryFilter activeCategory={activeCategory} onChange={setActiveCategory} />
+          <MissionList
+            expandedMissionId={expandedMissionId}
+            completedMissions={visibleCompletedMissions}
+            deletingMissionId={deleteMission.isPending ? deleteMission.variables?.missionId : null}
+            missions={visibleActiveMissions}
+            onComplete={setMissionToComplete}
+            onDelete={(mission) => {
+              setDeleteError(undefined);
+              setMissionToDelete(mission);
+            }}
+            onToggle={(id) => setExpandedMissionId((expandedId) => (expandedId === id ? null : id))}
+          />
+        </section>
+      )}
       <MissionAddMenu
         isOpen={isAddMenuOpen}
         onToggle={() => setIsAddMenuOpen((isOpen) => !isOpen)}
