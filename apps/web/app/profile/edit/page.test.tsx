@@ -116,6 +116,18 @@ describe("ProfileEditPage", () => {
     expect(updateGoal).not.toHaveBeenCalled();
   });
 
+  it("현재 목표 기간을 다시 선택하면 목표는 건드리지 않는다", async () => {
+    render(<ProfileEditPage />);
+
+    await screen.findByRole("textbox", { name: "생년월일" });
+    fireEvent.click(screen.getByRole("button", { name: "2년 미만" }));
+    fireEvent.click(screen.getByRole("button", { name: "완료" }));
+
+    await waitFor(() => expect(navigation.back).toHaveBeenCalledOnce());
+    expect(updateOnboardingProfile).toHaveBeenCalledOnce();
+    expect(updateGoal).not.toHaveBeenCalled();
+  });
+
   // 목표는 온보딩을 확정해야 생긴다 — 진행 중인 사용자에게 보내면 서버가 거절한다.
   it("온보딩이 끝나지 않았으면 목표는 건드리지 않는다", async () => {
     const inProgress: OnboardingProfile = { ...PROFILE, status: "IN_PROGRESS" };
@@ -150,6 +162,7 @@ describe("ProfileEditPage", () => {
     fireEvent.click(screen.getByRole("button", { name: "완료" }));
 
     await waitFor(() => expect(updateGoal).toHaveBeenCalledTimes(2));
+    expect(updateOnboardingProfile).toHaveBeenCalledOnce();
     expect(navigation.back).toHaveBeenCalledOnce();
   });
 

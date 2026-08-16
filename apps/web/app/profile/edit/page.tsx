@@ -118,6 +118,8 @@ export default function ProfileEditPage() {
   const [draft, setDraft] = useState<ProfileDraft>();
   // 기간 칩을 실제로 눌렀는지. 목표에 기간을 밀어넣을지 여부가 여기에 달려 있다.
   const [isPeriodEdited, setIsPeriodEdited] = useState(false);
+  // 프로필 저장 뒤 목표 동기화만 실패한 경우, 같은 프로필을 다시 저장하지 않는다.
+  const [isProfileSaved, setIsProfileSaved] = useState(false);
   const [submitError, setSubmitError] = useState<string>();
 
   useEffect(() => {
@@ -137,6 +139,11 @@ export default function ProfileEditPage() {
     const idx = (window.history.state as { idx?: number } | null)?.idx ?? 0;
     if (idx > 0) router.back();
     else router.replace("/profile");
+  }
+
+  function editDraft(nextDraft: ProfileDraft) {
+    setDraft(nextDraft);
+    setIsProfileSaved(false);
   }
 
   async function submit(event: FormEvent<HTMLFormElement>) {
@@ -174,11 +181,14 @@ export default function ProfileEditPage() {
     };
 
     setSubmitError(undefined);
-    try {
-      await updateProfile(nextProfile);
-    } catch {
-      setSubmitError(SAVE_FAILED_TEXT);
-      return;
+    if (!isProfileSaved) {
+      try {
+        await updateProfile(nextProfile);
+        setIsProfileSaved(true);
+      } catch {
+        setSubmitError(SAVE_FAILED_TEXT);
+        return;
+      }
     }
 
     // 목표는 온보딩을 확정해야 생긴다 — 진행 중인 사용자에게 보내면 서버가 거절한다.
@@ -235,11 +245,7 @@ export default function ProfileEditPage() {
                 name="birthDate"
                 value={draft.birthDate}
                 onChange={(event) =>
-                  setDraft((current) =>
-                    current
-                      ? { ...current, birthDate: formatBirthDateInput(event.target.value) }
-                      : current,
-                  )
+                  editDraft({ ...draft, birthDate: formatBirthDateInput(event.target.value) })
                 }
               />
             </div>
@@ -249,21 +255,21 @@ export default function ProfileEditPage() {
               label="월급"
               max={MAX_MONTHLY_AMOUNT}
               value={draft.monthlySalaryManwon}
-              onChange={(value) => setDraft({ ...draft, monthlySalaryManwon: value })}
+              onChange={(value) => editDraft({ ...draft, monthlySalaryManwon: value })}
             />
             <AmountInput
               id="monthly-saving"
               label="월 저축액"
               max={MAX_MONTHLY_AMOUNT}
               value={draft.monthlySavingManwon}
-              onChange={(value) => setDraft({ ...draft, monthlySavingManwon: value })}
+              onChange={(value) => editDraft({ ...draft, monthlySavingManwon: value })}
             />
             <AmountInput
               id="net-worth"
               label="현재 순자산"
               max={MAX_NET_WORTH_AMOUNT}
               value={draft.netWorthManwon}
-              onChange={(value) => setDraft({ ...draft, netWorthManwon: value })}
+              onChange={(value) => editDraft({ ...draft, netWorthManwon: value })}
             />
 
             <fieldset className="flex flex-col gap-3">
@@ -285,8 +291,8 @@ export default function ProfileEditPage() {
                       key={months}
                       type="button"
                       onClick={() => {
-                        setIsPeriodEdited(true);
-                        setDraft({ ...draft, goalPeriodMonths: months });
+                        setIsPeriodEdited(months !== profile?.goalPeriodMonths);
+                        editDraft({ ...draft, goalPeriodMonths: months });
                       }}
                     >
                       {label}
