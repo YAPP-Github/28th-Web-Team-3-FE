@@ -131,3 +131,12 @@ export const missionsResponseSchema = z.object({
   missions: z.array(missionSchema),
 });
 export type MissionsResponse = z.infer<typeof missionsResponseSchema>;
+
+/** GET /api/missions/progress 응답. 현재 주의 미션 달성 현황이다. */
+export const missionProgressSchema = z.object({
+  completedCount: z.number().int().nonnegative(),
+  totalCount: z.number().int().nonnegative(),
+  progressPercent: z.number().int().min(0).max(100),
+  weekStartDate: z.iso.date(),
+});
+export type MissionProgress = z.infer<typeof missionProgressSchema>;

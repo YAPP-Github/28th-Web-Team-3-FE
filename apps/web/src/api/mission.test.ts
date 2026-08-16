@@ -1,4 +1,8 @@
-import { manualMissionCreateRequestSchema, missionSchema } from "@repo/schema/mission";
+import {
+  manualMissionCreateRequestSchema,
+  missionProgressSchema,
+  missionSchema,
+} from "@repo/schema/mission";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("@/api/client", () => ({
@@ -6,7 +10,7 @@ vi.mock("@/api/client", () => ({
 }));
 
 import { http } from "@/api/client";
-import { createManualMission } from "./mission";
+import { createManualMission, fetchMissionProgress } from "./mission";
 
 describe("mission API", () => {
   beforeEach(() => vi.clearAllMocks());
@@ -33,5 +37,20 @@ describe("mission API", () => {
         response: missionSchema,
       }),
     );
+  });
+
+  it("현재 주 미션 진행률을 응답 계약으로 검증한다", async () => {
+    const progress = {
+      completedCount: 1,
+      progressPercent: 25,
+      totalCount: 4,
+      weekStartDate: "2026-08-10",
+    };
+    vi.mocked(http.get).mockReturnValue(Promise.resolve(progress) as never);
+
+    await expect(fetchMissionProgress()).resolves.toEqual(progress);
+    expect(http.get).toHaveBeenCalledWith("missions/progress", {
+      response: missionProgressSchema,
+    });
   });
 });

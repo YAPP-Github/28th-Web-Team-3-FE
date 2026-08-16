@@ -82,26 +82,33 @@ function renderAnimation(
   lottie: typeof import("lottie-web").default,
   container: HTMLDivElement,
   animationData: PigboxAnimationData,
+  loop: boolean,
 ): AnimationItem {
   return lottie.loadAnimation({
     animationData,
     autoplay: false,
     container,
-    loop: true,
+    loop,
     renderer: "svg",
     rendererSettings: { preserveAspectRatio: "xMidYMid meet" },
   });
 }
 
 interface PigboxProgressGaugeProps {
+  /** 홈에서는 반복 재생하고, 내역에서는 정지된 진행률 이미지로 쓴다. */
+  animated?: boolean;
   className?: string;
   completedCount: number;
+  /** 정지 모드에서 값이 증가할 때마다 저금통 애니메이션을 1회 재생한다. */
+  playRequest?: number;
   progress: number;
 }
 
 export function PigboxProgressGauge({
+  animated = true,
   className,
   completedCount,
+  playRequest = 0,
   progress,
 }: PigboxProgressGaugeProps) {
   const rootRef = useRef<HTMLDivElement>(null);
@@ -111,6 +118,10 @@ export function PigboxProgressGauge({
   const clampedProgress = clampProgress(progress);
   const previousCompletedCountRef = useRef(completedCount);
   const previousProgressRef = useRef(clampedProgress);
+  const animationsRef = useRef<AnimationItem[]>([]);
+  const clickStartFrameRef = useRef(0);
+  const latestPlayRequestRef = useRef(playRequest);
+  const lastPlayedRequestRef = useRef(0);
   const [isReady, setIsReady] = useState(false);
   const [isFillAnimating, setIsFillAnimating] = useState(false);
   const [displayedProgress, setDisplayedProgress] = useState(clampedProgress);
@@ -130,6 +141,7 @@ export function PigboxProgressGauge({
 
     const abortController = new AbortController();
     let animations: AnimationItem[] = [];
+    let removeCompleteListener: (() => void) | undefined;
     let removeFrameListener: (() => void) | undefined;
 
     async function setupAnimation() {
@@ -144,11 +156,14 @@ export function PigboxProgressGauge({
         if (abortController.signal.aborted) return;
 
         const variants = createAnimationVariants(source);
+        // 원본의 첫 1초는 정지에 가까워 탭 반응이 늦게 보인다. 클릭 재생만 그 구간을 건너뛴다.
+        clickStartFrameRef.current = (source.ip ?? 0) + source.fr;
         animations = [
-          renderAnimation(lottie, baseContainer, variants.base),
-          renderAnimation(lottie, waterContainer, variants.water),
-          renderAnimation(lottie, detailsContainer, variants.details),
+          renderAnimation(lottie, baseContainer, variants.base, animated),
+          renderAnimation(lottie, waterContainer, variants.water, animated),
+          renderAnimation(lottie, detailsContainer, variants.details, animated),
         ];
+        animationsRef.current = animations;
         setIsReady(true);
 
         const [baseAnimation, waterAnimation, detailsAnimation] = animations;
@@ -185,10 +200,24 @@ export function PigboxProgressGauge({
           syncFillToBody();
         });
 
+        if (!animated) {
+          removeCompleteListener = baseAnimation.addEventListener("complete", () => {
+            for (const animation of animations) animation.goToAndStop(0, true);
+          });
+        }
+
         syncFillToBody();
 
-        if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+        const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+        if (!animated || prefersReducedMotion) {
           for (const animation of animations) animation.goToAndStop(0, true);
+          if (
+            !prefersReducedMotion &&
+            latestPlayRequestRef.current > lastPlayedRequestRef.current
+          ) {
+            lastPlayedRequestRef.current = latestPlayRequestRef.current;
+            baseAnimation.goToAndPlay(clickStartFrameRef.current, true);
+          }
         } else {
           baseAnimation.play();
         }
@@ -203,10 +232,29 @@ export function PigboxProgressGauge({
 
     return () => {
       abortController.abort();
+      removeCompleteListener?.();
       removeFrameListener?.();
       for (const animation of animations) animation.destroy();
+      animationsRef.current = [];
     };
-  }, []);
+  }, [animated]);
+
+  useEffect(() => {
+    latestPlayRequestRef.current = playRequest;
+    if (
+      animated ||
+      playRequest <= lastPlayedRequestRef.current ||
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches
+    ) {
+      return;
+    }
+
+    const baseAnimation = animationsRef.current[0];
+    if (!baseAnimation) return;
+
+    lastPlayedRequestRef.current = playRequest;
+    baseAnimation.goToAndPlay(clickStartFrameRef.current, true);
+  }, [animated, playRequest]);
 
   useEffect(() => {
     const previousCompletedCount = previousCompletedCountRef.current;

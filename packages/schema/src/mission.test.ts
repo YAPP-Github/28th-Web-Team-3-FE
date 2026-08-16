@@ -3,6 +3,7 @@ import {
   MAX_MANUAL_MISSION_TEXT_LENGTH,
   manualMissionCreateRequestSchema,
   missionCatalogResponseSchema,
+  missionProgressSchema,
   missionsResponseSchema,
 } from "./mission";
 
@@ -53,6 +54,31 @@ describe("mission API schemas", () => {
       manualMissionCreateRequestSchema.parse({
         category: "MEAL",
         text: "가".repeat(MAX_MANUAL_MISSION_TEXT_LENGTH + 1),
+      }),
+    ).toThrow();
+  });
+
+  it("현재 주 미션 진행률 응답을 검증한다", () => {
+    expect(
+      missionProgressSchema.parse({
+        completedCount: 1,
+        progressPercent: 25,
+        totalCount: 4,
+        weekStartDate: "2026-08-10",
+      }),
+    ).toEqual({
+      completedCount: 1,
+      progressPercent: 25,
+      totalCount: 4,
+      weekStartDate: "2026-08-10",
+    });
+
+    expect(() =>
+      missionProgressSchema.parse({
+        completedCount: 5,
+        progressPercent: 125,
+        totalCount: 4,
+        weekStartDate: "2026-08-10",
       }),
     ).toThrow();
   });
