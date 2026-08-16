@@ -116,7 +116,7 @@ export default function ProfileEditPage() {
     updateGoalOptions(queryClient),
   );
   const [draft, setDraft] = useState<ProfileDraft>();
-  // 기간 칩을 실제로 눌렀는지. 목표에 기간을 밀어넣을지 여부가 여기에 달려 있다.
+  // 기간을 처음 값과 다르게 골랐는지. 목표에 기간을 밀어넣을지 여부가 여기에 달려 있다.
   const [isPeriodEdited, setIsPeriodEdited] = useState(false);
   const [submitError, setSubmitError] = useState<string>();
 
@@ -209,7 +209,9 @@ export default function ProfileEditPage() {
 
       {isPending ? (
         <div aria-label="내 정보 불러오는 중" className="px-5 pt-4" role="status">
-          <div className="h-72 animate-pulse rounded-xl bg-gray-50" />
+          {/* 높이를 폼과 맞춘다(입력 4개 73씩 + 간격 24씩 + 기간 81). 짧게 두면 값이 도착할 때
+              화면이 아래로 늘어나며 스크롤 위치가 튄다. */}
+          <div className="h-[468px] animate-pulse rounded-xl bg-gray-50" />
         </div>
       ) : null}
 
@@ -220,7 +222,7 @@ export default function ProfileEditPage() {
       ) : null}
 
       {draft ? (
-        <form className="flex min-h-[calc(100dvh-44px)] flex-col px-5 pt-4 pb-6" onSubmit={submit}>
+        <form className="flex min-h-[calc(100dvh-44px)] flex-col px-5 pt-4" onSubmit={submit}>
           <div className="flex flex-col gap-6">
             <div className="flex flex-col gap-1">
               <label className="text-body-b2-500 text-gray-700" htmlFor="birth-date">
@@ -280,12 +282,14 @@ export default function ProfileEditPage() {
                         "h-12 rounded-xl border text-body-b2-500 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none",
                         selected
                           ? "border-blue-500 bg-blue-50 text-gray-700 hover:bg-blue-100"
-                          : "border-gray-800 bg-gray-0 text-gray-700 hover:bg-gray-50",
+                          : "border-gray-900 bg-gray-0 text-gray-700 hover:bg-gray-50",
                       )}
                       key={months}
                       type="button"
                       onClick={() => {
-                        setIsPeriodEdited(true);
+                        // 눌렀다는 사실이 아니라 처음 값과 달라졌는지를 본다 — 다른 칩을
+                        // 눌렀다가 원래 기간으로 돌아오면 바꾼 게 없다.
+                        setIsPeriodEdited(months !== profile?.goalPeriodMonths);
                         setDraft({ ...draft, goalPeriodMonths: months });
                       }}
                     >
@@ -297,19 +301,22 @@ export default function ProfileEditPage() {
             </fieldset>
           </div>
 
-          {submitError ? (
-            <p aria-live="polite" className="mt-auto pt-4 text-body-b2-500 text-error">
-              {submitError}
-            </p>
-          ) : null}
-          <Button
-            className={submitError ? "mt-3" : "mt-auto"}
-            pending={isUpdatingProfile || isUpdatingGoal}
-            size="cta"
-            type="submit"
-          >
-            완료
-          </Button>
+          {/*
+            시안(node 1923:26929)은 완료를 화면 하단에 붙인 바로 둔다 — 위 8, 아래 26.
+            `mt-auto`가 짧은 화면에서 바를 바닥으로 밀고, `sticky`는 폼이 길어지거나
+            키보드가 올라와 스크롤이 생겨도 버튼이 화면 밖으로 나가지 않게 잡아 둔다.
+            배경을 깔지 않으면 겹쳐 지나가는 입력 필드가 버튼 뒤로 비친다.
+          */}
+          <div className="sticky bottom-0 mt-auto bg-gray-0 pt-2 pb-[26px]">
+            {submitError ? (
+              <p aria-live="polite" className="pb-3 text-body-b2-500 text-error">
+                {submitError}
+              </p>
+            ) : null}
+            <Button pending={isUpdatingProfile || isUpdatingGoal} size="cta" type="submit">
+              완료
+            </Button>
+          </div>
         </form>
       ) : null}
     </main>
