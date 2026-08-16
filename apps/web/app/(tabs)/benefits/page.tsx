@@ -1,7 +1,6 @@
 import BenefitCardWon from "@repo/ui/svg/benefit-card-won.svg";
 import BenefitCoin from "@repo/ui/svg/benefit-coin.svg";
 import Link from "next/link";
-import { redirect } from "next/navigation";
 import { Suspense } from "react";
 import { SAFE_AREA_HERO_ATTRIBUTE } from "@/lib/safe-area-bands";
 import { BenefitsExplorer } from "./_components/benefits-explorer";
@@ -42,17 +41,11 @@ function BenefitsExplorerSkeleton() {
 }
 
 /**
- * 저장 목록이 칩에서 별도 화면으로 빠지기 전의 링크. 공유된 URL이 조용히 전체 목록으로
- * 떨어지지 않게 새 경로로 보낸다.
+ * `searchParams`를 여기서 읽지 않는다 — 읽는 순간 이 라우트가 동적 렌더로 바뀌어 탭을
+ * 누를 때마다 서버 왕복을 기다린다. 필터는 클라이언트(`BenefitsExplorer`)가 읽고, 옛
+ * `?category=saved` 링크는 `next.config.ts`의 redirects가 처리한다.
  */
-export default async function BenefitsPage({
-  searchParams,
-}: {
-  searchParams: Promise<{ category?: string | string[] }>;
-}) {
-  const { category } = await searchParams;
-  if (category === "saved") redirect("/benefits/saved");
-
+export default function BenefitsPage() {
   return (
     <main className="flex flex-1 flex-col overflow-x-clip bg-gray-0">
       {/* 히어로는 탭 제목까지 감싼다 — 디자인에서 파란 면이 상단 바 뒤까지 이어진다.

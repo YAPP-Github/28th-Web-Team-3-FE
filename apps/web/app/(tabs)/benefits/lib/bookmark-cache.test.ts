@@ -33,6 +33,18 @@ describe("applyBookmarkToPolicies", () => {
   it("캐시가 비어 있으면 그대로 둔다", () => {
     expect(applyBookmarkToPolicies(undefined, 1, true)).toBeUndefined();
   });
+
+  /**
+   * 호출부가 `["policies"]` 접두사를 `setQueriesData`로 한꺼번에 갱신한다. 같은 뿌리에
+   * 배열 모양 캐시(홈 캐러셀)가 들어오자 여기서 터져 별을 눌러도 아무 일도 일어나지
+   * 않았다 — 갱신 하나가 클릭 전체를 죽이면 안 된다.
+   */
+  it("무한 목록이 아닌 캐시는 터지지 않고 그대로 둔다", () => {
+    const notInfinite = [policy(1)] as unknown as InfiniteData<PolicySummary[]>;
+
+    expect(() => applyBookmarkToPolicies(notInfinite, 1, true)).not.toThrow();
+    expect(applyBookmarkToPolicies(notInfinite, 1, true)).toBe(notInfinite);
+  });
 });
 
 describe("applyBookmarkToSavedList", () => {

@@ -20,6 +20,23 @@ const nextConfig: NextConfig = {
       },
     ];
   },
+  /**
+   * 저장 목록이 필터 칩에서 별도 화면으로 빠지기 전의 링크.
+   *
+   * 페이지에서 `await searchParams`로 처리하면 그것만으로 `/benefits`가 동적 렌더로 바뀐다 —
+   * 탭을 누를 때마다 서버 왕복을 기다리게 되고, 다른 탭은 전부 정적이라 혜택만 느려진다.
+   * 여기서 처리하면 페이지는 정적으로 남는다.
+   */
+  async redirects() {
+    return [
+      {
+        source: "/benefits",
+        has: [{ type: "query", key: "category", value: "saved" }],
+        destination: "/benefits/saved",
+        permanent: false,
+      },
+    ];
+  },
   // 내부 패키지는 빌드 없이 TS/TSX 소스를 그대로 내보내므로 Next가 여기서 컴파일한다.
   transpilePackages: ["@repo/ui", "@repo/api", "@repo/schema", "@repo/bridge"],
   reactCompiler: true,

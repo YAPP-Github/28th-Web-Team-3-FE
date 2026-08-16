@@ -11,13 +11,20 @@ import type { BenefitItem } from "@/app/(tabs)/benefits/types";
  * 여기서 따로 검증한다.
  */
 
-/** 혜택 목록(무한 스크롤)의 해당 항목만 `bookmarked`를 바꾼다. */
+/**
+ * 혜택 목록(무한 스크롤)의 해당 항목만 `bookmarked`를 바꾼다.
+ *
+ * 무한 목록이 아닌 캐시는 그대로 돌려준다. 호출부가 `setQueriesData`로 `["policies"]`
+ * 접두사를 한꺼번에 갱신하는데, 타입만으로는 매칭된 캐시가 전부 `InfiniteData`라고 보장할
+ * 수 없다. 실제로 같은 뿌리에 배열 모양 캐시(홈 캐러셀)가 하나 들어오자 여기서 터져
+ * 저장 버튼이 통째로 먹통이 됐다 — 갱신 하나가 클릭 전체를 죽이지 않게 막는다.
+ */
 export function applyBookmarkToPolicies(
   data: InfiniteData<PolicySummary[]> | undefined,
   policyId: number,
   saved: boolean,
 ): InfiniteData<PolicySummary[]> | undefined {
-  if (!data) return data;
+  if (!data || !Array.isArray(data.pages)) return data;
   return {
     ...data,
     pages: data.pages.map((page) =>
