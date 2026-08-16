@@ -2,7 +2,13 @@ import type { PolicyCategory } from "@repo/schema/policy";
 import { infiniteQueryOptions, mutationOptions, queryOptions } from "@tanstack/react-query";
 import { bookmarkPolicy, fetchPolicies, fetchPolicyDetail, unbookmarkPolicy } from "@/api/policy";
 
-/** 혜택 목록 캐시 키의 뿌리. 카테고리별 캐시가 이 아래에 달린다. */
+/**
+ * 무한 혜택 목록 캐시 키의 뿌리. 카테고리별 캐시가 이 아래에 달린다.
+ *
+ * **이 아래에는 `InfiniteData` 모양만 둔다.** 저장 토글이 이 뿌리로 접두사 매칭해
+ * `setQueriesData`로 한꺼번에 갱신하므로(`use-saved-toggle-queue.ts`), 모양이 다른 캐시가
+ * 섞이면 갱신 함수가 그 캐시에서 터지고 별을 눌러도 아무 일도 일어나지 않는다.
+ */
 export const POLICIES_QUERY_KEY = ["policies"] as const;
 const POLICY_DETAIL_QUERY_KEY = ["policy-detail"] as const;
 
@@ -10,10 +16,16 @@ const POLICY_DETAIL_QUERY_KEY = ["policy-detail"] as const;
 export const POLICY_PAGE_SIZE = 20;
 export const HOME_POLICY_COUNT = 5;
 
-/** 홈 캐러셀에 노출할 전체 정책 첫 5개. 무한 목록과 데이터 모양이 달라 별도 키를 쓴다. */
+/**
+ * 홈 캐러셀에 노출할 전체 정책 첫 5개.
+ *
+ * 응답이 배열이라 무한 목록(`InfiniteData`)과 모양이 다르다. 그래서 `POLICIES_QUERY_KEY`
+ * 아래가 아니라 별도 뿌리를 쓴다 — 같은 뿌리에 두면 저장 토글의 접두사 매칭에 걸린다.
+ * 홈 캐러셀은 저장 여부를 그리지 않으므로 낙관적 갱신 대상도 아니다.
+ */
 export function homePoliciesOptions() {
   return queryOptions({
-    queryKey: [...POLICIES_QUERY_KEY, "home", HOME_POLICY_COUNT] as const,
+    queryKey: ["home-policies", HOME_POLICY_COUNT] as const,
     queryFn: () => fetchPolicies({ category: null, page: 0, size: HOME_POLICY_COUNT }),
   });
 }
