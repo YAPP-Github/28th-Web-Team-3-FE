@@ -2,6 +2,7 @@ import { QueryProvider } from "@repo/api/provider";
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import { Suspense } from "react";
+import { KeyboardInsetSync } from "./_components/keyboard-inset-sync";
 import { MixpanelPageTracker } from "./_components/mixpanel-page-tracker";
 import { OnboardingRouteGuard } from "./_components/onboarding-route-guard";
 import { SafeAreaColor } from "./_components/safe-area-color";
@@ -18,6 +19,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
     process.env.NODE_ENV === "development" && process.env.ENABLE_API_MOCKS === "true";
   const app = (
     <QueryProvider>
+      <KeyboardInsetSync />
       <OnboardingRouteGuard>{children}</OnboardingRouteGuard>
       <Suspense fallback={null}>
         <MixpanelPageTracker />

@@ -58,7 +58,7 @@ export default function AgeOnboardingPage() {
   }, [router]);
 
   return (
-    <div className="flex min-h-[calc(100dvh-56px)] flex-col px-5 pt-8">
+    <div className="flex min-h-[calc(100dvh-56px-var(--keyboard-inset,0px))] flex-col px-5 pt-8">
       <section>
         <h1 className="text-headline-h2-700 text-black">나이가 어떻게 되시나요?</h1>
         <p className="mt-1 text-body-b1-400 text-gray-700">

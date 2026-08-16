@@ -187,7 +187,7 @@ export function MissionCreationFormClient({
   }
 
   return (
-    <main className="mx-auto flex min-h-dvh w-full max-w-md flex-col bg-gray-0 pb-6">
+    <main className="mx-auto flex min-h-[calc(100dvh-var(--keyboard-inset,0px))] w-full max-w-md flex-col bg-gray-0 pb-6">
       <Button aria-label="이전 단계로 돌아가기" size="icon" variant="ghost" onClick={goBack}>
         <ChevronLeft aria-hidden="true" className="size-6" />
       </Button>
