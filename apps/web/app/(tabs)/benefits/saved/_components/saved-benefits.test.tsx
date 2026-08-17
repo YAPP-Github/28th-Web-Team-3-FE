@@ -5,6 +5,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { fetchSavedPolicies } from "@/api/bookmark";
 import { bookmarkPolicy, fetchPolicyDetail, unbookmarkPolicy } from "@/api/policy";
 import { savedPoliciesOptions } from "@/lib/queries/bookmark";
+import { policiesOptions } from "@/lib/queries/policy";
 import { act, createTestQueryClient, fireEvent, render, screen, waitFor } from "@/lib/test/react";
 import { SavedBenefits } from "./saved-benefits";
 
@@ -85,6 +86,59 @@ describe("SavedBenefits", () => {
     expect(card).not.toBeNull();
     expect(within(card as HTMLElement).getByText("복지")).toBeInTheDocument();
     expect(within(card as HTMLElement).queryByText("금융·복지·문화")).not.toBeInTheDocument();
+  });
+
+  /**
+   * 저장 30개면 상세 요청도 30번이었다. 혜택 목록이나 홈을 이미 봤다면 같은 분류가
+   * 캐시에 있으므로 거기서 꺼내 쓰고, 없는 것만 조회한다.
+   */
+  it("목록 캐시에 분류가 있으면 상세를 조회하지 않는다", async () => {
+    vi.mocked(fetchSavedPolicies).mockResolvedValue([
+      {
+        contentType: "POLICY",
+        id: 7,
+        title: "캐시에 있는 혜택",
+        category: "원본",
+        description: "설명",
+      },
+      {
+        contentType: "POLICY",
+        id: 8,
+        title: "캐시에 없는 혜택",
+        category: "원본",
+        description: "설명",
+      },
+    ]);
+    vi.mocked(fetchPolicyDetail).mockResolvedValue(policyDetail(8, { category: "교육" }));
+    const queryClient = createTestQueryClient();
+    // 테스트 클라이언트는 gcTime이 0이라 관찰자 없는 캐시가 즉시 사라진다.
+    queryClient.setQueryDefaults(policiesOptions(null).queryKey, {
+      gcTime: Number.POSITIVE_INFINITY,
+    });
+    queryClient.setQueryData(policiesOptions(null).queryKey, {
+      pages: [
+        [
+          {
+            id: 7,
+            title: "캐시에 있는 혜택",
+            category: "복지",
+            largeCategory: "복지",
+            description: "설명",
+            bookmarked: true,
+          },
+        ],
+      ],
+      pageParams: [0],
+    });
+
+    render(<SavedBenefits />, { queryClient });
+
+    const cached = (await screen.findByText("캐시에 있는 혜택")).closest("article");
+    expect(within(cached as HTMLElement).getByText("복지")).toBeInTheDocument();
+
+    // 캐시에 없는 8번만 상세를 받는다.
+    await waitFor(() => expect(fetchPolicyDetail).toHaveBeenCalledWith(8));
+    expect(fetchPolicyDetail).toHaveBeenCalledTimes(1);
   });
 
   it("정책 상세가 늦어도 저장 목록부터 보여준다", async () => {

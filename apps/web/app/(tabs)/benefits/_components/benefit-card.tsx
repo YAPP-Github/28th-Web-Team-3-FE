@@ -1,10 +1,11 @@
 "use client";
 
+import { useQueryClient } from "@tanstack/react-query";
 import { ChevronDown, Star } from "lucide-react";
 import { useId, useState } from "react";
-import { fetchPolicyDetail } from "@/api/policy";
 import type { BenefitItem } from "@/app/(tabs)/benefits/types";
 import { openExternalLink } from "@/lib/open-external";
+import { policyDetailOptions } from "@/lib/queries/policy";
 
 interface BenefitCardProps {
   benefit: BenefitItem;
@@ -28,6 +29,7 @@ export function BenefitCard({ benefit, onToggleSave }: BenefitCardProps) {
   const [isOpening, setIsOpening] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
   const descriptionId = useId();
+  const queryClient = useQueryClient();
 
   async function openApplyPage() {
     // 버튼을 disabled로 막지 않는다 — 누르는 순간 접근성 트리에서 빠져 키보드 초점이 날아간다.
@@ -35,7 +37,9 @@ export function BenefitCard({ benefit, onToggleSave }: BenefitCardProps) {
     setError(undefined);
     setIsOpening(true);
     try {
-      const detail = await fetchPolicyDetail(benefit.id);
+      // API를 직접 부르지 않고 캐시를 거친다 — 저장 화면은 같은 상세를 이미 받아 뒀고,
+      // 같은 카드를 다시 눌러도 왕복이 한 번으로 끝난다.
+      const detail = await queryClient.fetchQuery(policyDetailOptions(benefit.id));
       // 재시도로 풀리는 실패가 아니라 데이터에 링크가 없는 것이다 — 문구를 나눈다.
       if (!detail.applyUrl) {
         setError(NO_APPLY_URL);

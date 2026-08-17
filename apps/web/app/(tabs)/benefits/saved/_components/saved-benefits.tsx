@@ -2,12 +2,13 @@
 
 import { Button } from "@repo/ui";
 import { useMutation, useQueries, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { BenefitCard } from "@/app/(tabs)/benefits/_components/benefit-card";
 import { BenefitListSkeleton } from "@/app/(tabs)/benefits/_components/benefit-list-skeleton";
 import { ContentTypeTabs } from "@/app/(tabs)/benefits/_components/content-type-tabs";
 import { useSavedToggleQueue } from "@/app/(tabs)/benefits/_hooks/use-saved-toggle-queue";
 import { toSavedBenefitItem } from "@/app/(tabs)/benefits/lib/benefit-items";
+import { readCachedPolicyCategories } from "@/app/(tabs)/benefits/lib/policy-category-cache";
 import type { BenefitContentType, BenefitItem } from "@/app/(tabs)/benefits/types";
 import { savedPoliciesOptions } from "@/lib/queries/bookmark";
 import { policyDetailOptions, togglePolicyBookmarkOptions } from "@/lib/queries/policy";
@@ -31,15 +32,25 @@ export function SavedBenefits() {
   const isTipTab = contentType === "tip";
 
   const saved = useQuery({ ...savedPoliciesOptions(), enabled: !isTipTab });
+
+  // 목록에서 이미 받아 둔 분류는 다시 부르지 않는다 — 저장 30개면 상세 요청이 30번 나갔다.
+  // 목록이 갱신돼도 분류는 거의 그대로라 저장 목록이 바뀔 때만 다시 읽는다.
+  const cachedCategories = useMemo(
+    () => readCachedPolicyCategories(queryClient),
+    [queryClient, saved.data],
+  );
   const savedPolicyDetails = useQueries({
     queries: (saved.data ?? []).map(({ id }) => ({
       ...policyDetailOptions(id),
-      enabled: !isTipTab,
+      enabled: !isTipTab && !cachedCategories.has(id),
     })),
   });
 
   const benefits: readonly BenefitItem[] = (saved.data ?? []).map((item, index) =>
-    toSavedBenefitItem(item, savedPolicyDetails[index]?.data?.category),
+    toSavedBenefitItem(
+      item,
+      cachedCategories.get(item.id) ?? savedPolicyDetails[index]?.data?.category,
+    ),
   );
 
   function askToCancel(benefit: BenefitItem) {
