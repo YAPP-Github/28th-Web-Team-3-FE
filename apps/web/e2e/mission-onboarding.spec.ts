@@ -27,7 +27,7 @@ test.beforeEach(async ({ page }) => {
   );
 });
 
-test("카테고리 인트로에서 다음을 눌러 입력을 완료하고 미션 생성을 시작한다", async ({ page }) => {
+test("채팅 질문에 답하고 미션 생성을 시작한다", async ({ page }) => {
   let generationRequest: unknown;
   await page.route("**/api/missions/generation-jobs", async (route) => {
     generationRequest = route.request().postDataJSON();
@@ -47,21 +47,16 @@ test("카테고리 인트로에서 다음을 눌러 입력을 완료하고 미�
     });
   });
 
-  await page.goto("/mission/new/form?category=식비");
-  await page.getByRole("button", { name: "다음" }).click();
-
-  const itemQuestion = page.getByRole("heading", {
-    name: "식비 중 줄이고 싶은 항목이 무엇인가요?",
-  });
-  await expect(itemQuestion).toBeFocused();
+  await page.goto("/mission/new");
+  await page.getByRole("button", { name: "식비" }).click();
+  await expect(page.getByRole("status", { name: "다음 질문을 준비하고 있어요" })).toBeVisible();
   await page.getByRole("button", { name: "배달음식" }).click();
-  await page.getByRole("button", { name: "다음" }).click();
-  await page.getByLabel("주간 소비 횟수").fill("3");
-  await page.getByRole("button", { name: "다음" }).click();
-  await page.getByLabel("주간 소비 금액(만원)").fill("5");
-  await page.getByRole("button", { name: "다음" }).click();
+  await page.getByRole("button", { name: "3회" }).click();
+  await page.getByLabel("평소 소비 금액").fill("50000");
+  await page.getByRole("button", { name: "답변 보내기" }).click();
+  await page.getByRole("button", { name: "미션 추천 받기" }).click();
 
-  await expect(page).toHaveURL("/mission/new/generating?jobId=job-1");
+  await expect(page).toHaveURL("/mission/new/loading?jobId=job-1");
   expect(generationRequest).toEqual({
     category: "MEAL",
     item: "DELIVERY_FOOD",

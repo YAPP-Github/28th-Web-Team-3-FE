@@ -3,7 +3,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { fetchPolicyDetail } from "@/api/policy";
 import type { BenefitItem } from "@/app/(tabs)/benefits/types";
 import { openExternalLink } from "@/lib/open-external";
-import { fireEvent, render, screen } from "@/lib/test/react";
+import { createTestQueryClient, fireEvent, render, screen } from "@/lib/test/react";
 import { BenefitCard } from "./benefit-card";
 
 vi.mock("@/api/policy", () => ({ fetchPolicyDetail: vi.fn() }));
@@ -52,8 +52,34 @@ describe("BenefitCard", () => {
 
     fireEvent.click(screen.getByRole("button", { name: BENEFIT.title }));
 
-    await vi.waitFor(() => expect(fetchPolicyDetail).toHaveBeenCalledWith(1));
-    expect(openExternalLink).toHaveBeenCalledWith("https://example.com/apply");
+    await vi.waitFor(() =>
+      expect(openExternalLink).toHaveBeenCalledWith("https://example.com/apply"),
+    );
+    expect(fetchPolicyDetail).toHaveBeenCalledWith(1);
+  });
+
+  /**
+   * 상세를 캐시로 받는다 — 저장 화면은 같은 상세를 이미 받아 뒀고, 같은 카드를 다시 눌러도
+   * 왕복이 늘지 않아야 한다.
+   *
+   * 테스트 클라이언트는 캐시를 남기지 않으므로(gcTime 0·staleTime 0) 실제 앱과 같은 값으로
+   * 맞춘다(`packages/api/src/query-client.tsx`의 staleTime 60초).
+   */
+  it("같은 카드를 다시 눌러도 상세는 한 번만 받는다", async () => {
+    const queryClient = createTestQueryClient();
+    queryClient.setQueryDefaults([], {
+      gcTime: Number.POSITIVE_INFINITY,
+      staleTime: 60 * 1000,
+    });
+    render(<BenefitCard benefit={BENEFIT} onToggleSave={vi.fn()} />, { queryClient });
+
+    fireEvent.click(screen.getByRole("button", { name: BENEFIT.title }));
+    await vi.waitFor(() => expect(openExternalLink).toHaveBeenCalledTimes(1));
+
+    fireEvent.click(screen.getByRole("button", { name: BENEFIT.title }));
+
+    await vi.waitFor(() => expect(openExternalLink).toHaveBeenCalledTimes(2));
+    expect(fetchPolicyDetail).toHaveBeenCalledTimes(1);
   });
 
   // 재시도로 풀리지 않는 실패라 "잠시 후 다시"라고 하면 안 된다.

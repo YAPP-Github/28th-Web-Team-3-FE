@@ -1,5 +1,10 @@
 import type { PolicyCategory } from "@repo/schema/policy";
-import { infiniteQueryOptions, mutationOptions, queryOptions } from "@tanstack/react-query";
+import {
+  infiniteQueryOptions,
+  mutationOptions,
+  type QueryClient,
+  queryOptions,
+} from "@tanstack/react-query";
 import { bookmarkPolicy, fetchPolicies, fetchPolicyDetail, unbookmarkPolicy } from "@/api/policy";
 
 /**
@@ -48,6 +53,19 @@ export function policyDetailOptions(policyId: number) {
   return queryOptions({
     queryKey: [...POLICY_DETAIL_QUERY_KEY, policyId] as const,
     queryFn: () => fetchPolicyDetail(policyId),
+  });
+}
+
+/**
+ * 카드를 눌렀을 때만 필요한 상세 조회 — 목록 응답에 신청 링크가 없어 탭 시점에 받아야 한다.
+ *
+ * 화면이 계속 구독할 값이 아니라 누름에 딸린 한 번의 실행이라 `useQuery`가 아니라 mutation
+ * 으로 둔다. 안에서 `fetchQuery`를 타므로 저장 화면이 이미 받아 둔 상세와 캐시를 공유하고,
+ * 같은 카드를 다시 눌러도 staleTime 안이면 요청이 나가지 않는다.
+ */
+export function loadPolicyDetailOptions(queryClient: QueryClient) {
+  return mutationOptions({
+    mutationFn: (policyId: number) => queryClient.fetchQuery(policyDetailOptions(policyId)),
   });
 }
 

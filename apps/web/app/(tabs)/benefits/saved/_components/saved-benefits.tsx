@@ -8,6 +8,7 @@ import { BenefitListSkeleton } from "@/app/(tabs)/benefits/_components/benefit-l
 import { ContentTypeTabs } from "@/app/(tabs)/benefits/_components/content-type-tabs";
 import { useSavedToggleQueue } from "@/app/(tabs)/benefits/_hooks/use-saved-toggle-queue";
 import { toSavedBenefitItem } from "@/app/(tabs)/benefits/lib/benefit-items";
+import { readCachedPolicyCategories } from "@/app/(tabs)/benefits/lib/policy-category-cache";
 import type { BenefitContentType, BenefitItem } from "@/app/(tabs)/benefits/types";
 import { savedPoliciesOptions } from "@/lib/queries/bookmark";
 import { policyDetailOptions, togglePolicyBookmarkOptions } from "@/lib/queries/policy";
@@ -31,15 +32,27 @@ export function SavedBenefits() {
   const isTipTab = contentType === "tip";
 
   const saved = useQuery({ ...savedPoliciesOptions(), enabled: !isTipTab });
+
+  // 목록에서 이미 받아 둔 분류는 다시 부르지 않는다 — 저장 30개면 상세 요청이 30번 나갔다.
+  // 진입 시점 한 번만 읽는다: 캐시는 렌더 밖에서 바뀌는 값이라 렌더마다 읽으면 같은 렌더가
+  // 매번 다른 답을 낼 수 있고, 여기서 필요한 건 "지금 무엇을 안 불러도 되는가" 뿐이다.
+  const [cachedCategories] = useState(() => readCachedPolicyCategories(queryClient));
   const savedPolicyDetails = useQueries({
     queries: (saved.data ?? []).map(({ id }) => ({
       ...policyDetailOptions(id),
-      enabled: !isTipTab,
+      enabled: !isTipTab && !cachedCategories.has(id),
     })),
   });
 
   const benefits: readonly BenefitItem[] = (saved.data ?? []).map((item, index) =>
-    toSavedBenefitItem(item, savedPolicyDetails[index]?.data?.category),
+    toSavedBenefitItem(
+      item,
+      // 조회를 끈 기준과 값을 읽는 기준을 같게 둔다 — `??`로 두면 분류가 빈 정책에서,
+      // 카드를 눌러 상세가 캐시에 채워진 뒤 태그가 뒤늦게 튀어나온다.
+      cachedCategories.has(item.id)
+        ? cachedCategories.get(item.id)
+        : savedPolicyDetails[index]?.data?.category,
+    ),
   );
 
   function askToCancel(benefit: BenefitItem) {

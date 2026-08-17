@@ -1,0 +1,34 @@
+.coin {
+  animation: mission-loading-coin-flip 1.2s cubic-bezier(0.37, 0, 0.63, 1) infinite;
+  height: 69.067px;
+  position: relative;
+  transform-origin: center;
+  transform-style: preserve-3d;
+  will-change: transform;
+  width: 69.067px;
+}
+
+.coinFace,
+.coinBack {
+  backface-visibility: hidden;
+  height: 100%;
+  inset: 0;
+  position: absolute;
+  width: 100%;
+}
+
+.coinBack {
+  transform: rotateY(180deg);
+}
+
+@keyframes mission-loading-coin-flip {
+  to {
+    transform: rotateY(-360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .coin {
+    animation: none;
+  }
+}

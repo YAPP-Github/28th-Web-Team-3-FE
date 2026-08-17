@@ -79,7 +79,12 @@ export function BottomSheet({
         keyboardInsetRef.current = 0;
         setKeyboardInset(0);
       }, 160);
-      return;
+      return () => {
+        if (closeResetTimeoutRef.current !== null) {
+          clearTimeout(closeResetTimeoutRef.current);
+          closeResetTimeoutRef.current = null;
+        }
+      };
     }
 
     if (closeResetTimeoutRef.current !== null) clearTimeout(closeResetTimeoutRef.current);

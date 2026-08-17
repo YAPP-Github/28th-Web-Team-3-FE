@@ -1,10 +1,11 @@
 "use client";
 
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { ChevronDown, Star } from "lucide-react";
 import { useId, useState } from "react";
-import { fetchPolicyDetail } from "@/api/policy";
 import type { BenefitItem } from "@/app/(tabs)/benefits/types";
 import { openExternalLink } from "@/lib/open-external";
+import { loadPolicyDetailOptions } from "@/lib/queries/policy";
 
 interface BenefitCardProps {
   benefit: BenefitItem;
@@ -25,17 +26,17 @@ const OPEN_FAILED = "혜택 정보를 불러오지 못했어요. 잠시 후 다�
  */
 export function BenefitCard({ benefit, onToggleSave }: BenefitCardProps) {
   const [error, setError] = useState<string>();
-  const [isOpening, setIsOpening] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
   const descriptionId = useId();
+  const queryClient = useQueryClient();
+  const loadDetail = useMutation(loadPolicyDetailOptions(queryClient));
 
   async function openApplyPage() {
     // 버튼을 disabled로 막지 않는다 — 누르는 순간 접근성 트리에서 빠져 키보드 초점이 날아간다.
-    if (isOpening) return;
+    if (loadDetail.isPending) return;
     setError(undefined);
-    setIsOpening(true);
     try {
-      const detail = await fetchPolicyDetail(benefit.id);
+      const detail = await loadDetail.mutateAsync(benefit.id);
       // 재시도로 풀리는 실패가 아니라 데이터에 링크가 없는 것이다 — 문구를 나눈다.
       if (!detail.applyUrl) {
         setError(NO_APPLY_URL);
@@ -44,8 +45,6 @@ export function BenefitCard({ benefit, onToggleSave }: BenefitCardProps) {
       openExternalLink(detail.applyUrl);
     } catch {
       setError(OPEN_FAILED);
-    } finally {
-      setIsOpening(false);
     }
   }
 
@@ -81,7 +80,7 @@ export function BenefitCard({ benefit, onToggleSave }: BenefitCardProps) {
       <div className="flex min-w-0 flex-col gap-1">
         <button
           type="button"
-          aria-busy={isOpening}
+          aria-busy={loadDetail.isPending}
           onClick={openApplyPage}
           className="line-clamp-2 break-words rounded-sm text-left text-body-b1-700 text-gray-900 transition-colors after:absolute after:inset-0 hover:text-gray-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring active:text-gray-600 aria-busy:text-gray-500"
         >
