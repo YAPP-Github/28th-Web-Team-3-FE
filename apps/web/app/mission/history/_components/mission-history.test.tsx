@@ -72,6 +72,10 @@ describe("MissionHistory", () => {
     expect(screen.getByText("2026년 8월")).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "2주차" })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "3주차" })).toBeInTheDocument();
+    expect(screen.getByText("미션이 없었어요.")).toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: "2주차 저금통 애니메이션 재생" }),
+    ).not.toBeInTheDocument();
     expect(screen.getByText("현재 진행 중")).toBeInTheDocument();
     expect(screen.getByText("+ 1")).toBeInTheDocument();
     expect(container.querySelector('[data-progress="25"]')).toHaveAttribute(

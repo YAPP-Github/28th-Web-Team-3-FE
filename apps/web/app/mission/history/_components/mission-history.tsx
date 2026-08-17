@@ -14,6 +14,7 @@ import {
   isSameYearMonth,
   shiftYearMonth,
 } from "../lib/month";
+import { toMissionWeekDisplay } from "../lib/weekly-history";
 
 function MissionHistoryHeader() {
   const router = useRouter();
@@ -70,56 +71,55 @@ function MonthSelector({
   );
 }
 
-function MissionWeekHistory({
-  completedCount,
-  isCurrentWeek,
-  progressPercent,
-  week,
-}: {
-  completedCount: number;
-  isCurrentWeek: boolean;
-  progressPercent: number;
-  week: number;
-}) {
+function MissionWeekHistory({ week }: { week: ReturnType<typeof toMissionWeekDisplay> }) {
   const [playRequest, setPlayRequest] = useState(0);
 
   return (
-    <article aria-labelledby={`mission-history-week-${week}`} className="flex flex-col gap-2.5">
+    <article
+      aria-labelledby={`mission-history-week-${week.week}`}
+      className="flex flex-col gap-2.5"
+    >
       <div className="flex items-center gap-2">
-        <h2 className="text-body-b2-500 text-gray-500" id={`mission-history-week-${week}`}>
-          {week}주차
+        <h2 className="text-body-b2-500 text-gray-500" id={`mission-history-week-${week.week}`}>
+          {week.week}주차
         </h2>
-        {isCurrentWeek ? (
+        {week.isCurrentWeek ? (
           <span className="rounded bg-[#e2f8ec] px-1 py-0.5 text-caption-c1-500 text-[#009166]">
             현재 진행 중
           </span>
         ) : null}
       </div>
-      <div className="mt-2.5 flex h-[91px] items-center justify-between">
-        <div className="flex flex-col gap-0.5">
-          <strong className="text-headline-h2-700 text-gray-900 tabular-nums">
-            {progressPercent}% 달성
-          </strong>
-          <p className="flex items-center gap-1.5 text-body-b2-500 text-gray-900 tabular-nums">
-            <HomeMissionCoin aria-hidden="true" className="h-[19px] w-7 shrink-0" />+{" "}
-            {completedCount}
-          </p>
+      {week.state === "no-missions" ? (
+        <p className="flex h-[91px] items-center text-body-b1-500 text-gray-500">
+          미션이 없었어요.
+        </p>
+      ) : (
+        <div className="mt-2.5 flex h-[91px] items-center justify-between">
+          <div className="flex flex-col gap-0.5">
+            <strong className="text-headline-h2-700 text-gray-900 tabular-nums">
+              {week.progressPercent}% 달성
+            </strong>
+            <p className="flex items-center gap-1.5 text-body-b2-500 text-gray-900 tabular-nums">
+              <HomeMissionCoin aria-hidden="true" className="h-[19px] w-7 shrink-0" />+{" "}
+              {week.completedCount}
+            </p>
+          </div>
+          <button
+            aria-label={`${week.week}주차 저금통 애니메이션 재생`}
+            className="h-[91px] w-[117px] rounded-xl focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+            type="button"
+            onClick={() => setPlayRequest((request) => request + 1)}
+          >
+            <PigboxProgressGauge
+              animated={false}
+              className="-translate-y-[39px]"
+              completedCount={week.completedCount}
+              playRequest={playRequest}
+              progress={week.progressPercent}
+            />
+          </button>
         </div>
-        <button
-          aria-label={`${week}주차 저금통 애니메이션 재생`}
-          className="h-[91px] w-[117px] rounded-xl focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
-          type="button"
-          onClick={() => setPlayRequest((request) => request + 1)}
-        >
-          <PigboxProgressGauge
-            animated={false}
-            className="-translate-y-[39px]"
-            completedCount={completedCount}
-            playRequest={playRequest}
-            progress={progressPercent}
-          />
-        </button>
-      </div>
+      )}
     </article>
   );
 }
@@ -171,17 +171,7 @@ export function MissionHistory() {
       {histories?.length ? (
         <section aria-label="주차별 미션 내역" className="flex flex-col gap-6 px-5">
           {histories.map((history) => (
-            <MissionWeekHistory
-              completedCount={history.completedCount}
-              isCurrentWeek={history.isCurrentWeek}
-              key={history.weekStartDate}
-              progressPercent={
-                history.totalCount === 0
-                  ? 0
-                  : Math.floor((history.completedCount * 100) / history.totalCount)
-              }
-              week={history.weekOfMonth}
-            />
+            <MissionWeekHistory key={history.weekStartDate} week={toMissionWeekDisplay(history)} />
           ))}
         </section>
       ) : null}
