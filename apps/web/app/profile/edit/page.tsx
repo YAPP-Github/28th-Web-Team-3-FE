@@ -208,7 +208,12 @@ export default function ProfileEditPage() {
   }
 
   return (
-    <main className="mx-auto min-h-dvh w-full max-w-md bg-gray-0">
+    /*
+     * 화면 높이를 키보드가 가린 만큼 줄이고, 그 안에서 입력 영역만 스크롤시킨다. 완료 버튼은
+     * 스크롤 밖 하단 바에 두어 항상 키보드 바로 위에 붙는다 — 입력 항목이 많아 흐름에 두면
+     * 버튼이 화면 아래로 밀려 키보드에 가려졌다.
+     */
+    <main className="mx-auto flex h-[calc(100dvh-var(--keyboard-inset,0px))] w-full max-w-md flex-col bg-gray-0">
       <header className="grid h-11 grid-cols-[44px_1fr_44px] items-center px-2.5">
         <Button aria-label="뒤로가기" size="icon" variant="ghost" onClick={goBack}>
           <ChevronLeft aria-hidden="true" className="size-6" strokeWidth={1.6} />
@@ -230,11 +235,8 @@ export default function ProfileEditPage() {
       ) : null}
 
       {draft ? (
-        <form
-          className="flex min-h-[calc(100dvh-44px-var(--keyboard-inset,0px))] flex-col px-5 pt-4 pb-6"
-          onSubmit={submit}
-        >
-          <div className="flex flex-col gap-6">
+        <form className="flex min-h-0 flex-1 flex-col" onSubmit={submit}>
+          <div className="flex flex-1 flex-col gap-6 overflow-y-auto px-5 pt-4 pb-6">
             <div className="flex flex-col gap-1">
               <label className="text-body-b2-500 text-gray-700" htmlFor="birth-date">
                 생년월일
@@ -306,19 +308,16 @@ export default function ProfileEditPage() {
             </fieldset>
           </div>
 
-          {submitError ? (
-            <p aria-live="polite" className="mt-auto pt-4 text-body-b2-500 text-error">
-              {submitError}
-            </p>
-          ) : null}
-          <Button
-            className={submitError ? "mt-3" : "mt-auto"}
-            pending={isUpdatingProfile || isUpdatingGoal}
-            size="cta"
-            type="submit"
-          >
-            완료
-          </Button>
+          <div className="shrink-0 bg-gray-0 px-5 pt-2 pb-3">
+            {submitError ? (
+              <p aria-live="polite" className="pb-3 text-body-b2-500 text-error">
+                {submitError}
+              </p>
+            ) : null}
+            <Button pending={isUpdatingProfile || isUpdatingGoal} size="cta" type="submit">
+              완료
+            </Button>
+          </div>
         </form>
       ) : null}
     </main>
