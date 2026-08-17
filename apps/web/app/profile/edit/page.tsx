@@ -236,76 +236,81 @@ export default function ProfileEditPage() {
 
       {draft ? (
         <form className="flex min-h-0 flex-1 flex-col" onSubmit={submit}>
-          <div className="flex flex-1 flex-col gap-6 overflow-y-auto px-5 pt-4 pb-6">
-            <div className="flex flex-col gap-1">
-              <label className="text-body-b2-500 text-gray-700" htmlFor="birth-date">
-                생년월일
-              </label>
-              <Input
-                autoComplete="off"
-                className="h-12 text-body-b2-500 text-gray-700 tabular-nums"
-                id="birth-date"
-                inputMode="numeric"
-                maxLength={10}
-                name="birthDate"
-                value={draft.birthDate}
-                onChange={(event) =>
-                  editDraft({ ...draft, birthDate: formatBirthDateInput(event.target.value) })
-                }
-              />
-            </div>
-
-            <AmountInput
-              id="monthly-salary"
-              label="월급"
-              max={MAX_MONTHLY_AMOUNT}
-              value={draft.monthlySalaryManwon}
-              onChange={(value) => editDraft({ ...draft, monthlySalaryManwon: value })}
-            />
-            <AmountInput
-              id="monthly-saving"
-              label="월 저축액"
-              max={MAX_MONTHLY_AMOUNT}
-              value={draft.monthlySavingManwon}
-              onChange={(value) => editDraft({ ...draft, monthlySavingManwon: value })}
-            />
-            <AmountInput
-              id="net-worth"
-              label="현재 순자산"
-              max={MAX_NET_WORTH_AMOUNT}
-              value={draft.netWorthManwon}
-              onChange={(value) => editDraft({ ...draft, netWorthManwon: value })}
-            />
-
-            <fieldset className="flex flex-col gap-3">
-              <legend className="text-body-b2-500 text-gray-700">
-                서비스를 사용하여 자산을 모으고 싶은 기간
-              </legend>
-              <div className="grid grid-cols-3 gap-2">
-                {PERIOD_OPTIONS.map(({ label, months }) => {
-                  const selected = selectedPeriodOption(draft.goalPeriodMonths) === months;
-                  return (
-                    <button
-                      aria-pressed={selected}
-                      className={cn(
-                        "h-12 rounded-xl border text-body-b2-500 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none",
-                        selected
-                          ? "border-blue-500 bg-blue-50 text-gray-700 hover:bg-blue-100"
-                          : "border-gray-900 bg-gray-0 text-gray-700 hover:bg-gray-50",
-                      )}
-                      key={months}
-                      type="button"
-                      onClick={() => {
-                        setIsPeriodEdited(months !== profile?.goalPeriodMonths);
-                        editDraft({ ...draft, goalPeriodMonths: months });
-                      }}
-                    >
-                      {label}
-                    </button>
-                  );
-                })}
+          {/* padding을 스크롤 컨테이너 자체가 아니라 안쪽 div에 둔다 — overflow-y-auto가 걸린
+              flex 컨테이너는 끝까지 스크롤했을 때 자기 자신의 trailing padding을 잘라내는
+              브라우저 버그가 있어(WebView 포함), pb-6이 사라지고 버튼과 붙어 보인다. */}
+          <div className="flex-1 overflow-y-auto">
+            <div className="flex flex-col gap-6 px-5 pt-4 pb-6">
+              <div className="flex flex-col gap-1">
+                <label className="text-body-b2-500 text-gray-700" htmlFor="birth-date">
+                  생년월일
+                </label>
+                <Input
+                  autoComplete="off"
+                  className="h-12 text-body-b2-500 text-gray-700 tabular-nums"
+                  id="birth-date"
+                  inputMode="numeric"
+                  maxLength={10}
+                  name="birthDate"
+                  value={draft.birthDate}
+                  onChange={(event) =>
+                    editDraft({ ...draft, birthDate: formatBirthDateInput(event.target.value) })
+                  }
+                />
               </div>
-            </fieldset>
+
+              <AmountInput
+                id="monthly-salary"
+                label="월급"
+                max={MAX_MONTHLY_AMOUNT}
+                value={draft.monthlySalaryManwon}
+                onChange={(value) => editDraft({ ...draft, monthlySalaryManwon: value })}
+              />
+              <AmountInput
+                id="monthly-saving"
+                label="월 저축액"
+                max={MAX_MONTHLY_AMOUNT}
+                value={draft.monthlySavingManwon}
+                onChange={(value) => editDraft({ ...draft, monthlySavingManwon: value })}
+              />
+              <AmountInput
+                id="net-worth"
+                label="현재 순자산"
+                max={MAX_NET_WORTH_AMOUNT}
+                value={draft.netWorthManwon}
+                onChange={(value) => editDraft({ ...draft, netWorthManwon: value })}
+              />
+
+              <fieldset className="flex flex-col gap-3">
+                <legend className="text-body-b2-500 text-gray-700">
+                  서비스를 사용하여 자산을 모으고 싶은 기간
+                </legend>
+                <div className="grid grid-cols-3 gap-2">
+                  {PERIOD_OPTIONS.map(({ label, months }) => {
+                    const selected = selectedPeriodOption(draft.goalPeriodMonths) === months;
+                    return (
+                      <button
+                        aria-pressed={selected}
+                        className={cn(
+                          "h-12 rounded-xl border text-body-b2-500 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none",
+                          selected
+                            ? "border-blue-500 bg-blue-50 text-gray-700 hover:bg-blue-100"
+                            : "border-gray-900 bg-gray-0 text-gray-700 hover:bg-gray-50",
+                        )}
+                        key={months}
+                        type="button"
+                        onClick={() => {
+                          setIsPeriodEdited(months !== profile?.goalPeriodMonths);
+                          editDraft({ ...draft, goalPeriodMonths: months });
+                        }}
+                      >
+                        {label}
+                      </button>
+                    );
+                  })}
+                </div>
+              </fieldset>
+            </div>
           </div>
 
           <div className="shrink-0 bg-gray-0 px-5 pt-2 pb-3">
