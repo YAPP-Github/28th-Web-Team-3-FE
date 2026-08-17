@@ -2,6 +2,23 @@
    where to scan for class names (its own app/ + the shared ui package source). */
 @import "@repo/ui/globals.css";
 
+/* 목표 게이지 채움. 대시 길이를 0에서 목표 비율(`--gauge-dash`)까지 늘리면, 호 path가 왼쪽
+   끝에서 시작하므로 대시가 자라는 방향이 그대로 왼쪽→오른쪽 채움이 된다.
+   JS로 값을 바꾸지 않는 이유: 첫 페인트가 무조건 길이 0이라 하이드레이션 전까지 둥근 캡이
+   시작점에 점으로 남고, 모션 축소 설정에서도 그 점을 한 번 보게 된다. */
+@theme {
+  --animate-gauge-fill: gauge-fill 900ms ease-out;
+
+  @keyframes gauge-fill {
+    from {
+      stroke-dasharray: 0 100;
+    }
+    to {
+      stroke-dasharray: var(--gauge-dash) 100;
+    }
+  }
+}
+
 /* v4 content detection across the workspace boundary (node_modules-resolved path). */
 @source "../../../packages/ui/src/**/*.{ts,tsx}";
 @source "./**/*.{ts,tsx}";
