@@ -11,7 +11,13 @@ export function PendingMissionGenerationRecovery() {
   const router = useRouter();
 
   useEffect(() => {
-    if (!isNativeApp() || pathname.startsWith("/mission/new/loading")) return;
+    if (
+      !isNativeApp() ||
+      pathname.startsWith("/mission/new/loading") ||
+      pathname.startsWith("/mission/new/result")
+    ) {
+      return;
+    }
     void bridge.getPendingMissionGeneration().then((job) => {
       if (!job) return;
       if (job.expiresAt && Date.parse(job.expiresAt) <= Date.now()) {
