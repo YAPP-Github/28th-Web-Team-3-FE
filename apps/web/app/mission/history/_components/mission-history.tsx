@@ -7,11 +7,10 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { PigboxProgressGauge } from "@/app/(tabs)/_components/pigbox-progress-gauge";
-import { missionProgressOptions } from "@/lib/queries/mission";
+import { missionHistoriesOptions } from "@/lib/queries/mission";
 import {
   formatYearMonth,
   getCurrentYearMonth,
-  getMissionWeek,
   isSameYearMonth,
   shiftYearMonth,
 } from "../lib/month";
@@ -71,26 +70,30 @@ function MonthSelector({
   );
 }
 
-function CurrentWeekHistory({
+function MissionWeekHistory({
   completedCount,
+  isCurrentWeek,
   progressPercent,
   week,
 }: {
   completedCount: number;
+  isCurrentWeek: boolean;
   progressPercent: number;
   week: number;
 }) {
   const [playRequest, setPlayRequest] = useState(0);
 
   return (
-    <article aria-labelledby={`mission-history-week-${week}`}>
+    <article aria-labelledby={`mission-history-week-${week}`} className="flex flex-col gap-2.5">
       <div className="flex items-center gap-2">
         <h2 className="text-body-b2-500 text-gray-500" id={`mission-history-week-${week}`}>
           {week}주차
         </h2>
-        <span className="rounded bg-[#e2f8ec] px-1 py-0.5 text-caption-c1-500 text-[#009166]">
-          현재 진행 중
-        </span>
+        {isCurrentWeek ? (
+          <span className="rounded bg-[#e2f8ec] px-1 py-0.5 text-caption-c1-500 text-[#009166]">
+            현재 진행 중
+          </span>
+        ) : null}
       </div>
       <div className="mt-2.5 flex h-[91px] items-center justify-between">
         <div className="flex flex-col gap-0.5">
@@ -123,25 +126,27 @@ function CurrentWeekHistory({
 
 function HistoryLoading() {
   return (
-    <div aria-label="미션 내역 불러오는 중" className="px-5" role="status">
-      <div className="h-[21px] w-24 animate-pulse rounded bg-gray-50" />
-      <div className="mt-2.5 flex h-[91px] items-center justify-between">
-        <div className="flex flex-col gap-2">
-          <span className="h-[34px] w-28 animate-pulse rounded bg-gray-50" />
-          <span className="h-[21px] w-16 animate-pulse rounded bg-gray-50" />
+    <div aria-label="미션 내역 불러오는 중" className="flex flex-col gap-6 px-5" role="status">
+      {Array.from({ length: 3 }, (_, index) => (
+        <div className="flex flex-col gap-2.5" key={index}>
+          <div className="h-[21px] w-24 animate-pulse rounded bg-gray-50" />
+          <div className="flex h-[91px] items-center justify-between">
+            <div className="flex flex-col gap-2">
+              <span className="h-[34px] w-28 animate-pulse rounded bg-gray-50" />
+              <span className="h-[21px] w-16 animate-pulse rounded bg-gray-50" />
+            </div>
+            <span className="h-[91px] w-[117px] animate-pulse rounded-full bg-gray-50" />
+          </div>
         </div>
-        <span className="h-[91px] w-[117px] animate-pulse rounded-full bg-gray-50" />
-      </div>
+      ))}
     </div>
   );
 }
 
 export function MissionHistory() {
-  const { data: progress, isError, isPending } = useQuery(missionProgressOptions());
   const [currentMonth] = useState(getCurrentYearMonth);
   const [selectedMonth, setSelectedMonth] = useState(currentMonth);
-  const missionWeek = progress ? getMissionWeek(progress.weekStartDate, currentMonth) : undefined;
-  const showsCurrentWeek = missionWeek ? isSameYearMonth(selectedMonth, missionWeek) : false;
+  const { data: histories, isError, isPending } = useQuery(missionHistoriesOptions(selectedMonth));
 
   return (
     <main className="mx-auto min-h-dvh w-full max-w-md bg-gray-0 text-gray-900">
@@ -163,16 +168,24 @@ export function MissionHistory() {
           미션 내역을 불러오지 못했어요. 잠시 후 다시 시도해 주세요.
         </p>
       ) : null}
-      {progress && showsCurrentWeek && missionWeek ? (
-        <section aria-label="주차별 미션 내역" className="px-5">
-          <CurrentWeekHistory
-            completedCount={progress.completedCount}
-            progressPercent={progress.progressPercent}
-            week={missionWeek.week}
-          />
+      {histories?.length ? (
+        <section aria-label="주차별 미션 내역" className="flex flex-col gap-6 px-5">
+          {histories.map((history) => (
+            <MissionWeekHistory
+              completedCount={history.completedCount}
+              isCurrentWeek={history.isCurrentWeek}
+              key={history.weekStartDate}
+              progressPercent={
+                history.totalCount === 0
+                  ? 0
+                  : Math.floor((history.completedCount * 100) / history.totalCount)
+              }
+              week={history.weekOfMonth}
+            />
+          ))}
         </section>
       ) : null}
-      {progress && !showsCurrentWeek ? (
+      {histories && histories.length === 0 ? (
         <p className="px-5 pt-[127px] text-center text-body-b1-500 text-gray-600">
           아직 기록된 미션 내역이 없어요.
         </p>

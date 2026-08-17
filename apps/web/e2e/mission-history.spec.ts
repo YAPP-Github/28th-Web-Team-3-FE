@@ -23,17 +23,25 @@ function currentSeoulYearMonth() {
   };
 }
 
-test("mission history renders current progress and blocks future months", async ({ page }) => {
+test("mission history renders monthly weekly completion and blocks future months", async ({
+  page,
+}) => {
   const { month, year } = currentSeoulYearMonth();
   await page.setViewportSize({ height: 812, width: 375 });
   await mockCurrentUser(page);
-  await page.route("**/api/missions/progress", (route) =>
+  await page.route(/\/api\/missions\/histories\?.*/, (route) =>
     route.fulfill({
       body: JSON.stringify({
-        completedCount: 1,
-        progressPercent: 25,
-        totalCount: 4,
-        weekStartDate: `${year}-${String(month).padStart(2, "0")}-10`,
+        histories: [
+          {
+            completedCount: 1,
+            isCurrentWeek: true,
+            totalCount: 4,
+            weekEndDate: `${year}-${String(month).padStart(2, "0")}-23`,
+            weekOfMonth: 3,
+            weekStartDate: `${year}-${String(month).padStart(2, "0")}-17`,
+          },
+        ],
       }),
       contentType: "application/json",
       status: 200,
@@ -53,6 +61,6 @@ test("mission history renders current progress and blocks future months", async 
   await pig.click();
 
   await page.getByRole("button", { name: "이전 달" }).click();
-  await expect(page.getByText("아직 기록된 미션 내역이 없어요.")).toBeVisible();
+  await expect(page.getByText(`${year}년 ${month - 1}월`)).toBeVisible();
   await expect(page.getByRole("button", { name: "다음 달" })).toBeEnabled();
 });

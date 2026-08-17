@@ -1,5 +1,6 @@
 import {
   manualMissionCreateRequestSchema,
+  missionHistoriesResponseSchema,
   missionProgressSchema,
   missionSchema,
 } from "@repo/schema/mission";
@@ -10,7 +11,7 @@ vi.mock("@/api/client", () => ({
 }));
 
 import { http } from "@/api/client";
-import { createManualMission, fetchMissionProgress } from "./mission";
+import { createManualMission, fetchMissionHistories, fetchMissionProgress } from "./mission";
 
 describe("mission API", () => {
   beforeEach(() => vi.clearAllMocks());
@@ -51,6 +52,26 @@ describe("mission API", () => {
     await expect(fetchMissionProgress()).resolves.toEqual(progress);
     expect(http.get).toHaveBeenCalledWith("missions/progress", {
       response: missionProgressSchema,
+    });
+  });
+
+  it("선택한 달의 주차별 미션 완료 내역을 조회한다", async () => {
+    const histories = [
+      {
+        completedCount: 1,
+        isCurrentWeek: true,
+        totalCount: 4,
+        weekEndDate: "2026-08-23",
+        weekOfMonth: 3,
+        weekStartDate: "2026-08-17",
+      },
+    ];
+    vi.mocked(http.get).mockReturnValue(Promise.resolve({ histories }) as never);
+
+    await expect(fetchMissionHistories({ month: 8, year: 2026 })).resolves.toEqual(histories);
+    expect(http.get).toHaveBeenCalledWith("missions/histories", {
+      response: missionHistoriesResponseSchema,
+      searchParams: { month: 8, year: 2026 },
     });
   });
 });

@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { fetchMissionProgress } from "@/api/mission";
+import { fetchMissionHistories } from "@/api/mission";
 import { fireEvent, render, screen } from "@/lib/test/react";
 import { MissionHistory } from "./mission-history";
 
@@ -11,7 +11,7 @@ vi.mock("@/api/mission", () => ({
   completeMission: vi.fn(),
   createManualMission: vi.fn(),
   deleteRecommendedMission: vi.fn(),
-  fetchMissionProgress: vi.fn(),
+  fetchMissionHistories: vi.fn(),
   fetchMissions: vi.fn(),
 }));
 
@@ -41,23 +41,36 @@ vi.mock("../lib/month", async (importOriginal) => ({
 describe("MissionHistory", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    vi.mocked(fetchMissionProgress).mockResolvedValue({
-      completedCount: 1,
-      progressPercent: 25,
-      totalCount: 4,
-      weekStartDate: "2026-08-10",
-    });
+    vi.mocked(fetchMissionHistories).mockResolvedValue([
+      {
+        completedCount: 0,
+        isCurrentWeek: false,
+        totalCount: 0,
+        weekEndDate: "2026-08-16",
+        weekOfMonth: 2,
+        weekStartDate: "2026-08-10",
+      },
+      {
+        completedCount: 1,
+        isCurrentWeek: true,
+        totalCount: 4,
+        weekEndDate: "2026-08-23",
+        weekOfMonth: 3,
+        weekStartDate: "2026-08-17",
+      },
+    ]);
   });
 
   afterEach(() => {
     vi.unstubAllGlobals();
   });
 
-  it("현재 달의 현재 주 미션 내역을 서버 진행률로 표시한다", async () => {
+  it("현재 달의 주차별 미션 내역을 서버 완료 수로 표시한다", async () => {
     const { container } = render(<MissionHistory />);
 
     expect(await screen.findByText("25% 달성")).toBeInTheDocument();
     expect(screen.getByText("2026년 8월")).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "2주차" })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "3주차" })).toBeInTheDocument();
     expect(screen.getByText("현재 진행 중")).toBeInTheDocument();
     expect(screen.getByText("+ 1")).toBeInTheDocument();
@@ -67,7 +80,7 @@ describe("MissionHistory", () => {
     );
   });
 
-  it("과거 달로 이동하면 기록 없음 상태를 표시하고 현재 달 이후 이동은 막는다", async () => {
+  it("과거 달의 주차별 내역을 요청하고 현재 달 이후 이동은 막는다", async () => {
     render(<MissionHistory />);
     await screen.findByText("25% 달성");
 
@@ -76,8 +89,7 @@ describe("MissionHistory", () => {
     fireEvent.click(screen.getByRole("button", { name: "이전 달" }));
 
     expect(screen.getByText("2026년 7월")).toBeInTheDocument();
-    expect(screen.getByText("아직 기록된 미션 내역이 없어요.")).toBeInTheDocument();
-    expect(screen.queryByText("25% 달성")).not.toBeInTheDocument();
+    expect(vi.mocked(fetchMissionHistories)).toHaveBeenLastCalledWith({ month: 7, year: 2026 });
 
     fireEvent.click(nextButton);
     expect(screen.getByText("2026년 8월")).toBeInTheDocument();

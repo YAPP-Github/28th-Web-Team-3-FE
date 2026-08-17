@@ -9,6 +9,7 @@ import {
   completeMission,
   createManualMission,
   deleteRecommendedMission,
+  fetchMissionHistories,
   fetchMissionProgress,
   fetchMissions,
   type MissionListParams,
@@ -17,11 +18,24 @@ import {
 /** 미션 목록 캐시 키. 밖에서는 `missionsOptions().queryKey`로 꺼낸다. */
 const MISSIONS_QUERY_KEY = ["missions"] as const;
 
+interface MissionHistoryPeriod {
+  month: number;
+  year: number;
+}
+
 /** 현재 주 미션 달성 현황. */
 export function missionProgressOptions() {
   return queryOptions({
     queryKey: [...MISSIONS_QUERY_KEY, "progress"],
     queryFn: fetchMissionProgress,
+  });
+}
+
+/** 선택한 달의 주차별 미션 완료 내역. */
+export function missionHistoriesOptions({ month, year }: MissionHistoryPeriod) {
+  return queryOptions({
+    queryKey: [...MISSIONS_QUERY_KEY, "histories", year, month],
+    queryFn: () => fetchMissionHistories({ month, year }),
   });
 }
 

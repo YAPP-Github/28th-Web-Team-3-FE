@@ -140,3 +140,19 @@ export const missionProgressSchema = z.object({
   weekStartDate: z.iso.date(),
 });
 export type MissionProgress = z.infer<typeof missionProgressSchema>;
+
+/** GET /api/missions/histories 응답의 월별 주차 미션 완료 현황. */
+export const missionWeeklyHistorySchema = z.object({
+  completedCount: z.number().int().nonnegative(),
+  isCurrentWeek: z.boolean(),
+  totalCount: z.number().int().nonnegative(),
+  weekEndDate: z.iso.date(),
+  weekOfMonth: z.number().int().positive(),
+  weekStartDate: z.iso.date(),
+});
+export type MissionWeeklyHistory = z.infer<typeof missionWeeklyHistorySchema>;
+
+export const missionHistoriesResponseSchema = z.object({
+  histories: z.array(missionWeeklyHistorySchema),
+});
+export type MissionHistoriesResponse = z.infer<typeof missionHistoriesResponseSchema>;

@@ -3,6 +3,7 @@ import {
   MAX_MANUAL_MISSION_TEXT_LENGTH,
   manualMissionCreateRequestSchema,
   missionCatalogResponseSchema,
+  missionHistoriesResponseSchema,
   missionProgressSchema,
   missionsResponseSchema,
 } from "./mission";
@@ -81,5 +82,33 @@ describe("mission API schemas", () => {
         weekStartDate: "2026-08-10",
       }),
     ).toThrow();
+  });
+
+  it("월별 주차 미션 완료 내역 응답을 검증한다", () => {
+    expect(
+      missionHistoriesResponseSchema.parse({
+        histories: [
+          {
+            completedCount: 1,
+            isCurrentWeek: true,
+            totalCount: 4,
+            weekEndDate: "2026-08-23",
+            weekOfMonth: 3,
+            weekStartDate: "2026-08-17",
+          },
+        ],
+      }),
+    ).toEqual({
+      histories: [
+        {
+          completedCount: 1,
+          isCurrentWeek: true,
+          totalCount: 4,
+          weekEndDate: "2026-08-23",
+          weekOfMonth: 3,
+          weekStartDate: "2026-08-17",
+        },
+      ],
+    });
   });
 });
