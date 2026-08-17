@@ -291,7 +291,7 @@ export default function ProfileEditPage() {
                         "h-12 rounded-xl border text-body-b2-500 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none",
                         selected
                           ? "border-blue-500 bg-blue-50 text-gray-700 hover:bg-blue-100"
-                          : "border-gray-800 bg-gray-0 text-gray-700 hover:bg-gray-50",
+                          : "border-gray-900 bg-gray-0 text-gray-700 hover:bg-gray-50",
                       )}
                       key={months}
                       type="button"
