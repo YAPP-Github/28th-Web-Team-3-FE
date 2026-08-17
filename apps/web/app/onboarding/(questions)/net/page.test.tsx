@@ -62,6 +62,14 @@ describe("NetWorthOnboardingPage", () => {
     expect(screen.getByRole("textbox", { name: "순자산만원" })).toHaveValue("10000");
   });
 
+  it("직접 입력을 열면 순자산 필드에 자동으로 포커스한다", () => {
+    renderNetWorthOnboardingPage();
+
+    fireEvent.click(screen.getByRole("button", { name: "직접 입력" }));
+
+    expect(screen.getByRole("textbox", { name: "순자산만원" })).toHaveFocus();
+  });
+
   it("입력한 순자산으로 다음 질문으로 이동한다", async () => {
     renderNetWorthOnboardingPage();
 

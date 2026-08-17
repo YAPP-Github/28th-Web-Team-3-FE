@@ -24,6 +24,7 @@ describe("AgeOnboardingPage", () => {
 
     const input = screen.getByRole("textbox", { name: "생년월일" });
     const nextButton = screen.getByRole("button", { name: "다음" });
+    expect(input).toHaveFocus();
     expect(nextButton).toBeDisabled();
 
     fireEvent.change(input, { target: { value: "19980301" } });
@@ -35,6 +36,35 @@ describe("AgeOnboardingPage", () => {
       expect(patchOnboardingProfile).toHaveBeenCalledWith({ birthDate: "1998-03-01" });
       expect(pushMock).toHaveBeenCalledWith("/onboarding/address");
     });
+  });
+
+  it("완성한 생년월일에서 Enter를 누르면 다음 단계로 이동한다", async () => {
+    render(
+      <OnboardingFormProvider>
+        <AgeOnboardingPage />
+      </OnboardingFormProvider>,
+    );
+
+    const input = screen.getByRole("textbox", { name: "생년월일" });
+    fireEvent.change(input, { target: { value: "19980301" } });
+    fireEvent.keyDown(input, { key: "Enter" });
+
+    await waitFor(() => expect(pushMock).toHaveBeenCalledWith("/onboarding/address"));
+  });
+
+  it("IME 조합 중 Enter는 다음 단계로 이동하지 않는다", () => {
+    render(
+      <OnboardingFormProvider>
+        <AgeOnboardingPage />
+      </OnboardingFormProvider>,
+    );
+
+    const input = screen.getByRole("textbox", { name: "생년월일" });
+    fireEvent.change(input, { target: { value: "19980301" } });
+    fireEvent.keyDown(input, { key: "Enter", isComposing: true });
+
+    expect(patchOnboardingProfile).not.toHaveBeenCalled();
+    expect(pushMock).not.toHaveBeenCalled();
   });
 
   it("존재하지 않는 날짜는 오류를 표시하고 다음을 비활성화한다", () => {
