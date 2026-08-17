@@ -1,7 +1,8 @@
 const jobs = new Map();
 
-function post(job, message) {
-  self.clients.get(job.clientId).then((client) => client?.postMessage(message));
+async function post(message) {
+  const clients = await self.clients.matchAll({ includeUncontrolled: true, type: "window" });
+  for (const client of clients) client.postMessage(message);
 }
 
 async function poll(job) {
@@ -12,7 +13,7 @@ async function poll(job) {
     });
     const durationMs = Math.round(performance.now() - startedAt);
     if (response.status === 401) {
-      post(job, {
+      post({
         type: "mission-generation-poll-error",
         jobId: job.jobId,
         reason: "unauthorized",
@@ -27,7 +28,7 @@ async function poll(job) {
       job.intervalMs = Math.min(5000, Math.max(2000, jobStatus.pollingIntervalMillis));
     }
     job.attemptCount += 1;
-    post(job, {
+    post({
       type: "mission-generation-poll-status",
       job: jobStatus,
       attemptCount: job.attemptCount,
@@ -41,7 +42,11 @@ async function poll(job) {
       return;
     }
   } catch {
-    post(job, { type: "mission-generation-poll-error", jobId: job.jobId, reason: "network" });
+    post({
+      type: "mission-generation-poll-error",
+      jobId: job.jobId,
+      reason: "network",
+    });
   }
   if (jobs.has(job.jobId)) job.timer = setTimeout(() => poll(job), job.intervalMs);
 }
@@ -55,13 +60,12 @@ self.addEventListener("message", (event) => {
     jobs.delete(message.jobId);
     return;
   }
-  if (message.type !== "mission-generation-poll-start" || !event.source?.id) return;
+  if (message.type !== "mission-generation-poll-start") return;
   const previous = jobs.get(message.jobId);
   if (previous?.timer) clearTimeout(previous.timer);
   const job = {
     accessToken: message.accessToken,
     attemptCount: 0,
-    clientId: event.source.id,
     intervalMs: message.intervalMs,
     jobId: message.jobId,
     statusUrl: message.statusUrl,
