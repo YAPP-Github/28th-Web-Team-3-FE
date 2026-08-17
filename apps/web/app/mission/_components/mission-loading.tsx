@@ -1,11 +1,17 @@
 "use client";
 
+import type { MissionGenerationJob } from "@repo/schema/mission-generation";
 import { Button } from "@repo/ui";
 import MissionLoadingCoin from "@repo/ui/svg/mission-loading-coin.svg";
 import { useQuery } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { buildMissionCreationResultHref } from "@/app/mission/constants/mission-creation";
+import {
+  startMissionGenerationWorkerPolling,
+  supportsMissionGenerationWorker,
+} from "@/app/mission/new/utils/mission-generation-polling";
+import { recordMissionGenerationPollMetric } from "@/app/mission/new/utils/mission-generation-polling-metrics";
 import { generationJobStatusOptions } from "@/lib/queries/mission-generation";
 import styles from "./mission-loading.module.css";
 
@@ -16,7 +22,42 @@ import styles from "./mission-loading.module.css";
  */
 export function MissionLoading({ jobId }: { jobId: string }) {
   const router = useRouter();
-  const { data: job, isError } = useQuery(generationJobStatusOptions(jobId));
+  const [workerMode, setWorkerMode] = useState<"starting" | "active" | "fallback">(() =>
+    supportsMissionGenerationWorker() ? "starting" : "fallback",
+  );
+  const [workerJob, setWorkerJob] = useState<MissionGenerationJob>();
+  const { data: pageJob, isError } = useQuery({
+    ...generationJobStatusOptions(jobId),
+    enabled: workerMode === "fallback",
+  });
+  const job = workerJob ?? pageJob;
+
+  useEffect(() => {
+    if (workerMode !== "starting") return;
+    let mounted = true;
+    void startMissionGenerationWorkerPolling({
+      jobId,
+      onMessage: (message) => {
+        if (!mounted) return;
+        if (message.type === "status") {
+          recordMissionGenerationPollMetric({
+            durationMs: message.durationMs,
+            source: "service-worker",
+          });
+          setWorkerJob(message.job);
+        }
+        if (message.type === "error" && message.reason === "unauthorized") {
+          setWorkerMode("fallback");
+        }
+      },
+    }).then((unsubscribe) => {
+      if (!mounted) return;
+      setWorkerMode(unsubscribe ? "active" : "fallback");
+    });
+    return () => {
+      mounted = false;
+    };
+  }, [jobId, workerMode]);
 
   useEffect(() => {
     if (job?.status === "SUCCEEDED" && job.draftsAvailable) {

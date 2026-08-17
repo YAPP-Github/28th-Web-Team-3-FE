@@ -12,6 +12,7 @@ import {
   missionGenerationJobSchema,
 } from "@repo/schema/mission-generation";
 import { http } from "@/api/client";
+import { recordMissionGenerationPollMetric } from "@/app/mission/new/utils/mission-generation-polling-metrics";
 
 /**
  * 미션 초안 생성(비동기 job) API — 백엔드 OpenAPI(`/api/missions/generation-jobs`) 연동.
@@ -34,10 +35,18 @@ export function requestGenerationJob(
 }
 
 /** GET /api/missions/generation-jobs/{jobId} — job 상태 polling. */
-export function fetchGenerationJobStatus(jobId: string): Promise<MissionGenerationJob> {
-  return http.get(`missions/generation-jobs/${jobId}`, {
-    response: missionGenerationJobSchema,
-  });
+export async function fetchGenerationJobStatus(jobId: string): Promise<MissionGenerationJob> {
+  const startedAt = performance.now();
+  try {
+    return await http.get(`missions/generation-jobs/${jobId}`, {
+      response: missionGenerationJobSchema,
+    });
+  } finally {
+    recordMissionGenerationPollMetric({
+      durationMs: performance.now() - startedAt,
+      source: "page",
+    });
+  }
 }
 
 /** GET /api/missions/generation-jobs/{jobId}/drafts — 완료된 job의 카테고리별 초안 조회. */

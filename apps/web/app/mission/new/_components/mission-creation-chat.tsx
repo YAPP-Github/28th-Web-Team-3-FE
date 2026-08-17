@@ -29,6 +29,7 @@ import {
   missionCatalogOptions,
   requestGenerationJobOptions,
 } from "@/lib/queries/mission-generation";
+import { savePendingMissionGeneration } from "../utils/pending-mission-generation";
 import { ChatAnswer } from "./chat-answer";
 import { ChatComposer } from "./chat-composer";
 import { ChatQuestion } from "./chat-question";
@@ -157,7 +158,14 @@ export function MissionCreationChat() {
     setSubmitError(undefined);
     requestJob.mutate(request, {
       onError: () => setSubmitError("미션 생성을 시작하지 못했어요. 잠시 후 다시 시도해 주세요."),
-      onSuccess: (job) => router.push(buildMissionLoadingHref(job.jobId)),
+      onSuccess: async (job) => {
+        await savePendingMissionGeneration({
+          createdAt: Date.now(),
+          expiresAt: job.expiresAt,
+          jobId: job.jobId,
+        });
+        router.push(buildMissionLoadingHref(job.jobId));
+      },
     });
   }
 

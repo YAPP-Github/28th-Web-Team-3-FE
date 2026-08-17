@@ -9,6 +9,10 @@ vi.mock("./_components/onboarding-route-guard", () => ({
   OnboardingRouteGuard: ({ children }: { children: React.ReactNode }) => children,
 }));
 
+vi.mock("./_components/pending-mission-generation-recovery", () => ({
+  PendingMissionGenerationRecovery: () => null,
+}));
+
 vi.mock("./_components/mixpanel-page-tracker", () => ({
   MixpanelPageTracker: () => null,
 }));

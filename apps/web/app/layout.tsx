@@ -5,6 +5,7 @@ import { Suspense } from "react";
 import { KeyboardInsetSync } from "./_components/keyboard-inset-sync";
 import { MixpanelPageTracker } from "./_components/mixpanel-page-tracker";
 import { OnboardingRouteGuard } from "./_components/onboarding-route-guard";
+import { PendingMissionGenerationRecovery } from "./_components/pending-mission-generation-recovery";
 import { SafeAreaColor } from "./_components/safe-area-color";
 import "./globals.css";
 import { MSWProvider } from "./msw-provider";
@@ -20,6 +21,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
   const app = (
     <QueryProvider>
       <KeyboardInsetSync />
+      <PendingMissionGenerationRecovery />
       <OnboardingRouteGuard>{children}</OnboardingRouteGuard>
       <Suspense fallback={null}>
         <MixpanelPageTracker />
