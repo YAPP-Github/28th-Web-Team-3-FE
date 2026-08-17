@@ -141,6 +141,44 @@ describe("SavedBenefits", () => {
     expect(fetchPolicyDetail).toHaveBeenCalledTimes(1);
   });
 
+  // 캐시에 분류가 빈 채로 있으면 태그도 비어야 한다 — 상세를 부르지 않기로 한 항목이다.
+  it("캐시의 분류가 비어 있으면 상세를 부르지 않고 태그도 비운다", async () => {
+    vi.mocked(fetchSavedPolicies).mockResolvedValue([
+      {
+        contentType: "POLICY",
+        id: 7,
+        title: "분류 없는 혜택",
+        category: "원본",
+        description: "설명",
+      },
+    ]);
+    const queryClient = createTestQueryClient();
+    queryClient.setQueryDefaults(policiesOptions(null).queryKey, {
+      gcTime: Number.POSITIVE_INFINITY,
+    });
+    queryClient.setQueryData(policiesOptions(null).queryKey, {
+      pages: [
+        [
+          {
+            id: 7,
+            title: "분류 없는 혜택",
+            category: null,
+            largeCategory: null,
+            description: "설명",
+            bookmarked: true,
+          },
+        ],
+      ],
+      pageParams: [0],
+    });
+
+    render(<SavedBenefits />, { queryClient });
+
+    const card = (await screen.findByText("분류 없는 혜택")).closest("article");
+    expect(within(card as HTMLElement).queryByText("원본")).not.toBeInTheDocument();
+    expect(fetchPolicyDetail).not.toHaveBeenCalled();
+  });
+
   it("정책 상세가 늦어도 저장 목록부터 보여준다", async () => {
     let finishDetail: ((detail: PolicyDetail) => void) | undefined;
     vi.mocked(fetchPolicyDetail).mockImplementation(

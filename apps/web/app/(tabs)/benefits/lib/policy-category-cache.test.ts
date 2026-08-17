@@ -4,7 +4,7 @@ import { homePoliciesOptions, policiesOptions } from "@/lib/queries/policy";
 import { createTestQueryClient } from "@/lib/test/react";
 import { readCachedPolicyCategories } from "./policy-category-cache";
 
-/** 테스트 클라이언트는 gcTime이 0이라 관찰자 없는 캐시가 즉시 사라진다. */
+/** 테스트 클라이언트는 gcTime이 0이라, 대기 지점이 생기면 관찰자 없는 캐시가 수거된다. */
 function seedableQueryClient() {
   const queryClient = createTestQueryClient();
   queryClient.setQueryDefaults([], { gcTime: Number.POSITIVE_INFINITY });

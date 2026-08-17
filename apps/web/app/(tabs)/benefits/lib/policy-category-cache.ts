@@ -29,7 +29,9 @@ export function readCachedPolicyCategories(queryClient: QueryClient): Map<number
   });
   for (const [, data] of listCaches) {
     if (!Array.isArray(data?.pages)) continue;
-    for (const page of data.pages) collect(page);
+    for (const page of data.pages) {
+      if (Array.isArray(page)) collect(page);
+    }
   }
 
   collect(queryClient.getQueryData<PolicySummary[]>(homePoliciesOptions().queryKey));
