@@ -17,11 +17,17 @@ import {
 import { currentUserOptions } from "@/lib/queries/auth";
 import { goalStatusOptions } from "@/lib/queries/goal";
 
+/**
+ * 온보딩 캐시 키의 뿌리. 아래 캐시는 전부 프로필에서 파생되므로, 프로필을 바꾸는 쪽은
+ * 이 뿌리 하나로 한꺼번에 무효화한다(`lib/queries/goal.ts`도 목표 수정 뒤 이 키를 쓴다).
+ */
+export const ONBOARDING_QUERY_KEY = ["onboarding"] as const;
+
 /** 프로필 캐시 키. 밖에서는 `onboardingProfileOptions().queryKey`로 꺼낸다. */
-const ONBOARDING_PROFILE_QUERY_KEY = ["onboarding", "profile"] as const;
-const ONBOARDING_REPORT_QUERY_KEY = ["onboarding", "report"] as const;
-const ONBOARDING_GOAL_PLANS_QUERY_KEY = ["onboarding", "goal-plans"] as const;
-const ONBOARDING_GOAL_PREVIEW_QUERY_KEY = ["onboarding", "goal-preview", "v2"] as const;
+const ONBOARDING_PROFILE_QUERY_KEY = [...ONBOARDING_QUERY_KEY, "profile"] as const;
+const ONBOARDING_REPORT_QUERY_KEY = [...ONBOARDING_QUERY_KEY, "report"] as const;
+const ONBOARDING_GOAL_PLANS_QUERY_KEY = [...ONBOARDING_QUERY_KEY, "goal-plans"] as const;
+const ONBOARDING_GOAL_PREVIEW_QUERY_KEY = [...ONBOARDING_QUERY_KEY, "goal-preview", "v2"] as const;
 
 /**
  * 온보딩 프로필 조회. 홈의 온보딩 완료 판정과 질문 퍼널의 초기값 복원이

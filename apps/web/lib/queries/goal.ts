@@ -1,6 +1,7 @@
 import type { GoalUpdateRequest, SavingRequest } from "@repo/schema/goal";
 import { mutationOptions, type QueryClient, queryOptions } from "@tanstack/react-query";
 import { fetchGoalStatus, updateGoal, updateSavings } from "@/api/goal";
+import { ONBOARDING_QUERY_KEY } from "@/lib/queries/onboarding";
 import { reportGoalStatusError } from "@/lib/report-goal-status-error";
 
 /** 목표 현황 캐시 키. 밖에서는 `goalStatusOptions().queryKey`로 꺼낸다. */
@@ -31,10 +32,21 @@ export function goalStatusOptions() {
  * 그래도 await은 유지한다 — 갱신이 끝난 뒤 시트가 닫혀야 방금 넣은 값이 바로 보인다.
  */
 function refetchGoalStatus(queryClient: QueryClient) {
-  return queryClient.invalidateQueries({
-    queryKey: goalStatusOptions().queryKey,
-    refetchType: "all",
-  });
+  return Promise.all([
+    queryClient.invalidateQueries({
+      queryKey: goalStatusOptions().queryKey,
+      refetchType: "all",
+    }),
+    /*
+     * 목표를 바꾸면 온보딩 프로필의 `goalPeriodMonths`와 리포트도 낡는다 — 목표 기간을
+     * 고치고 마이페이지로 가면 옛 기간이 그대로 보였다.
+     *
+     * 서버가 둘을 동기화해 주기 전까지는 다시 조회해도 같은 값이 오지만, 캐시를 붙잡고
+     * 있으면 서버가 동기화를 시작해도 화면이 안 따라온다. 무효화만 해두고 재조회 시점은
+     * 다음 진입에 맡긴다 — 지금 보고 있는 화면은 목표 쪽이라 급히 당길 이유가 없다.
+     */
+    queryClient.invalidateQueries({ queryKey: ONBOARDING_QUERY_KEY }),
+  ]);
 }
 
 /** 현재 저축액 입력 후 목표 현황을 갱신한다. */

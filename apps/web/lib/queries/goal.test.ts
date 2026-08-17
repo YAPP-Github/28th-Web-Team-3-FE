@@ -15,6 +15,7 @@ vi.mock("@/lib/report-goal-status-error", () => ({
 }));
 
 import { fetchGoalStatus, updateGoal, updateSavings } from "@/api/goal";
+import { ONBOARDING_QUERY_KEY, onboardingProfileOptions } from "@/lib/queries/onboarding";
 import { goalStatusOptions, updateGoalOptions, updateSavingsOptions } from "./goal";
 
 const STALE_GOAL: GoalStatus = {
@@ -200,5 +201,41 @@ describe("updateGoalOptions", () => {
       act(() => result.current.mutateAsync({ targetAmountManwon: 6000, periodMonths: 24 })),
     ).resolves.toBeDefined();
     expect(fetchGoalStatus).toHaveBeenCalledTimes(2);
+  });
+
+  /**
+   * 목표 기간은 온보딩 프로필의 `goalPeriodMonths`와 리포트에도 들어간다. 목표만 갱신하면
+   * 기간을 고친 뒤 마이페이지에 들어갔을 때 옛 기간이 그대로 보인다.
+   */
+  it("목표를 수정하면 온보딩 파생 캐시도 무효화한다", async () => {
+    vi.mocked(updateGoal).mockResolvedValue(STALE_GOAL);
+    vi.mocked(fetchGoalStatus).mockResolvedValue(STALE_GOAL);
+    const queryClient = createTestQueryClient();
+    for (const queryKey of [onboardingProfileOptions().queryKey, ONBOARDING_QUERY_KEY]) {
+      queryClient.setQueryDefaults(queryKey, { gcTime: Number.POSITIVE_INFINITY });
+    }
+    queryClient.setQueryData(onboardingProfileOptions().queryKey, {
+      status: "COMPLETED",
+      birthDate: "1998-03-01",
+      address: "SEOUL",
+      monthlySalaryManwon: 300,
+      monthlySavingManwon: 100,
+      netWorthManwon: 1000,
+      goalPeriodMonths: 16,
+    });
+    expect(queryClient.getQueryState(onboardingProfileOptions().queryKey)?.isInvalidated).toBe(
+      false,
+    );
+
+    const { result } = renderHook(() => useMutation(updateGoalOptions(queryClient)), {
+      queryClient,
+    });
+    await act(async () => {
+      await result.current.mutateAsync({ targetAmountManwon: 6000, periodMonths: 24 });
+    });
+
+    expect(queryClient.getQueryState(onboardingProfileOptions().queryKey)?.isInvalidated).toBe(
+      true,
+    );
   });
 });
