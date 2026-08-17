@@ -24,6 +24,22 @@ describe("SemicircleGauge", () => {
     expect(container.querySelectorAll("path")).toHaveLength(2);
   });
 
+  /**
+   * 채움은 CSS 키프레임(`gauge-fill`)이 길이 0에서 목표 비율까지 늘려 그린다. JS로 값을
+   * 바꾸면 첫 페인트가 무조건 길이 0이라, 하이드레이션 전까지 둥근 캡이 점으로 남는다.
+   * 그래서 attribute에는 끝난 뒤 남을 값을 두고, 키프레임 목표만 `--gauge-dash`로 넘긴다.
+   */
+  it("채움 길이를 키프레임으로 늘리고 끝값은 attribute에 둔다", () => {
+    const { container } = render(
+      <SemicircleGauge maxLabel="5,000만원" minLabel="0" percent={39} savedLabel="1,950만원" />,
+    );
+
+    const fill = container.querySelectorAll("path")[1];
+    expect(fill).toHaveAttribute("stroke-dasharray", "39 100");
+    expect(fill).toHaveClass("animate-gauge-fill", "motion-reduce:animate-none");
+    expect(fill?.getAttribute("style")).toContain("--gauge-dash: 39");
+  });
+
   it("저축액·비율·양끝 라벨을 노출한다", () => {
     const { getByText } = render(
       <SemicircleGauge maxLabel="5,000만원" minLabel="0" percent={39} savedLabel="1,950만원" />,

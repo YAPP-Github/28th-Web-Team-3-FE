@@ -1,3 +1,5 @@
+import type { CSSProperties } from "react";
+
 interface SemicircleGaugeProps {
   /** 채움 비율 0–100. */
   percent: number;
@@ -32,7 +34,7 @@ export const ARC_PATH = `M ${ARC_START_X} ${ARC_ENDPOINT_Y} A ${ARC_RADIUS} ${AR
 const MIN_LABEL_LEFT = `${(ARC_START_X / VIEWBOX_WIDTH) * 100}%`;
 const MAX_LABEL_LEFT = `${(ARC_END_X / VIEWBOX_WIDTH) * 100}%`;
 
-/** 저축 진행 게이지. recharts 없이 SVG stroke-dasharray로 그린다(정적·경량). */
+/** 저축 진행 게이지. recharts 없이 SVG stroke-dasharray로 그리고 그 길이를 늘려 채운다. */
 export function SemicircleGauge({ percent, savedLabel, minLabel, maxLabel }: SemicircleGaugeProps) {
   return (
     <div className="flex flex-col items-center">
@@ -56,12 +58,16 @@ export function SemicircleGauge({ percent, savedLabel, minLabel, maxLabel }: Sem
             {/* percent 0이면 그리지 않는다 — 길이 0 대시 + round 캡이 시작점에 점으로 남는다. */}
             {percent > 0 && (
               <path
+                className="animate-gauge-fill motion-reduce:animate-none"
                 d={ARC_PATH}
                 pathLength={100}
                 stroke="var(--color-blue-500)"
+                // 애니메이션이 끝난 뒤(또는 모션 축소 설정에서) 남는 값이다. 채워지는 동안에만
+                // `gauge-fill` 키프레임이 이 값을 덮어 0에서부터 늘려 그린다.
                 strokeDasharray={`${percent} 100`}
                 strokeLinecap="round"
                 strokeWidth={STROKE_WIDTH}
+                style={{ "--gauge-dash": percent } as CSSProperties}
               />
             )}
           </svg>
