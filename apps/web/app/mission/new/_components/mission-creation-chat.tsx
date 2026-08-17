@@ -408,6 +408,7 @@ export function MissionCreationChat() {
                   <ChatComposer
                     ariaDescribedBy={fieldError ? "mission-chat-input-error" : undefined}
                     ariaInvalid={Boolean(fieldError)}
+                    autoFocus
                     disabled={!field.value || Boolean(fieldError)}
                     label={isAmount ? "평소 소비 금액" : "평소 이용 횟수"}
                     maxLength={isAmount ? 9 : 2}
