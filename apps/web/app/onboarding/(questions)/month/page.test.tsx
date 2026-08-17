@@ -52,6 +52,21 @@ describe("MonthlyIncomeAndSavingsOnboardingPage", () => {
     expect(pushMock).not.toHaveBeenCalled();
   });
 
+  it("직접 입력 금액에서 키보드 완료를 누르면 시트를 닫는다", async () => {
+    renderMonthOnboardingPage();
+
+    fireEvent.click(screen.getByRole("button", { name: "직접 입력" }));
+    const salaryInput = screen.getByRole("textbox", { name: "월급만원" });
+    expect(salaryInput).toHaveFocus();
+    fireEvent.change(salaryInput, { target: { value: "300" } });
+    fireEvent.change(screen.getByRole("textbox", { name: "월 저축액만원" }), {
+      target: { value: "100" },
+    });
+    fireEvent.submit(salaryInput.closest("form") as HTMLFormElement);
+
+    await waitFor(() => expect(screen.queryByRole("dialog")).not.toBeInTheDocument());
+  });
+
   it("이전 버튼이 이전 질문 경로로 이동한다", () => {
     renderMonthOnboardingPage();
 
