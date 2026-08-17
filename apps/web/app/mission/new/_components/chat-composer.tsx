@@ -4,6 +4,7 @@ import { ArrowUp } from "lucide-react";
 interface ChatComposerProps {
   ariaDescribedBy?: string;
   ariaInvalid: boolean;
+  autoFocus: boolean;
   disabled: boolean;
   label: string;
   maxLength: number;
@@ -17,6 +18,7 @@ interface ChatComposerProps {
 export function ChatComposer({
   ariaDescribedBy,
   ariaInvalid,
+  autoFocus,
   disabled,
   label,
   maxLength,
@@ -34,8 +36,10 @@ export function ChatComposer({
       <Input
         aria-describedby={ariaDescribedBy}
         aria-invalid={ariaInvalid}
+        autoFocus={autoFocus}
         autoComplete="off"
         className="h-[46px] rounded-full border-0 bg-gray-50 pr-12 text-body-b1-700 placeholder:text-gray-300 focus-visible:border-0"
+        enterKeyHint="done"
         id="mission-chat-input"
         inputMode="numeric"
         maxLength={maxLength}
@@ -45,6 +49,13 @@ export function ChatComposer({
         value={value}
         onChange={(event) => onValueChange(event.target.value)}
         onFocus={onFocus}
+        onKeyDown={(event) => {
+          // 한글 등 IME 조합을 확정하는 Enter는 답변 제출로 처리하지 않는다.
+          if (event.key !== "Enter" || event.nativeEvent.isComposing) return;
+
+          event.preventDefault();
+          event.currentTarget.form?.requestSubmit();
+        }}
       />
       <Button
         aria-label="답변 보내기"
