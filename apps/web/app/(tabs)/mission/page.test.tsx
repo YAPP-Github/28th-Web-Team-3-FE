@@ -62,6 +62,7 @@ describe("MissionPage", () => {
     expect(await screen.findByText("33% 달성")).toBeInTheDocument();
     expect(screen.getByText("약 0원 절약했어요")).toBeInTheDocument();
     expect(container.querySelector('[data-pigbox-progress="33"]')).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "내역" })).toHaveAttribute("href", "/mission/history");
   });
 
   it("미션이 하나도 없으면 필터와 목록 제목 없이 빈 상태를 표시한다", async () => {

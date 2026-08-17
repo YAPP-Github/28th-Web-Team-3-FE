@@ -9,12 +9,35 @@ import {
   completeMission,
   createManualMission,
   deleteRecommendedMission,
+  fetchMissionHistories,
+  fetchMissionProgress,
   fetchMissions,
   type MissionListParams,
 } from "@/api/mission";
 
 /** 미션 목록 캐시 키. 밖에서는 `missionsOptions().queryKey`로 꺼낸다. */
 const MISSIONS_QUERY_KEY = ["missions"] as const;
+
+interface MissionHistoryPeriod {
+  month: number;
+  year: number;
+}
+
+/** 현재 주 미션 달성 현황. */
+export function missionProgressOptions() {
+  return queryOptions({
+    queryKey: [...MISSIONS_QUERY_KEY, "progress"],
+    queryFn: fetchMissionProgress,
+  });
+}
+
+/** 선택한 달의 주차별 미션 완료 내역. */
+export function missionHistoriesOptions({ month, year }: MissionHistoryPeriod) {
+  return queryOptions({
+    queryKey: [...MISSIONS_QUERY_KEY, "histories", year, month],
+    queryFn: () => fetchMissionHistories({ month, year }),
+  });
+}
 
 /** 내 미션 조회. 필터가 바뀔 때는 직전 결과를 유지해 목록 깜빡임을 막는다. */
 export function missionsOptions(params: MissionListParams = {}) {

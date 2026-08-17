@@ -5,6 +5,7 @@ import { calculatePigboxFillTop, PigboxProgressGauge } from "./pigbox-progress-g
 const lottieMocks = vi.hoisted(() => ({
   addEventListener: vi.fn(() => vi.fn()),
   destroy: vi.fn(),
+  goToAndPlay: vi.fn(),
   goToAndStop: vi.fn(),
   loadAnimation: vi.fn(),
   play: vi.fn(),
@@ -25,6 +26,7 @@ describe("PigboxProgressGauge", () => {
     lottieMocks.loadAnimation.mockReturnValue({
       addEventListener: lottieMocks.addEventListener,
       destroy: lottieMocks.destroy,
+      goToAndPlay: lottieMocks.goToAndPlay,
       goToAndStop: lottieMocks.goToAndStop,
       play: lottieMocks.play,
     });
@@ -73,6 +75,47 @@ describe("PigboxProgressGauge", () => {
     expect(gauge).toHaveStyle("--pigbox-fill-top: 87.9%");
     expect(fill).toHaveClass("transition-none");
     expect(requestAnimationFrame).not.toHaveBeenCalled();
+  });
+
+  it("animated가 false면 저금통 자체를 반복 재생하지 않는다", async () => {
+    render(<PigboxProgressGauge animated={false} completedCount={1} progress={25} />);
+
+    await waitFor(() => expect(lottieMocks.loadAnimation).toHaveBeenCalledTimes(3));
+
+    expect(lottieMocks.play).not.toHaveBeenCalled();
+    expect(lottieMocks.goToAndStop).toHaveBeenCalledTimes(3);
+    expect(lottieMocks.loadAnimation.mock.calls[0]?.[0]).toEqual(
+      expect.objectContaining({ loop: false }),
+    );
+    expect(lottieMocks.addEventListener).toHaveBeenCalledWith("complete", expect.any(Function));
+  });
+
+  it("정지 모드에서 playRequest가 증가하면 정지 구간 다음부터 한 번 재생한다", async () => {
+    const { rerender } = render(
+      <PigboxProgressGauge animated={false} completedCount={1} playRequest={0} progress={25} />,
+    );
+    await waitFor(() => expect(lottieMocks.loadAnimation).toHaveBeenCalledTimes(3));
+
+    rerender(
+      <PigboxProgressGauge animated={false} completedCount={1} playRequest={1} progress={25} />,
+    );
+
+    expect(lottieMocks.goToAndPlay).toHaveBeenCalledOnce();
+    expect(lottieMocks.goToAndPlay).toHaveBeenCalledWith(60, true);
+  });
+
+  it("움직임 줄이기 설정에서는 playRequest가 증가해도 재생하지 않는다", async () => {
+    vi.stubGlobal("matchMedia", vi.fn().mockReturnValue({ matches: true }));
+    const { rerender } = render(
+      <PigboxProgressGauge animated={false} completedCount={1} playRequest={0} progress={25} />,
+    );
+    await waitFor(() => expect(lottieMocks.loadAnimation).toHaveBeenCalledTimes(3));
+
+    rerender(
+      <PigboxProgressGauge animated={false} completedCount={1} playRequest={1} progress={25} />,
+    );
+
+    expect(lottieMocks.goToAndPlay).not.toHaveBeenCalled();
   });
 
   it("완료 개수가 그대로면 진행률 변경을 애니메이션 없이 즉시 표시한다", async () => {
