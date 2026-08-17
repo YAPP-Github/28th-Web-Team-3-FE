@@ -70,7 +70,9 @@ test("mission history renders monthly weekly completion and blocks future months
   await expect(pig.locator("svg")).toHaveCount(3);
   await pig.click();
 
+  const previousMonth = month === 1 ? 12 : month - 1;
+  const previousYear = month === 1 ? year - 1 : year;
   await page.getByRole("button", { name: "이전 달" }).click();
-  await expect(page.getByText(`${year}년 ${month - 1}월`)).toBeVisible();
+  await expect(page.getByText(`${previousYear}년 ${previousMonth}월`)).toBeVisible();
   await expect(page.getByRole("button", { name: "다음 달" })).toBeEnabled();
 });

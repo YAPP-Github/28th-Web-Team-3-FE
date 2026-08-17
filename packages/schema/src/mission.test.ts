@@ -77,7 +77,7 @@ describe("mission API schemas", () => {
     expect(() =>
       missionProgressSchema.parse({
         completedCount: 5,
-        progressPercent: 125,
+        progressPercent: 100,
         totalCount: 4,
         weekStartDate: "2026-08-10",
       }),
@@ -110,5 +110,20 @@ describe("mission API schemas", () => {
         },
       ],
     });
+
+    expect(() =>
+      missionHistoriesResponseSchema.parse({
+        histories: [
+          {
+            completedCount: 5,
+            isCurrentWeek: true,
+            totalCount: 4,
+            weekEndDate: "2026-08-23",
+            weekOfMonth: 3,
+            weekStartDate: "2026-08-17",
+          },
+        ],
+      }),
+    ).toThrow();
   });
 });

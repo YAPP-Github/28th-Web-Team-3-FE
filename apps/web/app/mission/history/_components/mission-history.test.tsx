@@ -113,13 +113,14 @@ describe("MissionHistory", () => {
     expect(gauge).toHaveAttribute("data-play-request", "1");
   });
 
-  it("딥링크로 열었을 때 뒤로가기는 미션 홈으로 이동한다", async () => {
-    window.history.replaceState(null, "", "/mission/history");
+  it("브라우저 이력 내부 값과 무관하게 뒤로가기는 미션 홈으로 이동한다", async () => {
+    window.history.replaceState({ idx: 1 }, "", "/mission/history");
     render(<MissionHistory />);
     await screen.findByText("25% 달성");
 
     fireEvent.click(screen.getByRole("button", { name: "뒤로가기" }));
 
     expect(navigation.replace).toHaveBeenCalledWith("/mission");
+    expect(navigation.back).not.toHaveBeenCalled();
   });
 });

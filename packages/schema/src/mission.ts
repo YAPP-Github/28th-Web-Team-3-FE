@@ -133,23 +133,33 @@ export const missionsResponseSchema = z.object({
 export type MissionsResponse = z.infer<typeof missionsResponseSchema>;
 
 /** GET /api/missions/progress 응답. 현재 주의 미션 달성 현황이다. */
-export const missionProgressSchema = z.object({
-  completedCount: z.number().int().nonnegative(),
-  totalCount: z.number().int().nonnegative(),
-  progressPercent: z.number().int().min(0).max(100),
-  weekStartDate: z.iso.date(),
-});
+export const missionProgressSchema = z
+  .object({
+    completedCount: z.number().int().nonnegative(),
+    totalCount: z.number().int().nonnegative(),
+    progressPercent: z.number().int().min(0).max(100),
+    weekStartDate: z.iso.date(),
+  })
+  .refine((progress) => progress.completedCount <= progress.totalCount, {
+    message: "completedCount must not exceed totalCount",
+    path: ["completedCount"],
+  });
 export type MissionProgress = z.infer<typeof missionProgressSchema>;
 
 /** GET /api/missions/histories 응답의 월별 주차 미션 완료 현황. */
-export const missionWeeklyHistorySchema = z.object({
-  completedCount: z.number().int().nonnegative(),
-  isCurrentWeek: z.boolean(),
-  totalCount: z.number().int().nonnegative(),
-  weekEndDate: z.iso.date(),
-  weekOfMonth: z.number().int().positive(),
-  weekStartDate: z.iso.date(),
-});
+export const missionWeeklyHistorySchema = z
+  .object({
+    completedCount: z.number().int().nonnegative(),
+    isCurrentWeek: z.boolean(),
+    totalCount: z.number().int().nonnegative(),
+    weekEndDate: z.iso.date(),
+    weekOfMonth: z.number().int().positive(),
+    weekStartDate: z.iso.date(),
+  })
+  .refine((history) => history.completedCount <= history.totalCount, {
+    message: "completedCount must not exceed totalCount",
+    path: ["completedCount"],
+  });
 export type MissionWeeklyHistory = z.infer<typeof missionWeeklyHistorySchema>;
 
 export const missionHistoriesResponseSchema = z.object({

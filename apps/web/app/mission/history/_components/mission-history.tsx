@@ -20,12 +20,7 @@ function MissionHistoryHeader() {
   const router = useRouter();
 
   function goBack() {
-    const idx = (window.history.state as { idx?: number } | null)?.idx ?? 0;
-    if (idx > 0) {
-      router.back();
-    } else {
-      router.replace("/mission");
-    }
+    router.replace("/mission");
   }
 
   return (
