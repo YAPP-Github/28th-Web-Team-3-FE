@@ -181,6 +181,9 @@ export default function App() {
               // iOS 가장자리 스와이프로 뒤로가기. 없으면 웹 UI에 뒤로 버튼이 없는 화면에
               // 들어갔을 때 빠져나올 방법이 없다 — Android는 아래 BackHandler가 맡는다.
               allowsBackForwardNavigationGestures
+              // iOS의 기본 고무줄 효과를 끈다. 상단을 당길 때 WebView 밖의 흰 배경이
+              // 드러나지 않게 하며, pull-to-refresh는 별도로 제공하지 않는다.
+              bounces={false}
               // 라이브러리는 originWhitelist를 콜백보다 먼저 돌리고, 걸러낸 URL을
               // 아래 콜백에 알리지도 않은 채 그대로 Linking으로 열어버린다. `*`로 열어
               // 모든 내비게이션이 콜백에 도달하게 하고 판정은 한 곳에서만 한다.
