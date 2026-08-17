@@ -18,7 +18,9 @@ export function PendingMissionGenerationRecovery() {
     ) {
       return;
     }
+    let cancelled = false;
     void bridge.getPendingMissionGeneration().then((job) => {
+      if (cancelled) return;
       if (!job) return;
       if (job.expiresAt && Date.parse(job.expiresAt) <= Date.now()) {
         void bridge.clearPendingMissionGeneration();
@@ -26,6 +28,9 @@ export function PendingMissionGenerationRecovery() {
       }
       router.replace(buildMissionLoadingHref(job.jobId));
     });
+    return () => {
+      cancelled = true;
+    };
   }, [pathname, router]);
 
   return null;

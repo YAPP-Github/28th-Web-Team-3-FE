@@ -9,6 +9,7 @@ import {
 const DEFAULT_POLLING_INTERVAL_MS = 3_000;
 const MAX_POLLING_INTERVAL_MS = 5_000;
 const MIN_POLLING_INTERVAL_MS = 2_000;
+const SERVICE_WORKER_READY_TIMEOUT_MS = 5_000;
 
 export function getPollingIntervalMillis(serverInterval?: number): number {
   const interval = serverInterval ?? DEFAULT_POLLING_INTERVAL_MS;
@@ -41,9 +42,25 @@ export async function startMissionGenerationWorkerPolling({
   const accessToken = await bridge.getAccessToken().catch(() => null);
   if (!accessToken) return null;
 
-  await navigator.serviceWorker.register("/mission-generation-polling-worker.js");
-  const registration = await navigator.serviceWorker.ready;
-  const worker = registration.active;
+  let worker: ServiceWorker | null = null;
+  try {
+    await navigator.serviceWorker.register("/mission-generation-polling-worker.js");
+    worker = await new Promise<ServiceWorker | null>((resolve) => {
+      const timeout = window.setTimeout(() => resolve(null), SERVICE_WORKER_READY_TIMEOUT_MS);
+      void navigator.serviceWorker.ready.then(
+        (registration) => {
+          window.clearTimeout(timeout);
+          resolve(registration.active);
+        },
+        () => {
+          window.clearTimeout(timeout);
+          resolve(null);
+        },
+      );
+    });
+  } catch {
+    return null;
+  }
   if (!worker) return null;
   const statusUrl = new URL(
     `missions/generation-jobs/${jobId}`,

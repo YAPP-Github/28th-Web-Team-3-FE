@@ -30,6 +30,7 @@ async function poll(job) {
     job.attemptCount += 1;
     post({
       type: "mission-generation-poll-status",
+      jobId: job.jobId,
       job: jobStatus,
       attemptCount: job.attemptCount,
       durationMs,

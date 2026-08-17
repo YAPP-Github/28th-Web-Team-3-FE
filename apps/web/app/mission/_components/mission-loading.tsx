@@ -8,6 +8,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { buildMissionCreationResultHref } from "@/app/mission/constants/mission-creation";
 import {
+  getPollingIntervalMillis,
   startMissionGenerationWorkerPolling,
   supportsMissionGenerationWorker,
 } from "@/app/mission/new/utils/mission-generation-polling";
@@ -26,6 +27,7 @@ export function MissionLoading({ jobId }: { jobId: string }) {
     supportsMissionGenerationWorker() ? "starting" : "fallback",
   );
   const [workerJob, setWorkerJob] = useState<MissionGenerationJob>();
+  const [workerMessageVersion, setWorkerMessageVersion] = useState(0);
   const { data: pageJob, isError } = useQuery({
     ...generationJobStatusOptions(jobId),
     enabled: workerMode === "fallback",
@@ -33,13 +35,19 @@ export function MissionLoading({ jobId }: { jobId: string }) {
   const job = workerJob ?? pageJob;
 
   useEffect(() => {
-    if (workerMode !== "starting") return;
+    if (!supportsMissionGenerationWorker()) return;
     let mounted = true;
+    let unsubscribe: (() => void) | null = null;
+    const fallbackTimer = setTimeout(
+      () => setWorkerMode("fallback"),
+      getPollingIntervalMillis() * 2,
+    );
     void startMissionGenerationWorkerPolling({
       jobId,
       onMessage: (message) => {
         if (!mounted) return;
         if (message.type === "status") {
+          setWorkerMessageVersion((version) => version + 1);
           recordMissionGenerationPollMetric({
             durationMs: message.durationMs,
             source: "service-worker",
@@ -50,14 +58,33 @@ export function MissionLoading({ jobId }: { jobId: string }) {
           setWorkerMode("fallback");
         }
       },
-    }).then((unsubscribe) => {
-      if (!mounted) return;
-      setWorkerMode(unsubscribe ? "active" : "fallback");
-    });
+    })
+      .then((resolvedUnsubscribe) => {
+        if (!mounted) {
+          resolvedUnsubscribe?.();
+          return;
+        }
+        unsubscribe = resolvedUnsubscribe;
+        setWorkerMode(resolvedUnsubscribe ? "active" : "fallback");
+      })
+      .catch(() => {
+        if (mounted) setWorkerMode("fallback");
+      });
     return () => {
       mounted = false;
+      clearTimeout(fallbackTimer);
+      unsubscribe?.();
     };
-  }, [jobId, workerMode]);
+  }, [jobId]);
+
+  useEffect(() => {
+    if (workerMode !== "active") return;
+    const fallbackTimer = setTimeout(
+      () => setWorkerMode("fallback"),
+      getPollingIntervalMillis() * 2,
+    );
+    return () => clearTimeout(fallbackTimer);
+  }, [workerMessageVersion, workerMode]);
 
   useEffect(() => {
     if (job?.status === "SUCCEEDED" && job.draftsAvailable) {
