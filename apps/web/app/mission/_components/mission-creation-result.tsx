@@ -5,9 +5,11 @@ import { Button, ButtonGroup, Toggle } from "@repo/ui";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ChevronLeft } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { MissionListSkeleton } from "@/app/_components/mission-list-skeleton";
 import { MISSION_CATEGORY_LABELS } from "@/app/(tabs)/mission/constants/mission";
+import { stopMissionGenerationWorkerPolling } from "@/app/mission/new/utils/mission-generation-polling";
+import { clearPendingMissionGeneration } from "@/app/mission/new/utils/pending-mission-generation";
 import {
   confirmGenerationJobOptions,
   generationDraftsOptions,
@@ -53,6 +55,11 @@ export function MissionCreationResult({ jobId }: MissionCreationResultProps) {
   const { data, isPending, isError } = useQuery(generationDraftsOptions(jobId));
   const confirmJob = useMutation(confirmGenerationJobOptions(jobId, queryClient));
   const [selectedDraftIds, setSelectedDraftIds] = useState<string[]>([]);
+
+  useEffect(() => {
+    void clearPendingMissionGeneration();
+    stopMissionGenerationWorkerPolling(jobId);
+  }, [jobId]);
 
   function toggleDraft(id: string, pressed: boolean) {
     setSelectedDraftIds((ids) => {

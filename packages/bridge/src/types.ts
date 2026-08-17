@@ -25,6 +25,13 @@ export interface NativeInfo {
   biometricAvailable: boolean;
 }
 
+/** 앱 재진입 뒤 미션 생성 상태를 복구하기 위해 네이티브에 보관하는 최소 정보. */
+export interface PendingMissionGeneration {
+  createdAt: number;
+  expiresAt: string | null;
+  jobId: string;
+}
+
 import type { BridgeStore } from "@webview-bridge/types";
 
 /**
@@ -68,6 +75,12 @@ export type AppBridgeMethods = {
    * 같은 게스트 계정으로 복귀한다. 그마저 실패하면 null (호출부는 에러 UI).
    */
   refreshAccessToken(): Promise<string | null>;
+  /** 진행 중인 미션 생성 job을 기기 저장소에 기록한다. */
+  savePendingMissionGeneration(job: PendingMissionGeneration): Promise<void>;
+  /** 앱 재진입 시 이어서 확인할 미션 생성 job을 읽는다. */
+  getPendingMissionGeneration(): Promise<PendingMissionGeneration | null>;
+  /** 결과 화면에 진입하거나 종료됐을 때 진행 중 job 기록을 지운다. */
+  clearPendingMissionGeneration(): Promise<void>;
 };
 
 /**

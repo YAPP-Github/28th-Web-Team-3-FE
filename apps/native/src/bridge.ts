@@ -3,6 +3,7 @@ import { bridge } from "@webview-bridge/react-native";
 import Constants from "expo-constants";
 import { Platform } from "react-native";
 import * as guestAuth from "./auth/guest-auth";
+import * as pendingMissionGeneration from "./mission-generation/pending-job";
 import * as biometric from "./native/biometric";
 import * as link from "./native/link";
 import * as push from "./native/push";
@@ -32,6 +33,9 @@ const handlers = {
   setSafeAreaColor: async (top, bottom) => safeArea.setColors(top, bottom),
   getAccessToken: () => guestAuth.getAccessToken(),
   refreshAccessToken: () => guestAuth.refreshAccessToken(),
+  savePendingMissionGeneration: (job) => pendingMissionGeneration.savePendingMissionGeneration(job),
+  getPendingMissionGeneration: () => pendingMissionGeneration.getPendingMissionGeneration(),
+  clearPendingMissionGeneration: () => pendingMissionGeneration.clearPendingMissionGeneration(),
 } satisfies AppBridgeMethods;
 
 export const appBridge = bridge(handlers);
