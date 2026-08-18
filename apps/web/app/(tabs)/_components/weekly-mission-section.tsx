@@ -61,7 +61,9 @@ export function WeeklyMissionSection() {
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [missionToComplete, setMissionToComplete] = useState<Mission | null>(null);
   const [completeError, setCompleteError] = useState<string>();
-  const [hasStartedCreation, setHasStartedCreation] = useState<boolean | null>(null);
+  // 구버전 네이티브 셸에는 새 bridge handler가 없을 수 있다. 이력 조회가 타임아웃돼도
+  // 홈의 기본 추천 CTA를 바로 제공하고, 지원되는 셸에서만 결과에 따라 두 CTA로 확장한다.
+  const [hasStartedCreation, setHasStartedCreation] = useState(false);
 
   useEffect(() => {
     void hasStartedMissionCreation().then(setHasStartedCreation);
@@ -106,39 +108,38 @@ export function WeeklyMissionSection() {
     ? formatManwon(calculateGoalTotalTargetManwon(goal.totalSavedManwon, goal.targetAmountManwon))
     : "목표";
 
-  const missionActions =
-    hasStartedCreation === null ? null : hasStartedCreation ? (
-      <div className="flex w-full gap-2.5">
-        <Link
-          className={cn(
-            buttonVariants({ size: "cta" }),
-            "flex-1 bg-gray-700 text-gray-0 hover:bg-gray-800",
-          )}
-          href="/mission/new/manual"
-        >
-          직접 입력
-        </Link>
-        <Link
-          className={cn(
-            buttonVariants({ size: "cta" }),
-            "flex-1 bg-gray-700 text-gray-0 hover:bg-gray-800",
-          )}
-          href="/mission/new"
-        >
-          추천받기
-        </Link>
-      </div>
-    ) : (
+  const missionActions = hasStartedCreation ? (
+    <div className="flex w-full gap-2.5">
       <Link
         className={cn(
           buttonVariants({ size: "cta" }),
-          "w-full bg-gray-700 text-gray-0 hover:bg-gray-800",
+          "flex-1 bg-gray-700 text-gray-0 hover:bg-gray-800",
+        )}
+        href="/mission/new/manual"
+      >
+        직접 입력
+      </Link>
+      <Link
+        className={cn(
+          buttonVariants({ size: "cta" }),
+          "flex-1 bg-gray-700 text-gray-0 hover:bg-gray-800",
         )}
         href="/mission/new"
       >
-        {totalTargetLabel} 달성을 위한 미션 추천 받기
+        추천받기
       </Link>
-    );
+    </div>
+  ) : (
+    <Link
+      className={cn(
+        buttonVariants({ size: "cta" }),
+        "w-full bg-gray-700 text-gray-0 hover:bg-gray-800",
+      )}
+      href="/mission/new"
+    >
+      {totalTargetLabel} 달성을 위한 미션 추천 받기
+    </Link>
+  );
 
   return (
     <section className="flex flex-col px-5">
