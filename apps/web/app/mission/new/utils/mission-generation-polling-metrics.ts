@@ -13,8 +13,17 @@ export function recordMissionGenerationPollMetric({
   durationMs: number;
   source: MissionGenerationPollingSource;
 }) {
-  if (typeof window === "undefined" || !Number.isFinite(durationMs)) return;
-  performance.measure(`mission-generation-poll:${source}`, { duration: durationMs });
+  if (typeof window === "undefined" || !Number.isFinite(durationMs) || durationMs < 0) return;
+
+  // duration만 넘기면 Android WebView는 시작·종료 시점이 모호하다며 예외를 던진다.
+  // 성능 기록 실패가 서비스워커의 job 상태 메시지 처리까지 끊으면 안 된다.
+  try {
+    performance.measure(`mission-generation-poll:${source}`, {
+      duration: durationMs,
+      start: Math.max(0, performance.now() - durationMs),
+    });
+  } catch {}
+
   window.dispatchEvent(
     new CustomEvent("mission-generation-poll-metric", { detail: { durationMs, source } }),
   );
