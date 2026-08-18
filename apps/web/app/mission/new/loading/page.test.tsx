@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { fireEvent, render, screen } from "@testing-library/react";
+import { render, screen } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const fetchGenerationJobStatus = vi.fn();
@@ -105,7 +105,7 @@ describe("MissionLoading", () => {
     await vi.waitFor(() => expect(screen.getByText(/미션 생성에 실패했어요/)).toBeTruthy());
   });
 
-  it("완료되면 결과 화면으로 바로 이동하지 않고 확인 모달을 연다", async () => {
+  it("완료되면 확인 모달 없이 결과 화면으로 이동한다", async () => {
     fetchGenerationJobStatus.mockResolvedValue({
       ...PENDING_JOB,
       status: "SUCCEEDED",
@@ -115,31 +115,8 @@ describe("MissionLoading", () => {
     renderWithClient();
 
     await vi.waitFor(() =>
-      expect(screen.getByRole("dialog", { name: "미션이 생성됐어요." })).toBeTruthy(),
+      expect(replaceMock).toHaveBeenCalledWith("/mission/new/result?jobId=job-1"),
     );
-    expect(screen.getByText("확인하러 갈까요?")).toBeTruthy();
-    expect(replaceMock).not.toHaveBeenCalled();
-
-    fireEvent.click(screen.getByRole("button", { name: "아니요" }));
-    expect(screen.queryByRole("dialog", { name: "미션이 생성됐어요." })).toBeNull();
-    expect(replaceMock).not.toHaveBeenCalled();
-  });
-
-  it("완료 확인 모달에서 네를 누르면 결과 화면으로 이동한다", async () => {
-    fetchGenerationJobStatus.mockResolvedValue({
-      ...PENDING_JOB,
-      status: "SUCCEEDED",
-      draftsAvailable: true,
-    });
-
-    renderWithClient();
-
-    await vi.waitFor(() =>
-      expect(screen.getByRole("dialog", { name: "미션이 생성됐어요." })).toBeTruthy(),
-    );
-    fireEvent.click(screen.getByRole("button", { name: "네" }));
-
-    expect(replaceMock).toHaveBeenCalledWith("/mission/new/result?jobId=job-1");
 
     const callsAfterSuccess = fetchGenerationJobStatus.mock.calls.length;
     await vi.advanceTimersByTimeAsync(10_000);

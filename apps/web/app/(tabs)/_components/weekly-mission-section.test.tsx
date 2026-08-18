@@ -2,6 +2,7 @@ import type { Mission } from "@repo/schema/mission";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { fetchGoalStatus } from "@/api/goal";
 import { completeMission, fetchMissions } from "@/api/mission";
+import { hasStartedMissionCreation } from "@/app/mission/new/utils/mission-creation-history";
 import { MOCK_GOAL_STATUS } from "@/lib/test/fixtures/goal-status";
 import { fireEvent, render, screen, waitFor } from "@/lib/test/react";
 
@@ -69,6 +70,10 @@ vi.mock("@/api/goal", () => ({
   updateSavings: vi.fn(),
 }));
 
+vi.mock("@/app/mission/new/utils/mission-creation-history", () => ({
+  hasStartedMissionCreation: vi.fn(),
+}));
+
 import { WeeklyMissionSection } from "./weekly-mission-section";
 
 describe("WeeklyMissionSection", () => {
@@ -79,6 +84,7 @@ describe("WeeklyMissionSection", () => {
     );
     vi.mocked(completeMission).mockResolvedValue(undefined);
     vi.mocked(fetchGoalStatus).mockResolvedValue(MOCK_GOAL_STATUS);
+    vi.mocked(hasStartedMissionCreation).mockResolvedValue(false);
   });
 
   it("조회한 미션을 그리고 카테고리로 필터링한다", async () => {
@@ -141,16 +147,28 @@ describe("WeeklyMissionSection", () => {
     expect(container.querySelector('[data-pigbox-progress="100"]')).toBeInTheDocument();
   });
 
-  it("첫 미션이 없으면 목표 금액을 포함한 단일 추가 CTA를 표시한다", async () => {
+  it("첫 미션 생성 전에는 추천받기 CTA만 표시한다", async () => {
     mockData = [];
     render(<WeeklyMissionSection />);
 
     expect(await screen.findByText("0% 달성")).toBeInTheDocument();
     expect(screen.getByText("약 0원 절약했어요")).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "5,000만원 달성을 위한 미션 추가" })).toHaveAttribute(
+    expect(
+      screen.getByRole("link", { name: "5,000만원 달성을 위한 미션 추천 받기" }),
+    ).toHaveAttribute("href", "/mission/new");
+    expect(screen.queryByRole("link", { name: "직접 입력" })).not.toBeInTheDocument();
+  });
+
+  it("미션 추천 생성을 시작한 뒤에는 직접 입력과 추천받기를 모두 표시한다", async () => {
+    mockData = [];
+    vi.mocked(hasStartedMissionCreation).mockResolvedValue(true);
+    render(<WeeklyMissionSection />);
+
+    expect(await screen.findByRole("link", { name: "직접 입력" })).toHaveAttribute(
       "href",
-      "/mission/new",
+      "/mission/new/manual",
     );
+    expect(screen.getByRole("link", { name: "추천받기" })).toHaveAttribute("href", "/mission/new");
   });
 
   it("미션이 3개보다 많으면 페이지를 나눠 홈 높이를 유지한다", async () => {

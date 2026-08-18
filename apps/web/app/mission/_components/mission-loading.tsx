@@ -1,7 +1,7 @@
 "use client";
 
 import type { MissionGenerationJob } from "@repo/schema/mission-generation";
-import { Button, Dialog } from "@repo/ui";
+import { Button } from "@repo/ui";
 import MissionLoadingCoin from "@repo/ui/svg/mission-loading-coin.svg";
 import { useQuery } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
@@ -12,7 +12,6 @@ import {
   startMissionGenerationWorkerPolling,
   supportsMissionGenerationWorker,
 } from "@/app/mission/new/utils/mission-generation-polling";
-import { recordMissionGenerationPollMetric } from "@/app/mission/new/utils/mission-generation-polling-metrics";
 import { generationJobStatusOptions } from "@/lib/queries/mission-generation";
 import styles from "./mission-loading.module.css";
 
@@ -28,7 +27,6 @@ export function MissionLoading({ jobId }: { jobId: string }) {
   );
   const [workerJob, setWorkerJob] = useState<MissionGenerationJob>();
   const [workerMessageVersion, setWorkerMessageVersion] = useState(0);
-  const [isResultDialogOpen, setIsResultDialogOpen] = useState(false);
   const { data: pageJob, isError } = useQuery({
     ...generationJobStatusOptions(jobId),
     enabled: workerMode === "fallback",
@@ -49,10 +47,6 @@ export function MissionLoading({ jobId }: { jobId: string }) {
         if (!mounted) return;
         if (message.type === "status") {
           setWorkerMessageVersion((version) => version + 1);
-          recordMissionGenerationPollMetric({
-            durationMs: message.durationMs,
-            source: "service-worker",
-          });
           setWorkerJob(message.job);
         }
         if (message.type === "error" && message.reason === "unauthorized") {
@@ -89,9 +83,9 @@ export function MissionLoading({ jobId }: { jobId: string }) {
 
   useEffect(() => {
     if (job?.status === "SUCCEEDED" && job.draftsAvailable) {
-      setIsResultDialogOpen(true);
+      router.replace(buildMissionCreationResultHref(jobId));
     }
-  }, [job]);
+  }, [job, jobId, router]);
 
   // 5초마다 폴링하므로 일시적인 조회 실패로 "생성 실패"를 띄우면 안 된다 — 다음 폴링이
   // 성공할 수 있다. 서버가 FAILED를 주거나, 첫 조회부터 실패해 상태를 아예 못 받은 경우만 실패다.
@@ -123,30 +117,6 @@ export function MissionLoading({ jobId }: { jobId: string }) {
           </p>
         </div>
       )}
-      <Dialog
-        open={isResultDialogOpen}
-        title="미션이 생성됐어요."
-        onOpenChange={setIsResultDialogOpen}
-      >
-        <p className="text-center text-body-b2-500 text-gray-700">확인하러 갈까요?</p>
-        <div className="grid w-full grid-cols-2 gap-2.5">
-          <Button
-            className="h-[52px] text-body-b1-700 text-gray-800"
-            size="cta"
-            variant="secondary"
-            onClick={() => setIsResultDialogOpen(false)}
-          >
-            아니요
-          </Button>
-          <Button
-            className="h-[52px] text-body-b1-700"
-            size="cta"
-            onClick={() => router.replace(buildMissionCreationResultHref(jobId))}
-          >
-            네
-          </Button>
-        </div>
-      </Dialog>
     </main>
   );
 }

@@ -3,6 +3,7 @@ import { bridge } from "@webview-bridge/react-native";
 import Constants from "expo-constants";
 import { Platform } from "react-native";
 import * as guestAuth from "./auth/guest-auth";
+import * as missionCreationHistory from "./mission-generation/history";
 import * as pendingMissionGeneration from "./mission-generation/pending-job";
 import * as biometric from "./native/biometric";
 import * as link from "./native/link";
@@ -36,6 +37,8 @@ const handlers = {
   savePendingMissionGeneration: (job) => pendingMissionGeneration.savePendingMissionGeneration(job),
   getPendingMissionGeneration: () => pendingMissionGeneration.getPendingMissionGeneration(),
   clearPendingMissionGeneration: () => pendingMissionGeneration.clearPendingMissionGeneration(),
+  hasStartedMissionCreation: () => missionCreationHistory.hasStartedMissionCreation(),
+  markMissionCreationStarted: () => missionCreationHistory.markMissionCreationStarted(),
 } satisfies AppBridgeMethods;
 
 export const appBridge = bridge(handlers);

@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { createManualMission } from "@/api/mission";
+import { markMissionCreationStarted } from "@/app/mission/new/utils/mission-creation-history";
 import { fireEvent, render, screen, waitFor } from "@/lib/test/react";
 import ManualMissionPage from "./page";
 
@@ -12,6 +13,10 @@ vi.mock("@/api/mission", () => ({
   createManualMission: vi.fn(),
   deleteRecommendedMission: vi.fn(),
   fetchMissions: vi.fn(),
+}));
+
+vi.mock("@/app/mission/new/utils/mission-creation-history", () => ({
+  markMissionCreationStarted: vi.fn(),
 }));
 
 const CREATED_MISSION = {
@@ -27,6 +32,7 @@ describe("ManualMissionPage", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.mocked(createManualMission).mockResolvedValue(CREATED_MISSION);
+    vi.mocked(markMissionCreationStarted).mockResolvedValue(undefined);
   });
 
   it("카테고리와 미션 내용을 입력해 수동 미션을 추가한다", async () => {
@@ -51,6 +57,7 @@ describe("ManualMissionPage", () => {
       }),
     );
     expect(pushMock).toHaveBeenCalledWith("/mission");
+    expect(markMissionCreationStarted).toHaveBeenCalledOnce();
   });
 
   it("미션 내용은 30자로 제한하고 공백만 있으면 완료할 수 없다", () => {
