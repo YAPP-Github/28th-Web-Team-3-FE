@@ -50,8 +50,8 @@ export default function ManualMissionPage() {
     setSubmitError(undefined);
     createMission.mutate(request, {
       onError: () => setSubmitError("미션을 추가하지 못했어요. 잠시 후 다시 시도해 주세요."),
-      onSuccess: async () => {
-        await markMissionCreationStarted();
+      onSuccess: () => {
+        void markMissionCreationStarted();
         router.push("/mission");
       },
     });
