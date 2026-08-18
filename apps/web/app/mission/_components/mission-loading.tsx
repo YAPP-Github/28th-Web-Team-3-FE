@@ -12,7 +12,6 @@ import {
   startMissionGenerationWorkerPolling,
   supportsMissionGenerationWorker,
 } from "@/app/mission/new/utils/mission-generation-polling";
-import { recordMissionGenerationPollMetric } from "@/app/mission/new/utils/mission-generation-polling-metrics";
 import { generationJobStatusOptions } from "@/lib/queries/mission-generation";
 import styles from "./mission-loading.module.css";
 
@@ -49,10 +48,6 @@ export function MissionLoading({ jobId }: { jobId: string }) {
         if (!mounted) return;
         if (message.type === "status") {
           setWorkerMessageVersion((version) => version + 1);
-          recordMissionGenerationPollMetric({
-            durationMs: message.durationMs,
-            source: "service-worker",
-          });
           setWorkerJob(message.job);
         }
         if (message.type === "error" && message.reason === "unauthorized") {
