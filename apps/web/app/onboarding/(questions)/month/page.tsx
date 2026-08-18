@@ -96,13 +96,21 @@ export default function MonthlyIncomeAndSavingsOnboardingPage() {
           trigger={<TextButton className="mx-auto">직접 입력</TextButton>}
           onOpenChange={setIsDirectInputSheetOpen}
         >
-          <div className="flex flex-col gap-12 pt-6">
+          <form
+            className="flex flex-col gap-12 pt-6"
+            onSubmit={(event) => {
+              event.preventDefault();
+              if (hasRequiredMonthlyAmounts) setIsDirectInputSheetOpen(false);
+            }}
+          >
             <div className="flex gap-2 px-5">
               <Controller
                 control={control}
                 name="monthlySalaryManwon"
                 render={({ field }) => (
                   <AmountField
+                    autoFocus
+                    enterKeyHint="done"
                     label="월급"
                     maxLength={String(MAX_MONTHLY_AMOUNT).length}
                     value={field.value ? String(field.value) : ""}
@@ -117,6 +125,7 @@ export default function MonthlyIncomeAndSavingsOnboardingPage() {
                 name="monthlySavingManwon"
                 render={({ field }) => (
                   <AmountField
+                    enterKeyHint="done"
                     label="월 저축액"
                     maxLength={String(MAX_MONTHLY_AMOUNT).length}
                     value={field.value ? String(field.value) : ""}
@@ -131,10 +140,10 @@ export default function MonthlyIncomeAndSavingsOnboardingPage() {
               <ButtonGroup
                 nextDisabled={!hasRequiredMonthlyAmounts}
                 nextLabel="완료"
-                onNext={() => setIsDirectInputSheetOpen(false)}
+                nextType="submit"
               />
             </div>
-          </div>
+          </form>
         </BottomSheet>
       </div>
 

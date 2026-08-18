@@ -3,7 +3,7 @@
 import type { OnboardingFormValues } from "@repo/schema/onboarding";
 import { Button, Input } from "@repo/ui";
 import { useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { type FormEvent, useEffect, useRef } from "react";
 import { Controller, useFormContext, useWatch } from "react-hook-form";
 import { useSaveOnboardingProfile } from "@/app/onboarding/_hooks/use-save-onboarding-profile";
 import { onlyDigits } from "@/lib/number";
@@ -52,13 +52,34 @@ export default function AgeOnboardingPage() {
         ? "오늘 이전 날짜로 입력해주세요."
         : undefined;
   const { isSaving, saveError, saveProfile } = useSaveOnboardingProfile();
+  const isSubmittingRef = useRef(false);
 
   useEffect(() => {
     router.prefetch("/onboarding/address");
   }, [router]);
 
+  async function submitBirthDate() {
+    if (isSubmittingRef.current) return;
+
+    isSubmittingRef.current = true;
+
+    try {
+      if (await trigger("birthDate", { shouldFocus: true })) {
+        if (await saveProfile({ birthDate })) router.push("/onboarding/address");
+      }
+    } finally {
+      isSubmittingRef.current = false;
+    }
+  }
+
   return (
-    <div className="flex min-h-[calc(100dvh-56px-var(--keyboard-inset,0px))] flex-col px-5 pt-8">
+    <form
+      className="flex min-h-[calc(100dvh-56px-var(--keyboard-inset,0px))] flex-col px-5 pt-8"
+      onSubmit={(event: FormEvent<HTMLFormElement>) => {
+        event.preventDefault();
+        void submitBirthDate();
+      }}
+    >
       <section>
         <h1 className="text-headline-h2-700 text-black">나이가 어떻게 되시나요?</h1>
         <p className="mt-1 text-body-b1-400 text-gray-700">
@@ -77,7 +98,9 @@ export default function AgeOnboardingPage() {
                 id="birth-date"
                 aria-describedby={birthDateError ? "birth-date-error" : undefined}
                 aria-invalid={birthDateError ? true : undefined}
+                autoFocus
                 autoComplete="off"
+                enterKeyHint="done"
                 inputMode="numeric"
                 maxLength={10}
                 name="birthDate"
@@ -86,6 +109,13 @@ export default function AgeOnboardingPage() {
                 onChange={(event) =>
                   field.onChange(toBirthDate(formatBirthDateInput(event.target.value)))
                 }
+                onKeyDown={(event) => {
+                  // 한글 등 IME 조합을 확정하는 Enter는 다음 단계로 넘기지 않는다.
+                  if (event.key !== "Enter" || event.nativeEvent.isComposing) return;
+
+                  event.preventDefault();
+                  event.currentTarget.form?.requestSubmit();
+                }}
               />
             )}
           />
@@ -107,15 +137,11 @@ export default function AgeOnboardingPage() {
           disabled={!isBirthDateValid}
           pending={isSaving}
           size="cta"
-          onClick={async () => {
-            if (await trigger("birthDate", { shouldFocus: true })) {
-              if (await saveProfile({ birthDate })) router.push("/onboarding/address");
-            }
-          }}
+          type="submit"
         >
           다음
         </Button>
       </div>
-    </div>
+    </form>
   );
 }

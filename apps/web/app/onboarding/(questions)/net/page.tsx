@@ -69,13 +69,21 @@ export default function NetWorthOnboardingPage() {
           trigger={<TextButton className="mx-auto">직접 입력</TextButton>}
           onOpenChange={setIsDirectInputSheetOpen}
         >
-          <div className="flex flex-col gap-12 pt-6">
+          <form
+            className="flex flex-col gap-12 pt-6"
+            onSubmit={(event) => {
+              event.preventDefault();
+              setIsDirectInputSheetOpen(false);
+            }}
+          >
             <div className="px-5">
               <Controller
                 control={control}
                 name="netWorthManwon"
                 render={({ field }) => (
                   <AmountField
+                    autoFocus
+                    enterKeyHint="done"
                     label="순자산"
                     maxLength={String(MAX_NET_WORTH_AMOUNT).length}
                     value={field.value ? String(field.value) : ""}
@@ -88,9 +96,9 @@ export default function NetWorthOnboardingPage() {
               />
             </div>
             <div className="px-5 pt-2 pb-3">
-              <ButtonGroup nextLabel="완료" onNext={() => setIsDirectInputSheetOpen(false)} />
+              <ButtonGroup nextLabel="완료" nextType="submit" />
             </div>
-          </div>
+          </form>
         </BottomSheet>
       </div>
 
