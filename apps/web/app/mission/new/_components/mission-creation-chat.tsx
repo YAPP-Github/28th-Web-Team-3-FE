@@ -29,6 +29,7 @@ import {
   missionCatalogOptions,
   requestGenerationJobOptions,
 } from "@/lib/queries/mission-generation";
+import { markMissionCreationStarted } from "../utils/mission-creation-history";
 import { savePendingMissionGeneration } from "../utils/pending-mission-generation";
 import { ChatAnswer } from "./chat-answer";
 import { ChatComposer } from "./chat-composer";
@@ -159,6 +160,7 @@ export function MissionCreationChat() {
     requestJob.mutate(request, {
       onError: () => setSubmitError("미션 생성을 시작하지 못했어요. 잠시 후 다시 시도해 주세요."),
       onSuccess: async (job) => {
+        await markMissionCreationStarted();
         await savePendingMissionGeneration({
           createdAt: Date.now(),
           expiresAt: job.expiresAt,

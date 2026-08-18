@@ -18,6 +18,7 @@ import {
   MISSION_CREATION_CATEGORY_CODES,
   MISSION_RECOMMENDATION_CATEGORIES,
 } from "@/app/mission/constants/mission-creation";
+import { markMissionCreationStarted } from "@/app/mission/new/utils/mission-creation-history";
 import { createManualMissionOptions } from "@/lib/queries/mission";
 
 const MANUAL_MISSION_CATEGORIES = MISSION_RECOMMENDATION_CATEGORIES.map(({ name }) => ({
@@ -49,7 +50,10 @@ export default function ManualMissionPage() {
     setSubmitError(undefined);
     createMission.mutate(request, {
       onError: () => setSubmitError("미션을 추가하지 못했어요. 잠시 후 다시 시도해 주세요."),
-      onSuccess: () => router.push("/mission"),
+      onSuccess: async () => {
+        await markMissionCreationStarted();
+        router.push("/mission");
+      },
     });
   }
 

@@ -1,6 +1,7 @@
 import type { MissionCatalogResponse } from "@repo/schema/mission";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { fetchMissionCatalog, requestGenerationJob } from "@/api/mission-generation";
+import { markMissionCreationStarted } from "@/app/mission/new/utils/mission-creation-history";
 import { fireEvent, render, screen, waitFor } from "@/lib/test/react";
 import NewMissionPage from "./page";
 
@@ -14,6 +15,10 @@ vi.mock("@/api/mission-generation", () => ({
   fetchGenerationJobStatus: vi.fn(),
   fetchMissionCatalog: vi.fn(),
   requestGenerationJob: vi.fn(),
+}));
+
+vi.mock("@/app/mission/new/utils/mission-creation-history", () => ({
+  markMissionCreationStarted: vi.fn(),
 }));
 
 const CATALOG: MissionCatalogResponse = {
@@ -59,6 +64,7 @@ describe("NewMissionPage", () => {
     vi.clearAllMocks();
     vi.mocked(fetchMissionCatalog).mockResolvedValue(CATALOG);
     vi.mocked(requestGenerationJob).mockResolvedValue(JOB);
+    vi.mocked(markMissionCreationStarted).mockResolvedValue(undefined);
   });
 
   it("답변 사이에 타이핑 상태를 보여주고 완성된 요청을 전송한다", async () => {
@@ -88,6 +94,7 @@ describe("NewMissionPage", () => {
       }),
     );
     expect(pushMock).toHaveBeenCalledWith("/mission/new/loading?jobId=job-1");
+    expect(markMissionCreationStarted).toHaveBeenCalledOnce();
   }, 10_000);
 
   it("이전 답변을 누르면 연필을 표시하고 해당 질문부터 다시 시작한다", async () => {

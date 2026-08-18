@@ -81,6 +81,10 @@ export type AppBridgeMethods = {
   getPendingMissionGeneration(): Promise<PendingMissionGeneration | null>;
   /** 결과 화면에 진입하거나 종료됐을 때 진행 중 job 기록을 지운다. */
   clearPendingMissionGeneration(): Promise<void>;
+  /** 사용자가 미션 추천 생성을 한 번이라도 시작했는지 조회한다. */
+  hasStartedMissionCreation(): Promise<boolean>;
+  /** 홈의 첫 생성 전 안내를 다시 보여주지 않도록 생성 시작 이력을 기록한다. */
+  markMissionCreationStarted(): Promise<void>;
 };
 
 /**
