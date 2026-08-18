@@ -6,7 +6,11 @@ const STORAGE_KEY = "mission-creation:started";
 
 export async function hasStartedMissionCreation(): Promise<boolean> {
   if (isNativeApp()) return bridge.hasStartedMissionCreation().catch(() => false);
-  return localStorage.getItem(STORAGE_KEY) === "true";
+  try {
+    return localStorage.getItem(STORAGE_KEY) === "true";
+  } catch {
+    return false;
+  }
 }
 
 export async function markMissionCreationStarted(): Promise<void> {
@@ -14,5 +18,7 @@ export async function markMissionCreationStarted(): Promise<void> {
     await bridge.markMissionCreationStarted().catch(() => {});
     return;
   }
-  localStorage.setItem(STORAGE_KEY, "true");
+  try {
+    localStorage.setItem(STORAGE_KEY, "true");
+  } catch {}
 }
