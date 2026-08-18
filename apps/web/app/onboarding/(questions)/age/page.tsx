@@ -3,7 +3,7 @@
 import type { OnboardingFormValues } from "@repo/schema/onboarding";
 import { Button, Input } from "@repo/ui";
 import { useRouter } from "next/navigation";
-import { type FormEvent, useEffect } from "react";
+import { type FormEvent, useEffect, useRef } from "react";
 import { Controller, useFormContext, useWatch } from "react-hook-form";
 import { useSaveOnboardingProfile } from "@/app/onboarding/_hooks/use-save-onboarding-profile";
 import { onlyDigits } from "@/lib/number";
@@ -52,14 +52,23 @@ export default function AgeOnboardingPage() {
         ? "오늘 이전 날짜로 입력해주세요."
         : undefined;
   const { isSaving, saveError, saveProfile } = useSaveOnboardingProfile();
+  const isSubmittingRef = useRef(false);
 
   useEffect(() => {
     router.prefetch("/onboarding/address");
   }, [router]);
 
   async function submitBirthDate() {
-    if (await trigger("birthDate", { shouldFocus: true })) {
-      if (await saveProfile({ birthDate })) router.push("/onboarding/address");
+    if (isSubmittingRef.current) return;
+
+    isSubmittingRef.current = true;
+
+    try {
+      if (await trigger("birthDate", { shouldFocus: true })) {
+        if (await saveProfile({ birthDate })) router.push("/onboarding/address");
+      }
+    } finally {
+      isSubmittingRef.current = false;
     }
   }
 

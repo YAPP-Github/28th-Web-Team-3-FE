@@ -52,6 +52,31 @@ describe("AgeOnboardingPage", () => {
     await waitFor(() => expect(pushMock).toHaveBeenCalledWith("/onboarding/address"));
   });
 
+  it("저장 중 Enter를 다시 눌러도 생년월일을 한 번만 저장한다", async () => {
+    let resolveSave!: (value: Awaited<ReturnType<typeof patchOnboardingProfile>>) => void;
+    vi.mocked(patchOnboardingProfile).mockImplementationOnce(
+      () =>
+        new Promise((resolve) => {
+          resolveSave = resolve;
+        }),
+    );
+
+    render(
+      <OnboardingFormProvider>
+        <AgeOnboardingPage />
+      </OnboardingFormProvider>,
+    );
+
+    const input = screen.getByRole("textbox", { name: "생년월일" });
+    fireEvent.change(input, { target: { value: "19980301" } });
+    fireEvent.keyDown(input, { key: "Enter" });
+    fireEvent.keyDown(input, { key: "Enter" });
+
+    await waitFor(() => expect(patchOnboardingProfile).toHaveBeenCalledTimes(1));
+    resolveSave!({} as Awaited<ReturnType<typeof patchOnboardingProfile>>);
+    await waitFor(() => expect(pushMock).toHaveBeenCalledWith("/onboarding/address"));
+  });
+
   it("IME 조합 중 Enter는 다음 단계로 이동하지 않는다", () => {
     render(
       <OnboardingFormProvider>
