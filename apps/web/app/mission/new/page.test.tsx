@@ -76,6 +76,7 @@ describe("NewMissionPage", () => {
 
     fireEvent.click(await screen.findByRole("button", { name: "3회" }, { timeout: 1_500 }));
     const amountInput = await screen.findByLabelText("평소 소비 금액", {}, { timeout: 1_500 });
+    expect(screen.getByText("원")).toBeVisible();
     fireEvent.change(amountInput, { target: { value: "50000" } });
     expect(amountInput).toHaveValue("50,000");
     await waitFor(() => expect(screen.getByRole("button", { name: "답변 보내기" })).toBeEnabled());

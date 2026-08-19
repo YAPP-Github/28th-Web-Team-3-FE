@@ -26,7 +26,7 @@ interface MissionDraftCardProps extends MissionDraft {
 
 function MissionDraftCard({
   title,
-  savingsLabel,
+  estimatedSavingsWon,
   pressed,
   onPressedChange,
 }: MissionDraftCardProps) {
@@ -43,7 +43,7 @@ function MissionDraftCard({
         <span className="shrink-0 rounded bg-gray-50 px-1.5 py-1 text-caption-c1-700 text-gray-600">
           달성 시
         </span>
-        <span>{savingsLabel}</span>
+        <span>약 {estimatedSavingsWon.toLocaleString("ko-KR")}원 절약 예상</span>
       </span>
     </Toggle>
   );
