@@ -2,8 +2,10 @@ import type { BridgeWebView } from "@webview-bridge/react-native";
 import { StatusBar } from "expo-status-bar";
 import { type ReactNode, useEffect, useRef, useState, useSyncExternalStore } from "react";
 import {
-  ActivityIndicator,
+  AccessibilityInfo,
+  Animated,
   BackHandler,
+  Easing,
   Linking,
   Platform,
   Pressable,
@@ -38,14 +40,84 @@ const MAX_AUTO_RECOVERY = 3;
 const RECOVERY_RESET_MS = 60_000;
 
 /**
- * 부트 스피너 색. 웹의 라우트 로딩 스피너(`RouteLoading`)와 같은 값이어야 한다 —
+ * 부트 스피너. 웹의 라우트 로딩 스피너(`RouteLoading`)와 **같은 그림**이어야 한다 —
  * 지문 잠금해제 직후 이 스피너가 걷히고 곧바로 웹 스피너가 뜨는데, 원래 한 번의 대기를
  * 셸과 웹이 나눠 진 것이라 모양이 다르면 로딩이 두 번 도는 것처럼 보인다.
  *
- * 값을 박아둔 이유: `@repo/ui`의 CSS 토큰(`--color-gray-300`)은 RN에서 읽을 수 없다.
+ * `ActivityIndicator`로는 맞출 수 없다 — OS가 그리는 모양이라 iOS는 짧은 선 12개,
+ * Android는 굵기가 변하는 호다. 웹의 원호(lucide `LoaderCircle`)와 어느 쪽도 닮지 않았고,
+ * 플랫폼끼리도 다르다. 그래서 웹과 같은 규격으로 직접 그린다.
+ *
+ * 치수는 웹 스피너를 브라우저에서 재서 맞췄다. `size-9`(36px) 상자에 24 뷰박스가 들어가
+ * 배율이 1.5이고, 원의 중심선 반지름이 9, 선 굵기가 2다 — 바깥 지름 (9+1)×2×1.5 = 30px,
+ * 선 굵기 2×1.5 = 3px. 도는 주기는 양쪽 다 1초 등속이다.
+ *
+ * 호의 길이는 웹이 약 300°, 이쪽은 한 변을 비운 270°다. `react-native-svg`를 들이면 같은
+ * path를 그대로 그릴 수 있지만, 스피너 하나 때문에 Expo SDK가 관리하는 네이티브 의존성을
+ * 늘리지 않았다. 굵기·지름·색·주기가 같아 이어 붙는 두 스피너가 같은 것으로 읽힌다.
+ *
+ * 색을 박아둔 이유: `@repo/ui`의 CSS 토큰(`--color-gray-300`)은 RN에서 읽을 수 없다.
  * 토큰이 바뀌면 여기도 함께 고쳐야 한다.
  */
 const SPINNER_COLOR = "#b5b9c0";
+/** 선 바깥쪽까지 포함한 지름. */
+const SPINNER_SIZE = 30;
+const SPINNER_STROKE = 3;
+/** Tailwind `animate-spin`과 같은 주기. */
+const SPINNER_DURATION_MS = 1000;
+
+function BootSpinner() {
+  const rotation = useRef(new Animated.Value(0)).current;
+  // 웹은 `motion-reduce:animate-none`으로 멈춘다 — 같은 대기의 앞뒤라 여기서도 맞춘다.
+  const [reduceMotion, setReduceMotion] = useState(false);
+
+  useEffect(() => {
+    let isMounted = true;
+    AccessibilityInfo.isReduceMotionEnabled().then(
+      (enabled) => {
+        if (isMounted) setReduceMotion(enabled);
+      },
+      () => {},
+    );
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (reduceMotion) return;
+    const spin = Animated.loop(
+      Animated.timing(rotation, {
+        toValue: 1,
+        duration: SPINNER_DURATION_MS,
+        easing: Easing.linear,
+        useNativeDriver: true,
+      }),
+    );
+    spin.start();
+    return () => spin.stop();
+  }, [reduceMotion, rotation]);
+
+  return (
+    <Animated.View
+      accessibilityLabel="불러오는 중"
+      accessibilityRole="progressbar"
+      style={[
+        styles.spinner,
+        {
+          transform: [
+            {
+              rotate: rotation.interpolate({
+                inputRange: [0, 1],
+                outputRange: ["0deg", "360deg"],
+              }),
+            },
+          ],
+        },
+      ]}
+    />
+  );
+}
 
 /**
  * 웹을 못 불러왔을 때 덮는 화면. 없으면 흰 화면만 남아 사용자도, 심사자도
@@ -239,7 +311,7 @@ export default function App() {
           </>
         ) : (
           <View style={styles.center}>
-            <ActivityIndicator size="large" color={SPINNER_COLOR} />
+            <BootSpinner />
           </View>
         )}
       </SafeAreaBands>
@@ -280,6 +352,15 @@ const styles = StyleSheet.create({
   // DayNight 루트 배경이 드러난다 — 다크모드 기기에서 회색 화면으로 보인다.
   content: { flex: 1, backgroundColor: "#ffffff" },
   center: { flex: 1, alignItems: "center", justifyContent: "center" },
+  // 한 변만 투명하게 두어 3/4 호를 만든다 — 웹 스피너(lucide `LoaderCircle`)와 같은 그림이다.
+  spinner: {
+    width: SPINNER_SIZE,
+    height: SPINNER_SIZE,
+    borderRadius: SPINNER_SIZE / 2,
+    borderWidth: SPINNER_STROKE,
+    borderColor: SPINNER_COLOR,
+    borderTopColor: "transparent",
+  },
   webview: { flex: 1 },
   errorSurface: { backgroundColor: "#ffffff", gap: 8, paddingHorizontal: 24 },
   errorTitle: { fontSize: 18, fontWeight: "700", color: "#111827" },
