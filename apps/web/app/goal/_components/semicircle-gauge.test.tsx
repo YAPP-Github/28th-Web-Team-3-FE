@@ -40,6 +40,27 @@ describe("SemicircleGauge", () => {
     expect(fill?.getAttribute("style")).toContain("--gauge-dash: 39");
   });
 
+  /**
+   * CSS 키프레임은 마운트 시 한 번만 재생된다 — 같은 DOM 노드가 유지된 채 percent만
+   * 바뀌면(저축액 수정 등) 애니메이션이 다시 돌지 않고 값이 바로 튄다. key를 percent에
+   * 걸어 값이 바뀔 때마다 새 노드를 만들어 채움 모션이 다시 재생되게 한다.
+   */
+  it("percent가 바뀌면 채움 path를 새로 마운트해 모션을 다시 재생한다", () => {
+    const { container, rerender } = render(
+      <SemicircleGauge maxLabel="5,000만원" minLabel="0" percent={39} savedLabel="1,950만원" />,
+    );
+    const before = container.querySelectorAll("path")[1];
+
+    rerender(
+      <SemicircleGauge maxLabel="5,000만원" minLabel="0" percent={82} savedLabel="4,100만원" />,
+    );
+    const after = container.querySelectorAll("path")[1];
+
+    expect(after).not.toBe(before);
+    expect(after).toHaveAttribute("stroke-dasharray", "82 100");
+    expect(after?.getAttribute("style")).toContain("--gauge-dash: 82");
+  });
+
   it("저축액·비율·양끝 라벨을 노출한다", () => {
     const { getByText } = render(
       <SemicircleGauge maxLabel="5,000만원" minLabel="0" percent={39} savedLabel="1,950만원" />,

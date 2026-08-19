@@ -58,6 +58,10 @@ export function SemicircleGauge({ percent, savedLabel, minLabel, maxLabel }: Sem
             {/* percent 0이면 그리지 않는다 — 길이 0 대시 + round 캡이 시작점에 점으로 남는다. */}
             {percent > 0 && (
               <path
+                // CSS 애니메이션은 마운트 시 한 번만 재생된다. 저축액을 수정해 percent가 바뀌어도
+                // 같은 DOM 노드가 유지되면 애니메이션이 다시 돌지 않고 값만 바로 튄다. key를
+                // percent에 걸어 값이 바뀔 때마다 새 노드로 만들어 채움 모션을 다시 재생시킨다.
+                key={percent}
                 className="animate-gauge-fill motion-reduce:animate-none"
                 d={ARC_PATH}
                 pathLength={100}
