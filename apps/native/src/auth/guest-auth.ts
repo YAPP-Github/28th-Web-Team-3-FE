@@ -22,6 +22,10 @@ const REFRESH_TOKEN_KEY = "guest_refresh_token";
 
 let accessToken: string | null = null;
 let inflight: Promise<string | null> | null = null;
+// clearGuestTokens 호출 시점을 표시한다. 탈퇴 직전에 시작된 reissue가 clearGuestTokens
+// 뒤에야 응답을 받으면, 그 결과로 방금 지운 토큰을 되살릴 수 있다 — 세대가 바뀌었으면
+// reissue 결과를 버려 이 되살아남을 막는다.
+let tokenGeneration = 0;
 
 async function getOrCreateDeviceUuid(): Promise<string> {
   const stored = await SecureStore.getItemAsync(UUID_KEY);
@@ -68,6 +72,7 @@ async function postAuth(
 }
 
 async function reissue(): Promise<string | null> {
+  const generation = tokenGeneration;
   const refreshToken = await SecureStore.getItemAsync(REFRESH_TOKEN_KEY);
   const refreshResult = refreshToken
     ? await postAuth("auth/guest/refresh", { refreshToken })
@@ -94,6 +99,10 @@ async function reissue(): Promise<string | null> {
     return null;
   }
   const tokens = result;
+
+  // clearGuestTokens가 이 reissue보다 먼저 도착했다 — 이미 지운 계정의 토큰을
+  // 되살리지 않는다. 다음 getAccessToken은 비워진 상태에서 새로 시작한다.
+  if (generation !== tokenGeneration) return null;
 
   // 새 accessToken을 내주기 전에 rotation된 refreshToken 저장을 반드시 끝낸다 —
   // 저장 전에 앱이 죽으면 폐기된 구 refreshToken만 남아 다음 부트가 신규 발급으로 빠진다.
@@ -137,6 +146,7 @@ export function refreshAccessToken(): Promise<string | null> {
  * 미리 비워 두면 다음 getAccessToken이 바로 신규 발급으로 간다.
  */
 export async function clearGuestTokens(): Promise<void> {
+  tokenGeneration++;
   accessToken = null;
   await SecureStore.deleteItemAsync(REFRESH_TOKEN_KEY);
 }
