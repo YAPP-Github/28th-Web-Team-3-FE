@@ -1,4 +1,5 @@
 import type { BridgeWebView } from "@webview-bridge/react-native";
+import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
 import { type ReactNode, useEffect, useRef, useState, useSyncExternalStore } from "react";
 import {
@@ -145,6 +146,16 @@ function LoadErrorView({ onRetry }: { onRetry: () => void }) {
   );
 }
 
+/*
+ * 스플래시를 우리가 걷는다. 그냥 두면 Expo가 RN 첫 렌더 직후 스스로 걷어서, 지문 확인이
+ * 끝나기도 전에 스플래시가 사라지고 그 자리에 흰 화면이 드러난다 — 사용자가 본
+ * "스타트 이미지 → 흰 화면 → 인디케이터"의 흰 화면 구간이다.
+ *
+ * 모듈 최상위에서 부르는 이유는 RN이 첫 프레임을 그리기 전에 예약을 걸어야 하기 때문이다.
+ * 실패해도 앱은 그대로 뜬다(스플래시가 일찍 걷힐 뿐) — 부트를 막을 이유가 없다.
+ */
+SplashScreen.preventAutoHideAsync().catch(() => {});
+
 /**
  * App shell. Boot order:
  *   biometric unlock -> guest 토큰 발급 시작(await 안 함) -> WebView 진입.
@@ -153,6 +164,14 @@ function LoadErrorView({ onRetry }: { onRetry: () => void }) {
  */
 export default function App() {
   const [ready, setReady] = useState(false);
+  /*
+   * WebView가 첫 화면을 그렸는지. 그 전까지 스피너로 덮는다.
+   *
+   * `ready`가 되자마자 WebView만 올리면 첫 페인트 전까지 빈 흰 화면이 한 번 더 지나간다.
+   * 웹도 자기 라우트 스피너를 띄우지만 그건 문서가 뜬 뒤의 이야기라, 그 앞의 공백은 셸이
+   * 메워야 한다. 같은 회색 스피너를 이어 두면 스플래시에서 웹까지 한 번의 대기로 읽힌다.
+   */
+  const [webPainted, setWebPainted] = useState(false);
   const [loadFailed, setLoadFailed] = useState(false);
   // WebView를 remount해 재시도한다 — ref.reload()는 로드 자체가 실패한 상태에서 안 먹는다.
   const [reloadKey, setReloadKey] = useState(0);
@@ -182,6 +201,8 @@ export default function App() {
 
   function remount(uri: string) {
     setLoadFailed(false);
+    // 새 뷰는 아직 아무것도 안 그렸다 — 다시 스피너로 덮어 빈 화면이 비치지 않게 한다.
+    setWebPainted(false);
     // 뷰를 새로 만들면 히스토리도 함께 비워진다.
     canGoBackRef.current = false;
     // 새 주소를 여기서 바로 반영한다 — onNavigationStateChange를 기다리면, 그 전에
@@ -247,6 +268,17 @@ export default function App() {
     })();
   }, []);
 
+  /*
+   * 지문 확인이 끝난 뒤에 스플래시를 걷는다. 그 전에 걷으면 잠금 화면 뒤로 흰 화면이 비친다.
+   *
+   * WebView가 그려질 때까지 기다리지는 않는다 — 웹이 느린 날에는 스플래시가 몇 초씩 멈춰
+   * 있는 것처럼 보인다. 대신 그 구간은 아래 스피너가 이어받는다.
+   */
+  useEffect(() => {
+    if (!ready) return;
+    SplashScreen.hideAsync().catch(() => {});
+  }, [ready]);
+
   return (
     <SafeAreaProvider>
       {/* 웹은 라이트 전용이다(@repo/ui globals.css에 prefers-color-scheme 분기 없음).
@@ -295,6 +327,8 @@ export default function App() {
               // 사용자가 "다시 시도"를 눌러 경로를 초기화해야만 빠져나올 수 있다.
               onLoad={() => {
                 if (!navigationFailedRef.current) setLoadFailed(false);
+                // 첫 화면이 그려졌다 — 여기서부터는 웹이 자기 로딩 표시를 책임진다.
+                setWebPainted(true);
               }}
               // Next.js의 pushState 이동에도 발화한다 — Android는 방문 기록이 바뀔 때마다
               // 이 이벤트를 쏘므로 SPA 화면 이동이 canGoBack에 그대로 반영된다.
@@ -317,6 +351,14 @@ export default function App() {
                 if (nativeEvent.statusCode >= 500) markLoadFailed();
               }}
             />
+            {/* WebView가 첫 화면을 그릴 때까지 덮는다 — 그 사이 빈 흰 화면이 지나가지
+                않게, 스플래시에서 웹까지 같은 스피너로 이어 준다. 로드에 실패하면
+                오류 화면이 대신 덮으므로 스피너를 계속 돌려 붙잡아 두지 않는다. */}
+            {!webPainted && !loadFailed ? (
+              <View style={[StyleSheet.absoluteFill, styles.center, styles.bootSurface]}>
+                <BootSpinner />
+              </View>
+            ) : null}
             {loadFailed ? <LoadErrorView onRetry={retryLoad} /> : null}
           </>
         ) : (
@@ -362,6 +404,8 @@ const styles = StyleSheet.create({
   // DayNight 루트 배경이 드러난다 — 다크모드 기기에서 회색 화면으로 보인다.
   content: { flex: 1, backgroundColor: "#ffffff" },
   center: { flex: 1, alignItems: "center", justifyContent: "center" },
+  // 아래 WebView가 비치지 않게 불투명하게 덮는다. 웹의 첫 화면도 흰 배경이라 이어 붙는다.
+  bootSurface: { backgroundColor: "#ffffff" },
   // 한 변만 투명하게 두어 3/4 호를 만든다 — 웹 스피너(lucide `LoaderCircle`)와 같은 그림이다.
   spinner: {
     width: SPINNER_SIZE,
