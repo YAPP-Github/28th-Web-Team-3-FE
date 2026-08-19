@@ -15,6 +15,15 @@ import { policyDetailOptions, togglePolicyBookmarkOptions } from "@/lib/queries/
 import { SavedBenefitCancelDialog } from "./saved-benefit-cancel-dialog";
 
 /**
+ * 두 탭의 빈 상태 문구가 같은 자리에 오도록 여백을 한 곳에서 정한다.
+ *
+ * 탭을 바꾸면 보여줄 게 없다는 문구는 그대로인데 자리만 움직여, 화면이 한 번 덜컹인다.
+ * 문구가 서로 다른 부모에 있어(팁은 탭 패널 직속, 정책은 목록 `section` 안) 여백이
+ * 갈렸다 — 값을 여기 모아 두 곳이 같은 값을 쓰게 한다.
+ */
+const EMPTY_MESSAGE_CLASS = "py-20 text-center text-body-b2-500 text-gray-500";
+
+/**
  * 저장한 혜택 목록.
  *
  * 저장 목록 응답에는 카드 태그로 쓸 분류가 없어 항목마다 상세를 함께 조회한다
@@ -82,7 +91,7 @@ export function SavedBenefits() {
           onSelect={setContentType}
         />
         <div aria-labelledby="saved-content-tab-tip" id="saved-content-panel" role="tabpanel">
-          <p className="px-5 py-20 text-center text-body-b2-500 text-gray-500">
+          <p className={`px-5 ${EMPTY_MESSAGE_CLASS}`}>
             블로그 팁은 준비 중이에요.
             <br />
             조금만 기다려 주세요.
@@ -119,7 +128,9 @@ export function SavedBenefits() {
               </Button>
             </div>
           ) : benefits.length === 0 ? (
-            <p className="py-10 text-center text-body-b2-500 text-gray-500">
+            // 목록에 붙은 `mt-2`는 카드용 여백이라 문구에는 걸리지 않게 상쇄한다 —
+            // 그래야 팁 탭 문구와 탭에서 같은 거리에 선다(좌우 여백은 목록 것을 쓴다).
+            <p className={`-mt-2 ${EMPTY_MESSAGE_CLASS}`}>
               저장한 혜택이 없어요.
               <br />
               관심 있는 혜택의 별을 눌러 저장해보세요.
