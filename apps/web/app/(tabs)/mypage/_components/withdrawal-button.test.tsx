@@ -1,6 +1,14 @@
 import { bridge, isNativeApp } from "@repo/bridge";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { act, fireEvent, render, screen, waitFor, within } from "@/lib/test/react";
+import {
+  act,
+  createTestQueryClient,
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+  within,
+} from "@/lib/test/react";
 import { WithdrawalButton } from "./withdrawal-button";
 
 vi.mock("@/api/auth", () => ({ withdrawGuest: vi.fn() }));
@@ -149,6 +157,18 @@ describe("WithdrawalButton", () => {
 
     await waitFor(() => expect(withdrawGuest).toHaveBeenCalledOnce());
     expect(onWithdrawn).toHaveBeenCalledOnce();
+  });
+
+  it("탈퇴에 성공하면 새 게스트로 이동하기 전에 쿼리 캐시를 비운다", async () => {
+    const queryClient = createTestQueryClient();
+    const onWithdrawn = vi.fn();
+    queryClient.setQueryData(["goal"], { targetAmount: 1_000_000 });
+    render(<WithdrawalButton onWithdrawn={onWithdrawn} />, { queryClient });
+
+    openAndConfirm();
+
+    await waitFor(() => expect(onWithdrawn).toHaveBeenCalledOnce());
+    expect(queryClient.getQueryData(["goal"])).toBeUndefined();
   });
 
   /**
