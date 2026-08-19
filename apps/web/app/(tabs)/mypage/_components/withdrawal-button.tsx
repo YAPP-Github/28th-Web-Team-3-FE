@@ -2,7 +2,7 @@
 
 import { bridge, isNativeApp } from "@repo/bridge";
 import { Button, Dialog } from "@repo/ui";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { withdrawGuestOptions } from "@/lib/queries/auth";
 import { SettingButtonRow } from "./setting-row";
@@ -29,6 +29,7 @@ export function WithdrawalButton({
 }: WithdrawalButtonProps) {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [error, setError] = useState<string>();
+  const queryClient = useQueryClient();
   const { mutate: withdraw, isPending } = useMutation(withdrawGuestOptions());
   /*
    * 탈퇴 응답을 받은 뒤 화면을 떠나기까지도 처리 중이다.
@@ -60,6 +61,7 @@ export function WithdrawalButton({
       onError: () => setError(WITHDRAWAL_ERROR_MESSAGE),
       onSuccess: () => {
         setIsLeaving(true);
+        queryClient.clear();
         return onWithdrawn();
       },
     });
