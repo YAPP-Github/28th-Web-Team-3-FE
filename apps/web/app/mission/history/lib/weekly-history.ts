@@ -31,7 +31,7 @@ export function toMissionWeekDisplay({
   return {
     completedCount,
     isCurrentWeek,
-    progressPercent: Math.floor((completedCount * 100) / totalCount),
+    progressPercent: Math.round((completedCount * 100) / totalCount),
     state: "progress",
     week: weekOfMonth,
   };
