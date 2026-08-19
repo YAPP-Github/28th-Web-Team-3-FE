@@ -44,7 +44,10 @@ export function ButtonGroup({
           type="button"
           variant="secondary"
           size="cta"
-          className="w-[105px] shrink-0 text-gray-800"
+          // 다음을 누른 동안에도 흐려지지 않게 `disabled:opacity-100`으로 덮는다.
+          // 흐려지면 화면에서 제일 크게 변하는 게 이 버튼이라, 방금 누른 다음이 아니라
+          // 이쪽이 반응한 것처럼 보인다. 못 누르는 것은 `disabled`가 그대로 막는다.
+          className="w-[105px] shrink-0 text-gray-800 disabled:opacity-100"
           disabled={nextPending}
           onClick={onPrev}
         >
