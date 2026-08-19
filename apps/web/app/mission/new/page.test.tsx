@@ -83,6 +83,7 @@ describe("NewMissionPage", () => {
     fireEvent.click(screen.getByRole("button", { name: "답변 보내기" }));
 
     const submitButton = await screen.findByRole("button", { name: "미션 추천 받기" });
+    expect(screen.getByRole("button", { name: "50,000원 답변 수정 버튼 표시" })).toBeVisible();
     await waitFor(() => expect(submitButton).toBeEnabled());
     fireEvent.click(submitButton);
 

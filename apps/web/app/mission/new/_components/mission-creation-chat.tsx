@@ -379,7 +379,7 @@ export function MissionCreationChat() {
             {completedThrough >= 3 && amountWon ? (
               <ChatAnswer
                 editVisible={editableStep === 3}
-                label={formatWonInput(amountWon)}
+                label={`${formatWonInput(amountWon)}원`}
                 onEdit={() => restartFrom(3)}
                 onSelect={() => revealEdit(3)}
               />
