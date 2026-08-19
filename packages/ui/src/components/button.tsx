@@ -1,14 +1,15 @@
 import { cva, type VariantProps } from "class-variance-authority";
+import { LoaderCircle } from "lucide-react";
 import type * as React from "react";
 import { cn } from "../lib/utils";
 
 const buttonVariants = cva(
   [
-    "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md",
+    // 스피너를 문구 위에 겹쳐 놓으려면 기준 상자가 필요하다(아래 pending 참고).
+    "relative inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md",
     "disabled:pointer-events-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-    // 눌린 느낌은 크기로만 준다. 문구를 "저장 중…"으로 바꾸면 버튼 폭이 흔들리고
-    // 스크린리더는 이름이 바뀐 것으로 읽는다 — 처리 중은 상태지 이름이 아니다.
-    //
+    // 더블탭 확대를 기다리느라 탭 반응이 밀리지 않게 한다 — WebView에서 눌러도 씹힌 것처럼 보인다.
+    "touch-manipulation",
     // 전환 대상은 `transform`이 아니라 `scale`이다. Tailwind v4의 scale-* 유틸은
     // `transform: scale()`이 아니라 독립 속성 `scale`을 낸다 — transform으로 적으면
     // 목록에 없는 속성이라 전환이 통째로 안 걸리고 크기가 즉시 튄다.
@@ -21,18 +22,28 @@ const buttonVariants = cva(
   ],
   {
     variants: {
+      /*
+       * `hover:`는 Tailwind v4가 `@media (hover: hover)`로 감싸므로 터치 기기에는 아예
+       * 걸리지 않는다 — 손가락으로 누르면 색이 하나도 안 변한다는 뜻이다. 같은 색을
+       * `active:`로도 걸어 누르는 순간 눈에 보이게 한다. 2%짜리 크기 변화만으로는
+       * 빠른 탭에서 눌린 티가 나지 않아 "안 눌렸다"로 읽힌다.
+       */
       variant: {
         default:
-          "bg-primary text-primary-foreground hover:bg-primary/90 disabled:bg-secondary disabled:text-gray-300",
-        secondary: "bg-secondary text-gray-700 hover:bg-secondary/80 disabled:opacity-50",
-        destructive: "bg-destructive text-white hover:bg-destructive/90 disabled:opacity-50",
-        outline: "border border-input bg-background hover:bg-secondary disabled:opacity-50",
-        ghost: "hover:bg-secondary disabled:opacity-50",
+          "bg-primary text-primary-foreground hover:bg-primary/90 active:bg-primary/90 disabled:bg-secondary disabled:text-gray-300",
+        secondary:
+          "bg-secondary text-gray-700 hover:bg-secondary/80 active:bg-secondary/80 disabled:opacity-50",
+        destructive:
+          "bg-destructive text-white hover:bg-destructive/90 active:bg-destructive/90 disabled:opacity-50",
+        outline:
+          "border border-input bg-background hover:bg-secondary active:bg-secondary disabled:opacity-50",
+        ghost: "hover:bg-secondary active:bg-secondary disabled:opacity-50",
         // 온보딩 이전 버튼
-        onboardingBack: "bg-gray-900 text-gray-0 hover:bg-gray-900/90 disabled:opacity-50",
+        onboardingBack:
+          "bg-gray-900 text-gray-0 hover:bg-gray-900/90 active:bg-gray-900/90 disabled:opacity-50",
         // 온보딩 다음 버튼
         onboardingNext:
-          "bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50",
+          "bg-primary text-primary-foreground hover:bg-primary/90 active:bg-primary/90 disabled:opacity-50",
       },
       size: {
         default: "h-10 px-4 py-2 font-medium text-sm",
@@ -61,10 +72,10 @@ export interface ButtonProps
   /**
    * 눌러서 시작한 작업이 끝나기를 기다리는 중.
    *
-   * 문구는 그대로 두고 눌린 상태만 유지한다. 같은 요청이 두 번 나가지 않게 막되
-   * `disabled`는 쓰지 않는다 — disabled가 붙는 순간 브라우저가 초점을 body로 옮겨서
-   * 방금 누른 버튼의 `aria-busy`가 스크린리더에 전달될 길이 사라지고, variant의
-   * `disabled:` 회색조가 걸려 "처리 중"이 아니라 "지금 못 누름"으로 읽힌다.
+   * 같은 요청이 두 번 나가지 않게 막되 `disabled`는 쓰지 않는다 — disabled가 붙는 순간
+   * 브라우저가 초점을 body로 옮겨서 방금 누른 버튼의 `aria-busy`가 스크린리더에 전달될
+   * 길이 사라지고, variant의 `disabled:` 회색조가 걸려 "처리 중"이 아니라 "지금 못 누름"
+   * 으로 읽힌다.
    */
   pending?: boolean;
 }
@@ -78,6 +89,7 @@ export function Button({
   type = "button",
   pending = false,
   onClick,
+  children,
   ...props
 }: ButtonProps) {
   return (
@@ -97,7 +109,34 @@ export function Button({
         }
         onClick?.(event);
       }}
-    />
+    >
+      {/*
+        처리 중에는 문구를 투명하게 만들고 그 자리에 스피너를 겹친다.
+
+        문구를 지우거나 "저장 중…"으로 바꾸지 않는다 — 폭이 흔들리고, 스크린리더는 이름이
+        바뀐 것으로 읽는다(처리 중은 상태지 이름이 아니다. 상태는 `aria-busy`가 전한다).
+        감추는 수단으로 `invisible`(visibility:hidden)이 아니라 `opacity-0`을 쓰는 이유도
+        같다 — visibility:hidden은 접근성 트리에서 문구를 아예 빼서 버튼의 이름이 사라진다.
+
+        평소에는 `contents`라 children이 버튼의 flex 항목 그대로 남는다(아이콘 버튼의
+        배치가 바뀌지 않는다). 투명하게 만들 때만 상자를 만든다 — `display: contents`에는
+        상자가 없어서 opacity가 먹지 않기 때문이다.
+
+        스피너 없이 2%짜리 크기 변화만 두면, 네트워크 왕복이 도는 내내 화면에서 눈에
+        띄게 변하는 건 옆에서 `disabled`로 흐려지는 버튼뿐이라 — 방금 누른 쪽이 아니라
+        그 옆이 반응한 것처럼 보인다.
+      */}
+      <span className={pending ? "inline-flex items-center gap-2 opacity-0" : "contents"}>
+        {children}
+      </span>
+      {pending ? (
+        <LoaderCircle
+          aria-hidden="true"
+          className="absolute size-5 animate-spin motion-reduce:animate-none"
+          strokeWidth={2}
+        />
+      ) : null}
+    </button>
   );
 }
 
