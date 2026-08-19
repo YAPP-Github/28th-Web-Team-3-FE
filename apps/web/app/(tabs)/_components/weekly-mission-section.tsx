@@ -63,7 +63,7 @@ export function WeeklyMissionSection() {
   const [completeError, setCompleteError] = useState<string>();
   // 구버전 네이티브 셸에는 새 bridge handler가 없을 수 있다. 이력 조회가 타임아웃돼도
   // 홈의 기본 추천 CTA를 바로 제공하고, 지원되는 셸에서만 결과에 따라 두 CTA로 확장한다.
-  const [hasStartedCreation, setHasStartedCreation] = useState(false);
+  const [hasStartedCreation, setHasStartedCreation] = useState<boolean | null>(null);
 
   useEffect(() => {
     void hasStartedMissionCreation().then(setHasStartedCreation);
@@ -214,7 +214,10 @@ export function WeeklyMissionSection() {
           ) : null}
         </div>
       ) : hasStartedCreation === null ? (
-        <Skeleton className="mt-8 h-[52px] w-full rounded-xl bg-gray-100" />
+        <Skeleton
+          className="mt-8 h-[52px] w-full rounded-xl bg-gray-100"
+          data-slot="mission-creation-history-skeleton"
+        />
       ) : (
         <div className="flex flex-col gap-12 pt-8 text-center">
           <p className="text-body-b2-500 text-gray-600">
