@@ -1,5 +1,6 @@
 "use client";
 
+import { bridge, isNativeApp } from "@repo/bridge";
 import { Button, Dialog } from "@repo/ui";
 import { useMutation } from "@tanstack/react-query";
 import { useState } from "react";
@@ -8,9 +9,12 @@ import { SettingButtonRow } from "./setting-row";
 
 const WITHDRAWAL_ERROR_MESSAGE = "탈퇴하지 못했어요. 잠시 후 다시 시도해주세요.";
 
-function moveToNewGuestOnboarding() {
-  // BE는 탈퇴와 함께 현재 access/refresh token을 무효화한다. 문서를 다시 로드하면 웹의
-  // 토큰·쿼리 캐시가 비워지고, 네이티브가 같은 기기 UUID로 새 게스트를 발급한다.
+async function moveToNewGuestOnboarding() {
+  // BE는 탈퇴와 함께 현재 access/refresh token을 무효화하지만, 네이티브 메모리·SecureStore에는
+  // 그 무효 토큰이 그대로 남는다. 지우지 않으면 새로 고침 뒤 첫 요청이 무효 토큰으로 401을
+  // 받고, refresh도 무효 토큰이라 또 거부당하고서야 신규 발급으로 넘어가 왕복이 두 번 헛돈다
+  // — 탈퇴 후 화면 전환이 유독 느리게 보이는 원인. 새로 고침 전에 비워 그 왕복을 건너뛴다.
+  if (isNativeApp()) await bridge.clearGuestTokens().catch(() => {});
   window.location.replace("/onboarding/intro");
 }
 

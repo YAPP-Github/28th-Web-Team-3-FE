@@ -1,10 +1,17 @@
+import { bridge, isNativeApp } from "@repo/bridge";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { act, fireEvent, render, screen, waitFor, within } from "@/lib/test/react";
 import { WithdrawalButton } from "./withdrawal-button";
 
 vi.mock("@/api/auth", () => ({ withdrawGuest: vi.fn() }));
+vi.mock("@repo/bridge", () => ({
+  bridge: { clearGuestTokens: vi.fn() },
+  isNativeApp: vi.fn(),
+}));
 
 import { withdrawGuest } from "@/api/auth";
+
+const clearGuestTokens = vi.mocked(bridge.clearGuestTokens);
 
 /**
  * `location.replace`는 `writable: false, configurable: false`라 `vi.spyOn`으로 못 잡는다.
@@ -32,6 +39,8 @@ describe("WithdrawalButton", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.mocked(withdrawGuest).mockResolvedValue();
+    vi.mocked(isNativeApp).mockReturnValue(false);
+    clearGuestTokens.mockResolvedValue();
   });
 
   afterEach(() => {
@@ -142,6 +151,32 @@ describe("WithdrawalButton", () => {
     openAndConfirm();
 
     await waitFor(() => expect(replace).toHaveBeenCalledWith("/onboarding/intro"));
+  });
+
+  /**
+   * 비우지 않으면 새로 고침 뒤 첫 요청이 방금 삭제된 계정의 access token으로 401을 받고,
+   * refresh도 같은 이유로 거부당하고서야 신규 발급으로 넘어간다 — 왕복 두 번이 헛돈다.
+   * 네이티브 셸 안에서만 의미가 있으므로 `isNativeApp()`으로 게이팅한다.
+   */
+  it("네이티브 셸 안이면 문서를 새로 열기 전에 네이티브 토큰을 비운다", async () => {
+    vi.mocked(isNativeApp).mockReturnValue(true);
+    const replace = stubLocationReplace();
+    render(<WithdrawalButton />);
+
+    openAndConfirm();
+
+    await waitFor(() => expect(replace).toHaveBeenCalledWith("/onboarding/intro"));
+    expect(clearGuestTokens).toHaveBeenCalledOnce();
+  });
+
+  it("네이티브 셸 밖이면 네이티브 토큰을 비우지 않는다", async () => {
+    const replace = stubLocationReplace();
+    render(<WithdrawalButton />);
+
+    openAndConfirm();
+
+    await waitFor(() => expect(replace).toHaveBeenCalledWith("/onboarding/intro"));
+    expect(clearGuestTokens).not.toHaveBeenCalled();
   });
 
   // 실패했는데 화면을 옮기면 사용자는 탈퇴된 줄 안다.

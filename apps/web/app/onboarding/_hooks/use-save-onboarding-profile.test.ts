@@ -22,4 +22,30 @@ describe("useSaveOnboardingProfile", () => {
     expect(result.current.saveError).toBe(SAVE_FAILED_TEXT);
     expect(result.current.isSaving).toBe(false);
   });
+
+  /**
+   * 저장 성공 직후 isSaving이 false로 돌아오면, 호출부가 router.push로 다음 화면에
+   * 넘어가기까지 한 프레임 동안 "이전" 버튼이 비활성화→활성화로 깜빡였다(ButtonGroup의
+   * `disabled={nextPending}`). 성공했을 때는 리셋하지 않고 화면 전환에 맡긴다.
+   */
+  it("저장에 성공하면 isSaving을 리셋하지 않고 true로 유지한다", async () => {
+    vi.mocked(patchOnboardingProfile).mockResolvedValue({
+      status: "IN_PROGRESS",
+      birthDate: null,
+      address: null,
+      monthlySalaryManwon: 300,
+      monthlySavingManwon: null,
+      netWorthManwon: null,
+      goalPeriodMonths: null,
+    });
+    const { result } = renderHook(() => useSaveOnboardingProfile());
+
+    let saved: boolean | undefined;
+    await act(async () => {
+      saved = await result.current.saveProfile({ monthlySalaryManwon: 300 });
+    });
+
+    expect(saved).toBe(true);
+    expect(result.current.isSaving).toBe(true);
+  });
 });
