@@ -420,6 +420,7 @@ export function MissionCreationChat() {
                     placeholder={
                       isAmount ? `${selectedItemLabel ?? "소비"}비 입력` : "이용 횟수 입력"
                     }
+                    unit={isAmount ? "원" : undefined}
                     value={displayValue}
                     onFocus={scrollComposerIntoView}
                     onValueChange={(value) => {

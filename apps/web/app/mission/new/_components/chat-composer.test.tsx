@@ -2,7 +2,7 @@ import { fireEvent, render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import { ChatComposer } from "./chat-composer";
 
-function renderComposer(onSubmit = vi.fn()) {
+function renderComposer(onSubmit = vi.fn(), unit?: string) {
   render(
     <form
       onSubmit={(event) => {
@@ -18,6 +18,7 @@ function renderComposer(onSubmit = vi.fn()) {
         maxLength={9}
         name="baselineAmountWon"
         placeholder="소비 입력"
+        unit={unit}
         value="50000"
         onFocus={vi.fn()}
         onValueChange={vi.fn()}
@@ -54,5 +55,11 @@ describe("ChatComposer", () => {
     });
 
     expect(onSubmit).not.toHaveBeenCalled();
+  });
+
+  it("금액 입력에 단위를 표시한다", () => {
+    renderComposer(vi.fn(), "원");
+
+    expect(screen.getByText("원")).toHaveAttribute("aria-hidden", "true");
   });
 });
