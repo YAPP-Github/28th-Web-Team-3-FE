@@ -30,6 +30,18 @@ export function WithdrawalButton({
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [error, setError] = useState<string>();
   const { mutate: withdraw, isPending } = useMutation(withdrawGuestOptions());
+  /*
+   * 탈퇴 응답을 받은 뒤 화면을 떠나기까지도 처리 중이다.
+   *
+   * `isPending`만 보면 DELETE가 끝나는 순간 false로 돌아오는데, 그 뒤에 네이티브 토큰을
+   * 비우는 브릿지 왕복이 남아 있다(WebView 왕복이라 짧지 않다). 그동안 버튼이 원래 모습으로
+   * 돌아갔다가 문서가 새로 열리며 다시 로딩이 떠서, 스피너가 돌다 말다 하는 것처럼 보였다.
+   * 게다가 그 틈에 다시 누르면 이미 지워진 계정으로 DELETE가 한 번 더 나간다.
+   *
+   * 성공하면 문서를 통째로 새로 여니 되돌릴 필요가 없다 — 켜고 그대로 둔다.
+   */
+  const [isLeaving, setIsLeaving] = useState(false);
+  const isBusy = isPending || isLeaving;
 
   function openDialog() {
     setError(undefined);
@@ -37,7 +49,7 @@ export function WithdrawalButton({
   }
 
   function closeDialog() {
-    if (isPending) return;
+    if (isBusy) return;
     setError(undefined);
     setIsDialogOpen(false);
   }
@@ -46,7 +58,10 @@ export function WithdrawalButton({
     setError(undefined);
     withdraw(undefined, {
       onError: () => setError(WITHDRAWAL_ERROR_MESSAGE),
-      onSuccess: onWithdrawn,
+      onSuccess: () => {
+        setIsLeaving(true);
+        return onWithdrawn();
+      },
     });
   }
 
@@ -77,11 +92,16 @@ export function WithdrawalButton({
         </p>
         <div className="flex w-full gap-2.5">
           {/* 시안이 취소 쪽을 먼저 둔다 — 되돌릴 수 없는 쪽을 손이 먼저 닿는 자리에 두지 않는다. */}
+          {/*
+            처리 중에도 흐려지지 않게 `disabled:opacity-100`으로 덮는다. 흐려지면 화면에서
+            제일 크게 변하는 게 이쪽이라, 방금 누른 탈퇴하기가 아니라 여기가 반응한 것처럼
+            보인다. 못 누르는 것은 `disabled`가 그대로 막는다.
+          */}
           <Button
-            className="h-[52px] flex-1 rounded-xl bg-gray-50 text-body-b1-700 text-gray-800 hover:bg-gray-100"
+            className="h-[52px] flex-1 rounded-xl bg-gray-50 text-body-b1-700 text-gray-800 hover:bg-gray-100 disabled:opacity-100"
             variant="secondary"
             size="cta"
-            disabled={isPending}
+            disabled={isBusy}
             onClick={closeDialog}
           >
             아니요
@@ -95,7 +115,7 @@ export function WithdrawalButton({
             className="h-[52px] flex-1 rounded-xl bg-error-light text-body-b1-700 text-error hover:bg-error-light/80"
             variant="destructive"
             size="cta"
-            pending={isPending}
+            pending={isBusy}
             onClick={confirmWithdrawal}
           >
             탈퇴하기

@@ -169,6 +169,44 @@ describe("WithdrawalButton", () => {
     expect(clearGuestTokens).toHaveBeenCalledOnce();
   });
 
+  /**
+   * DELETE가 끝나도 화면을 떠난 게 아니다 — 네이티브 토큰을 비우는 브릿지 왕복이 남아 있다.
+   * `isPending`만 보면 그 사이 버튼이 원래 모습으로 돌아갔다가 문서가 새로 열리며 다시
+   * 로딩이 떠서, 스피너가 돌다 말다 하는 것처럼 보였다. 그 틈에 다시 누르면 이미 지워진
+   * 계정으로 DELETE가 한 번 더 나가기도 한다.
+   */
+  it("탈퇴 응답 뒤 화면을 떠나기 전까지 처리 중 표시를 유지한다", async () => {
+    vi.mocked(isNativeApp).mockReturnValue(true);
+    let finishClear = () => {};
+    clearGuestTokens.mockReturnValue(
+      new Promise<void>((resolve) => {
+        finishClear = resolve;
+      }),
+    );
+    const replace = stubLocationReplace();
+    render(<WithdrawalButton />);
+
+    openAndConfirm();
+
+    const dialog = screen.getByRole("dialog", { name: DIALOG_NAME });
+    const confirm = within(dialog).getByRole("button", { name: "탈퇴하기" });
+    await waitFor(() => expect(clearGuestTokens).toHaveBeenCalledOnce());
+
+    // 브릿지 왕복이 도는 동안: 아직 안 떠났고, 처리 중 표시가 그대로여야 한다.
+    expect(replace).not.toHaveBeenCalled();
+    expect(confirm).toHaveAttribute("aria-busy", "true");
+    expect(within(dialog).getByRole("button", { name: "아니요" })).toBeDisabled();
+
+    // 이 틈에 다시 눌러도 두 번째 요청이 나가지 않는다.
+    fireEvent.click(confirm);
+    expect(withdrawGuest).toHaveBeenCalledOnce();
+
+    await act(async () => {
+      finishClear();
+    });
+    expect(replace).toHaveBeenCalledWith("/onboarding/intro");
+  });
+
   it("네이티브 셸 밖이면 네이티브 토큰을 비우지 않는다", async () => {
     const replace = stubLocationReplace();
     render(<WithdrawalButton />);
