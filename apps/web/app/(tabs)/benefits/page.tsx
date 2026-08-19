@@ -61,22 +61,29 @@ export default function BenefitsPage() {
           </Link>
         </div>
         {/* 문구 옆 일러스트는 카드 두 장이 겹친 모양이다. 회전한 사각형 두 개는 CSS로 그리고,
-            그 위에 얹히는 원화 마크·동전만 피그마에서 내보낸 SVG를 쓴다. */}
+            그 위에 얹히는 원화 마크·동전만 피그마에서 내보낸 SVG를 쓴다.
+
+            좁은 화면에서는 일러스트가 줄고 문구가 자리를 지킨다. 반대로 두면(문구가 줄고
+            일러스트가 고정) 화면 폭이 375보다 좁을 때 "신청하기"가 단어 중간에서 끊긴다 —
+            Z Flip 4(360px)에서 두 줄이어야 할 문구가 세 줄로 깨졌다. 일러스트는 비율만
+            지키면 조금 작아져도 뜻이 상하지 않으므로 이쪽이 줄어드는 편이 낫다. */}
         <div className="mt-[22px] flex items-start justify-between gap-2">
-          <p className="text-headline-h2-700 text-gray-900">
+          <p className="shrink-0 text-headline-h2-700 text-gray-900">
             지금 바로 신청하기
             <br />
             좋은 혜택
           </p>
+          {/* 줄어들 수 있으므로 안쪽 좌표는 px가 아니라 컨테이너(148×104) 대비 비율이다 —
+              px로 두면 상자만 줄고 내용은 그대로라 잘린다. */}
           <div
             aria-hidden="true"
-            className="relative h-[104px] w-[148px] shrink-0"
+            className="relative aspect-[37/26] w-[148px] min-w-0"
             data-slot="benefit-hero-illustration"
           >
-            <span className="absolute top-[14px] left-[22px] h-[57px] w-[94px] rotate-[-6.64deg] rounded-md bg-blue-200" />
-            <span className="absolute top-9 left-12 h-[57px] w-[93px] rotate-[6.88deg] rounded-md bg-blue-100" />
-            <BenefitCardWon className="absolute top-14 left-[79px] h-[27px] w-[37px]" />
-            <BenefitCoin className="absolute top-[39px] left-0 h-[38px] w-[30px] rotate-[11.54deg]" />
+            <span className="absolute top-[13.462%] left-[14.865%] h-[54.808%] w-[63.514%] rotate-[-6.64deg] rounded-md bg-blue-200" />
+            <span className="absolute top-[34.615%] left-[32.432%] h-[54.808%] w-[62.838%] rotate-[6.88deg] rounded-md bg-blue-100" />
+            <BenefitCardWon className="absolute top-[53.846%] left-[53.378%] h-[25.962%] w-[25%]" />
+            <BenefitCoin className="absolute top-[37.5%] left-0 h-[36.538%] w-[20.27%] rotate-[11.54deg]" />
           </div>
         </div>
       </section>
