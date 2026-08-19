@@ -281,8 +281,13 @@ export default function ProfileEditPage() {
                 onChange={(value) => editDraft({ ...draft, netWorthManwon: value })}
               />
 
-              <fieldset className="flex flex-col gap-3">
-                <legend className="text-body-b2-500 text-gray-700">
+              <fieldset>
+                {/*
+                  간격은 fieldset의 `gap`이 아니라 legend의 `margin`으로 준다 — `<legend>`는
+                  fieldset 안에서 flex 항목이 되지 않아 `gap`이 걸리지 않는다. 실제로 12px를
+                  줬는데도 라벨과 칩 사이가 0px로 붙어 있었다.
+                */}
+                <legend className="mb-3 text-body-b2-500 text-gray-700">
                   서비스를 사용하여 자산을 모으고 싶은 기간
                 </legend>
                 <div className="grid grid-cols-3 gap-2">

@@ -20,7 +20,7 @@ const clearGuestTokens = vi.mocked(bridge.clearGuestTokens);
  */
 const ORIGINAL_LOCATION = Object.getOwnPropertyDescriptor(window, "location");
 
-const DIALOG_NAME = "정말로 회원탈퇴를 하실건가요?";
+const DIALOG_NAME = "정말 아끼모를 떠나시나요?";
 
 /** 행을 눌러 다이얼로그를 열고 다이얼로그 안의 탈퇴하기를 누른다. */
 function openAndConfirm() {
@@ -63,6 +63,17 @@ describe("WithdrawalButton", () => {
     const dialog = screen.getByRole("dialog", { name: DIALOG_NAME });
     expect(within(dialog).getByRole("button", { name: "아니요" })).toBeInTheDocument();
     expect(within(dialog).getByRole("button", { name: "탈퇴하기" })).toBeInTheDocument();
+  });
+
+  /** 되돌릴 수 없는 결과를 제목만으로는 알 수 없다 — 시안이 설명 한 줄을 함께 둔다. */
+  it("확인 다이얼로그가 결과 설명을 함께 보여주고 이름에 잇는다", () => {
+    render(<WithdrawalButton />);
+
+    fireEvent.click(screen.getByRole("button", { name: "탈퇴하기" }));
+
+    const dialog = screen.getByRole("dialog", { name: DIALOG_NAME });
+    expect(within(dialog).getByText("그동안의 데이터가 모두 사라집니다.")).toBeInTheDocument();
+    expect(dialog).toHaveAccessibleDescription("그동안의 데이터가 모두 사라집니다.");
   });
 
   it("확인 다이얼로그에 시안의 경고 버튼 색을 적용한다", () => {
