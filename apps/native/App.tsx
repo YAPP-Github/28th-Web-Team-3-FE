@@ -7,6 +7,7 @@ import {
   Animated,
   BackHandler,
   Easing,
+  Image,
   Linking,
   Platform,
   Pressable,
@@ -146,13 +147,25 @@ function LoadErrorView({ onRetry }: { onRetry: () => void }) {
   );
 }
 
+/**
+ * 스플래시 화면 값. `app.config.ts`의 `expo-splash-screen` 설정과 같아야 한다 —
+ * 그 설정은 빌드 타임에만 쓰이고 런타임에서 읽을 수 없어 값을 복제한다.
+ * 한쪽을 바꾸면 다른 쪽도 함께 고쳐야 색과 크기가 갈리지 않는다.
+ */
+const SPLASH_BACKGROUND = "#00aeff";
+const SPLASH_IMAGE_WIDTH = 160;
+
 /*
  * 스플래시를 우리가 걷는다. 그냥 두면 Expo가 RN 첫 렌더 직후 스스로 걷어서, 지문 확인이
- * 끝나기도 전에 스플래시가 사라지고 그 자리에 흰 화면이 드러난다 — 사용자가 본
- * "스타트 이미지 → 흰 화면 → 인디케이터"의 흰 화면 구간이다.
+ * 끝나기도 전에 스플래시가 사라진다.
  *
- * 모듈 최상위에서 부르는 이유는 RN이 첫 프레임을 그리기 전에 예약을 걸어야 하기 때문이다.
- * 실패해도 앱은 그대로 뜬다(스플래시가 일찍 걷힐 뿐) — 부트를 막을 이유가 없다.
+ * 다만 이것만으로는 부족했다 — 제보상 지문 확인 중에도 스플래시가 사라지고 흰 화면이
+ * 드러났다. 이 API가 붙잡는 시점은 기기·빌드 종류(dev client 등)에 따라 달라서, 여기에만
+ * 기대면 화면이 깜빡이는 기기가 남는다. 그래서 스플래시가 언제 걷히든 상관없도록
+ * **부트 화면을 스플래시와 같은 그림으로 직접 그린다**(아래 `ready` 분기). 이 호출은
+ * 그 위에 얹는 보강이다 — 걷히지 않으면 더 매끄럽고, 걷혀도 같은 그림이 이어받는다.
+ *
+ * 실패해도 앱은 그대로 뜬다 — 부트를 막을 이유가 없다.
  */
 SplashScreen.preventAutoHideAsync().catch(() => {});
 
@@ -285,7 +298,7 @@ export default function App() {
           "auto"면 다크모드 기기에서 밝은 글자로 그려져 웹의 흰 헤더 위에서 안 보인다.
           웹이 다크모드를 지원하면 "auto"로 되돌린다. */}
       <StatusBar style="dark" />
-      <SafeAreaBands>
+      <SafeAreaBands surface={ready ? undefined : SPLASH_BACKGROUND}>
         {ready ? (
           <>
             <WebView
@@ -362,8 +375,14 @@ export default function App() {
             {loadFailed ? <LoadErrorView onRetry={retryLoad} /> : null}
           </>
         ) : (
-          <View style={styles.center}>
-            <BootSpinner />
+          /* 지문 확인이 끝날 때까지는 스플래시와 같은 그림을 그린다 — 아래 SplashHold 참고. */
+          <View style={[styles.center, styles.splashSurface]}>
+            <Image
+              accessibilityIgnoresInvertColors
+              resizeMode="contain"
+              source={require("./assets/splash-icon.png")}
+              style={styles.splashImage}
+            />
           </View>
         )}
       </SafeAreaBands>
@@ -385,15 +404,20 @@ export default function App() {
  * 색만 이 컴포넌트에서 구독한다 — `children`은 App이 만든 엘리먼트 그대로라 색이 바뀌어도
  * WebView가 리렌더되지 않는다.
  */
-function SafeAreaBands({ children }: { children: ReactNode }) {
+function SafeAreaBands({ children, surface }: { children: ReactNode; surface?: string }) {
   const insets = useSafeAreaInsets();
   const colors = useSyncExternalStore(subscribeSafeAreaColors, getSafeAreaColors);
+  // 부트 동안은 밴드까지 같은 색으로 덮는다 — 본문만 칠하면 위아래로 흰 띠가 남는다.
+  const top = surface ?? colors.top;
+  const bottom = surface ?? colors.bottom;
 
   return (
     <View style={styles.root}>
-      <View style={{ height: insets.top, backgroundColor: colors.top }} />
-      <View style={styles.content}>{children}</View>
-      <View style={{ height: insets.bottom, backgroundColor: colors.bottom }} />
+      <View style={{ height: insets.top, backgroundColor: top }} />
+      <View style={[styles.content, surface ? { backgroundColor: surface } : null]}>
+        {children}
+      </View>
+      <View style={{ height: insets.bottom, backgroundColor: bottom }} />
     </View>
   );
 }
@@ -406,6 +430,9 @@ const styles = StyleSheet.create({
   center: { flex: 1, alignItems: "center", justifyContent: "center" },
   // 아래 WebView가 비치지 않게 불투명하게 덮는다. 웹의 첫 화면도 흰 배경이라 이어 붙는다.
   bootSurface: { backgroundColor: "#ffffff" },
+  // 스플래시가 걷힌 뒤에도 같은 그림이 남도록, 배경과 이미지를 설정값 그대로 그린다.
+  splashSurface: { backgroundColor: SPLASH_BACKGROUND },
+  splashImage: { width: SPLASH_IMAGE_WIDTH, height: SPLASH_IMAGE_WIDTH },
   // 한 변만 투명하게 두어 3/4 호를 만든다 — 웹 스피너(lucide `LoaderCircle`)와 같은 그림이다.
   spinner: {
     width: SPINNER_SIZE,
