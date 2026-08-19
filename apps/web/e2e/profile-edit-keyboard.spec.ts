@@ -1,11 +1,11 @@
-import { expect, test } from "@playwright/test";
+import { expect, type Page, test } from "@playwright/test";
 
 test.use({ viewport: { width: 375, height: 812 } });
 
 /** 아이폰 숫자 키보드(제안 줄 없음) 높이 — 키패드 220 + 컨트롤러 71. */
 const KEYBOARD_INSET = 291;
 
-test("키보드가 올라와도 완료 버튼이 키보드 위에 남는다", async ({ page }) => {
+async function gotoProfileEdit(page: Page) {
   await page.route("**/api/auth/me", (route) =>
     route.fulfill({
       status: 200,
@@ -30,6 +30,32 @@ test("키보드가 올라와도 완료 버튼이 키보드 위에 남는다", as
   );
 
   await page.goto("/profile/edit");
+}
+
+/**
+ * `<legend>`는 fieldset 안에서 flex 항목이 되지 않아 `gap`이 걸리지 않는다 — 12px를
+ * 줬는데도 라벨과 칩이 0px로 붙어 있었다. 간격은 legend의 margin으로 준다.
+ */
+test("기간 라벨과 칩 사이가 시안의 12px만큼 떨어진다", async ({ page }) => {
+  await gotoProfileEdit(page);
+  await expect(page.getByRole("button", { name: "완료" })).toBeVisible();
+
+  const gap = await page.evaluate(() => {
+    const legend = [...document.querySelectorAll("legend")].find((el) =>
+      el.textContent?.includes("자산을 모으고 싶은 기간"),
+    );
+    const chip = [...document.querySelectorAll("button")].find(
+      (el) => el.textContent?.trim() === "1년 미만",
+    );
+    if (!legend || !chip) return null;
+    return Math.round(chip.getBoundingClientRect().top - legend.getBoundingClientRect().bottom);
+  });
+
+  expect(gap).toBe(12);
+});
+
+test("키보드가 올라와도 완료 버튼이 키보드 위에 남는다", async ({ page }) => {
+  await gotoProfileEdit(page);
   const submit = page.getByRole("button", { name: "완료" });
   await expect(submit).toBeVisible();
 

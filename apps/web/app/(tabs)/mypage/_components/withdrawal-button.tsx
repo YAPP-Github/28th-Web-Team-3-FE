@@ -71,7 +71,8 @@ export function WithdrawalButton({
 
       <Dialog
         open={isDialogOpen}
-        title="정말로 회원탈퇴를 하실건가요?"
+        title="정말 아끼모를 떠나시나요?"
+        description="그동안의 데이터가 모두 사라집니다."
         onOpenChange={(open) => {
           if (!open) closeDialog();
         }}
