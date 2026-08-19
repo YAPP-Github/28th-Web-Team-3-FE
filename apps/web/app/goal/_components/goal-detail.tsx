@@ -72,9 +72,14 @@ export function GoalDetail() {
             {formatManwon(totalTargetManwon)} {GOAL_TITLE_SUFFIX}
           </span>
         </span>
+        {/*
+          글자 높이(21px)만으로는 터치 목표 44px에 한참 못 미친다. 음수 마진으로 히트 영역만
+          위아래로 넓히고 안쪽 여백으로 되돌려, 보이는 자리는 시안 그대로 두면서 누를 수 있는
+          범위를 넓힌다(혜택 카드의 저장 별과 같은 방식).
+        */}
         <Link
           href="/profile/edit"
-          className="flex shrink-0 items-center gap-0.5 text-body-b2-500 text-gray-900"
+          className="-my-3 -mr-2 flex h-11 shrink-0 items-center gap-0.5 rounded-lg px-2 text-body-b2-500 text-gray-900 transition-colors duration-100 hover:bg-gray-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring active:bg-gray-50 motion-reduce:transition-none"
         >
           수정
           <Pencil aria-hidden="true" className="size-5" />
