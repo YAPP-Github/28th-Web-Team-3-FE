@@ -33,6 +33,7 @@ const handlers = {
   setSafeAreaColor: async (top, bottom) => safeArea.setColors(top, bottom),
   getAccessToken: () => guestAuth.getAccessToken(),
   refreshAccessToken: () => guestAuth.refreshAccessToken(),
+  clearGuestTokens: () => guestAuth.clearGuestTokens(),
   savePendingMissionGeneration: (job) => pendingMissionGeneration.savePendingMissionGeneration(job),
   getPendingMissionGeneration: () => pendingMissionGeneration.getPendingMissionGeneration(),
   clearPendingMissionGeneration: () => pendingMissionGeneration.clearPendingMissionGeneration(),

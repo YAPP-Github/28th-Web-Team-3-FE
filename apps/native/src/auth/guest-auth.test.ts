@@ -267,3 +267,26 @@ describe("거부된 refreshToken 정리", () => {
     expect(SecureStore.deleteItemAsync).not.toHaveBeenCalled();
   });
 });
+
+describe("clearGuestTokens", () => {
+  /**
+   * 비우지 않으면: 삭제된 계정의 access token으로 첫 요청이 401 → refresh도 삭제된
+   * refresh token이라 거부당하고서야 uuid로 신규 발급한다(왕복 2회 낭비). 미리 비워
+   * 두면 다음 getAccessToken이 refresh 시도 없이 곧장 신규 발급으로 간다.
+   */
+  it("이후 getAccessToken이 refresh 없이 곧장 신규 발급한다", async () => {
+    secureStore.set(REFRESH_TOKEN_KEY, "withdrawn-refresh");
+    fetchMock.mockResolvedValue(tokenResponse({ accessToken: "a1", refreshToken: "r1" }));
+    const { SecureStore, guestAuth } = await load();
+    await guestAuth.initGuestAuth();
+    fetchMock.mockClear();
+    fetchMock.mockResolvedValue(tokenResponse({ accessToken: "a2", refreshToken: "r2" }));
+
+    await guestAuth.clearGuestTokens();
+
+    expect(SecureStore.deleteItemAsync).toHaveBeenCalledWith(REFRESH_TOKEN_KEY);
+    await expect(guestAuth.getAccessToken()).resolves.toBe("a2");
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(fetchCall(0).url).toBe(ISSUE_URL);
+  });
+});

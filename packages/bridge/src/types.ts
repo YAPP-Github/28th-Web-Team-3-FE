@@ -75,6 +75,13 @@ export type AppBridgeMethods = {
    * 같은 게스트 계정으로 복귀한다. 그마저 실패하면 null (호출부는 에러 UI).
    */
   refreshAccessToken(): Promise<string | null>;
+  /**
+   * 게스트 인증: 회원 탈퇴 뒤 호출한다. 방금 삭제된 계정의 access/refresh token을
+   * 네이티브 메모리·SecureStore에서 비워, 다음 getAccessToken이 무효 토큰으로 한 번
+   * 실패하고서야 재발급으로 넘어가는 왕복을 건너뛴다. 기기 uuid는 남겨 새 게스트
+   * 발급이 이어지게 한다.
+   */
+  clearGuestTokens(): Promise<void>;
   /** 진행 중인 미션 생성 job을 기기 저장소에 기록한다. */
   savePendingMissionGeneration(job: PendingMissionGeneration): Promise<void>;
   /** 앱 재진입 시 이어서 확인할 미션 생성 job을 읽는다. */

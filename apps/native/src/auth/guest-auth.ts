@@ -127,3 +127,16 @@ export function getAccessToken(): Promise<string | null> {
 export function refreshAccessToken(): Promise<string | null> {
   return reissueSingleFlight();
 }
+
+/**
+ * bridge.clearGuestTokens 구현 — 탈퇴 직후 호출.
+ *
+ * 비우지 않으면: 웹이 새로 고침한 뒤 getAccessToken이 방금 삭제된 계정의 access token을
+ * 그대로 돌려주고 → 서버가 401 → refreshAccessToken이 역시 삭제된 refresh token으로
+ * 갱신을 시도해 또 거부당하고서야 uuid로 신규 발급한다. 왕복 두 번이 헛돈다.
+ * 미리 비워 두면 다음 getAccessToken이 바로 신규 발급으로 간다.
+ */
+export async function clearGuestTokens(): Promise<void> {
+  accessToken = null;
+  await SecureStore.deleteItemAsync(REFRESH_TOKEN_KEY);
+}
