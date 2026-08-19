@@ -8,7 +8,7 @@ import { HOME_POLICY_COUNT, homePoliciesOptions } from "@/lib/queries/policy";
 import { SectionHeader } from "./section-header";
 
 const CARD_CLASS =
-  "flex h-[143px] w-50 flex-col items-start gap-2 rounded-2xl border-[1.5px] border-gray-200 bg-gray-0 p-4";
+  "flex h-[143px] w-50 flex-col items-start gap-1.5 rounded-2xl border-[1.5px] border-gray-200 bg-gray-0 p-4";
 
 export function FinancialTipList() {
   const { data: policies, isPending, isError } = useQuery(homePoliciesOptions());

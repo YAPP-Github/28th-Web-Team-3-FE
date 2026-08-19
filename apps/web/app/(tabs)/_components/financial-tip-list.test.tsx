@@ -46,7 +46,9 @@ describe("FinancialTipList", () => {
 
     expect(await screen.findByText("금융")).toBeInTheDocument();
     expect(screen.getByText("정책 1 설명")).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: /정책 1/ })).toHaveAttribute("href", "/benefits");
+    const card = screen.getByRole("link", { name: /정책 1/ });
+    expect(card).toHaveAttribute("href", "/benefits");
+    expect(card).toHaveClass("gap-1.5");
   });
 
   it("제목이 두 줄까지 늘어나도 설명은 한 줄로 제한한다", async () => {
