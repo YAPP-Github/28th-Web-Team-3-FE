@@ -38,6 +38,7 @@ const handlers = {
   getPendingMissionGeneration: () => pendingMissionGeneration.getPendingMissionGeneration(),
   clearPendingMissionGeneration: () => pendingMissionGeneration.clearPendingMissionGeneration(),
   hasStartedMissionCreation: () => missionCreationHistory.hasStartedMissionCreation(),
+  getMissionCreationStartDate: () => missionCreationHistory.getMissionCreationStartDate(),
   markMissionCreationStarted: () => missionCreationHistory.markMissionCreationStarted(),
 } satisfies AppBridgeMethods;
 

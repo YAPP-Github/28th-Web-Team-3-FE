@@ -83,6 +83,8 @@ export type AppBridgeMethods = {
   clearPendingMissionGeneration(): Promise<void>;
   /** 사용자가 미션 추천 생성을 한 번이라도 시작했는지 조회한다. */
   hasStartedMissionCreation(): Promise<boolean>;
+  /** 기기에 기록된 첫 미션 생성일(KST, YYYY-MM-DD)을 조회한다. */
+  getMissionCreationStartDate(): Promise<string | null>;
   /** 홈의 첫 생성 전 안내를 다시 보여주지 않도록 생성 시작 이력을 기록한다. */
   markMissionCreationStarted(): Promise<void>;
 };

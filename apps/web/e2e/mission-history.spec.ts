@@ -61,18 +61,13 @@ test("mission history renders monthly weekly completion and blocks future months
   await expect(page.getByRole("heading", { name: "내역" })).toBeVisible();
   await expect(page.getByText(`${year}년 ${month}월`)).toBeVisible();
   await expect(page.getByText("25% 달성")).toBeVisible();
-  await expect(page.getByText("미션이 없었어요.")).toBeVisible();
+  await expect(page.getByText("생성된 미션이 없어요.")).toBeVisible();
   await expect(page.getByText("현재 진행 중")).toBeVisible();
   await expect(page.getByRole("button", { name: "다음 달" })).toBeDisabled();
+  await expect(page.getByRole("button", { name: "이전 달" })).toBeDisabled();
 
   const pig = page.getByRole("button", { name: /저금통 애니메이션 재생/ });
   await expect(pig).toHaveCount(1);
   await expect(pig.locator("svg")).toHaveCount(3);
   await pig.click();
-
-  const previousMonth = month === 1 ? 12 : month - 1;
-  const previousYear = month === 1 ? year - 1 : year;
-  await page.getByRole("button", { name: "이전 달" }).click();
-  await expect(page.getByText(`${previousYear}년 ${previousMonth}월`)).toBeVisible();
-  await expect(page.getByRole("button", { name: "다음 달" })).toBeEnabled();
 });

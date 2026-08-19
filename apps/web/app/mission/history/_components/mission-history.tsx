@@ -5,14 +5,18 @@ import HomeMissionCoin from "@repo/ui/svg/home-mission-coin.svg";
 import { useQuery } from "@tanstack/react-query";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { PigboxProgressGauge } from "@/app/(tabs)/_components/pigbox-progress-gauge";
+import { getMissionCreationStartDate } from "@/app/mission/new/utils/mission-creation-history";
 import { missionHistoriesOptions } from "@/lib/queries/mission";
 import {
   formatYearMonth,
+  getCurrentSeoulDate,
   getCurrentYearMonth,
+  getYearMonthFromDate,
   isSameYearMonth,
   shiftYearMonth,
+  type YearMonth,
 } from "../lib/month";
 import { toMissionWeekDisplay } from "../lib/weekly-history";
 
@@ -36,18 +40,26 @@ function MissionHistoryHeader() {
 
 function MonthSelector({
   nextDisabled,
+  previousDisabled,
   label,
   onNext,
   onPrevious,
 }: {
   label: string;
   nextDisabled: boolean;
+  previousDisabled: boolean;
   onNext: () => void;
   onPrevious: () => void;
 }) {
   return (
     <nav aria-label="내역 월 선택" className="flex h-[54px] items-center justify-center">
-      <Button aria-label="이전 달" size="icon" variant="ghost" onClick={onPrevious}>
+      <Button
+        aria-label="이전 달"
+        disabled={previousDisabled}
+        size="icon"
+        variant="ghost"
+        onClick={onPrevious}
+      >
         <ChevronLeft aria-hidden="true" className="size-6" strokeWidth={1.6} />
       </Button>
       <p className="min-w-[112px] text-center text-body-b1-500 text-gray-900 tabular-nums">
@@ -86,7 +98,7 @@ function MissionWeekHistory({ week }: { week: ReturnType<typeof toMissionWeekDis
       </div>
       {week.state === "no-missions" ? (
         <p className="flex h-[91px] items-center text-body-b1-500 text-gray-500">
-          미션이 없었어요.
+          생성된 미션이 없어요.
         </p>
       ) : (
         <div className="mt-2.5 flex h-[91px] items-center justify-between">
@@ -141,7 +153,20 @@ function HistoryLoading() {
 export function MissionHistory() {
   const [currentMonth] = useState(getCurrentYearMonth);
   const [selectedMonth, setSelectedMonth] = useState(currentMonth);
+  const [firstCreationMonth, setFirstCreationMonth] = useState<YearMonth | null>(null);
   const { data: histories, isError, isPending } = useQuery(missionHistoriesOptions(selectedMonth));
+  const visibleHistories = histories?.filter(
+    ({ weekStartDate }) => weekStartDate <= getCurrentSeoulDate(),
+  );
+
+  useEffect(() => {
+    void getMissionCreationStartDate().then((date) => {
+      setFirstCreationMonth(getYearMonthFromDate(date ?? "") ?? currentMonth);
+    });
+  }, [currentMonth]);
+
+  const previousDisabled =
+    !firstCreationMonth || isSameYearMonth(selectedMonth, firstCreationMonth);
 
   return (
     <main className="mx-auto min-h-dvh w-full max-w-md bg-gray-0 text-gray-900">
@@ -149,12 +174,19 @@ export function MissionHistory() {
       <MonthSelector
         label={formatYearMonth(selectedMonth)}
         nextDisabled={isSameYearMonth(selectedMonth, currentMonth)}
+        previousDisabled={previousDisabled}
         onNext={() =>
           setSelectedMonth((month) =>
             isSameYearMonth(month, currentMonth) ? month : shiftYearMonth(month, 1),
           )
         }
-        onPrevious={() => setSelectedMonth((month) => shiftYearMonth(month, -1))}
+        onPrevious={() =>
+          setSelectedMonth((month) =>
+            !firstCreationMonth || isSameYearMonth(month, firstCreationMonth)
+              ? month
+              : shiftYearMonth(month, -1),
+          )
+        }
       />
 
       {isPending ? <HistoryLoading /> : null}
@@ -163,14 +195,14 @@ export function MissionHistory() {
           미션 내역을 불러오지 못했어요. 잠시 후 다시 시도해 주세요.
         </p>
       ) : null}
-      {histories?.length ? (
+      {visibleHistories?.length ? (
         <section aria-label="주차별 미션 내역" className="flex flex-col gap-6 px-5">
-          {histories.map((history) => (
+          {visibleHistories.map((history) => (
             <MissionWeekHistory key={history.weekStartDate} week={toMissionWeekDisplay(history)} />
           ))}
         </section>
       ) : null}
-      {histories && histories.length === 0 ? (
+      {visibleHistories && visibleHistories.length === 0 ? (
         <p className="px-5 pt-[127px] text-center text-body-b1-500 text-gray-600">
           아직 기록된 미션 내역이 없어요.
         </p>
