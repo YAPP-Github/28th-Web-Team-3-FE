@@ -15,20 +15,20 @@ describe("toMissionWeekDisplay", () => {
     ).toEqual({ isCurrentWeek: false, state: "no-missions", week: 2 });
   });
 
-  it("미션이 있으면 완료 수로 정수 완료율을 계산한다", () => {
+  it("미션이 있으면 홈·상세와 같은 반올림 기준으로 완료율을 계산한다", () => {
     expect(
       toMissionWeekDisplay({
-        completedCount: 1,
+        completedCount: 4,
         isCurrentWeek: true,
-        totalCount: 4,
+        totalCount: 6,
         weekEndDate: "2026-08-23",
         weekOfMonth: 3,
         weekStartDate: "2026-08-17",
       }),
     ).toEqual({
-      completedCount: 1,
+      completedCount: 4,
       isCurrentWeek: true,
-      progressPercent: 25,
+      progressPercent: 67,
       state: "progress",
       week: 3,
     });
