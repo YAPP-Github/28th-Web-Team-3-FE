@@ -289,4 +289,36 @@ describe("clearGuestTokens", () => {
     expect(fetchMock).toHaveBeenCalledTimes(1);
     expect(fetchCall(0).url).toBe(ISSUE_URL);
   });
+
+  /**
+   * 탈퇴 직전에 이미 돌고 있던 reissue(예: 무관한 요청의 401 재시도)가 clearGuestTokens
+   * 뒤에야 서버 응답을 받으면, 그 결과로 방금 지운 삭제된 계정의 토큰을 되살릴 수 있다.
+   * 되살아나면 이 PR이 없애려던 왕복 낭비가 그대로 재발한다 — 세대 번호로 막는다.
+   */
+  it("탈퇴 이전에 시작된 reissue가 나중에 끝나도 지운 토큰을 되살리지 않는다", async () => {
+    secureStore.set(REFRESH_TOKEN_KEY, "pre-withdrawal-refresh");
+    let resolveRefresh: ((response: unknown) => void) | undefined;
+    fetchMock.mockImplementationOnce(
+      () =>
+        new Promise((resolve) => {
+          resolveRefresh = resolve;
+        }),
+    );
+    const { SecureStore, guestAuth } = await load();
+
+    const staleReissue = guestAuth.refreshAccessToken();
+    await vi.waitFor(() => expect(resolveRefresh).toBeDefined());
+
+    await guestAuth.clearGuestTokens();
+    vi.mocked(SecureStore.setItemAsync).mockClear();
+
+    resolveRefresh?.(tokenResponse({ accessToken: "stale-a1", refreshToken: "stale-r1" }));
+    await expect(staleReissue).resolves.toBeNull();
+
+    expect(SecureStore.setItemAsync).not.toHaveBeenCalled();
+    expect(secureStore.has(REFRESH_TOKEN_KEY)).toBe(false);
+
+    fetchMock.mockResolvedValue(tokenResponse({ accessToken: "a2", refreshToken: "r2" }));
+    await expect(guestAuth.getAccessToken()).resolves.toBe("a2");
+  });
 });
