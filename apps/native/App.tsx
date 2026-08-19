@@ -68,8 +68,14 @@ const SPINNER_DURATION_MS = 1000;
 
 function BootSpinner() {
   const rotation = useRef(new Animated.Value(0)).current;
-  // 웹은 `motion-reduce:animate-none`으로 멈춘다 — 같은 대기의 앞뒤라 여기서도 맞춘다.
-  const [reduceMotion, setReduceMotion] = useState(false);
+  /*
+   * 웹은 `motion-reduce:animate-none`으로 멈춘다 — 같은 대기의 앞뒤라 여기서도 맞춘다.
+   *
+   * 아직 모르는 상태(`undefined`)를 `false`와 구분한다. 설정 조회가 비동기라 `false`로
+   * 시작하면 답이 오기 전에 회전이 시작되고, 모션을 줄이기로 한 사용자가 답이 도착할
+   * 때까지 도는 스피너를 본다 — 부트 스피너는 WebView가 뜰 때까지 떠 있어 그 구간이 짧지 않다.
+   */
+  const [reduceMotion, setReduceMotion] = useState<boolean>();
 
   useEffect(() => {
     let isMounted = true;
@@ -77,7 +83,10 @@ function BootSpinner() {
       (enabled) => {
         if (isMounted) setReduceMotion(enabled);
       },
-      () => {},
+      // 조회에 실패하면 설정을 알 수 없다 — 도는 쪽을 기본으로 둔다(로딩 표시가 목적이다).
+      () => {
+        if (isMounted) setReduceMotion(false);
+      },
     );
     return () => {
       isMounted = false;
@@ -85,7 +94,8 @@ function BootSpinner() {
   }, []);
 
   useEffect(() => {
-    if (reduceMotion) return;
+    // 답이 오기 전에는 시작하지 않는다.
+    if (reduceMotion !== false) return;
     const spin = Animated.loop(
       Animated.timing(rotation, {
         toValue: 1,

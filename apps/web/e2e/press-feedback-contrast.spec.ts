@@ -20,7 +20,7 @@ async function settledBackgroundOf(page: Page, locator: ReturnType<Page["getByRo
   return locator.evaluate((el) => getComputedStyle(el).backgroundColor);
 }
 
-async function gotoMypage(page: Page) {
+async function mockCurrentUser(page: Page) {
   await page.route("**/api/auth/me", (route) =>
     route.fulfill({
       status: 200,
@@ -28,24 +28,53 @@ async function gotoMypage(page: Page) {
       body: JSON.stringify({ userId: 1, onboardingCompleted: true }),
     }),
   );
-  await page.goto("/mypage");
-  await expect(page.getByRole("heading", { name: "마이페이지" })).toBeVisible();
 }
 
-test("설정 행은 hover가 남아 있어도 누른 표시가 따로 보인다", async ({ page }) => {
-  await gotoMypage(page);
+/** hover가 붙으면 색이 변하고, 그 위에서 누르면 한 번 더 변해야 한다. */
+async function expectPressReadableUnderHover(page: Page, locator: ReturnType<Page["getByRole"]>) {
+  const idle = await settledBackgroundOf(page, locator);
 
-  const row = page.getByRole("link", { name: "내 정보" });
-  const idle = await settledBackgroundOf(page, row);
-
-  await row.hover();
-  const hovered = await settledBackgroundOf(page, row);
+  await locator.hover();
+  const hovered = await settledBackgroundOf(page, locator);
 
   await page.mouse.down();
-  const pressed = await settledBackgroundOf(page, row);
+  const pressed = await settledBackgroundOf(page, locator);
   await page.mouse.up();
 
-  // hover가 붙으면 색이 변하고, 그 위에서 누르면 한 번 더 변해야 한다.
   expect(hovered).not.toBe(idle);
   expect(pressed).not.toBe(hovered);
+}
+
+test("마이페이지 설정 행은 hover가 남아 있어도 누른 표시가 따로 보인다", async ({ page }) => {
+  await mockCurrentUser(page);
+  await page.goto("/mypage");
+  await expect(page.getByRole("heading", { name: "마이페이지" })).toBeVisible();
+
+  await expectPressReadableUnderHover(page, page.getByRole("link", { name: "내 정보" }));
+});
+
+test("목표 상세 수정 링크도 hover가 남아 있어도 누른 표시가 따로 보인다", async ({ page }) => {
+  await mockCurrentUser(page);
+  await page.route("**/api/v2/goal", (route) =>
+    route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({
+        targetAmountManwon: 5000,
+        periodMonths: 16,
+        totalSavedManwon: 1950,
+        progressPercent: 39,
+        usageMonths: 8,
+        deadlineDDay: 240,
+        thisMonth: { targetManwon: 190, savedManwon: 100, progressPercent: 53, dDay: 12 },
+        monthlySavings: [{ yearMonth: "2026-08", savedManwon: 100, current: true }],
+      }),
+    }),
+  );
+  await page.goto("/goal");
+
+  const edit = page.getByRole("link", { name: "수정" });
+  await expect(edit).toBeVisible();
+
+  await expectPressReadableUnderHover(page, edit);
 });
