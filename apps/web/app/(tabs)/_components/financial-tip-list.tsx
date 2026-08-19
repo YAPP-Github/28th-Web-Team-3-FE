@@ -3,6 +3,7 @@
 import type { PolicySummary } from "@repo/schema/policy";
 import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
+import { useLayoutEffect, useRef, useState } from "react";
 import { HOME_POLICY_COUNT, homePoliciesOptions } from "@/lib/queries/policy";
 import { SectionHeader } from "./section-header";
 
@@ -43,13 +44,41 @@ export function FinancialTipList() {
 
 function PolicyTipCard({ policy }: { policy: PolicySummary }) {
   const categoryLabel = policy.category ?? policy.largeCategory ?? "정부 정책";
+  const titleRef = useRef<HTMLHeadingElement>(null);
+  const [isTitleMultiline, setIsTitleMultiline] = useState(false);
+
+  useLayoutEffect(() => {
+    const title = titleRef.current;
+    if (!title) return;
+
+    const updateTitleLines = () => {
+      const lineHeight = Number.parseFloat(window.getComputedStyle(title).lineHeight);
+      setIsTitleMultiline(
+        Number.isFinite(lineHeight) && title.getBoundingClientRect().height > lineHeight,
+      );
+    };
+
+    updateTitleLines();
+
+    if (typeof ResizeObserver === "undefined") return;
+
+    const resizeObserver = new ResizeObserver(updateTitleLines);
+    resizeObserver.observe(title);
+
+    return () => resizeObserver.disconnect();
+  }, []);
+
   return (
     <Link className={CARD_CLASS} href="/benefits">
       <span className="max-w-full truncate rounded bg-blue-100 px-1.5 py-1 text-caption-c1-700 text-blue-600">
         {categoryLabel}
       </span>
-      <h3 className="line-clamp-2 text-body-b1-700 text-blue-900">{policy.title}</h3>
-      <p className="line-clamp-2 text-body-b2-500 text-gray-700">
+      <h3 ref={titleRef} className="line-clamp-2 text-body-b1-700 text-blue-900">
+        {policy.title}
+      </h3>
+      <p
+        className={`${isTitleMultiline ? "line-clamp-1" : "line-clamp-2"} text-body-b2-500 text-gray-700`}
+      >
         {policy.description ?? "자세한 혜택 내용을 확인해 보세요."}
       </p>
     </Link>
