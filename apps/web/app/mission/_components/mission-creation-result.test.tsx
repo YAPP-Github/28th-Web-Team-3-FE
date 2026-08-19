@@ -22,7 +22,7 @@ const MOCK_DRAFTS: MissionDraftsResponse = {
         targetUnit: "TIMES_PER_WEEK",
         estimatedSavingsWon: 5000,
         savingsEstimateVersion: "V1",
-        savingsLabel: "약 5,000원 절약 예상",
+        savingsLabel: "약 5000원 절약 예상",
       })),
     },
   ],
@@ -59,6 +59,12 @@ describe("MissionCreationResult", () => {
         selectedDraftIds: ["draft-1"],
       }),
     );
+  });
+
+  it("달성 시 절약 금액에 천 단위 구분자를 표시한다", async () => {
+    render(<MissionCreationResult jobId="job-1" />);
+
+    expect(await screen.findAllByText("약 5,000원 절약 예상")).toHaveLength(5);
   });
 
   it("미션 선택 개수를 4개로 제한하지 않는다", async () => {
