@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { formatYearMonth, getMissionWeek, shiftYearMonth } from "./month";
+import { formatYearMonth, getMissionWeek, getYearMonthFromDate, shiftYearMonth } from "./month";
 
 describe("mission history month", () => {
   it("연도를 넘겨 이전 달과 다음 달을 계산한다", () => {
@@ -19,5 +19,10 @@ describe("mission history month", () => {
       week: 6,
       year: 2026,
     });
+  });
+
+  it("생성일에서 히스토리의 시작 월을 구한다", () => {
+    expect(getYearMonthFromDate("2026-08-19")).toEqual({ month: 8, year: 2026 });
+    expect(getYearMonthFromDate("invalid")).toBeNull();
   });
 });

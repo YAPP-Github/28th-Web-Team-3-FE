@@ -1,7 +1,15 @@
-import { afterEach, describe, expect, it, vi } from "vitest";
-import { hasStartedMissionCreation, markMissionCreationStarted } from "./mission-creation-history";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import {
+  getMissionCreationStartDate,
+  hasStartedMissionCreation,
+  markMissionCreationStarted,
+} from "./mission-creation-history";
 
 describe("mission creation history", () => {
+  beforeEach(() => {
+    localStorage.clear();
+  });
+
   afterEach(() => {
     vi.restoreAllMocks();
   });
@@ -20,5 +28,13 @@ describe("mission creation history", () => {
     });
 
     await expect(markMissionCreationStarted()).resolves.toBeUndefined();
+  });
+
+  it("preserves and returns the first creation date", async () => {
+    localStorage.setItem("mission-creation:started", "2026-08-01");
+
+    await markMissionCreationStarted();
+
+    await expect(getMissionCreationStartDate()).resolves.toBe("2026-08-01");
   });
 });
