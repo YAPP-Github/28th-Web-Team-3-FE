@@ -1,5 +1,5 @@
 import type { PolicySummary } from "@repo/schema/policy";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { fetchPolicies } from "@/api/policy";
 import { render, screen } from "@/lib/test/react";
 import { FinancialTipList } from "./financial-tip-list";
@@ -19,11 +19,17 @@ const POLICIES: PolicySummary[] = Array.from({ length: 6 }, (_, index) => ({
   description: `정책 ${index + 1} 설명`,
   bookmarked: false,
 }));
+const defaultResizeObserver = globalThis.ResizeObserver;
 
 describe("FinancialTipList", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.mocked(fetchPolicies).mockResolvedValue(POLICIES);
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+    vi.stubGlobal("ResizeObserver", defaultResizeObserver);
   });
 
   it("정책 API 첫 페이지를 5개 크기로 요청하고 최대 5개만 표시한다", async () => {
@@ -40,7 +46,54 @@ describe("FinancialTipList", () => {
 
     expect(await screen.findByText("금융")).toBeInTheDocument();
     expect(screen.getByText("정책 1 설명")).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: /정책 1/ })).toHaveAttribute("href", "/benefits");
+    const card = screen.getByRole("link", { name: /정책 1/ });
+    expect(card).toHaveAttribute("href", "/benefits");
+    expect(card).toHaveClass("gap-1.5");
+  });
+
+  it("제목이 두 줄까지 늘어나도 설명은 한 줄로 제한한다", async () => {
+    const title = "긴 혜택 제목 ".repeat(10);
+    const description = "긴 혜택 설명 ".repeat(10);
+    vi.mocked(fetchPolicies).mockResolvedValue([{ ...POLICIES[0]!, title, description }]);
+    vi.stubGlobal(
+      "ResizeObserver",
+      class ResizeObserverMock {
+        observe() {}
+        unobserve() {}
+        disconnect() {}
+      },
+    );
+    const getComputedStyle = window.getComputedStyle;
+    const getComputedStyleSpy = vi.spyOn(window, "getComputedStyle").mockImplementation(
+      (element) =>
+        new Proxy(getComputedStyle(element), {
+          get(target, property, receiver) {
+            return property === "lineHeight" ? "20px" : Reflect.get(target, property, receiver);
+          },
+        }),
+    );
+    const getBoundingClientRectSpy = vi
+      .spyOn(HTMLElement.prototype, "getBoundingClientRect")
+      .mockImplementation(function (this: HTMLElement) {
+        return { height: this instanceof HTMLHeadingElement ? 40 : 0 } as DOMRect;
+      });
+
+    render(<FinancialTipList />);
+
+    expect(
+      await screen.findByText(
+        (_, element) => element?.tagName === "H3" && element.textContent === title,
+      ),
+    ).toHaveClass("line-clamp-2");
+    expect(screen.getByText(description.trim())).toHaveClass("line-clamp-1");
+    expect(getComputedStyleSpy).toHaveBeenCalled();
+    expect(getBoundingClientRectSpy).toHaveBeenCalled();
+  });
+
+  it("제목이 한 줄이면 설명을 두 줄까지 표시한다", async () => {
+    render(<FinancialTipList />);
+
+    expect(await screen.findByText("정책 1 설명")).toHaveClass("line-clamp-2");
   });
 
   it("조회 실패 시 사용자용 오류 문구를 표시한다", async () => {
