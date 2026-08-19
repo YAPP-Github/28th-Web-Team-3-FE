@@ -104,7 +104,8 @@ export function BenefitCard({ benefit, onToggleSave }: BenefitCardProps) {
               aria-controls={descriptionId}
               aria-expanded={isExpanded}
               aria-label={`${benefit.title} 설명 ${isExpanded ? "접기" : "펼치기"}`}
-              className="-m-2.5 relative z-10 flex size-10 shrink-0 items-center justify-center rounded-full transition-[scale,background-color] duration-100 hover:bg-gray-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring active:scale-[0.92] motion-reduce:transition-none motion-reduce:active:scale-100"
+              // 저장 별과 같은 44px 터치 목표를 쓴다 — 같은 카드 안에서 기준이 달랐다.
+              className="-m-3 relative z-10 flex size-11 shrink-0 items-center justify-center rounded-full transition-[scale,background-color] duration-100 hover:bg-gray-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring active:scale-[0.92] motion-reduce:transition-none motion-reduce:active:scale-100"
               onClick={() => setIsExpanded((expanded) => !expanded)}
               type="button"
             >
