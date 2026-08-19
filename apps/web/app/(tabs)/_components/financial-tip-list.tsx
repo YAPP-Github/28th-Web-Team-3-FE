@@ -5,6 +5,7 @@ import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
 import { useLayoutEffect, useRef, useState } from "react";
 import { HOME_POLICY_COUNT, homePoliciesOptions } from "@/lib/queries/policy";
+import { FinancialTipListSkeleton } from "./financial-tip-list.skeleton";
 import { SectionHeader } from "./section-header";
 
 const CARD_CLASS =
@@ -13,6 +14,8 @@ const CARD_CLASS =
 export function FinancialTipList() {
   const { data: policies, isPending, isError } = useQuery(homePoliciesOptions());
 
+  if (isPending) return <FinancialTipListSkeleton />;
+
   return (
     <section className="flex flex-col gap-4 border-t-[12px] border-gray-50 pt-8">
       <div className="px-5">
@@ -20,17 +23,9 @@ export function FinancialTipList() {
       </div>
       <div className="overflow-x-auto px-5 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         <div className="flex w-max gap-3 pb-1">
-          {isPending
-            ? Array.from({ length: 2 }, (_, index) => (
-                <div
-                  key={index}
-                  aria-hidden="true"
-                  className={`${CARD_CLASS} animate-pulse bg-gray-50`}
-                />
-              ))
-            : policies
-                ?.slice(0, HOME_POLICY_COUNT)
-                .map((policy) => <PolicyTipCard key={policy.id} policy={policy} />)}
+          {policies?.slice(0, HOME_POLICY_COUNT).map((policy) => (
+            <PolicyTipCard key={policy.id} policy={policy} />
+          ))}
         </div>
       </div>
       {isError && !policies ? (

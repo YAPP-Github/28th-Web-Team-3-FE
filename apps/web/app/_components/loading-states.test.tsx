@@ -1,8 +1,10 @@
 import { Button, ButtonGroup } from "@repo/ui";
 import { describe, expect, it, vi } from "vitest";
+import { HomeGoalSectionSkeleton } from "@/app/(tabs)/_components/home-goal-section.skeleton";
+import { HomePageSkeleton } from "@/app/(tabs)/_components/home-page.skeleton";
+import { MissionPageSkeleton } from "@/app/(tabs)/mission/_components/mission-page.skeleton";
 import { fireEvent, render, screen } from "@/lib/test/react";
-import { GoalSectionSkeleton } from "./goal-section-skeleton";
-import { MissionListSkeleton } from "./mission-list-skeleton";
+import { MissionListSkeleton } from "./mission-list.skeleton";
 import { RouteLoading } from "./route-loading";
 
 /**
@@ -105,7 +107,11 @@ describe("로딩 자리표시자", () => {
    * 그대로 사라진다. 둘 다 틀리면 대기 상태가 아예 전달되지 않는다.
    */
   it.each([
-    ["목표", <GoalSectionSkeleton key="goal" label="목표를 불러오는 중" />, "목표를 불러오는 중"],
+    [
+      "목표",
+      <HomeGoalSectionSkeleton key="goal" label="목표를 불러오는 중" />,
+      "목표를 불러오는 중",
+    ],
     [
       "미션",
       <MissionListSkeleton key="mission" label="미션을 불러오는 중" />,
@@ -161,5 +167,22 @@ describe("로딩 자리표시자", () => {
 
     rerender(<MissionListSkeleton count={4} />);
     expect(countCards()).toBe(4);
+  });
+
+  it("홈 대기 화면은 목표·주간 미션·혜택/팁의 자리를 함께 유지한다", () => {
+    const { container } = render(<HomePageSkeleton />);
+
+    expect(screen.getByRole("heading", { name: "홈" })).toBeInTheDocument();
+    expect(screen.getByRole("status")).toHaveTextContent("홈을 불러오는 중");
+    expect(container.querySelectorAll(".rounded-xl")).toHaveLength(3);
+    expect(container.querySelectorAll(".w-50")).toHaveLength(2);
+  });
+
+  it("미션 대기 화면은 히어로와 접힌 카드의 자리를 함께 유지한다", () => {
+    const { container } = render(<MissionPageSkeleton />);
+
+    expect(screen.getByRole("status")).toHaveTextContent("미션을 불러오는 중");
+    expect(container.querySelector('[data-slot="mission-hero-skeleton"]')).toHaveClass("h-[225px]");
+    expect(container.querySelectorAll(".rounded-xl")).toHaveLength(4);
   });
 });

@@ -48,6 +48,20 @@ describe("OnboardingRouteGuard", () => {
     await waitFor(() => expect(navigation.replace).toHaveBeenCalledWith("/onboarding/intro"));
   });
 
+  it("홈의 온보딩 완료 여부를 확인하는 동안 중앙 스피너 대신 홈 스켈레톤을 보여준다", () => {
+    vi.mocked(getCurrentUser).mockReturnValue(new Promise(() => {}));
+
+    render(
+      <OnboardingRouteGuard>
+        <p>홈 본문</p>
+      </OnboardingRouteGuard>,
+    );
+
+    expect(screen.getByRole("heading", { name: "홈" })).toBeInTheDocument();
+    expect(screen.getByRole("status")).toHaveTextContent("홈을 불러오는 중");
+    expect(screen.queryByText("홈 본문")).not.toBeInTheDocument();
+  });
+
   it("온보딩 완료 사용자를 홈으로 교체 이동한다", async () => {
     navigation.pathname = "/onboarding/intro";
     vi.mocked(getCurrentUser).mockResolvedValue({ userId: 1, onboardingCompleted: true });
@@ -59,6 +73,7 @@ describe("OnboardingRouteGuard", () => {
     );
 
     await waitFor(() => expect(navigation.replace).toHaveBeenCalledWith("/"));
+    expect(screen.getByRole("heading", { name: "홈" })).toBeInTheDocument();
   });
 
   it("현재 경로가 사용자 상태에 맞으면 자식을 렌더한다", async () => {

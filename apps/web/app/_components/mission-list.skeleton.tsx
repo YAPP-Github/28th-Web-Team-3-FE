@@ -2,21 +2,13 @@ import { Skeleton } from "@repo/ui";
 import { LoadingRegion } from "./loading-region";
 
 interface MissionListSkeletonProps {
-  /** 몇 장을 깔지. 홈은 짧게, 미션 탭은 목록 길이에 가깝게. */
   count?: number;
   className?: string;
-  /** 스크린리더가 읽을 문장. 한 화면에 자리표시자가 여럿이면 하나에만 준다. */
   label?: string;
 }
 
-/**
- * 미션 카드 목록의 대기 화면. 홈의 "이번 주 미션"과 미션 탭이 같은 카드를 쓰므로 함께 쓴다.
- *
- * 개수를 실제와 맞출 수는 없다 — 조회 전에는 몇 개인지 모른다. 그래도 문구 한 줄보다는
- * 도착 후 밀림이 훨씬 작다.
- */
+/** 미션 생성 결과처럼 상세 카드의 모양을 아직 알 수 없는 목록 대기 화면. */
 export function MissionListSkeleton({ count = 3, className, label }: MissionListSkeletonProps) {
-  // 자리표시자는 순서 말고 정체성이 없다. 인덱스를 그대로 key로 쓰지 않으려고 미리 만든다.
   const rows = Array.from({ length: count }, (_, index) => `mission-skeleton-${index}`);
 
   return (

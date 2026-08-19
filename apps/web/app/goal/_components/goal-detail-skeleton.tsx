@@ -4,7 +4,7 @@ import { LoadingRegion } from "@/app/_components/loading-region";
 /**
  * 목표 상세의 대기 뼈대 — 헤더 + 반원 게이지 + 사용기간 카드 + 이번 달 카드.
  *
- * 홈의 `GoalSectionSkeleton`을 그대로 쓰면 게이지와 사용기간 카드 자리가 통째로 비어 있다가
+ * 홈의 `HomeGoalSectionSkeleton`을 그대로 쓰면 게이지와 사용기간 카드 자리가 통째로 비어 있다가
  * 데이터가 도착할 때 끼어들어, 문구 한 줄을 쓰던 때보다 오히려 크게 밀린다.
  */
 export function GoalDetailSkeleton() {

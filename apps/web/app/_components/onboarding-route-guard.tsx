@@ -4,7 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { usePathname, useRouter } from "next/navigation";
 import { type ReactNode, useEffect } from "react";
 import { currentUserOptions } from "@/lib/queries/auth";
-import { RouteLoading } from "./route-loading";
+import { InitialRouteSkeleton } from "./initial-route.skeleton";
 
 function isOnboardingPath(pathname: string | null): boolean {
   return pathname === "/onboarding" || pathname?.startsWith("/onboarding/") === true;
@@ -54,7 +54,7 @@ export function OnboardingRouteGuard({ children }: { children: ReactNode }) {
   if (publicRoute) return children;
 
   if (isPending || redirectPath) {
-    return <RouteLoading />;
+    return <InitialRouteSkeleton pathname={redirectPath ?? pathname} />;
   }
 
   if (error) throw error;
