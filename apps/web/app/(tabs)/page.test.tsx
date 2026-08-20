@@ -31,7 +31,7 @@ vi.mock("@/api/goal", () => ({
 
 vi.mock("@/api/mission", () => ({
   completeMission: vi.fn(),
-  deleteRecommendedMission: vi.fn(),
+  deleteMission: vi.fn(),
   fetchMissions: vi.fn(),
 }));
 

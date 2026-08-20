@@ -11,7 +11,12 @@ vi.mock("@/api/client", () => ({
 }));
 
 import { http } from "@/api/client";
-import { createManualMission, fetchMissionHistories, fetchMissionProgress } from "./mission";
+import {
+  createManualMission,
+  deleteMission,
+  fetchMissionHistories,
+  fetchMissionProgress,
+} from "./mission";
 
 describe("mission API", () => {
   beforeEach(() => vi.clearAllMocks());
@@ -53,6 +58,12 @@ describe("mission API", () => {
     expect(http.get).toHaveBeenCalledWith("missions/progress", {
       response: missionProgressSchema,
     });
+  });
+
+  it("추천·직접 입력 미션을 출처 경로로 삭제한다", async () => {
+    await deleteMission("MANUAL", "manual-1");
+
+    expect(http.delete).toHaveBeenCalledWith("missions/MANUAL/manual-1");
   });
 
   it("선택한 달의 주차별 미션 완료 내역을 조회한다", async () => {

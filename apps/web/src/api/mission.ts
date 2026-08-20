@@ -71,7 +71,7 @@ export function completeMission(source: MissionSource, missionId: string): Promi
   return http.patch(`missions/${source}/${missionId}/complete`);
 }
 
-/** DELETE /api/missions/recommended/{missionId} — 추천 미션 삭제. */
-export function deleteRecommendedMission(missionId: string): Promise<void> {
-  return http.delete(`missions/recommended/${missionId}`);
+/** DELETE /api/missions/{source}/{missionId} — 추천·직접 입력 미션 삭제. */
+export function deleteMission(source: MissionSource, missionId: string): Promise<void> {
+  return http.delete(`missions/${source}/${missionId}`);
 }

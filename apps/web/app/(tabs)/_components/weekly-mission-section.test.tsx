@@ -60,7 +60,7 @@ function filterMissions(params: Parameters<typeof fetchMissions>[0] = {}) {
 
 vi.mock("@/api/mission", () => ({
   completeMission: vi.fn(),
-  deleteRecommendedMission: vi.fn(),
+  deleteMission: vi.fn(),
   fetchMissions: vi.fn(),
 }));
 
