@@ -35,6 +35,7 @@ export default function MissionPage() {
   const [missionToDelete, setMissionToDelete] = useState<Mission | null>(null);
   const [completeError, setCompleteError] = useState<string>();
   const [deleteError, setDeleteError] = useState<string>();
+  const [pigboxPlayRequest, setPigboxPlayRequest] = useState(0);
 
   // 상단 safe-area 밴드는 경로만 보고 미션 히어로 색(gray-50)을 깐다(`lib/safe-area-bands.ts`).
   // 히어로가 없는 로딩·오류 화면도 같은 색으로 시작해야 밴드만 회색인 띠가 다시 생기지 않는다.
@@ -72,6 +73,7 @@ export default function MissionPage() {
         completedCount={countCompletedMissions(missions)}
         ddayLabel={formatWeekDday(missions[0]?.weekEndsAt)}
         percent={calculateProgressPercent(missions)}
+        playRequest={pigboxPlayRequest}
         savedWon={sumCompletedSavingsWon(missions)}
       />
       {missions.length === 0 ? (
@@ -119,7 +121,10 @@ export default function MissionPage() {
             {
               onError: () =>
                 setCompleteError("완료 처리하지 못했어요. 잠시 후 다시 시도해 주세요."),
-              onSuccess: () => setMissionToComplete(null),
+              onSuccess: () => {
+                setPigboxPlayRequest((request) => request + 1);
+                setMissionToComplete(null);
+              },
             },
           );
         }}

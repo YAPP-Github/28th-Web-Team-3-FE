@@ -95,7 +95,7 @@ function renderAnimation(
 }
 
 interface PigboxProgressGaugeProps {
-  /** 홈에서는 반복 재생하고, 내역에서는 정지된 진행률 이미지로 쓴다. */
+  /** 기본은 정지된 진행률 이미지이며, 반복 재생이 필요한 화면에서만 켠다. */
   animated?: boolean;
   className?: string;
   completedCount: number;
@@ -105,7 +105,7 @@ interface PigboxProgressGaugeProps {
 }
 
 export function PigboxProgressGauge({
-  animated = true,
+  animated = false,
   className,
   completedCount,
   playRequest = 0,

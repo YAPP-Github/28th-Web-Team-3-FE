@@ -9,10 +9,17 @@ interface MissionHeroProps {
   percent: number;
   /** 완료한 미션 수 — 완료 1건당 코인 1개. */
   completedCount: number;
+  playRequest: number;
   savedWon: number;
 }
 
-export function MissionHero({ ddayLabel, percent, completedCount, savedWon }: MissionHeroProps) {
+export function MissionHero({
+  ddayLabel,
+  percent,
+  completedCount,
+  playRequest,
+  savedWon,
+}: MissionHeroProps) {
   return (
     // 표시는 safe-area 밴드가 스크롤을 따라가게 한다(`lib/safe-area-bands.ts`).
     <section
@@ -41,6 +48,7 @@ export function MissionHero({ ddayLabel, percent, completedCount, savedWon }: Mi
       <PigboxProgressGauge
         className="absolute top-[66px] right-[33px]"
         completedCount={completedCount}
+        playRequest={playRequest}
         progress={percent}
       />
     </section>
