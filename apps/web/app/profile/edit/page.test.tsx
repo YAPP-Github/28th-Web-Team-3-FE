@@ -5,7 +5,11 @@ import { SAVE_FAILED_TEXT } from "@/lib/messages";
 import { fireEvent, render, screen, waitFor } from "@/lib/test/react";
 import ProfileEditPage from "./page";
 
-const navigation = vi.hoisted(() => ({ back: vi.fn(), replace: vi.fn() }));
+const navigation = vi.hoisted(() => ({
+  back: vi.fn(),
+  replace: vi.fn(),
+  from: null as string | null,
+}));
 
 const PROFILE: OnboardingProfile = {
   status: "COMPLETED",
@@ -27,7 +31,10 @@ const GOAL: GoalSummary = {
   thisMonth: { targetManwon: 82, savedManwon: 67, progressPercent: 82, dDay: 12 },
 };
 
-vi.mock("next/navigation", () => ({ useRouter: () => navigation }));
+vi.mock("next/navigation", () => ({
+  useRouter: () => navigation,
+  useSearchParams: () => ({ get: (key: string) => (key === "from" ? navigation.from : null) }),
+}));
 
 vi.mock("@/api/onboarding", () => ({
   confirmOnboardingGoal: vi.fn(),
@@ -54,10 +61,22 @@ import {
 describe("ProfileEditPage", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    navigation.from = null;
     vi.mocked(getOnboardingProfile).mockResolvedValue(PROFILE);
     vi.mocked(patchOnboardingProfile).mockResolvedValue(PROFILE);
     vi.mocked(updateOnboardingProfile).mockResolvedValue(PROFILE);
     vi.mocked(updateGoal).mockResolvedValue(GOAL);
+  });
+
+  it("목표 상세에서 들어오면 뒤로가기로 목표 상세를 연다", async () => {
+    navigation.from = "goal";
+    render(<ProfileEditPage />);
+
+    await screen.findByRole("textbox", { name: "생년월일" });
+    fireEvent.click(screen.getByRole("button", { name: "뒤로가기" }));
+
+    expect(navigation.replace).toHaveBeenCalledWith("/goal");
+    expect(navigation.back).not.toHaveBeenCalled();
   });
 
   it("프로필을 채워 보여주고 변경한 전체 정보와 목표 기간을 저장한다", async () => {

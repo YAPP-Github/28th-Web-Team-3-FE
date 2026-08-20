@@ -5,7 +5,7 @@ import type { OnboardingProfilePatch } from "@repo/schema/onboarding-api";
 import { Button, cn, Input } from "@repo/ui";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ChevronLeft } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { type FormEvent, useEffect, useState } from "react";
 import { SAVE_FAILED_TEXT } from "@/lib/messages";
 import { onlyDigits } from "@/lib/number";
@@ -107,6 +107,7 @@ function AmountInput({
 
 export default function ProfileEditPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const queryClient = useQueryClient();
   const { data: profile, isPending, isError } = useQuery(onboardingProfileOptions());
   const { mutateAsync: updateProfile, isPending: isUpdatingProfile } = useMutation(
@@ -136,6 +137,10 @@ export default function ProfileEditPage() {
   }, [draft, profile]);
 
   function goBack() {
+    if (searchParams.get("from") === "goal") {
+      router.replace("/goal");
+      return;
+    }
     const idx = (window.history.state as { idx?: number } | null)?.idx ?? 0;
     if (idx > 0) router.back();
     else router.replace("/profile");

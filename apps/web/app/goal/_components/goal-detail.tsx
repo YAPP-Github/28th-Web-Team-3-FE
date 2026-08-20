@@ -78,7 +78,7 @@ export function GoalDetail() {
           범위를 넓힌다(혜택 카드의 저장 별과 같은 방식).
         */}
         <Link
-          href="/profile/edit"
+          href="/profile/edit?from=goal"
           // `active:`는 `hover:`보다 한 단계 진하다 — 같은 색이면 hover가 남는 기기에서
           // 두 번째 탭부터 눌린 표시가 사라진다(`mypage/_components/setting-row.tsx`).
           className="-my-3 -mr-2 flex h-11 shrink-0 items-center gap-0.5 rounded-lg px-2 text-body-b2-500 text-gray-900 transition-colors duration-100 hover:bg-gray-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring active:bg-gray-100 motion-reduce:transition-none"

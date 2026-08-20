@@ -78,7 +78,10 @@ describe("GoalDetail", () => {
     render(<GoalDetail />);
 
     await screen.findByText("5,000만원 모으기");
-    expect(screen.getByRole("link", { name: /수정/ })).toHaveAttribute("href", "/profile/edit");
+    expect(screen.getByRole("link", { name: /수정/ })).toHaveAttribute(
+      "href",
+      "/profile/edit?from=goal",
+    );
   });
 
   it("저장에 실패하면 시트에 오류를 표시한다", async () => {
