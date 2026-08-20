@@ -73,8 +73,22 @@ describe("NewMissionPage", () => {
     expect(screen.getByRole("heading", { name: "미션 추가" })).toBeVisible();
     expect(screen.getByRole("button", { name: "미션 추천 받기" })).toBeDisabled();
     await chooseMealAndDelivery();
+    expect(
+      await screen.findByRole(
+        "heading",
+        { name: "평소 한 주에 배달음식은 몇 번 이용하세요?" },
+        { timeout: 1_500 },
+      ),
+    ).toBeVisible();
 
     fireEvent.click(await screen.findByRole("button", { name: "3회" }, { timeout: 1_500 }));
+    expect(
+      await screen.findByRole(
+        "heading",
+        { name: "평소 한 주에 배달음식으로 얼마 쓰세요?" },
+        { timeout: 1_500 },
+      ),
+    ).toBeVisible();
     const amountInput = await screen.findByLabelText("평소 소비 금액", {}, { timeout: 1_500 });
     expect(screen.getByText("원")).toBeVisible();
     fireEvent.change(amountInput, { target: { value: "50000" } });
@@ -130,7 +144,7 @@ describe("NewMissionPage", () => {
     expect(
       await screen.findByRole(
         "heading",
-        { name: "평소 배달음식으로 얼마 쓰세요?" },
+        { name: "평소 한 주에 배달음식으로 얼마 쓰세요?" },
         { timeout: 1_500 },
       ),
     ).toBeVisible();
