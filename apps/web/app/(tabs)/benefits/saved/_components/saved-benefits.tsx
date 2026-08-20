@@ -110,7 +110,7 @@ export function SavedBenefits() {
         onSelect={setContentType}
       />
       <div aria-labelledby="saved-content-tab-policy" id="saved-content-panel" role="tabpanel">
-        <section aria-label="저장한 혜택" className="mt-2 flex flex-col gap-3 px-5">
+        <section aria-label="저장한 혜택" className="mt-5 flex flex-col gap-3 px-5">
           {saveError && !cancelTarget ? (
             <p aria-live="polite" className="text-body-b2-500 text-error">
               {saveError}
@@ -128,9 +128,9 @@ export function SavedBenefits() {
               </Button>
             </div>
           ) : benefits.length === 0 ? (
-            // 목록에 붙은 `mt-2`는 카드용 여백이라 문구에는 걸리지 않게 상쇄한다 —
+            // 목록에 붙은 `mt-5`는 카드용 여백이라 문구에는 걸리지 않게 상쇄한다 —
             // 그래야 팁 탭 문구와 탭에서 같은 거리에 선다(좌우 여백은 목록 것을 쓴다).
-            <p className={`-mt-2 ${EMPTY_MESSAGE_CLASS}`}>
+            <p className={`-mt-5 ${EMPTY_MESSAGE_CLASS}`}>
               저장한 혜택이 없어요.
               <br />
               관심 있는 혜택의 별을 눌러 저장해보세요.

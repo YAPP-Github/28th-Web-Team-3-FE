@@ -54,6 +54,14 @@ beforeEach(() => {
 });
 
 describe("SavedBenefits", () => {
+  it("세그먼트 탭과 저장 카드 사이에 20px 간격을 둔다", async () => {
+    render(<SavedBenefits />);
+
+    await screen.findByText("저장한 혜택");
+
+    expect(screen.getByRole("region", { name: "저장한 혜택" })).toHaveClass("mt-5");
+  });
+
   it("저장 목록 API로 목록을 그린다", async () => {
     render(<SavedBenefits />);
 
