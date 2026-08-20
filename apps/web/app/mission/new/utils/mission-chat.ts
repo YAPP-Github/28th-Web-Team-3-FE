@@ -48,11 +48,11 @@ export function categoryQuestion(category: MissionCreationCategory | undefined) 
 }
 
 export function frequencyQuestion(itemLabel: string | undefined) {
-  return `평소 ${itemLabel ?? "선택한 항목"}은 몇 번 이용하세요?`;
+  return `평소 한 주에 ${itemLabel ?? "선택한 항목"}은 몇 번 이용하세요?`;
 }
 
 export function amountQuestion(itemLabel: string | undefined) {
-  return `평소 ${itemLabel ?? "선택한 항목"}으로 얼마 쓰세요?`;
+  return `평소 한 주에 ${itemLabel ?? "선택한 항목"}으로 얼마 쓰세요?`;
 }
 
 export function findCategoryName(
