@@ -8,7 +8,7 @@ import {
 import {
   completeMission,
   createManualMission,
-  deleteRecommendedMission,
+  deleteMission,
   fetchMissionHistories,
   fetchMissionProgress,
   fetchMissions,
@@ -69,10 +69,11 @@ export function completeMissionOptions(queryClient: QueryClient) {
   });
 }
 
-/** 추천 미션 삭제 후 목록을 갱신한다. */
-export function deleteRecommendedMissionOptions(queryClient: QueryClient) {
+/** 미션 삭제 후 목록을 갱신한다. */
+export function deleteMissionOptions(queryClient: QueryClient) {
   return mutationOptions({
-    mutationFn: ({ missionId }: { missionId: string }) => deleteRecommendedMission(missionId),
+    mutationFn: ({ source, missionId }: { source: MissionSource; missionId: string }) =>
+      deleteMission(source, missionId),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: MISSIONS_QUERY_KEY }),
   });
 }

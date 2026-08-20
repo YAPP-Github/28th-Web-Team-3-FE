@@ -34,7 +34,6 @@ export function MissionList({
           <div className="flex flex-col gap-2">
             {missions.map((mission) => {
               const isExpanded = expandedMissionId === mission.id;
-              const canDelete = mission.source === "RECOMMENDED";
               const isDeleting = deletingMissionId === mission.id;
               const savingsLabel =
                 mission.savingsLabel ?? "예상 절약 금액이 없는 직접 추가 미션이에요.";
@@ -77,9 +76,9 @@ export function MissionList({
                         <span>{savingsLabel}</span>
                       </p>
                       <button
-                        aria-label={canDelete ? "미션 삭제" : "삭제 (지원 안 함)"}
+                        aria-label="미션 삭제"
                         className="flex h-11 w-full items-center justify-center rounded-xl bg-gray-100 text-body-b1-700 text-gray-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-50"
-                        disabled={!canDelete || isDeleting}
+                        disabled={isDeleting}
                         type="button"
                         onClick={() => onDelete(mission)}
                       >

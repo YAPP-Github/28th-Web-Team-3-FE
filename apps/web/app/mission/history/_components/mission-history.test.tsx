@@ -10,7 +10,7 @@ vi.mock("next/navigation", () => ({ useRouter: () => navigation }));
 vi.mock("@/api/mission", () => ({
   completeMission: vi.fn(),
   createManualMission: vi.fn(),
-  deleteRecommendedMission: vi.fn(),
+  deleteMission: vi.fn(),
   fetchMissionHistories: vi.fn(),
   fetchMissions: vi.fn(),
 }));

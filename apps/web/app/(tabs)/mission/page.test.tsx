@@ -1,6 +1,6 @@
 import type { Mission } from "@repo/schema/mission";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { completeMission, deleteRecommendedMission, fetchMissions } from "@/api/mission";
+import { completeMission, deleteMission, fetchMissions } from "@/api/mission";
 import { fireEvent, render, screen, waitFor } from "@/lib/test/react";
 
 const MOCK_MISSIONS: Mission[] = [
@@ -42,7 +42,7 @@ const MOCK_MISSIONS: Mission[] = [
 
 vi.mock("@/api/mission", () => ({
   completeMission: vi.fn(),
-  deleteRecommendedMission: vi.fn(),
+  deleteMission: vi.fn(),
   fetchMissions: vi.fn(),
 }));
 
@@ -59,7 +59,7 @@ describe("MissionPage", () => {
     vi.clearAllMocks();
     vi.mocked(fetchMissions).mockResolvedValue(MOCK_MISSIONS);
     vi.mocked(completeMission).mockResolvedValue(undefined);
-    vi.mocked(deleteRecommendedMission).mockResolvedValue(undefined);
+    vi.mocked(deleteMission).mockResolvedValue(undefined);
   });
 
   it("달성률과 완료 미션의 절약액을 요약한다", async () => {
@@ -160,11 +160,31 @@ describe("MissionPage", () => {
     fireEvent.click(screen.getByRole("button", { name: /이번 주 배달음식/ }));
     fireEvent.click(screen.getByRole("button", { name: "미션 삭제" }));
     expect(screen.getByRole("dialog", { name: "미션을 삭제할까요?" })).toBeInTheDocument();
-    expect(deleteRecommendedMission).not.toHaveBeenCalled();
+    expect(deleteMission).not.toHaveBeenCalled();
 
     fireEvent.click(screen.getByRole("button", { name: "삭제" }));
 
-    await waitFor(() => expect(deleteRecommendedMission).toHaveBeenCalledWith("meal-1"));
+    await waitFor(() => expect(deleteMission).toHaveBeenCalledWith("RECOMMENDED", "meal-1"));
+  });
+
+  it("펼친 직접 입력 미션의 삭제를 확인한 뒤 요청한다", async () => {
+    vi.mocked(fetchMissions).mockResolvedValue([
+      {
+        id: "manual-active-1",
+        source: "MANUAL",
+        category: "LIVING",
+        title: "무지출 데이 만들기",
+        status: "ACTIVE",
+        weekEndsAt: "2099-01-01T00:00:00Z",
+      },
+    ]);
+    render(<MissionPage />);
+
+    fireEvent.click(await screen.findByRole("button", { name: "무지출 데이 만들기" }));
+    fireEvent.click(screen.getByRole("button", { name: "미션 삭제" }));
+    fireEvent.click(screen.getByRole("button", { name: "삭제" }));
+
+    await waitFor(() => expect(deleteMission).toHaveBeenCalledWith("MANUAL", "manual-active-1"));
   });
 
   it("삭제 확인을 취소하면 요청하지 않는다", async () => {
@@ -177,7 +197,7 @@ describe("MissionPage", () => {
     fireEvent.click(screen.getByRole("button", { name: "취소" }));
 
     expect(screen.queryByRole("dialog", { name: "미션을 삭제할까요?" })).not.toBeInTheDocument();
-    expect(deleteRecommendedMission).not.toHaveBeenCalled();
+    expect(deleteMission).not.toHaveBeenCalled();
   });
 
   it("완료 요청이 실패하면 다이얼로그를 열어둔 채 오류를 보여준다", async () => {
@@ -197,7 +217,7 @@ describe("MissionPage", () => {
   });
 
   it("삭제 요청이 실패하면 오류를 보여준다", async () => {
-    vi.mocked(deleteRecommendedMission).mockRejectedValue(new Error("network error"));
+    vi.mocked(deleteMission).mockRejectedValue(new Error("network error"));
     render(<MissionPage />);
 
     await screen.findByText("33% 달성");

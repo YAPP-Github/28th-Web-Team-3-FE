@@ -5,7 +5,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import {
   completeMissionOptions,
-  deleteRecommendedMissionOptions,
+  deleteMissionOptions,
   missionsOptions,
 } from "@/lib/queries/mission";
 import { MissionAddMenu } from "./_components/mission-add-menu";
@@ -27,7 +27,7 @@ export default function MissionPage() {
   const queryClient = useQueryClient();
   const { data: missions, isPending, isError } = useQuery(missionsOptions());
   const completeMission = useMutation(completeMissionOptions(queryClient));
-  const deleteMission = useMutation(deleteRecommendedMissionOptions(queryClient));
+  const deleteMission = useMutation(deleteMissionOptions(queryClient));
   const [activeCategory, setActiveCategory] = useState<MissionCategory>("전체");
   const [expandedMissionId, setExpandedMissionId] = useState<string | null>(null);
   const [isAddMenuOpen, setIsAddMenuOpen] = useState(false);
@@ -142,7 +142,7 @@ export default function MissionPage() {
           if (!missionToDelete) return;
           setDeleteError(undefined);
           deleteMission.mutate(
-            { missionId: missionToDelete.id },
+            { source: missionToDelete.source, missionId: missionToDelete.id },
             {
               onError: () =>
                 setDeleteError("미션을 삭제하지 못했어요. 잠시 후 다시 시도해 주세요."),
