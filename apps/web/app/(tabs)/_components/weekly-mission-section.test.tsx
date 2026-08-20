@@ -159,6 +159,18 @@ describe("WeeklyMissionSection", () => {
     expect(screen.queryByRole("link", { name: "직접 입력" })).not.toBeInTheDocument();
   });
 
+  it("미션 생성 이력을 확인하는 동안에는 CTA 대신 자리를 유지한다", async () => {
+    mockData = [];
+    vi.mocked(hasStartedMissionCreation).mockReturnValue(new Promise(() => {}));
+    const { container } = render(<WeeklyMissionSection />);
+
+    await screen.findByText("0% 달성");
+    expect(screen.queryByRole("link", { name: /미션 추천 받기/ })).not.toBeInTheDocument();
+    expect(
+      container.querySelector('[data-slot="mission-creation-history-skeleton"]'),
+    ).toBeInTheDocument();
+  });
+
   it("미션 추천 생성을 시작한 뒤에는 직접 입력과 추천받기를 모두 표시한다", async () => {
     mockData = [];
     vi.mocked(hasStartedMissionCreation).mockResolvedValue(true);

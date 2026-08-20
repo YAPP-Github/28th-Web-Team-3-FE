@@ -215,13 +215,13 @@ describe("MissionPage", () => {
     expect(openButton).toHaveClass("rotate-0", "bg-blue-500");
   });
 
-  // 상단 safe-area 밴드는 경로만 보고 gray-50을 깐다. 히어로가 없는 화면이 흰색이면
-  // 없애려던 회색 띠가 상단에 다시 보인다.
-  it("로딩 화면도 밴드와 같은 색으로 시작한다", () => {
+  // 상단 safe-area 밴드는 경로만 보고 gray-50을 깐다. 로딩도 히어로 자리를 남겨야
+  // 밴드와 본문이 서로 다른 색으로 끊겨 보이지 않고, 데이터 도착 후 위치도 흔들리지 않는다.
+  it("로딩 화면도 미션 히어로와 같은 색으로 시작한다", () => {
     vi.mocked(fetchMissions).mockReturnValue(new Promise(() => {}));
     render(<MissionPage />);
 
-    expect(screen.getByRole("main")).toHaveClass("bg-gray-50");
+    expect(document.querySelector('[data-slot="mission-hero-skeleton"]')).toHaveClass("bg-gray-50");
   });
 
   it("오류 화면도 밴드와 같은 색으로 시작한다", async () => {

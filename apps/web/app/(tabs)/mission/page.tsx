@@ -3,7 +3,6 @@
 import type { Mission } from "@repo/schema/mission";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
-import { MissionListSkeleton } from "@/app/_components/mission-list-skeleton";
 import {
   completeMissionOptions,
   deleteRecommendedMissionOptions,
@@ -15,6 +14,7 @@ import { MissionCompleteDialog } from "./_components/mission-complete-dialog";
 import { MissionDeleteDialog } from "./_components/mission-delete-dialog";
 import { MissionHero } from "./_components/mission-hero";
 import { MissionList } from "./_components/mission-list";
+import { MissionPageSkeleton } from "./_components/mission-page.skeleton";
 import { MISSION_CATEGORY_LABELS, type MissionCategory } from "./constants/mission";
 import {
   calculateProgressPercent,
@@ -39,11 +39,7 @@ export default function MissionPage() {
   // 상단 safe-area 밴드는 경로만 보고 미션 히어로 색(gray-50)을 깐다(`lib/safe-area-bands.ts`).
   // 히어로가 없는 로딩·오류 화면도 같은 색으로 시작해야 밴드만 회색인 띠가 다시 생기지 않는다.
   if (isPending) {
-    return (
-      <main className="flex flex-1 flex-col bg-gray-50">
-        <MissionListSkeleton className="px-5 pt-20" count={4} label="미션을 불러오는 중" />
-      </main>
-    );
+    return <MissionPageSkeleton />;
   }
 
   // 재조회 실패로는 화면을 내리지 않는다 — react-query가 이전 데이터를 유지한 채 isError를 켠다.

@@ -1,5 +1,5 @@
 import type { Mission } from "@repo/schema/mission";
-import { buttonVariants, cn } from "@repo/ui";
+import { buttonVariants, cn, Skeleton } from "@repo/ui";
 import HomeMissionCoin from "@repo/ui/svg/home-mission-coin.svg";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
@@ -12,7 +12,6 @@ import {
 import { Check, ChevronDown, ChevronLeft, ChevronRight, ChevronUp } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { MissionListSkeleton } from "@/app/_components/mission-list-skeleton";
 import { HOME_MISSION_CATEGORIES, type HomeMissionCategory } from "@/app/(tabs)/constants/home";
 import { MissionCompleteDialog } from "@/app/(tabs)/mission/_components/mission-complete-dialog";
 import { MISSION_CATEGORY_VALUES } from "@/app/(tabs)/mission/constants/mission";
@@ -28,6 +27,7 @@ import { hasStartedMissionCreation } from "@/app/mission/new/utils/mission-creat
 import { formatManwon } from "@/lib/format";
 import { goalStatusOptions } from "@/lib/queries/goal";
 import { completeMissionOptions, missionsOptions } from "@/lib/queries/mission";
+import { HomeMissionSectionSkeleton } from "./home-mission-section.skeleton";
 import { PigboxProgressGauge } from "./pigbox-progress-gauge";
 
 const HOME_MISSION_PAGE_SIZE = 3;
@@ -63,7 +63,7 @@ export function WeeklyMissionSection() {
   const [completeError, setCompleteError] = useState<string>();
   // 구버전 네이티브 셸에는 새 bridge handler가 없을 수 있다. 이력 조회가 타임아웃돼도
   // 홈의 기본 추천 CTA를 바로 제공하고, 지원되는 셸에서만 결과에 따라 두 CTA로 확장한다.
-  const [hasStartedCreation, setHasStartedCreation] = useState(false);
+  const [hasStartedCreation, setHasStartedCreation] = useState<boolean | null>(null);
 
   useEffect(() => {
     void hasStartedMissionCreation().then(setHasStartedCreation);
@@ -77,7 +77,7 @@ export function WeeklyMissionSection() {
   });
 
   if (isPending || isCategoryPending) {
-    return <MissionListSkeleton className="px-5 pt-8" />;
+    return <HomeMissionSectionSkeleton />;
   }
 
   // 재조회 실패로는 화면을 내리지 않는다 — react-query가 이전 데이터를 유지한 채 isError를 켠다.
@@ -214,7 +214,10 @@ export function WeeklyMissionSection() {
           ) : null}
         </div>
       ) : hasStartedCreation === null ? (
-        <MissionListSkeleton className="pt-8" />
+        <Skeleton
+          className="mt-8 h-[52px] w-full rounded-xl bg-gray-100"
+          data-slot="mission-creation-history-skeleton"
+        />
       ) : (
         <div className="flex flex-col gap-12 pt-8 text-center">
           <p className="text-body-b2-500 text-gray-600">

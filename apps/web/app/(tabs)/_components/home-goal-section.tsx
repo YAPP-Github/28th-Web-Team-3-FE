@@ -1,6 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
-import { GoalSectionSkeleton } from "@/app/_components/goal-section-skeleton";
 import { MonthlyGoalCard } from "@/app/goal/_components/monthly-goal-card";
 import { SavingsInputSheet } from "@/app/goal/_components/savings-input-sheet";
 import { formatDday } from "@/app/goal/lib/format";
@@ -8,6 +7,7 @@ import { calculateGoalTotalTargetManwon } from "@/app/goal/lib/progress";
 import { formatManwon } from "@/lib/format";
 import { goalStatusOptions } from "@/lib/queries/goal";
 import { GoalTrackerRow } from "./goal-tracker-row";
+import { HomeGoalSectionSkeleton } from "./home-goal-section.skeleton";
 
 /**
  * 홈의 목표 섹션 — "N만원 모으기" 라인 + 이번 달 목표 현황 카드.
@@ -18,7 +18,7 @@ export function HomeGoalSection() {
   const [savingsOpen, setSavingsOpen] = useState(false);
 
   if (isPending) {
-    return <GoalSectionSkeleton label="목표를 불러오는 중" />;
+    return <HomeGoalSectionSkeleton label="목표를 불러오는 중" />;
   }
 
   // 재조회 실패로는 화면을 내리지 않는다 — react-query가 이전 데이터를 유지한 채 isError를 켠다.
