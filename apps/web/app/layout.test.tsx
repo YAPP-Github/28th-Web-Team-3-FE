@@ -21,12 +21,6 @@ vi.mock("./_components/safe-area-color", () => ({
   SafeAreaColor: () => null,
 }));
 
-// 실제 provider는 service worker 시작 전 null을 반환한다. 개발 기본값에서 이 경로를
-// 타면 첫 화면과 API 요청이 모두 runtime mock 준비에 묶이는 동작을 재현한다.
-vi.mock("./msw-provider", () => ({
-  MSWProvider: () => null,
-}));
-
 import RootLayout from "./layout";
 
 describe("RootLayout", () => {
