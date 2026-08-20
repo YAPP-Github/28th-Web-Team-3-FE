@@ -70,6 +70,12 @@ vi.mock("@/api/goal", () => ({
   updateSavings: vi.fn(),
 }));
 
+vi.mock("./pigbox-progress-gauge", () => ({
+  PigboxProgressGauge: ({ playRequest, progress }: { playRequest?: number; progress: number }) => (
+    <div data-pigbox-play-request={playRequest} data-pigbox-progress={Math.round(progress)} />
+  ),
+}));
+
 vi.mock("@/app/mission/new/utils/mission-creation-history", () => ({
   hasStartedMissionCreation: vi.fn(),
 }));
@@ -214,9 +220,13 @@ describe("WeeklyMissionSection", () => {
 
   it("체크 아이콘 확인 모달에서 완료를 요청한다", async () => {
     mockData = MOCK_MISSIONS;
-    render(<WeeklyMissionSection />);
+    const { container } = render(<WeeklyMissionSection />);
 
     await screen.findByText(/\d+% 달성/);
+    expect(container.querySelector("[data-pigbox-play-request]")).toHaveAttribute(
+      "data-pigbox-play-request",
+      "0",
+    );
     const [completeButton] = screen.getAllByRole("button", { name: "미션 완료" });
     if (!completeButton) throw new Error("미션 완료 버튼을 찾을 수 없습니다.");
     fireEvent.click(completeButton);
@@ -224,5 +234,11 @@ describe("WeeklyMissionSection", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "완료" }));
     await waitFor(() => expect(completeMission).toHaveBeenCalledWith("RECOMMENDED", "m1"));
+    await waitFor(() =>
+      expect(container.querySelector("[data-pigbox-play-request]")).toHaveAttribute(
+        "data-pigbox-play-request",
+        "1",
+      ),
+    );
   });
 });

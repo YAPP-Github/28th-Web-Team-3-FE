@@ -61,6 +61,7 @@ export function WeeklyMissionSection() {
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [missionToComplete, setMissionToComplete] = useState<Mission | null>(null);
   const [completeError, setCompleteError] = useState<string>();
+  const [pigboxPlayRequest, setPigboxPlayRequest] = useState(0);
   // 구버전 네이티브 셸에는 새 bridge handler가 없을 수 있다. 이력 조회가 타임아웃돼도
   // 홈의 기본 추천 CTA를 바로 제공하고, 지원되는 셸에서만 결과에 따라 두 CTA로 확장한다.
   const [hasStartedCreation, setHasStartedCreation] = useState<boolean | null>(null);
@@ -147,6 +148,7 @@ export function WeeklyMissionSection() {
         completedCount={completedCount}
         ddayLabel={formatWeekDday(missions[0]?.weekEndsAt)}
         percent={progressPercent}
+        playRequest={pigboxPlayRequest}
         savedWon={sumCompletedSavingsWon(missions)}
       />
 
@@ -244,7 +246,10 @@ export function WeeklyMissionSection() {
             {
               onError: () =>
                 setCompleteError("완료 처리하지 못했어요. 잠시 후 다시 시도해 주세요."),
-              onSuccess: () => setMissionToComplete(null),
+              onSuccess: () => {
+                setPigboxPlayRequest((request) => request + 1);
+                setMissionToComplete(null);
+              },
             },
           );
         }}
@@ -257,10 +262,17 @@ interface MissionSummaryProps {
   completedCount: number;
   ddayLabel: string;
   percent: number;
+  playRequest: number;
   savedWon: number;
 }
 
-function MissionSummary({ completedCount, ddayLabel, percent, savedWon }: MissionSummaryProps) {
+function MissionSummary({
+  completedCount,
+  ddayLabel,
+  percent,
+  playRequest,
+  savedWon,
+}: MissionSummaryProps) {
   return (
     <div className="relative h-[130px]">
       <header className="relative z-10 flex h-8 items-center justify-between">
@@ -288,6 +300,7 @@ function MissionSummary({ completedCount, ddayLabel, percent, savedWon }: Missio
       <PigboxProgressGauge
         className="absolute top-0 right-0"
         completedCount={completedCount}
+        playRequest={playRequest}
         progress={percent}
       />
     </div>

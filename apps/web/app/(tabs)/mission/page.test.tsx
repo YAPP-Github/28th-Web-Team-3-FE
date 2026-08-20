@@ -46,6 +46,12 @@ vi.mock("@/api/mission", () => ({
   fetchMissions: vi.fn(),
 }));
 
+vi.mock("@/app/(tabs)/_components/pigbox-progress-gauge", () => ({
+  PigboxProgressGauge: ({ playRequest, progress }: { playRequest?: number; progress: number }) => (
+    <div data-pigbox-play-request={playRequest} data-pigbox-progress={Math.round(progress)} />
+  ),
+}));
+
 import MissionPage from "./page";
 
 describe("MissionPage", () => {
@@ -125,15 +131,25 @@ describe("MissionPage", () => {
   });
 
   it("체크 아이콘 확인 모달에서 완료를 요청한다", async () => {
-    render(<MissionPage />);
+    const { container } = render(<MissionPage />);
 
     await screen.findByText("33% 달성");
+    expect(container.querySelector("[data-pigbox-play-request]")).toHaveAttribute(
+      "data-pigbox-play-request",
+      "0",
+    );
     fireEvent.click(screen.getByRole("tab", { name: "식비" }));
     fireEvent.click(screen.getByRole("button", { name: "미션 완료" }));
     expect(screen.getByRole("dialog", { name: "미션을 완료할까요?" })).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("button", { name: "완료" }));
     await waitFor(() => expect(completeMission).toHaveBeenCalledWith("RECOMMENDED", "meal-1"));
+    await waitFor(() =>
+      expect(container.querySelector("[data-pigbox-play-request]")).toHaveAttribute(
+        "data-pigbox-play-request",
+        "1",
+      ),
+    );
   });
 
   it("펼친 추천 미션의 삭제를 확인한 뒤 요청한다", async () => {

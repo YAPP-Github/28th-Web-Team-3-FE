@@ -77,8 +77,8 @@ describe("PigboxProgressGauge", () => {
     expect(requestAnimationFrame).not.toHaveBeenCalled();
   });
 
-  it("animated가 false면 저금통 자체를 반복 재생하지 않는다", async () => {
-    render(<PigboxProgressGauge animated={false} completedCount={1} progress={25} />);
+  it("기본값으로 저금통 자체를 반복 재생하지 않는다", async () => {
+    render(<PigboxProgressGauge completedCount={1} progress={25} />);
 
     await waitFor(() => expect(lottieMocks.loadAnimation).toHaveBeenCalledTimes(3));
 
