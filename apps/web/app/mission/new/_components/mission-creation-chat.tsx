@@ -348,7 +348,7 @@ export function MissionCreationChat() {
                       variant="chat"
                       onPressedChange={(pressed) => {
                         if (!pressed) return;
-                        field.onChange("");
+                        resetField("baselineFrequency");
                         setDirectFrequency(true);
                       }}
                     >
@@ -404,14 +404,15 @@ export function MissionCreationChat() {
               const isAmount = activeStep === 3;
               const displayValue = isAmount ? formatWonInput(field.value) : field.value;
               const fieldError = isAmount ? errors.baselineAmountWon : errors.baselineFrequency;
+              const visibleFieldError = field.value ? fieldError : undefined;
               const errorMessage = isAmount
                 ? "1원 이상 2,000,000원 이하로 입력해주세요."
-                : "1회 이상 10회 이하로 입력해주세요.";
+                : "횟수는 최소 1회 이상 최대 10회 이하로 입력해주세요.";
               return (
                 <div className="flex flex-col gap-1">
                   <ChatComposer
-                    ariaDescribedBy={fieldError ? "mission-chat-input-error" : undefined}
-                    ariaInvalid={Boolean(fieldError)}
+                    ariaDescribedBy={visibleFieldError ? "mission-chat-input-error" : undefined}
+                    ariaInvalid={Boolean(visibleFieldError)}
                     autoFocus
                     disabled={!field.value || Boolean(fieldError)}
                     label={isAmount ? "평소 소비 금액" : "평소 이용 횟수"}
@@ -428,7 +429,7 @@ export function MissionCreationChat() {
                       field.onChange(digits);
                     }}
                   />
-                  {fieldError ? (
+                  {visibleFieldError ? (
                     <p
                       className="px-3 text-caption-c1-500 text-error"
                       id="mission-chat-input-error"

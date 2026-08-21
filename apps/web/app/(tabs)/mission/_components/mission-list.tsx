@@ -1,6 +1,7 @@
 import type { Mission } from "@repo/schema/mission";
 import CoinIcon from "@repo/ui/svg/coin.svg";
 import { Check, ChevronDown, ChevronUp } from "lucide-react";
+import { formatMissionSavingsLabel } from "../lib/format";
 
 interface MissionListProps {
   completedMissions: readonly Mission[];
@@ -35,8 +36,7 @@ export function MissionList({
             {missions.map((mission) => {
               const isExpanded = expandedMissionId === mission.id;
               const isDeleting = deletingMissionId === mission.id;
-              const savingsLabel =
-                mission.savingsLabel ?? "예상 절약 금액이 없는 직접 추가 미션이에요.";
+              const savingsLabel = formatMissionSavingsLabel(mission);
               return (
                 <article
                   key={mission.id}

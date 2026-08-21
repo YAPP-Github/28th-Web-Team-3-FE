@@ -18,6 +18,7 @@ import { MISSION_CATEGORY_VALUES } from "@/app/(tabs)/mission/constants/mission"
 import {
   calculateProgressPercent,
   countCompletedMissions,
+  formatMissionSavingsLabel,
   formatSavedWon,
   formatWeekDday,
   sumCompletedSavingsWon,
@@ -315,7 +316,7 @@ interface HomeMissionCardProps {
 }
 
 function HomeMissionCard({ expanded, mission, onComplete, onToggle }: HomeMissionCardProps) {
-  const savingsLabel = mission.savingsLabel ?? "예상 절약 금액이 없는 직접 추가 미션이에요.";
+  const savingsLabel = formatMissionSavingsLabel(mission);
 
   return (
     <article className="flex flex-col gap-3 rounded-xl bg-gray-10 p-3.5">

@@ -35,3 +35,9 @@ export function formatSavedWon(won: number): string {
   if (won >= 10_000 && won % 10_000 === 0) return `${formatNumber(won / 10_000)}만원`;
   return `${formatNumber(won)}원`;
 }
+
+/** 추천 미션의 숫자 절약액은 서버 문구와 무관하게 화면에서 천 단위로 표시한다. */
+export function formatMissionSavingsLabel(mission: Mission): string {
+  if (mission.source === "MANUAL") return "예상 절약 금액이 없는 직접 추가 미션이에요.";
+  return `약 ${formatNumber(mission.estimatedSavingsWon)}원 절약 예상`;
+}
