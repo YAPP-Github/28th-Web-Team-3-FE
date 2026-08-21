@@ -1,6 +1,7 @@
 import type { PolicyCategory } from "@repo/schema/policy";
 import {
   infiniteQueryOptions,
+  keepPreviousData,
   mutationOptions,
   type QueryClient,
   queryOptions,
@@ -45,6 +46,9 @@ export function policiesOptions(category: PolicyCategory | null) {
     // 응답이 배열뿐이라 전체 개수를 모른다. 요청한 크기보다 적게 왔으면 마지막 페이지다.
     getNextPageParam: (lastPage, allPages) =>
       lastPage.length < POLICY_PAGE_SIZE ? undefined : allPages.length,
+    // 칩을 바꾸면 category가 달라져 캐시 키가 통째로 바뀐다. 직전 결과를 유지하지 않으면
+    // 그 사이 목록이 스켈레톤으로 갈아엎였다가 새로 채워져 깜빡인다.
+    placeholderData: keepPreviousData,
   });
 }
 

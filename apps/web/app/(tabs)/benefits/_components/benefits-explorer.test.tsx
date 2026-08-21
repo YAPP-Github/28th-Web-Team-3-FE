@@ -110,7 +110,11 @@ describe("BenefitsExplorer", () => {
     );
   });
 
-  it("카테고리 전환을 기다리는 동안 텍스트 대신 카드 스켈레톤을 보여준다", async () => {
+  /**
+   * 카테고리가 바뀌면 캐시 키가 통째로 바뀐다. 직전 결과를 유지하지 않으면 그 사이
+   * 목록이 스켈레톤으로 갈아엎였다가 새로 채워져 깜빡인다.
+   */
+  it("카테고리를 전환해도 새 목록이 오기 전까지 이전 목록을 유지한다", async () => {
     vi.mocked(fetchPolicies)
       .mockResolvedValueOnce([policy(1)])
       .mockImplementationOnce(() => new Promise(() => {}));
@@ -119,9 +123,8 @@ describe("BenefitsExplorer", () => {
 
     fireEvent.click(screen.getByRole("link", { name: "주거" }));
 
-    expect(screen.queryByText("불러오는 중…")).not.toBeInTheDocument();
-    expect(screen.getByText("혜택 목록을 불러오는 중")).toHaveClass("sr-only");
-    expect(container.querySelectorAll('[data-slot="benefit-card-skeleton"]')).toHaveLength(3);
+    expect(screen.getByText("혜택 1")).toBeInTheDocument();
+    expect(container.querySelectorAll('[data-slot="benefit-card-skeleton"]')).toHaveLength(0);
   });
 
   it("별을 누르면 저장하고, 저장된 항목은 취소한다", async () => {
