@@ -53,7 +53,7 @@ export function MonthlySavingsChart({ monthlySavings, targetManwon }: MonthlySav
       </h2>
       <section
         aria-labelledby="monthly-savings-title"
-        className="mt-0.5 h-[217px] overflow-x-auto overflow-y-hidden overscroll-x-contain px-5 [scrollbar-width:none] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-900 [&::-webkit-scrollbar]:hidden"
+        className="mt-0.5 h-[221px] overflow-x-auto overflow-y-hidden overscroll-x-contain px-5 [scrollbar-width:none] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-900 [&::-webkit-scrollbar]:hidden"
         ref={viewportRef}
         // biome-ignore lint/a11y/noNoninteractiveTabindex: 가로 스크롤 영역을 키보드로 조작할 수 있어야 한다.
         tabIndex={0}
@@ -62,7 +62,7 @@ export function MonthlySavingsChart({ monthlySavings, targetManwon }: MonthlySav
             그만큼 삐져나온다. 목록 양 끝에 여백이 없으면 이번 달이 첫 항목이거나 마지막
             항목일 때 툴팁이 스크롤 영역 밖으로 나가 잘린다 — 첫 항목인 경우는 이번 달에
             목표를 시작한 사용자에게 나온다(목록이 한 달치뿐). */}
-        <ol aria-label="월별 저축 현황" className="flex min-w-max gap-[18px] px-[23px] pt-[59px]">
+        <ol aria-label="월별 저축 현황" className="flex min-w-max gap-[18px] px-[23px] pt-[63px]">
           {monthlySavings.map((saving) => {
             const label = formatMonth(saving);
             const height = calculateBarHeight(saving.savedManwon, maxManwon);
@@ -75,7 +75,7 @@ export function MonthlySavingsChart({ monthlySavings, targetManwon }: MonthlySav
                 ref={saving.current ? currentRef : undefined}
               >
                 {saving.current ? (
-                  <div className="absolute -top-[59px] left-1/2 flex h-[53px] w-[82px] -translate-x-1/2 flex-col justify-center rounded-lg bg-gray-900 px-2 text-center text-caption-c1-500 text-gray-0 after:absolute after:bottom-[-5px] after:left-1/2 after:size-2.5 after:-translate-x-1/2 after:rotate-45 after:bg-gray-900">
+                  <div className="absolute -top-[63px] left-1/2 flex h-[53px] w-[82px] -translate-x-1/2 flex-col justify-center rounded-lg bg-gray-900 px-2 text-center text-caption-c1-500 text-gray-0 after:absolute after:bottom-[-5px] after:left-1/2 after:size-2.5 after:-translate-x-1/2 after:rotate-45 after:bg-gray-900">
                     <span className="relative z-10 whitespace-nowrap">
                       목표: {formatManwon(targetManwon)}
                     </span>
@@ -84,7 +84,10 @@ export function MonthlySavingsChart({ monthlySavings, targetManwon }: MonthlySav
                     </span>
                   </div>
                 ) : null}
-                <div className="relative h-[134px] w-9 overflow-hidden rounded-xl bg-gray-50">
+                <div
+                  className="relative h-[134px] w-9 overflow-hidden rounded-xl bg-gray-50"
+                  data-current-month-bar={saving.current ? "" : undefined}
+                >
                   {height > 0 ? (
                     <span
                       aria-hidden="true"
