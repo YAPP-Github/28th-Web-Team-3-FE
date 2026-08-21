@@ -59,6 +59,12 @@ async function chooseMealAndDelivery() {
   fireEvent.click(await screen.findByRole("button", { name: "배달음식" }, { timeout: 1_500 }));
 }
 
+async function chooseLivingAndClothing() {
+  fireEvent.click(screen.getByRole("button", { name: "생활" }));
+  expect(screen.getByRole("status", { name: "다음 질문을 준비하고 있어요" })).toBeVisible();
+  fireEvent.click(await screen.findByRole("button", { name: "의류" }, { timeout: 1_500 }));
+}
+
 describe("NewMissionPage", () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -111,6 +117,28 @@ describe("NewMissionPage", () => {
     );
     expect(pushMock).toHaveBeenCalledWith("/mission/new/loading?jobId=job-1");
     expect(markMissionCreationStarted).toHaveBeenCalledOnce();
+  }, 10_000);
+
+  it("생활 카테고리의 이용 횟수와 소비 금액을 한 달 기준으로 묻는다", async () => {
+    render(<NewMissionPage />);
+    await chooseLivingAndClothing();
+
+    expect(
+      await screen.findByRole(
+        "heading",
+        { name: "평소 한 달에 의류은 몇 번 이용하세요?" },
+        { timeout: 1_500 },
+      ),
+    ).toBeVisible();
+
+    fireEvent.click(screen.getByRole("button", { name: "1회" }));
+    expect(
+      await screen.findByRole(
+        "heading",
+        { name: "평소 한 달에 의류으로 얼마 쓰세요?" },
+        { timeout: 1_500 },
+      ),
+    ).toBeVisible();
   }, 10_000);
 
   it("이전 답변을 누르면 연필을 표시하고 해당 질문부터 다시 시작한다", async () => {

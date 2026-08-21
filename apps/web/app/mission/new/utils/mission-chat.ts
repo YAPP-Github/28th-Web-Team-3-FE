@@ -47,12 +47,22 @@ export function categoryQuestion(category: MissionCreationCategory | undefined) 
   return `${category ?? "선택한 카테고리"}는 어떤 항목을 줄이고 싶으세요?`;
 }
 
-export function frequencyQuestion(itemLabel: string | undefined) {
-  return `평소 한 주에 ${itemLabel ?? "선택한 항목"}은 몇 번 이용하세요?`;
+function baselinePeriod(category: MissionCreationCategory | undefined) {
+  return category === "생활" || category === "취미" ? "한 달" : "한 주";
 }
 
-export function amountQuestion(itemLabel: string | undefined) {
-  return `평소 한 주에 ${itemLabel ?? "선택한 항목"}으로 얼마 쓰세요?`;
+export function frequencyQuestion(
+  itemLabel: string | undefined,
+  category: MissionCreationCategory | undefined,
+) {
+  return `평소 ${baselinePeriod(category)}에 ${itemLabel ?? "선택한 항목"}은 몇 번 이용하세요?`;
+}
+
+export function amountQuestion(
+  itemLabel: string | undefined,
+  category: MissionCreationCategory | undefined,
+) {
+  return `평소 ${baselinePeriod(category)}에 ${itemLabel ?? "선택한 항목"}으로 얼마 쓰세요?`;
 }
 
 export function findCategoryName(
