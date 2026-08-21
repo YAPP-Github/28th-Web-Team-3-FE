@@ -12,6 +12,7 @@
     "./mission-generation": "./src/mission-generation.ts",
     "./onboarding": "./src/onboarding.ts",
     "./policy": "./src/policy.ts",
+    "./tip": "./src/tip.ts",
     "./onboarding-api": "./src/onboarding-api.ts"
   },
   "scripts": {

@@ -1,65 +1,79 @@
+import type { SavingTipSummary } from "@repo/schema/tip";
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { bookmarkSavingTip, fetchSavingTips, unbookmarkSavingTip } from "@/api/tip";
 import { fireEvent, render, screen, waitFor } from "@/lib/test/react";
+import { SavingTipList } from "./saving-tip-list";
 
-const getSavedSavingTipIds = vi.fn();
-const removeSavingTip = vi.fn();
-const saveSavingTip = vi.fn();
-
-vi.mock("@repo/bridge", () => ({ isNativeApp: () => false }));
-vi.mock("@/lib/open-external", () => ({ openExternalLink: vi.fn() }));
-vi.mock("@/app/(tabs)/benefits/utils/saving-tip-bookmarks", () => ({
-  getSavedSavingTipIds: () => getSavedSavingTipIds(),
-  removeSavingTip: (id: string) => removeSavingTip(id),
-  saveSavingTip: (id: string) => saveSavingTip(id),
+vi.mock("@/api/tip", () => ({
+  bookmarkSavingTip: vi.fn(),
+  fetchSavingTips: vi.fn(),
+  unbookmarkSavingTip: vi.fn(),
 }));
 
-import { SavingTipList } from "./saving-tip-list";
+const TIPS: SavingTipSummary[] = [
+  {
+    bookmarked: false,
+    category: "식비",
+    description: "배달 메뉴 대신 집에서 직접 만드는 레시피 찾아보기",
+    id: 1,
+    sourceUrl: "https://www.youtube.com/watch?v=nZw2A76aZaw",
+    subcategory: "배달음식",
+    title: "집밥 레시피 활용팁",
+  },
+  {
+    bookmarked: true,
+    category: "생활",
+    description: "당근마켓서 중고구매하고 안 쓰는 옷은 판매하기",
+    id: 2,
+    sourceUrl: "https://example.com/tip",
+    subcategory: "의류",
+    title: "당근마켓 중고활용팁",
+  },
+];
 
 describe("SavingTipList", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    getSavedSavingTipIds.mockResolvedValue([]);
-    removeSavingTip.mockResolvedValue(true);
-    saveSavingTip.mockResolvedValue(true);
+    vi.mocked(fetchSavingTips).mockResolvedValue(TIPS);
+    vi.mocked(bookmarkSavingTip).mockResolvedValue(undefined);
+    vi.mocked(unbookmarkSavingTip).mockResolvedValue(undefined);
   });
 
-  it("정책 혜택처럼 별을 눌러 팁을 저장한다", async () => {
+  it("서버에서 받은 팁과 원문 링크를 그린다", async () => {
     render(<SavingTipList />);
 
-    const star = await screen.findByRole("button", { name: "집밥 레시피 활용팁 저장" });
-    await waitFor(() => expect(star).toHaveAttribute("aria-busy", "false"));
-    fireEvent.click(star);
-
-    expect(star).toHaveAttribute("aria-pressed", "true");
-    await waitFor(() => expect(saveSavingTip).toHaveBeenCalledWith("home-cooking-recipe"));
+    expect(await screen.findByText("집밥 레시피 활용팁")).toBeInTheDocument();
+    expect(fetchSavingTips).toHaveBeenCalledWith({ category: null, page: 0, size: 100 });
+    expect(screen.getByRole("link", { name: /집밥 레시피 활용팁/ })).toHaveAttribute(
+      "href",
+      "https://www.youtube.com/watch?v=nZw2A76aZaw",
+    );
   });
 
-  it("저장됨 화면에서는 기기에 저장한 팁만 보여준다", async () => {
-    getSavedSavingTipIds.mockResolvedValue(["meal-prep"]);
+  it("카테고리를 누르면 해당 카테고리 API를 다시 조회한다", async () => {
+    render(<SavingTipList />);
+    await screen.findByText("집밥 레시피 활용팁");
 
+    fireEvent.click(screen.getByRole("button", { name: "생활" }));
+
+    await waitFor(() =>
+      expect(fetchSavingTips).toHaveBeenCalledWith({ category: "생활", page: 0, size: 100 }),
+    );
+  });
+
+  it("저장한 팁만 저장 목록에 남긴다", async () => {
     render(<SavingTipList savedOnly />);
 
-    expect(await screen.findByText("밀프렙 식단관리팁")).toBeInTheDocument();
+    expect(await screen.findByText("당근마켓 중고활용팁")).toBeInTheDocument();
     expect(screen.queryByText("집밥 레시피 활용팁")).not.toBeInTheDocument();
   });
 
-  it("저장 요청이 끝날 때까지 같은 팁을 다시 토글하지 않는다", async () => {
-    let completeSave: ((saved: boolean) => void) | undefined;
-    saveSavingTip.mockImplementation(
-      () =>
-        new Promise<boolean>((resolve) => {
-          completeSave = resolve;
-        }),
-    );
+  it("별을 누르면 서버 북마크 API를 호출한다", async () => {
     render(<SavingTipList />);
+    await screen.findByText("집밥 레시피 활용팁");
 
-    const star = await screen.findByRole("button", { name: "집밥 레시피 활용팁 저장" });
-    await waitFor(() => expect(star).toHaveAttribute("aria-busy", "false"));
-    fireEvent.click(star);
-    fireEvent.click(star);
+    fireEvent.click(screen.getByRole("button", { name: "집밥 레시피 활용팁 저장" }));
 
-    expect(saveSavingTip).toHaveBeenCalledTimes(1);
-    completeSave?.(true);
-    await waitFor(() => expect(star).toHaveAttribute("aria-busy", "false"));
+    await waitFor(() => expect(bookmarkSavingTip).toHaveBeenCalledWith(1));
   });
 });
