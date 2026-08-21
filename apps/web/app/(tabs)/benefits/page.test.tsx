@@ -22,3 +22,31 @@ it("동전을 피그마 기준 각도로 회전한다", () => {
   expect(svg).toContain("rotate(101.54");
   expect(svg).not.toContain("rotate(11.54");
 });
+
+it("원화 마크의 중심을 앞쪽 카드 중심과 맞춘다", () => {
+  const heroSvg = readFileSync(
+    resolve(process.cwd(), "../../packages/ui/src/svg/benefit-hero.svg"),
+    "utf8",
+  );
+  const wonSvg = readFileSync(
+    resolve(process.cwd(), "../../packages/ui/src/svg/benefit-card-won.svg"),
+    "utf8",
+  );
+
+  const card = heroSvg.match(/<rect x="48" y="36" width="93" height="57"/);
+  const won = heroSvg.match(/<g transform="translate\(([\d.]+) ([\d.]+)\)">\s*<path/);
+  const wonViewBox = wonSvg.match(/viewBox="0 0 ([\d.]+) ([\d.]+)"/);
+
+  expect(card).not.toBeNull();
+  expect(won).not.toBeNull();
+  expect(wonViewBox).not.toBeNull();
+
+  const cardCenter = { x: 48 + 93 / 2, y: 36 + 57 / 2 };
+  const wonCenter = {
+    x: Number(won?.[1]) + Number(wonViewBox?.[1]) / 2,
+    y: Number(won?.[2]) + Number(wonViewBox?.[2]) / 2,
+  };
+
+  expect(wonCenter.x).toBeCloseTo(cardCenter.x, 3);
+  expect(wonCenter.y).toBeCloseTo(cardCenter.y, 3);
+});
