@@ -11,11 +11,6 @@ import {
   buildMissionCreationResultHref,
   buildMissionLoadingHref,
 } from "@/app/mission/constants/mission-creation";
-import {
-  getPollingIntervalMillis,
-  startMissionGenerationWorkerPolling,
-  supportsMissionGenerationWorker,
-} from "@/app/mission/new/utils/mission-generation-polling";
 import { generationJobStatusOptions } from "@/lib/queries/mission-generation";
 
 function isMissionGenerationComplete(job: MissionGenerationJob | undefined) {
@@ -32,24 +27,26 @@ export function PendingMissionGenerationRecovery() {
   const pathname = usePathname();
   const router = useRouter();
   const [pendingJob, setPendingJob] = useState<PendingMissionGeneration>();
-  const [workerJob, setWorkerJob] = useState<MissionGenerationJob>();
-  const [workerMode, setWorkerMode] = useState<"starting" | "active" | "fallback">("starting");
-  const [workerMessageVersion, setWorkerMessageVersion] = useState(0);
   const [resultJobId, setResultJobId] = useState<string>();
+  const completedJobId = useRef<string | undefined>(undefined);
   const dismissedJobId = useRef<string | undefined>(undefined);
-  const recoveredPendingJobId = useRef<string | undefined>(undefined);
   const pendingJobId = pendingJob?.jobId;
   const isRecommendationStartPage = pathname === "/mission/new";
   const isMissionCreationPage =
     isRecommendationStartPage ||
     pathname.startsWith("/mission/new/loading") ||
     pathname.startsWith("/mission/new/result");
-  const shouldPollInBackground = Boolean(pendingJob) && !isMissionCreationPage;
-  const { data: pageJob } = useQuery({
+  if (pathname.startsWith("/mission/new/result") && pendingJobId) {
+    // effect가 pending job을 비우기 전에 사용자가 미션 화면으로 돌아가도, 완료한 같은 job을
+    // 백그라운드 작업으로 다시 해석해 모달을 띄우지 않게 렌더 시점에 먼저 표시한다.
+    completedJobId.current = pendingJobId;
+  }
+  const shouldPollInBackground =
+    Boolean(pendingJob) && !isMissionCreationPage && completedJobId.current !== pendingJobId;
+  const { data: job, refetch } = useQuery({
     ...generationJobStatusOptions(pendingJobId),
-    enabled: shouldPollInBackground && workerMode === "fallback",
+    enabled: shouldPollInBackground,
   });
-  const job = workerJob ?? pageJob;
 
   useEffect(() => {
     if (!isNativeApp()) return;
@@ -59,19 +56,17 @@ export function PendingMissionGenerationRecovery() {
       void bridge.getPendingMissionGeneration().then((job) => {
         if (cancelled) return;
         if (!job) {
-          recoveredPendingJobId.current = undefined;
           setPendingJob(undefined);
           return;
         }
         if (job.expiresAt && Date.parse(job.expiresAt) <= Date.now()) {
-          recoveredPendingJobId.current = undefined;
           setPendingJob(undefined);
           void bridge.clearPendingMissionGeneration();
           return;
         }
-        if (recoveredPendingJobId.current !== job.jobId) {
-          recoveredPendingJobId.current = job.jobId;
-          setWorkerMode(supportsMissionGenerationWorker() ? "starting" : "fallback");
+        if (completedJobId.current === job.jobId) {
+          setPendingJob(undefined);
+          return;
         }
         setPendingJob(job);
         if (pathname === "/mission/new") {
@@ -82,77 +77,30 @@ export function PendingMissionGenerationRecovery() {
 
     recoverPendingJob();
     const handleVisibilityChange = () => {
-      if (document.visibilityState === "visible") recoverPendingJob();
+      if (document.visibilityState !== "visible") return;
+      recoverPendingJob();
+      if (shouldPollInBackground) void refetch();
+    };
+    const handleAppActive = () => {
+      recoverPendingJob();
+      if (shouldPollInBackground) void refetch();
     };
     document.addEventListener("visibilitychange", handleVisibilityChange);
+    window.addEventListener("akkimo:app-active", handleAppActive);
 
     return () => {
       cancelled = true;
       document.removeEventListener("visibilitychange", handleVisibilityChange);
+      window.removeEventListener("akkimo:app-active", handleAppActive);
     };
-  }, [pathname, router]);
+  }, [pathname, refetch, router, shouldPollInBackground]);
 
   useEffect(() => {
-    if (!shouldPollInBackground || !pendingJobId) return;
-
-    setWorkerJob(undefined);
-    if (!supportsMissionGenerationWorker()) {
-      setWorkerMode("fallback");
-      return;
-    }
-
-    let mounted = true;
-    let unsubscribe: (() => void) | null = null;
-    setWorkerMode("starting");
-    const fallbackTimer = setTimeout(
-      () => setWorkerMode("fallback"),
-      getPollingIntervalMillis() * 2,
-    );
-    void startMissionGenerationWorkerPolling({
-      jobId: pendingJobId,
-      onMessage: (message) => {
-        if (!mounted) return;
-        if (message.type === "status") {
-          setWorkerMessageVersion((version) => version + 1);
-          setWorkerJob(message.job);
-        }
-        if (message.type === "error" && message.reason === "unauthorized") {
-          setWorkerMode("fallback");
-        }
-      },
-    })
-      .then((resolvedUnsubscribe) => {
-        if (!mounted) {
-          resolvedUnsubscribe?.();
-          return;
-        }
-        unsubscribe = resolvedUnsubscribe;
-        if (resolvedUnsubscribe) clearTimeout(fallbackTimer);
-        setWorkerMode(resolvedUnsubscribe ? "active" : "fallback");
-      })
-      .catch(() => {
-        if (mounted) setWorkerMode("fallback");
-      });
-
-    return () => {
-      mounted = false;
-      clearTimeout(fallbackTimer);
-      unsubscribe?.();
-    };
-  }, [pendingJobId, shouldPollInBackground]);
-
-  useEffect(() => {
-    if (workerMode !== "active") return;
-    const fallbackTimer = setTimeout(
-      () => setWorkerMode("fallback"),
-      getPollingIntervalMillis() * 2,
-    );
-    return () => clearTimeout(fallbackTimer);
-  }, [workerMessageVersion, workerMode]);
-
-  useEffect(() => {
-    if (isMissionCreationPage) setResultJobId(undefined);
-  }, [isMissionCreationPage]);
+    if (!pathname.startsWith("/mission/new/result")) return;
+    dismissedJobId.current = pendingJobId;
+    setPendingJob(undefined);
+    setResultJobId(undefined);
+  }, [pathname, pendingJobId]);
 
   useEffect(() => {
     if (!shouldPollInBackground || !pendingJob || !isMissionGenerationComplete(job)) return;
