@@ -17,6 +17,7 @@ import { BenefitCard } from "./benefit-card";
 import { BenefitFilters } from "./benefit-filters";
 import { BenefitListSkeleton } from "./benefit-list-skeleton";
 import { ContentTypeTabs } from "./content-type-tabs";
+import { SavingTipList } from "./saving-tip-list";
 
 /**
  * 종류 탭 + 필터 칩 + 혜택 목록. 필터링·페이지네이션은 서버(`/api/policies`)가 한다.
@@ -25,9 +26,19 @@ import { ContentTypeTabs } from "./content-type-tabs";
  *
  * 저장 목록은 여기 없다 — 별도 화면(`/benefits/saved`)이다.
  */
-export function BenefitsExplorer() {
+interface BenefitsExplorerProps {
+  contentType?: BenefitContentType;
+  onContentTypeChange?: (contentType: BenefitContentType) => void;
+}
+
+export function BenefitsExplorer({
+  contentType: controlledContentType,
+  onContentTypeChange,
+}: BenefitsExplorerProps) {
   const searchParams = useSearchParams();
-  const [contentType, setContentType] = useState<BenefitContentType>("policy");
+  const [uncontrolledContentType, setUncontrolledContentType] =
+    useState<BenefitContentType>("policy");
+  const contentType = controlledContentType ?? uncontrolledContentType;
   const [filter, setFilter] = useState<BenefitFilter>(() => {
     const categories = searchParams.getAll("category");
     return parseBenefitFilter(categories.length === 1 ? categories[0] : undefined);
@@ -42,6 +53,11 @@ export function BenefitsExplorer() {
     toggleBookmark.mutate,
   );
   const isTipTab = contentType === "tip";
+
+  function selectContentType(next: BenefitContentType) {
+    setUncontrolledContentType(next);
+    onContentTypeChange?.(next);
+  }
 
   const policies = useInfiniteQuery({
     ...policiesOptions(getBenefitFilterCategory(filter)),
@@ -101,13 +117,9 @@ export function BenefitsExplorer() {
   if (isTipTab) {
     return (
       <>
-        <ContentTypeTabs className="pt-2.5" selected={contentType} onSelect={setContentType} />
+        <ContentTypeTabs className="pt-2.5" selected={contentType} onSelect={selectContentType} />
         <div id="benefit-content-panel" role="tabpanel" aria-labelledby="benefit-content-tab-tip">
-          <p className="px-5 py-20 text-center text-body-b2-500 text-gray-500">
-            블로그 팁은 준비 중이에요.
-            <br />
-            조금만 기다려 주세요.
-          </p>
+          <SavingTipList />
         </div>
       </>
     );
@@ -115,7 +127,7 @@ export function BenefitsExplorer() {
 
   return (
     <>
-      <ContentTypeTabs className="pt-2.5" selected={contentType} onSelect={setContentType} />
+      <ContentTypeTabs className="pt-2.5" selected={contentType} onSelect={selectContentType} />
       <div id="benefit-content-panel" role="tabpanel" aria-labelledby="benefit-content-tab-policy">
         <div className="mt-[23px]">
           <BenefitFilters selected={filter} onSelect={selectFilter} />

@@ -4,7 +4,9 @@ import { expect, it, vi } from "vitest";
 import { render } from "@/lib/test/react";
 import BenefitsPage from "./page";
 
-vi.mock("./_components/benefits-explorer", () => ({ BenefitsExplorer: () => null }));
+vi.mock("./_components/benefits-page-content", () => ({
+  BenefitsPageContent: () => <svg data-slot="benefit-hero-illustration" />,
+}));
 
 it("상단 그래픽을 하나의 SVG 좌표계로 렌더한다", () => {
   const { container } = render(<BenefitsPage />);

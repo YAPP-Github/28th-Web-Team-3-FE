@@ -407,24 +407,42 @@ describe("BenefitsExplorer", () => {
     expect(housingFilter).toHaveClass("text-gray-300", "focus-visible:ring-2");
   });
 
-  /** 팁 탭은 화면만 있고 서버가 없다 — 빈 목록이 아니라 준비 중이라고 말해야 한다. */
-  it("블로그 팁 탭은 준비 중이라고 알리고 정책 목록을 조회하지 않는다", async () => {
+  it("절약 팁 탭은 정적 목록을 보이고 정책 목록을 조회하지 않는다", async () => {
     render(<BenefitsExplorer />);
     await screen.findByText("혜택 1");
     vi.mocked(fetchPolicies).mockClear();
 
-    fireEvent.click(screen.getByRole("tab", { name: "블로그 팁" }));
+    fireEvent.click(screen.getByRole("tab", { name: "절약 팁" }));
 
-    expect(screen.getByText(/블로그 팁은 준비 중이에요/)).toBeInTheDocument();
+    expect(screen.getByText("집밥 레시피 활용팁")).toBeInTheDocument();
+    expect(
+      screen.getByText("배달 메뉴 대신 집에서 직접 만드는 레시피 찾아보기"),
+    ).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /집밥 레시피 활용팁/ })).toHaveAttribute(
+      "href",
+      "https://www.youtube.com/watch?v=nZw2A76aZaw",
+    );
     expect(screen.queryByText("혜택 1")).not.toBeInTheDocument();
     expect(fetchPolicies).not.toHaveBeenCalled();
+  });
+
+  it("절약 팁은 미션과 같은 대분류로 목록을 좁힌다", async () => {
+    render(<BenefitsExplorer />);
+    await screen.findByText("혜택 1");
+
+    fireEvent.click(screen.getByRole("tab", { name: "절약 팁" }));
+    fireEvent.click(screen.getByRole("button", { name: "생활" }));
+
+    expect(screen.getByText("당근마켓 중고활용팁")).toBeInTheDocument();
+    expect(screen.queryByText("집밥 레시피 활용팁")).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "생활" })).toHaveAttribute("aria-pressed", "true");
   });
 
   it("탭을 되돌리면 정책 목록이 다시 보인다", async () => {
     render(<BenefitsExplorer />);
     await screen.findByText("혜택 1");
 
-    fireEvent.click(screen.getByRole("tab", { name: "블로그 팁" }));
+    fireEvent.click(screen.getByRole("tab", { name: "절약 팁" }));
     fireEvent.click(screen.getByRole("tab", { name: "정책 혜택" }));
 
     expect(await screen.findByText("혜택 1")).toBeInTheDocument();

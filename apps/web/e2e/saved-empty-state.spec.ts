@@ -41,9 +41,9 @@ test("두 탭의 빈 상태 문구가 같은 자리에 선다", async ({ page })
   await expect(page.getByText("저장한 혜택이 없어요.")).toBeVisible();
   const policyTop = await measureMessageTop(page, "저장한 혜택이 없어요.");
 
-  await page.getByRole("tab", { name: "블로그 팁" }).click();
-  await expect(page.getByText("블로그 팁은 준비 중이에요.")).toBeVisible();
-  const tipTop = await measureMessageTop(page, "블로그 팁은 준비 중이에요.");
+  await page.getByRole("tab", { name: "절약 팁" }).click();
+  await expect(page.getByText("절약 팁 저장은 준비 중이에요.")).toBeVisible();
+  const tipTop = await measureMessageTop(page, "절약 팁 저장은 준비 중이에요.");
 
   expect(policyTop).not.toBeNull();
   expect(policyTop).toBe(tipTop);

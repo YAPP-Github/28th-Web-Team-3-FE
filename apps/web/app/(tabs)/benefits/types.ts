@@ -13,13 +13,12 @@ export type BenefitFilter = (typeof BENEFIT_FILTER_VALUES)[number];
 /**
  * 상단 탭이 고르는 콘텐츠 종류.
  *
- * "블로그 팁"은 화면만 있고 내용이 없다 — 서버에 `/api/tips`가 아직 없어서 빈 상태로 둔다.
- * 홈의 `FINANCIAL_TIPS`는 정적 하드코딩이라 여기 붙이지 않는다(카테고리·저장이 없어 디자인의
- * 팁 카드를 채울 수 없다).
+ * 절약 팁은 편집된 정적 콘텐츠다. 정책 API와 달리 사용자의 게스트 토큰이나 서버 페이지네이션이
+ * 필요하지 않다.
  */
 export const BENEFIT_CONTENT_TYPES = [
   { value: "policy", label: "정책 혜택" },
-  { value: "tip", label: "블로그 팁" },
+  { value: "tip", label: "절약 팁" },
 ] as const;
 export type BenefitContentType = (typeof BENEFIT_CONTENT_TYPES)[number]["value"];
 
@@ -56,4 +55,14 @@ export interface FinancialTip {
   category: string;
   summary: string;
   title: string;
+}
+
+/** 편집된 절약 팁 한 건. 원문을 열기 전 카드에는 제목과 RAG 요약만 보여 준다. */
+export interface SavingTip {
+  id: string;
+  category: "식비" | "생활" | "취미";
+  selection: string;
+  ragText: string;
+  title: string;
+  url: string;
 }
