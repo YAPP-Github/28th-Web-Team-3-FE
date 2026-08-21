@@ -77,6 +77,7 @@ const config: ExpoConfig = {
     infoPlist: {
       // 생체인증을 호출할 때 iOS가 이유 문구를 보여주려면 필요하다.
       NSFaceIDUsageDescription: "앱 잠금 해제를 위해 Face ID를 사용합니다.",
+      ITSAppUsesNonExemptEncryption: false,
     },
   },
   android: {
