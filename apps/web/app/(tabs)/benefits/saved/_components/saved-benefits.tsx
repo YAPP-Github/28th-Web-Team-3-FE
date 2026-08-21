@@ -92,7 +92,7 @@ export function SavedBenefits() {
         />
         <div aria-labelledby="saved-content-tab-tip" id="saved-content-panel" role="tabpanel">
           <p className={`px-5 ${EMPTY_MESSAGE_CLASS}`}>
-            블로그 팁은 준비 중이에요.
+            절약 팁 저장은 준비 중이에요.
             <br />
             조금만 기다려 주세요.
           </p>

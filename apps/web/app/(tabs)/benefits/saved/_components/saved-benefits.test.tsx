@@ -345,14 +345,13 @@ describe("SavedBenefits", () => {
     expect(screen.queryByText("저장한 혜택")).not.toBeInTheDocument();
   });
 
-  /** 팁 탭은 화면만 있고 서버가 없다 — 빈 목록이 아니라 준비 중이라고 말해야 한다. */
-  it("블로그 팁 탭은 준비 중이라고 알린다", async () => {
+  it("절약 팁 탭은 저장 기능 준비 중이라고 알린다", async () => {
     render(<SavedBenefits />);
     await screen.findByText("저장한 혜택");
 
-    fireEvent.click(screen.getByRole("tab", { name: "블로그 팁" }));
+    fireEvent.click(screen.getByRole("tab", { name: "절약 팁" }));
 
-    expect(screen.getByText(/블로그 팁은 준비 중이에요/)).toBeInTheDocument();
+    expect(screen.getByText(/절약 팁 저장은 준비 중이에요/)).toBeInTheDocument();
     expect(screen.queryByText("저장한 혜택")).not.toBeInTheDocument();
   });
 });
