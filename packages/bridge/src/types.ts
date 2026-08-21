@@ -88,12 +88,6 @@ export type AppBridgeMethods = {
   getPendingMissionGeneration(): Promise<PendingMissionGeneration | null>;
   /** 결과 화면에 진입하거나 종료됐을 때 진행 중 job 기록을 지운다. */
   clearPendingMissionGeneration(): Promise<void>;
-  /** 기기에 저장한 절약 팁의 정적 ID 목록을 읽는다. */
-  getSavedSavingTipIds(): Promise<string[]>;
-  /** 절약 팁을 기기에 저장한다. 이미 저장했으면 그대로 둔다. */
-  saveSavingTip(id: string): Promise<void>;
-  /** 기기에 저장한 절약 팁을 지운다. */
-  removeSavingTip(id: string): Promise<void>;
   /** 사용자가 미션 추천 생성을 한 번이라도 시작했는지 조회한다. */
   hasStartedMissionCreation(): Promise<boolean>;
   /** 기기에 기록된 첫 미션 생성일(KST, YYYY-MM-DD)을 조회한다. */

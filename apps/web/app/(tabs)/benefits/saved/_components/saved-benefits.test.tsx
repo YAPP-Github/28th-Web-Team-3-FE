@@ -4,6 +4,7 @@ import { within } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { fetchSavedPolicies } from "@/api/bookmark";
 import { bookmarkPolicy, fetchPolicyDetail, unbookmarkPolicy } from "@/api/policy";
+import { fetchTips } from "@/api/tip";
 import { savedPoliciesOptions } from "@/lib/queries/bookmark";
 import { policiesOptions } from "@/lib/queries/policy";
 import { act, createTestQueryClient, fireEvent, render, screen, waitFor } from "@/lib/test/react";
@@ -17,6 +18,12 @@ vi.mock("@/api/policy", () => ({
 }));
 
 vi.mock("@/api/bookmark", () => ({ fetchSavedPolicies: vi.fn() }));
+
+vi.mock("@/api/tip", () => ({
+  bookmarkTip: vi.fn(),
+  fetchTips: vi.fn(),
+  unbookmarkTip: vi.fn(),
+}));
 
 function policyDetail(id: number, overrides: Partial<PolicyDetail> = {}): PolicyDetail {
   return {
@@ -51,6 +58,7 @@ beforeEach(() => {
   vi.mocked(fetchSavedPolicies).mockResolvedValue(SAVED);
   vi.mocked(bookmarkPolicy).mockResolvedValue(undefined);
   vi.mocked(unbookmarkPolicy).mockResolvedValue(undefined);
+  vi.mocked(fetchTips).mockResolvedValue([]);
 });
 
 describe("SavedBenefits", () => {
@@ -345,7 +353,7 @@ describe("SavedBenefits", () => {
     expect(screen.queryByText("저장한 혜택")).not.toBeInTheDocument();
   });
 
-  it("절약 팁 탭은 기기에 저장한 팁이 없을 때 안내를 보여준다", async () => {
+  it("절약 팁 탭은 API에 저장한 팁이 없을 때 안내를 보여준다", async () => {
     render(<SavedBenefits />);
     await screen.findByText("저장한 혜택");
 

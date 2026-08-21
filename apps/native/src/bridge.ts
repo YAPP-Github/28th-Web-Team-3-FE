@@ -10,7 +10,6 @@ import * as link from "./native/link";
 import * as push from "./native/push";
 import * as safeArea from "./native/safe-area";
 import * as share from "./native/share";
-import * as savingTipBookmarks from "./saving-tips/bookmarks";
 
 async function getNativeInfo(): Promise<NativeInfo> {
   return {
@@ -39,9 +38,6 @@ const handlers = {
   savePendingMissionGeneration: (job) => pendingMissionGeneration.savePendingMissionGeneration(job),
   getPendingMissionGeneration: () => pendingMissionGeneration.getPendingMissionGeneration(),
   clearPendingMissionGeneration: () => pendingMissionGeneration.clearPendingMissionGeneration(),
-  getSavedSavingTipIds: () => savingTipBookmarks.getSavedSavingTipIds(),
-  saveSavingTip: (id) => savingTipBookmarks.saveSavingTip(id),
-  removeSavingTip: (id) => savingTipBookmarks.removeSavingTip(id),
   hasStartedMissionCreation: () => missionCreationHistory.hasStartedMissionCreation(),
   getMissionCreationStartDate: () => missionCreationHistory.getMissionCreationStartDate(),
   markMissionCreationStarted: () => missionCreationHistory.markMissionCreationStarted(),
