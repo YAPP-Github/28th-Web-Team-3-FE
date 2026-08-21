@@ -2,6 +2,7 @@ import type { MissionCatalogResponse } from "@repo/schema/mission";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { fetchMissionCatalog, requestGenerationJob } from "@/api/mission-generation";
 import { markMissionCreationStarted } from "@/app/mission/new/utils/mission-creation-history";
+import { savePendingMissionGeneration } from "@/app/mission/new/utils/pending-mission-generation";
 import { fireEvent, render, screen, waitFor } from "@/lib/test/react";
 import NewMissionPage from "./page";
 
@@ -19,6 +20,10 @@ vi.mock("@/api/mission-generation", () => ({
 
 vi.mock("@/app/mission/new/utils/mission-creation-history", () => ({
   markMissionCreationStarted: vi.fn(),
+}));
+
+vi.mock("@/app/mission/new/utils/pending-mission-generation", () => ({
+  savePendingMissionGeneration: vi.fn(),
 }));
 
 const CATALOG: MissionCatalogResponse = {
@@ -77,9 +82,11 @@ describe("NewMissionPage", () => {
     vi.mocked(fetchMissionCatalog).mockResolvedValue(CATALOG);
     vi.mocked(requestGenerationJob).mockResolvedValue(JOB);
     vi.mocked(markMissionCreationStarted).mockResolvedValue(undefined);
+    vi.mocked(savePendingMissionGeneration).mockResolvedValue(undefined);
   });
 
   it("답변 사이에 타이핑 상태를 보여주고 완성된 요청을 전송한다", async () => {
+    vi.mocked(savePendingMissionGeneration).mockReturnValue(new Promise(() => {}));
     render(<NewMissionPage />);
 
     expect(screen.getByRole("heading", { name: "미션 추가" })).toBeVisible();
@@ -123,6 +130,11 @@ describe("NewMissionPage", () => {
     );
     expect(pushMock).toHaveBeenCalledWith("/mission/new/loading?jobId=job-1");
     expect(markMissionCreationStarted).toHaveBeenCalledOnce();
+    expect(savePendingMissionGeneration).toHaveBeenCalledWith({
+      createdAt: expect.any(Number),
+      expiresAt: null,
+      jobId: "job-1",
+    });
   }, 10_000);
 
   it("생활 카테고리의 이용 횟수와 소비 금액을 한 달 기준으로 묻는다", async () => {

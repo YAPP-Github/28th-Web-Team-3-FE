@@ -2,12 +2,18 @@ import type { PendingMissionGeneration } from "@repo/bridge/types";
 import * as SecureStore from "expo-secure-store";
 
 const PENDING_MISSION_GENERATION_KEY = "pending_mission_generation";
+let pendingOperation = Promise.resolve();
 
-export async function savePendingMissionGeneration(job: PendingMissionGeneration): Promise<void> {
-  await SecureStore.setItemAsync(PENDING_MISSION_GENERATION_KEY, JSON.stringify(job));
+function serializePendingOperation<T>(operation: () => Promise<T>): Promise<T> {
+  const result = pendingOperation.then(operation, operation);
+  pendingOperation = result.then(
+    () => undefined,
+    () => undefined,
+  );
+  return result;
 }
 
-export async function getPendingMissionGeneration(): Promise<PendingMissionGeneration | null> {
+async function readPendingMissionGeneration(): Promise<PendingMissionGeneration | null> {
   const stored = await SecureStore.getItemAsync(PENDING_MISSION_GENERATION_KEY);
   if (!stored) return null;
   try {
@@ -25,6 +31,22 @@ export async function getPendingMissionGeneration(): Promise<PendingMissionGener
   }
 }
 
-export function clearPendingMissionGeneration(): Promise<void> {
-  return SecureStore.deleteItemAsync(PENDING_MISSION_GENERATION_KEY);
+export function savePendingMissionGeneration(job: PendingMissionGeneration): Promise<void> {
+  return serializePendingOperation(() =>
+    SecureStore.setItemAsync(PENDING_MISSION_GENERATION_KEY, JSON.stringify(job)),
+  );
+}
+
+export function getPendingMissionGeneration(): Promise<PendingMissionGeneration | null> {
+  return serializePendingOperation(readPendingMissionGeneration);
+}
+
+export function clearPendingMissionGeneration(jobId?: string): Promise<void> {
+  return serializePendingOperation(async () => {
+    if (jobId) {
+      const pendingJob = await readPendingMissionGeneration();
+      if (pendingJob?.jobId !== jobId) return;
+    }
+    await SecureStore.deleteItemAsync(PENDING_MISSION_GENERATION_KEY);
+  });
 }

@@ -145,4 +145,12 @@ describe("PendingMissionGenerationRecovery", () => {
     await vi.waitFor(() => expect(clearPendingMissionGeneration).toHaveBeenCalled());
     expect(replace).not.toHaveBeenCalled();
   });
+
+  it("구 버전 네이티브 브릿지에 복구 메서드가 없어도 전역 오류를 내지 않는다", async () => {
+    getPendingMissionGeneration.mockRejectedValue(new Error("Method is not defined"));
+    renderRecovery();
+
+    await vi.waitFor(() => expect(getPendingMissionGeneration).toHaveBeenCalled());
+    expect(replace).not.toHaveBeenCalled();
+  });
 });

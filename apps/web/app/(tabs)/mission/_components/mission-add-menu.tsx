@@ -1,6 +1,9 @@
+import { bridge, isNativeApp } from "@repo/bridge";
 import { cn } from "@repo/ui";
 import { Plus } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { buildMissionLoadingHref } from "@/app/mission/constants/mission-creation";
 
 interface MissionAddMenuProps {
   isOpen: boolean;
@@ -10,6 +13,26 @@ interface MissionAddMenuProps {
 const MENU_ID = "mission-add-menu";
 
 export function MissionAddMenu({ isOpen, onToggle }: MissionAddMenuProps) {
+  const router = useRouter();
+
+  function handleRecommendationClick(event: React.MouseEvent<HTMLAnchorElement>) {
+    if (!isNativeApp()) return;
+
+    event.preventDefault();
+    void bridge
+      .getPendingMissionGeneration()
+      .then((job) => {
+        if (job && (!job.expiresAt || Date.parse(job.expiresAt) > Date.now())) {
+          router.push(buildMissionLoadingHref(job.jobId));
+          return;
+        }
+        if (job) void bridge.clearPendingMissionGeneration(job.jobId).catch(() => {});
+        router.push("/mission/new");
+      })
+      // 구 버전 네이티브 앱은 이 브릿지 메서드가 없다. 이 경우에는 기존 생성 화면으로 간다.
+      .catch(() => router.push("/mission/new"));
+  }
+
   return (
     <div className="pointer-events-none fixed inset-x-0 bottom-24 z-10 mx-auto flex w-full max-w-md flex-col items-end gap-3 px-5">
       <div
@@ -26,6 +49,7 @@ export function MissionAddMenu({ isOpen, onToggle }: MissionAddMenuProps) {
         <Link
           className="w-full px-4 py-1 text-left text-body-b1-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           href="/mission/new"
+          onClick={handleRecommendationClick}
         >
           추천받기
         </Link>

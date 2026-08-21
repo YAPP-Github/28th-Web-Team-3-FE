@@ -56,7 +56,7 @@ export function MissionCreationResult({ jobId }: MissionCreationResultProps) {
   const [selectedDraftIds, setSelectedDraftIds] = useState<string[]>([]);
 
   useEffect(() => {
-    void clearPendingMissionGeneration();
+    void clearPendingMissionGeneration(jobId);
   }, [jobId]);
 
   function toggleDraft(id: string, pressed: boolean) {
