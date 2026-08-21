@@ -36,8 +36,7 @@ export interface BenefitItem {
 }
 
 /**
- * 홈 화면 팁 카드가 참조하는 정적 정책 데이터. 혜택 목록은 API로 옮겼지만
- * 팁(`/api/tips`)은 아직이라 이 데이터가 남아 있다.
+ * 홈 화면 팁 카드가 참조하는 정적 정책 데이터.
  */
 export interface Benefit {
   id: string;
@@ -57,7 +56,7 @@ export interface FinancialTip {
   title: string;
 }
 
-/** 편집된 절약 팁 한 건. 원문을 열기 전 카드에는 제목과 RAG 요약만 보여 준다. */
+/** 편집된 절약 팁 한 건. 원문 URL·RAG 요약은 팁 API가 제공하지 않아 화면에서 관리한다. */
 export interface SavingTip {
   id: string;
   category: "식비" | "생활" | "취미";

@@ -1,16 +1,13 @@
 "use client";
 
 import { isNativeApp } from "@repo/bridge";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Star } from "lucide-react";
-import { type MouseEvent, useEffect, useState } from "react";
+import { type MouseEvent, useState } from "react";
 import { SAVING_TIPS } from "@/app/(tabs)/benefits/constants";
 import type { SavingTip } from "@/app/(tabs)/benefits/types";
-import {
-  getSavedSavingTipIds,
-  removeSavingTip,
-  saveSavingTip,
-} from "@/app/(tabs)/benefits/utils/saving-tip-bookmarks";
 import { openExternalLink } from "@/lib/open-external";
+import { tipsOptions, toggleTipBookmarkOptions } from "@/lib/queries/tip";
 
 const FILTERS = ["전체", "식비", "생활", "취미"] as const;
 type SavingTipFilter = (typeof FILTERS)[number];
@@ -26,7 +23,7 @@ function SavingTipCard({
   saved: boolean;
   savingReady: boolean;
   savingPending: boolean;
-  onToggleSave: (tipId: string) => void;
+  onToggleSave: (tip: SavingTip) => void;
 }) {
   function openInNativeApp(event: MouseEvent<HTMLAnchorElement>) {
     if (!isNativeApp()) return;
@@ -47,7 +44,7 @@ function SavingTipCard({
           className="-m-3 relative z-10 flex size-11 shrink-0 items-center justify-center rounded-full transition-[scale,background-color] duration-100 hover:bg-gray-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring active:scale-[0.92] motion-reduce:transition-none motion-reduce:active:scale-100"
           type="button"
           onClick={() => {
-            if (savingReady && !savingPending) onToggleSave(tip.id);
+            if (savingReady && !savingPending) onToggleSave(tip);
           }}
         >
           <Star
@@ -74,44 +71,52 @@ function SavingTipCard({
   );
 }
 
-/** 정적 절약 팁은 화면에서만 분류한다. API 요청과 페이지네이션은 필요 없다. */
+/** 정적 콘텐츠는 유지하고, 저장 상태와 저장 요청만 팁 API를 기준으로 처리한다. */
 export function SavingTipList({ savedOnly = false }: { savedOnly?: boolean }) {
   const [filter, setFilter] = useState<SavingTipFilter>("전체");
-  const [savedTipIds, setSavedTipIds] = useState<readonly string[]>([]);
-  const [isLoadingSavedTips, setIsLoadingSavedTips] = useState(true);
   const [pendingTipIds, setPendingTipIds] = useState<readonly string[]>([]);
   const [saveError, setSaveError] = useState<string>();
+  const queryClient = useQueryClient();
+  const tipsQuery = useQuery(tipsOptions());
+  const toggleBookmark = useMutation(toggleTipBookmarkOptions());
 
-  useEffect(() => {
-    let cancelled = false;
-    void getSavedSavingTipIds().then((ids) => {
-      if (!cancelled) {
-        setSavedTipIds(ids);
-        setIsLoadingSavedTips(false);
-      }
-    });
-    return () => {
-      cancelled = true;
-    };
-  }, []);
+  const apiTipsByTitle = new Map(tipsQuery.data?.map((tip) => [tip.title, tip]));
 
   const tips = SAVING_TIPS.filter((tip) => {
-    if (savedOnly && !savedTipIds.includes(tip.id)) return false;
+    const apiTip = apiTipsByTitle.get(tip.title);
+    if (savedOnly && !apiTip?.bookmarked) return false;
     return filter === "전체" || tip.category === filter;
   });
 
-  async function toggleSave(tipId: string) {
-    if (pendingTipIds.includes(tipId)) return;
-    const wasSaved = savedTipIds.includes(tipId);
+  function toggleSave(tip: SavingTip) {
+    const apiTip = apiTipsByTitle.get(tip.title);
+    if (!apiTip || pendingTipIds.includes(tip.id)) return;
+
+    const wasSaved = apiTip.bookmarked;
     setSaveError(undefined);
-    setPendingTipIds((ids) => [...ids, tipId]);
-    setSavedTipIds((ids) => (wasSaved ? ids.filter((id) => id !== tipId) : [...ids, tipId]));
-    const saved = wasSaved ? await removeSavingTip(tipId) : await saveSavingTip(tipId);
-    if (!saved) {
-      setSavedTipIds((ids) => (wasSaved ? [...ids, tipId] : ids.filter((id) => id !== tipId)));
-      setSaveError("저장 상태를 바꾸지 못했어요. 잠시 후 다시 시도해 주세요.");
-    }
-    setPendingTipIds((ids) => ids.filter((id) => id !== tipId));
+    setPendingTipIds((ids) => [...ids, tip.id]);
+    queryClient.setQueryData(tipsOptions().queryKey, (current) =>
+      current?.map((currentTip) =>
+        currentTip.id === apiTip.id ? { ...currentTip, bookmarked: !wasSaved } : currentTip,
+      ),
+    );
+
+    toggleBookmark.mutate(
+      { tipId: apiTip.id, saved: wasSaved },
+      {
+        onError: () => {
+          queryClient.setQueryData(tipsOptions().queryKey, (current) =>
+            current?.map((currentTip) =>
+              currentTip.id === apiTip.id ? { ...currentTip, bookmarked: wasSaved } : currentTip,
+            ),
+          );
+          setSaveError("저장 상태를 바꾸지 못했어요. 잠시 후 다시 시도해 주세요.");
+        },
+        onSettled: () => {
+          setPendingTipIds((ids) => ids.filter((id) => id !== tip.id));
+        },
+      },
+    );
   }
 
   function renderTipCards() {
@@ -130,19 +135,23 @@ export function SavingTipList({ savedOnly = false }: { savedOnly?: boolean }) {
   const tipCards = tips.map((tip) => (
     <SavingTipCard
       key={tip.id}
-      saved={savedTipIds.includes(tip.id)}
+      saved={apiTipsByTitle.get(tip.title)?.bookmarked ?? false}
       savingPending={pendingTipIds.includes(tip.id)}
-      savingReady={!isLoadingSavedTips}
+      savingReady={tipsQuery.isSuccess && apiTipsByTitle.has(tip.title)}
       tip={tip}
-      onToggleSave={(tipId) => void toggleSave(tipId)}
+      onToggleSave={toggleSave}
     />
   ));
 
   if (savedOnly) {
     return (
       <section aria-label="저장한 절약 팁" className="mt-5 flex flex-col gap-3 px-5">
-        {isLoadingSavedTips ? (
+        {tipsQuery.isLoading ? (
           <p className="py-20 text-center text-body-b2-500 text-gray-500">불러오는 중이에요.</p>
+        ) : tipsQuery.isError ? (
+          <p className="py-20 text-center text-body-b2-500 text-gray-500">
+            저장한 절약 팁을 불러오지 못했어요.
+          </p>
         ) : tips.length === 0 ? (
           <p className="py-20 text-center text-body-b2-500 text-gray-500">
             저장한 절약 팁이 없어요.
