@@ -13,8 +13,7 @@ export type BenefitFilter = (typeof BENEFIT_FILTER_VALUES)[number];
 /**
  * 상단 탭이 고르는 콘텐츠 종류.
  *
- * 절약 팁은 편집된 정적 콘텐츠다. 정책 API와 달리 사용자의 게스트 토큰이나 서버 페이지네이션이
- * 필요하지 않다.
+ * 절약 팁은 게스트별 북마크 상태를 포함한 서버 API로 조회한다.
  */
 export const BENEFIT_CONTENT_TYPES = [
   { value: "policy", label: "정책 혜택" },
@@ -33,35 +32,4 @@ export interface BenefitItem {
   categoryLabel: string | null;
   description: string | null;
   saved: boolean;
-}
-
-/**
- * 홈 화면 팁 카드가 참조하는 정적 정책 데이터.
- */
-export interface Benefit {
-  id: string;
-  category: "savings" | "housing" | "living" | "tax";
-  title: string;
-  summary: string;
-  /** 대상·요건 한 줄 요약. */
-  condition: string;
-  /** 공식 페이지 URL — 카드를 누르면 바로 이동한다. */
-  officialUrl: string;
-}
-
-export interface FinancialTip {
-  id: string;
-  category: string;
-  summary: string;
-  title: string;
-}
-
-/** 편집된 절약 팁 한 건. 원문 URL·RAG 요약은 팁 API가 제공하지 않아 화면에서 관리한다. */
-export interface SavingTip {
-  id: string;
-  category: "식비" | "생활" | "취미";
-  selection: string;
-  ragText: string;
-  title: string;
-  url: string;
 }

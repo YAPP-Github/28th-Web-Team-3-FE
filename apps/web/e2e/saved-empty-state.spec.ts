@@ -17,6 +17,9 @@ async function gotoSavedWithNothing(page: Page) {
   await page.route("**/api/bookmarks**", (route) =>
     route.fulfill({ status: 200, contentType: "application/json", body: "[]" }),
   );
+  await page.route("**/api/tips**", (route) =>
+    route.fulfill({ status: 200, contentType: "application/json", body: "[]" }),
+  );
 
   await page.goto("/benefits/saved");
 }
@@ -42,8 +45,8 @@ test("두 탭의 빈 상태 문구가 같은 자리에 선다", async ({ page })
   const policyTop = await measureMessageTop(page, "저장한 혜택이 없어요.");
 
   await page.getByRole("tab", { name: "절약 팁" }).click();
-  await expect(page.getByText("절약 팁 저장은 준비 중이에요.")).toBeVisible();
-  const tipTop = await measureMessageTop(page, "절약 팁 저장은 준비 중이에요.");
+  await expect(page.getByText("저장한 절약 팁이 없어요.")).toBeVisible();
+  const tipTop = await measureMessageTop(page, "저장한 절약 팁이 없어요.");
 
   expect(policyTop).not.toBeNull();
   expect(policyTop).toBe(tipTop);

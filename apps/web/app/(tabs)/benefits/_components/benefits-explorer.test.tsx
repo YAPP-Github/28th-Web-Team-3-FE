@@ -3,6 +3,7 @@ import type { PolicyDetail, PolicySummary } from "@repo/schema/policy";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { fetchSavedPolicies } from "@/api/bookmark";
 import { bookmarkPolicy, fetchPolicies, fetchPolicyDetail, unbookmarkPolicy } from "@/api/policy";
+import { fetchAllSavingTips } from "@/api/tip";
 import { POLICY_PAGE_SIZE } from "@/lib/queries/policy";
 import { act, fireEvent, render, screen, waitFor } from "@/lib/test/react";
 import { BenefitsExplorer } from "./benefits-explorer";
@@ -15,6 +16,12 @@ vi.mock("@/api/policy", () => ({
 }));
 
 vi.mock("@/api/bookmark", () => ({ fetchSavedPolicies: vi.fn() }));
+vi.mock("@/api/tip", () => ({
+  bookmarkSavingTip: vi.fn(),
+  fetchAllSavingTips: vi.fn(),
+  fetchSavingTips: vi.fn(),
+  unbookmarkSavingTip: vi.fn(),
+}));
 
 vi.mock("next/navigation", () => ({
   useSearchParams: () => new URLSearchParams(window.location.search),
@@ -69,6 +76,26 @@ beforeEach(() => {
   vi.mocked(fetchSavedPolicies).mockResolvedValue(SAVED);
   vi.mocked(bookmarkPolicy).mockResolvedValue(undefined);
   vi.mocked(unbookmarkPolicy).mockResolvedValue(undefined);
+  vi.mocked(fetchAllSavingTips).mockResolvedValue([
+    {
+      bookmarked: false,
+      category: "식비",
+      description: "배달 메뉴 대신 집에서 직접 만드는 레시피 찾아보기",
+      id: 1,
+      sourceUrl: "https://www.youtube.com/watch?v=nZw2A76aZaw",
+      subcategory: "배달음식",
+      title: "집밥 레시피 활용팁",
+    },
+    {
+      bookmarked: false,
+      category: "생활",
+      description: "중고구매 팁",
+      id: 2,
+      sourceUrl: "https://example.com/tip",
+      subcategory: "의류",
+      title: "당근마켓 중고활용팁",
+    },
+  ]);
   window.history.replaceState(null, "", "/benefits");
 });
 
@@ -407,14 +434,14 @@ describe("BenefitsExplorer", () => {
     expect(housingFilter).toHaveClass("text-gray-300", "focus-visible:ring-2");
   });
 
-  it("절약 팁 탭은 정적 목록을 보이고 정책 목록을 조회하지 않는다", async () => {
+  it("절약 팁 탭은 API 목록을 보이고 정책 목록을 다시 조회하지 않는다", async () => {
     render(<BenefitsExplorer />);
     await screen.findByText("혜택 1");
     vi.mocked(fetchPolicies).mockClear();
 
     fireEvent.click(screen.getByRole("tab", { name: "절약 팁" }));
 
-    expect(screen.getByText("집밥 레시피 활용팁")).toBeInTheDocument();
+    expect(await screen.findByText("집밥 레시피 활용팁")).toBeInTheDocument();
     expect(
       screen.getByText("배달 메뉴 대신 집에서 직접 만드는 레시피 찾아보기"),
     ).toBeInTheDocument();
@@ -424,17 +451,17 @@ describe("BenefitsExplorer", () => {
     );
     expect(screen.queryByText("혜택 1")).not.toBeInTheDocument();
     expect(fetchPolicies).not.toHaveBeenCalled();
+    expect(fetchAllSavingTips).toHaveBeenCalledWith(null, 100);
   });
 
-  it("절약 팁은 미션과 같은 대분류로 목록을 좁힌다", async () => {
+  it("절약 팁은 미션과 같은 대분류로 API 목록을 좁힌다", async () => {
     render(<BenefitsExplorer />);
     await screen.findByText("혜택 1");
 
     fireEvent.click(screen.getByRole("tab", { name: "절약 팁" }));
     fireEvent.click(screen.getByRole("button", { name: "생활" }));
 
-    expect(screen.getByText("당근마켓 중고활용팁")).toBeInTheDocument();
-    expect(screen.queryByText("집밥 레시피 활용팁")).not.toBeInTheDocument();
+    await waitFor(() => expect(fetchAllSavingTips).toHaveBeenCalledWith("생활", 100));
     expect(screen.getByRole("button", { name: "생활" })).toHaveAttribute("aria-pressed", "true");
   });
 
