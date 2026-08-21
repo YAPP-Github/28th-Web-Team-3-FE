@@ -3,7 +3,7 @@ import type { PolicyDetail, PolicySummary } from "@repo/schema/policy";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { fetchSavedPolicies } from "@/api/bookmark";
 import { bookmarkPolicy, fetchPolicies, fetchPolicyDetail, unbookmarkPolicy } from "@/api/policy";
-import { fetchSavingTips } from "@/api/tip";
+import { fetchAllSavingTips } from "@/api/tip";
 import { POLICY_PAGE_SIZE } from "@/lib/queries/policy";
 import { act, fireEvent, render, screen, waitFor } from "@/lib/test/react";
 import { BenefitsExplorer } from "./benefits-explorer";
@@ -18,6 +18,7 @@ vi.mock("@/api/policy", () => ({
 vi.mock("@/api/bookmark", () => ({ fetchSavedPolicies: vi.fn() }));
 vi.mock("@/api/tip", () => ({
   bookmarkSavingTip: vi.fn(),
+  fetchAllSavingTips: vi.fn(),
   fetchSavingTips: vi.fn(),
   unbookmarkSavingTip: vi.fn(),
 }));
@@ -75,7 +76,7 @@ beforeEach(() => {
   vi.mocked(fetchSavedPolicies).mockResolvedValue(SAVED);
   vi.mocked(bookmarkPolicy).mockResolvedValue(undefined);
   vi.mocked(unbookmarkPolicy).mockResolvedValue(undefined);
-  vi.mocked(fetchSavingTips).mockResolvedValue([
+  vi.mocked(fetchAllSavingTips).mockResolvedValue([
     {
       bookmarked: false,
       category: "식비",
@@ -450,7 +451,7 @@ describe("BenefitsExplorer", () => {
     );
     expect(screen.queryByText("혜택 1")).not.toBeInTheDocument();
     expect(fetchPolicies).not.toHaveBeenCalled();
-    expect(fetchSavingTips).toHaveBeenCalledWith({ category: null, page: 0, size: 100 });
+    expect(fetchAllSavingTips).toHaveBeenCalledWith(null, 100);
   });
 
   it("절약 팁은 미션과 같은 대분류로 API 목록을 좁힌다", async () => {
@@ -460,9 +461,7 @@ describe("BenefitsExplorer", () => {
     fireEvent.click(screen.getByRole("tab", { name: "절약 팁" }));
     fireEvent.click(screen.getByRole("button", { name: "생활" }));
 
-    await waitFor(() =>
-      expect(fetchSavingTips).toHaveBeenCalledWith({ category: "생활", page: 0, size: 100 }),
-    );
+    await waitFor(() => expect(fetchAllSavingTips).toHaveBeenCalledWith("생활", 100));
     expect(screen.getByRole("button", { name: "생활" })).toHaveAttribute("aria-pressed", "true");
   });
 

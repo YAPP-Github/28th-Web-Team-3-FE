@@ -4,7 +4,7 @@ import { within } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { fetchSavedPolicies } from "@/api/bookmark";
 import { bookmarkPolicy, fetchPolicyDetail, unbookmarkPolicy } from "@/api/policy";
-import { fetchSavingTips } from "@/api/tip";
+import { fetchAllSavingTips } from "@/api/tip";
 import { savedPoliciesOptions } from "@/lib/queries/bookmark";
 import { policiesOptions } from "@/lib/queries/policy";
 import { act, createTestQueryClient, fireEvent, render, screen, waitFor } from "@/lib/test/react";
@@ -20,6 +20,7 @@ vi.mock("@/api/policy", () => ({
 vi.mock("@/api/bookmark", () => ({ fetchSavedPolicies: vi.fn() }));
 vi.mock("@/api/tip", () => ({
   bookmarkSavingTip: vi.fn(),
+  fetchAllSavingTips: vi.fn(),
   fetchSavingTips: vi.fn(),
   unbookmarkSavingTip: vi.fn(),
 }));
@@ -57,7 +58,7 @@ beforeEach(() => {
   vi.mocked(fetchSavedPolicies).mockResolvedValue(SAVED);
   vi.mocked(bookmarkPolicy).mockResolvedValue(undefined);
   vi.mocked(unbookmarkPolicy).mockResolvedValue(undefined);
-  vi.mocked(fetchSavingTips).mockResolvedValue([]);
+  vi.mocked(fetchAllSavingTips).mockResolvedValue([]);
 });
 
 describe("SavedBenefits", () => {
@@ -359,7 +360,7 @@ describe("SavedBenefits", () => {
     fireEvent.click(screen.getByRole("tab", { name: "절약 팁" }));
 
     expect(await screen.findByText(/저장한 절약 팁이 없어요/)).toBeInTheDocument();
-    expect(fetchSavingTips).toHaveBeenCalledWith({ category: null, page: 0, size: 100 });
+    expect(fetchAllSavingTips).toHaveBeenCalledWith(null, 100);
     expect(screen.queryByText("저장한 혜택")).not.toBeInTheDocument();
   });
 });

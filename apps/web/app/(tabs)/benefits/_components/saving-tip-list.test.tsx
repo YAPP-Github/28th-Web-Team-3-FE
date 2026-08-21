@@ -1,11 +1,12 @@
 import type { SavingTipSummary } from "@repo/schema/tip";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { bookmarkSavingTip, fetchSavingTips, unbookmarkSavingTip } from "@/api/tip";
+import { bookmarkSavingTip, fetchAllSavingTips, unbookmarkSavingTip } from "@/api/tip";
 import { fireEvent, render, screen, waitFor } from "@/lib/test/react";
 import { SavingTipList } from "./saving-tip-list";
 
 vi.mock("@/api/tip", () => ({
   bookmarkSavingTip: vi.fn(),
+  fetchAllSavingTips: vi.fn(),
   fetchSavingTips: vi.fn(),
   unbookmarkSavingTip: vi.fn(),
 }));
@@ -34,7 +35,7 @@ const TIPS: SavingTipSummary[] = [
 describe("SavingTipList", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    vi.mocked(fetchSavingTips).mockResolvedValue(TIPS);
+    vi.mocked(fetchAllSavingTips).mockResolvedValue(TIPS);
     vi.mocked(bookmarkSavingTip).mockResolvedValue(undefined);
     vi.mocked(unbookmarkSavingTip).mockResolvedValue(undefined);
   });
@@ -43,7 +44,7 @@ describe("SavingTipList", () => {
     render(<SavingTipList />);
 
     expect(await screen.findByText("집밥 레시피 활용팁")).toBeInTheDocument();
-    expect(fetchSavingTips).toHaveBeenCalledWith({ category: null, page: 0, size: 100 });
+    expect(fetchAllSavingTips).toHaveBeenCalledWith(null, 100);
     expect(screen.getByRole("link", { name: /집밥 레시피 활용팁/ })).toHaveAttribute(
       "href",
       "https://www.youtube.com/watch?v=nZw2A76aZaw",
@@ -56,9 +57,7 @@ describe("SavingTipList", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "생활" }));
 
-    await waitFor(() =>
-      expect(fetchSavingTips).toHaveBeenCalledWith({ category: "생활", page: 0, size: 100 }),
-    );
+    await waitFor(() => expect(fetchAllSavingTips).toHaveBeenCalledWith("생활", 100));
   });
 
   it("저장한 팁만 저장 목록에 남긴다", async () => {
