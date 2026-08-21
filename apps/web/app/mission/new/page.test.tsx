@@ -82,7 +82,7 @@ describe("NewMissionPage", () => {
     expect(
       await screen.findByRole(
         "heading",
-        { name: "평소 한 주에 배달음식은 몇 번 이용하세요?" },
+        { name: "평소 한 주에 배달음식은 몇 번 주문하세요?" },
         { timeout: 1_500 },
       ),
     ).toBeVisible();
@@ -91,7 +91,7 @@ describe("NewMissionPage", () => {
     expect(
       await screen.findByRole(
         "heading",
-        { name: "평소 한 주에 배달음식으로 얼마 쓰세요?" },
+        { name: "평소 한 주에 배달음식 주문에 얼마 쓰세요?" },
         { timeout: 1_500 },
       ),
     ).toBeVisible();
@@ -126,7 +126,7 @@ describe("NewMissionPage", () => {
     expect(
       await screen.findByRole(
         "heading",
-        { name: "평소 한 달에 의류은 몇 번 이용하세요?" },
+        { name: "평소 한 달에 의류는 몇 번 구매하세요?" },
         { timeout: 1_500 },
       ),
     ).toBeVisible();
@@ -135,7 +135,7 @@ describe("NewMissionPage", () => {
     expect(
       await screen.findByRole(
         "heading",
-        { name: "평소 한 달에 의류으로 얼마 쓰세요?" },
+        { name: "평소 한 달에 의류 구매에 얼마 쓰세요?" },
         { timeout: 1_500 },
       ),
     ).toBeVisible();
@@ -172,7 +172,7 @@ describe("NewMissionPage", () => {
     expect(
       await screen.findByRole(
         "heading",
-        { name: "평소 한 주에 배달음식으로 얼마 쓰세요?" },
+        { name: "평소 한 주에 배달음식 주문에 얼마 쓰세요?" },
         { timeout: 1_500 },
       ),
     ).toBeVisible();

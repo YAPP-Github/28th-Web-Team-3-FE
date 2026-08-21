@@ -316,7 +316,7 @@ export function MissionCreationChat() {
             <ChatQuestion
               current={3}
               helper="하나만 선택 가능해요."
-              prompt={frequencyQuestion(selectedItemLabel, selectedCategory)}
+              prompt={frequencyQuestion(selectedItem, selectedCategory)}
             >
               <Controller
                 control={control}
@@ -374,7 +374,7 @@ export function MissionCreationChat() {
             <ChatQuestion
               current={4}
               helper="직접 입력해주세요."
-              prompt={amountQuestion(selectedItemLabel, selectedCategory)}
+              prompt={amountQuestion(selectedItem, selectedCategory)}
             />
             {completedThrough >= 3 && amountWon ? (
               <ChatAnswer
