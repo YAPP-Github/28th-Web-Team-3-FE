@@ -8,7 +8,6 @@ import { OnboardingRouteGuard } from "./_components/onboarding-route-guard";
 import { PendingMissionGenerationRecovery } from "./_components/pending-mission-generation-recovery";
 import { SafeAreaColor } from "./_components/safe-area-color";
 import "./globals.css";
-import { MSWProvider } from "./msw-provider";
 
 export const metadata: Metadata = {
   title: "아끼모",
@@ -16,8 +15,6 @@ export const metadata: Metadata = {
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {
-  const apiMocksEnabled =
-    process.env.NODE_ENV === "development" && process.env.ENABLE_API_MOCKS === "true";
   const app = (
     <QueryProvider>
       <KeyboardInsetSync />
@@ -33,7 +30,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
   );
   return (
     <html lang="ko">
-      <body>{apiMocksEnabled ? <MSWProvider>{app}</MSWProvider> : app}</body>
+      <body>{app}</body>
     </html>
   );
 }

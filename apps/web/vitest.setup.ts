@@ -1,8 +1,7 @@
 import "@testing-library/jest-dom/vitest";
 import * as matchers from "@testing-library/jest-dom/matchers";
 import { cleanup } from "@testing-library/react";
-import { afterAll, afterEach, beforeAll, expect, vi } from "vitest";
-import { server } from "./mocks/node";
+import { afterEach, expect, vi } from "vitest";
 
 expect.extend(matchers);
 
@@ -29,9 +28,6 @@ vi.stubGlobal(
 // 동작이 아니라 이 빈자리 때문에 죽는다.
 Element.prototype.setPointerCapture ??= () => {};
 
-beforeAll(() => server.listen());
 afterEach(() => {
-  server.resetHandlers();
   cleanup();
 });
-afterAll(() => server.close());
