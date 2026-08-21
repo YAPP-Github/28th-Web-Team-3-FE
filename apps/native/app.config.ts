@@ -66,7 +66,7 @@ const config: ExpoConfig = {
   // slug·scheme·bundleIdentifier는 EAS 프로젝트와 스토어 등록에 묶인 식별자다.
   // 표시 이름(name)만 바꾸고 이쪽은 건드리지 않는다.
   slug: "web-team-3",
-  version: "1.1.0",
+  version: "1.1.3",
   orientation: "portrait",
   scheme: "akkimo",
   userInterfaceStyle: "automatic",
@@ -111,6 +111,9 @@ const config: ExpoConfig = {
     reactCompiler: true,
   },
   extra: {
+    eas: {
+      projectId: "849056a3-f28a-4c3e-9b66-a1da6f661c7f",
+    },
     // dev는 Next.js 앱을 서빙하는 Metro 호스트, prod는 배포된 웹 origin.
     // 폴백은 일부러 안 둔다 — 기본값은 config.ts가 플랫폼별로 챙긴다.
     webUrl: process.env.EXPO_PUBLIC_WEB_URL,
