@@ -9,6 +9,7 @@ describe("MissionAddMenu", () => {
     const addButton = screen.getByRole("button", { name: "미션 추가 메뉴 열기" });
     expect(addButton.parentElement).toHaveClass("pointer-events-none");
     expect(addButton).toHaveClass("pointer-events-auto");
+    expect(document.getElementById("mission-add-menu")).toHaveClass("pointer-events-none");
   });
 
   it("열린 메뉴의 선택지는 클릭을 받는다", () => {

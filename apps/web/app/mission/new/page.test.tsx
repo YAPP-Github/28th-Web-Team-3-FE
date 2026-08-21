@@ -65,6 +65,12 @@ async function chooseLivingAndClothing() {
   fireEvent.click(await screen.findByRole("button", { name: "의류" }, { timeout: 1_500 }));
 }
 
+async function chooseHobbyAndGame() {
+  fireEvent.click(screen.getByRole("button", { name: "취미" }));
+  expect(screen.getByRole("status", { name: "다음 질문을 준비하고 있어요" })).toBeVisible();
+  fireEvent.click(await screen.findByRole("button", { name: "게임" }, { timeout: 1_500 }));
+}
+
 describe("NewMissionPage", () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -136,6 +142,28 @@ describe("NewMissionPage", () => {
       await screen.findByRole(
         "heading",
         { name: "평소 한 달에 의류 구매에 얼마 쓰세요?" },
+        { timeout: 1_500 },
+      ),
+    ).toBeVisible();
+  }, 10_000);
+
+  it("취미 카테고리의 이용 횟수와 소비 금액을 한 달 기준으로 묻는다", async () => {
+    render(<NewMissionPage />);
+    await chooseHobbyAndGame();
+
+    expect(
+      await screen.findByRole(
+        "heading",
+        { name: "평소 한 달에 게임에는 몇 번 결제하세요?" },
+        { timeout: 1_500 },
+      ),
+    ).toBeVisible();
+
+    fireEvent.click(screen.getByRole("button", { name: "1회" }));
+    expect(
+      await screen.findByRole(
+        "heading",
+        { name: "평소 한 달에 게임에 얼마 결제하세요?" },
         { timeout: 1_500 },
       ),
     ).toBeVisible();
