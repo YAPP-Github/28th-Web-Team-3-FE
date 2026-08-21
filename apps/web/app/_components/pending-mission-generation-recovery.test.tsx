@@ -107,7 +107,7 @@ describe("PendingMissionGenerationRecovery", () => {
     const { client, rerender } = renderRecovery();
 
     await vi.waitFor(() => expect(getPendingMissionGeneration).toHaveBeenCalled());
-    getPendingMissionGeneration.mockResolvedValue(null);
+    fetchGenerationJobStatus.mockResolvedValue(SUCCEEDED_JOB);
     pathname.mockReturnValue("/mission");
     rerender(<RecoveryWithClient client={client} />);
 
