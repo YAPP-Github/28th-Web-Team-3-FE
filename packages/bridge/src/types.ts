@@ -86,8 +86,8 @@ export type AppBridgeMethods = {
   savePendingMissionGeneration(job: PendingMissionGeneration): Promise<void>;
   /** 앱 재진입 시 이어서 확인할 미션 생성 job을 읽는다. */
   getPendingMissionGeneration(): Promise<PendingMissionGeneration | null>;
-  /** 결과 화면에 진입하거나 종료됐을 때 진행 중 job 기록을 지운다. */
-  clearPendingMissionGeneration(): Promise<void>;
+  /** 결과 화면에 진입하거나 종료됐을 때 해당 job의 진행 기록을 지운다. */
+  clearPendingMissionGeneration(jobId?: string): Promise<void>;
   /** 사용자가 미션 추천 생성을 한 번이라도 시작했는지 조회한다. */
   hasStartedMissionCreation(): Promise<boolean>;
   /** 기기에 기록된 첫 미션 생성일(KST, YYYY-MM-DD)을 조회한다. */

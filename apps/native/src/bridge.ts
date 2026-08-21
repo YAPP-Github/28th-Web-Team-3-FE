@@ -37,7 +37,8 @@ const handlers = {
   clearGuestTokens: () => guestAuth.clearGuestTokens(),
   savePendingMissionGeneration: (job) => pendingMissionGeneration.savePendingMissionGeneration(job),
   getPendingMissionGeneration: () => pendingMissionGeneration.getPendingMissionGeneration(),
-  clearPendingMissionGeneration: () => pendingMissionGeneration.clearPendingMissionGeneration(),
+  clearPendingMissionGeneration: (jobId) =>
+    pendingMissionGeneration.clearPendingMissionGeneration(jobId),
   hasStartedMissionCreation: () => missionCreationHistory.hasStartedMissionCreation(),
   getMissionCreationStartDate: () => missionCreationHistory.getMissionCreationStartDate(),
   markMissionCreationStarted: () => missionCreationHistory.markMissionCreationStarted(),

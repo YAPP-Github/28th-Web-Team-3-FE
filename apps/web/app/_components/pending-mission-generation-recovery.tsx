@@ -53,26 +53,32 @@ export function PendingMissionGenerationRecovery() {
 
     let cancelled = false;
     const recoverPendingJob = () => {
-      void bridge.getPendingMissionGeneration().then((job) => {
-        if (cancelled) return;
-        if (!job) {
-          setPendingJob(undefined);
-          return;
-        }
-        if (job.expiresAt && Date.parse(job.expiresAt) <= Date.now()) {
-          setPendingJob(undefined);
-          void bridge.clearPendingMissionGeneration();
-          return;
-        }
-        if (completedJobId.current === job.jobId) {
-          setPendingJob(undefined);
-          return;
-        }
-        setPendingJob(job);
-        if (pathname === "/mission/new") {
-          router.replace(buildMissionLoadingHref(job.jobId));
-        }
-      });
+      void Promise.resolve()
+        .then(() => bridge.getPendingMissionGeneration())
+        .then((job) => {
+          if (cancelled) return;
+          if (!job) {
+            setPendingJob(undefined);
+            return;
+          }
+          if (job.expiresAt && Date.parse(job.expiresAt) <= Date.now()) {
+            setPendingJob(undefined);
+            void bridge.clearPendingMissionGeneration();
+            return;
+          }
+          if (completedJobId.current === job.jobId) {
+            setPendingJob(undefined);
+            return;
+          }
+          setPendingJob(job);
+          if (pathname === "/mission/new") {
+            router.replace(buildMissionLoadingHref(job.jobId));
+          }
+        })
+        // 웹 배포가 먼저 나간 경우, 구 버전 네이티브에는 해당 브릿지 메서드가 없다.
+        .catch(() => {
+          if (!cancelled) setPendingJob(undefined);
+        });
     };
 
     recoverPendingJob();

@@ -46,6 +46,8 @@ vi.mock("@/api/mission", () => ({
   fetchMissions: vi.fn(),
 }));
 
+vi.mock("next/navigation", () => ({ useRouter: () => ({ push: vi.fn() }) }));
+
 vi.mock("@/app/(tabs)/_components/pigbox-progress-gauge", () => ({
   PigboxProgressGauge: ({ playRequest, progress }: { playRequest?: number; progress: number }) => (
     <div data-pigbox-play-request={playRequest} data-pigbox-progress={Math.round(progress)} />

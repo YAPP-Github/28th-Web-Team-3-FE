@@ -107,11 +107,16 @@ describe("PendingMissionGenerationRecovery", () => {
     const { client, rerender } = renderRecovery();
 
     await vi.waitFor(() => expect(getPendingMissionGeneration).toHaveBeenCalled());
+    const requestsBeforeReturningToMission = getPendingMissionGeneration.mock.calls.length;
     fetchGenerationJobStatus.mockResolvedValue(SUCCEEDED_JOB);
     pathname.mockReturnValue("/mission");
     rerender(<RecoveryWithClient client={client} />);
 
-    await vi.waitFor(() => expect(getPendingMissionGeneration).toHaveBeenCalledTimes(2));
+    await vi.waitFor(() =>
+      expect(getPendingMissionGeneration.mock.calls.length).toBeGreaterThan(
+        requestsBeforeReturningToMission,
+      ),
+    );
     expect(screen.queryByText("미션이 생성됐어요.")).toBeNull();
   });
 
@@ -143,6 +148,16 @@ describe("PendingMissionGenerationRecovery", () => {
     renderRecovery();
 
     await vi.waitFor(() => expect(clearPendingMissionGeneration).toHaveBeenCalled());
+    expect(replace).not.toHaveBeenCalled();
+  });
+
+  it("구 버전 네이티브 브릿지에 복구 메서드가 없어도 전역 오류를 내지 않는다", async () => {
+    getPendingMissionGeneration.mockImplementation(() => {
+      throw new Error("Method is not defined");
+    });
+    renderRecovery();
+
+    await vi.waitFor(() => expect(getPendingMissionGeneration).toHaveBeenCalled());
     expect(replace).not.toHaveBeenCalled();
   });
 });
