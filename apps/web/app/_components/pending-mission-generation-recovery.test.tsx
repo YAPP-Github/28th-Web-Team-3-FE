@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { fireEvent, render, screen } from "@testing-library/react";
+import { act, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const getPendingMissionGeneration = vi.fn();
@@ -57,15 +57,19 @@ const PENDING_GENERATION_JOB = {
   status: "PENDING" as const,
 };
 
+function RecoveryWithClient({ client }: { client: QueryClient }) {
+  return (
+    <QueryClientProvider client={client}>
+      <PendingMissionGenerationRecovery />
+    </QueryClientProvider>
+  );
+}
+
 function renderRecovery() {
   const client = new QueryClient({
     defaultOptions: { queries: { gcTime: Number.POSITIVE_INFINITY, retry: false } },
   });
-  return render(
-    <QueryClientProvider client={client}>
-      <PendingMissionGenerationRecovery />
-    </QueryClientProvider>,
-  );
+  return render(<RecoveryWithClient client={client} />);
 }
 
 describe("PendingMissionGenerationRecovery", () => {
@@ -112,6 +116,46 @@ describe("PendingMissionGenerationRecovery", () => {
     );
 
     expect(startMissionGenerationWorkerPolling).not.toHaveBeenCalled();
+  });
+
+  it("로딩 화면으로 전환하는 순간 완료돼도 결과 확인 모달을 띄우지 않는다", async () => {
+    let notifyWorker:
+      | ((message: { durationMs: number; job: typeof SUCCEEDED_JOB; type: "status" }) => void)
+      | undefined;
+    startMissionGenerationWorkerPolling.mockImplementation(async ({ onMessage }) => {
+      notifyWorker = onMessage;
+      return () => {};
+    });
+    const client = new QueryClient({
+      defaultOptions: { queries: { gcTime: Number.POSITIVE_INFINITY, retry: false } },
+    });
+    const view = render(<RecoveryWithClient client={client} />);
+
+    await vi.waitFor(() => expect(notifyWorker).toBeDefined());
+    pathname.mockReturnValue("/mission/new/loading");
+    await act(async () => {
+      notifyWorker?.({ durationMs: 1, job: SUCCEEDED_JOB, type: "status" });
+      view.rerender(<RecoveryWithClient client={client} />);
+    });
+
+    expect(screen.queryByText("미션이 생성됐어요.")).toBeNull();
+  });
+
+  it("결과 모달이 열린 뒤 로딩 화면으로 전환하면 모달을 닫는다", async () => {
+    startMissionGenerationWorkerPolling.mockImplementation(async ({ onMessage }) => {
+      onMessage({ durationMs: 1, job: SUCCEEDED_JOB, type: "status" });
+      return () => {};
+    });
+    const client = new QueryClient({
+      defaultOptions: { queries: { gcTime: Number.POSITIVE_INFINITY, retry: false } },
+    });
+    const view = render(<RecoveryWithClient client={client} />);
+
+    expect(await screen.findByText("미션이 생성됐어요.")).toBeTruthy();
+    pathname.mockReturnValue("/mission/new/loading");
+    view.rerender(<RecoveryWithClient client={client} />);
+
+    await vi.waitFor(() => expect(screen.queryByText("미션이 생성됐어요.")).toBeNull());
   });
 
   it("앱 화면이 다시 보이면 저장된 작업을 다시 확인한다", async () => {

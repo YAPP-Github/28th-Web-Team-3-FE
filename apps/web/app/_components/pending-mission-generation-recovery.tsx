@@ -151,10 +151,14 @@ export function PendingMissionGenerationRecovery() {
   }, [workerMessageVersion, workerMode]);
 
   useEffect(() => {
-    if (!pendingJob || !isMissionGenerationComplete(job)) return;
+    if (isMissionCreationPage) setResultJobId(undefined);
+  }, [isMissionCreationPage]);
+
+  useEffect(() => {
+    if (!shouldPollInBackground || !pendingJob || !isMissionGenerationComplete(job)) return;
     if (dismissedJobId.current === pendingJob.jobId) return;
     setResultJobId(pendingJob.jobId);
-  }, [job, pendingJob]);
+  }, [job, pendingJob, shouldPollInBackground]);
 
   const closeResultDialog = () => {
     if (resultJobId) dismissedJobId.current = resultJobId;
