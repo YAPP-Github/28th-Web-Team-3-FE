@@ -63,9 +63,9 @@ export function BenefitsPageContent() {
           <p className="shrink-0 text-headline-h2-700 text-gray-900">
             {isTipTab ? (
               <>
-                지금 바로 챙기면 좋은
+                지금 바로 챙기면
                 <br />
-                절약 팁
+                좋은 절약 팁
               </>
             ) : (
               <>
