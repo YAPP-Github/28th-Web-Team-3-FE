@@ -14,9 +14,9 @@ const MOCK_MISSIONS: Mission[] = [
     title: "이번 주 배달음식 2회 이하로 주문",
     targetCount: 2,
     targetUnit: "TIMES_PER_WEEK",
-    estimatedSavingsWon: 5000,
+    estimatedSavingsWon: 33_000,
     savingsEstimateVersion: "V1",
-    savingsLabel: "약 5,000원 절약 예상",
+    savingsLabel: "약 33000원 절약 예상",
     status: "ACTIVE",
     weekEndsAt: "2099-01-01T00:00:00Z",
   },
@@ -101,6 +101,8 @@ describe("WeeklyMissionSection", () => {
     expect(container.querySelector('[data-pigbox-progress="0"]')).toBeInTheDocument();
     expect(screen.getByText("이번 주 배달음식 2회 이하로 주문")).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "교통" })).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "이번 주 배달음식 2회 이하로 주문" }));
+    expect(screen.getByText("약 33,000원 절약 예상")).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("button", { name: "생활" }));
     await waitFor(() =>
