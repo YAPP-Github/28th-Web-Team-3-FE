@@ -29,7 +29,7 @@ it("절약 팁을 선택할 때만 팁 히어로 문구를 보인다", () => {
     screen.queryByText(
       (_, element) =>
         element?.tagName === "P" &&
-        (element.textContent?.includes("지금 바로 챙기면 좋은") ?? false),
+        (element.textContent?.includes("지금 바로 챙기면좋은 절약 팁") ?? false),
     ),
   ).not.toBeInTheDocument();
 
@@ -39,7 +39,7 @@ it("절약 팁을 선택할 때만 팁 히어로 문구를 보인다", () => {
     screen.getByText(
       (_, element) =>
         element?.tagName === "P" &&
-        (element.textContent?.includes("지금 바로 챙기면 좋은") ?? false),
+        (element.textContent?.includes("지금 바로 챙기면좋은 절약 팁") ?? false),
     ),
   ).toBeInTheDocument();
   expect(

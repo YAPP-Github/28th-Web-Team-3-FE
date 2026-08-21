@@ -6,6 +6,7 @@ import { useState } from "react";
 import { BenefitCard } from "@/app/(tabs)/benefits/_components/benefit-card";
 import { BenefitListSkeleton } from "@/app/(tabs)/benefits/_components/benefit-list-skeleton";
 import { ContentTypeTabs } from "@/app/(tabs)/benefits/_components/content-type-tabs";
+import { SavingTipList } from "@/app/(tabs)/benefits/_components/saving-tip-list";
 import { useSavedToggleQueue } from "@/app/(tabs)/benefits/_hooks/use-saved-toggle-queue";
 import { toSavedBenefitItem } from "@/app/(tabs)/benefits/lib/benefit-items";
 import { readCachedPolicyCategories } from "@/app/(tabs)/benefits/lib/policy-category-cache";
@@ -91,11 +92,7 @@ export function SavedBenefits() {
           onSelect={setContentType}
         />
         <div aria-labelledby="saved-content-tab-tip" id="saved-content-panel" role="tabpanel">
-          <p className={`px-5 ${EMPTY_MESSAGE_CLASS}`}>
-            절약 팁 저장은 준비 중이에요.
-            <br />
-            조금만 기다려 주세요.
-          </p>
+          <SavingTipList savedOnly />
         </div>
       </>
     );
