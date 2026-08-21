@@ -1,17 +1,11 @@
 "use client";
 
-import type { MissionGenerationJob } from "@repo/schema/mission-generation";
 import { Button } from "@repo/ui";
 import MissionLoadingCoin from "@repo/ui/svg/mission-loading-coin.svg";
 import { useQuery } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { buildMissionCreationResultHref } from "@/app/mission/constants/mission-creation";
-import {
-  getPollingIntervalMillis,
-  startMissionGenerationWorkerPolling,
-  supportsMissionGenerationWorker,
-} from "@/app/mission/new/utils/mission-generation-polling";
 import { generationJobStatusOptions } from "@/lib/queries/mission-generation";
 import styles from "./mission-loading.module.css";
 
@@ -22,64 +16,15 @@ import styles from "./mission-loading.module.css";
  */
 export function MissionLoading({ jobId }: { jobId: string }) {
   const router = useRouter();
-  const [workerMode, setWorkerMode] = useState<"starting" | "active" | "fallback">(() =>
-    supportsMissionGenerationWorker() ? "starting" : "fallback",
-  );
-  const [workerJob, setWorkerJob] = useState<MissionGenerationJob>();
-  const [workerMessageVersion, setWorkerMessageVersion] = useState(0);
-  const { data: pageJob, isError } = useQuery({
-    ...generationJobStatusOptions(jobId),
-    enabled: workerMode === "fallback",
-  });
-  const job = workerJob ?? pageJob;
+  const { data: job, isError, refetch } = useQuery(generationJobStatusOptions(jobId));
 
   useEffect(() => {
-    if (!supportsMissionGenerationWorker()) return;
-    let mounted = true;
-    let unsubscribe: (() => void) | null = null;
-    const fallbackTimer = setTimeout(
-      () => setWorkerMode("fallback"),
-      getPollingIntervalMillis() * 2,
-    );
-    void startMissionGenerationWorkerPolling({
-      jobId,
-      onMessage: (message) => {
-        if (!mounted) return;
-        if (message.type === "status") {
-          setWorkerMessageVersion((version) => version + 1);
-          setWorkerJob(message.job);
-        }
-        if (message.type === "error" && message.reason === "unauthorized") {
-          setWorkerMode("fallback");
-        }
-      },
-    })
-      .then((resolvedUnsubscribe) => {
-        if (!mounted) {
-          resolvedUnsubscribe?.();
-          return;
-        }
-        unsubscribe = resolvedUnsubscribe;
-        setWorkerMode(resolvedUnsubscribe ? "active" : "fallback");
-      })
-      .catch(() => {
-        if (mounted) setWorkerMode("fallback");
-      });
-    return () => {
-      mounted = false;
-      clearTimeout(fallbackTimer);
-      unsubscribe?.();
+    const refetchOnAppActive = () => {
+      void refetch();
     };
-  }, [jobId]);
-
-  useEffect(() => {
-    if (workerMode !== "active") return;
-    const fallbackTimer = setTimeout(
-      () => setWorkerMode("fallback"),
-      getPollingIntervalMillis() * 2,
-    );
-    return () => clearTimeout(fallbackTimer);
-  }, [workerMessageVersion, workerMode]);
+    window.addEventListener("akkimo:app-active", refetchOnAppActive);
+    return () => window.removeEventListener("akkimo:app-active", refetchOnAppActive);
+  }, [refetch]);
 
   useEffect(() => {
     if (job?.status === "SUCCEEDED" && job.draftsAvailable) {

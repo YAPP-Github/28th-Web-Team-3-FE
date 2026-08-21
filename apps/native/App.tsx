@@ -5,6 +5,7 @@ import { type ReactNode, useEffect, useRef, useState, useSyncExternalStore } fro
 import {
   AccessibilityInfo,
   Animated,
+  AppState,
   BackHandler,
   Easing,
   Image,
@@ -265,6 +266,18 @@ export default function App() {
       if (!canGoBackRef.current) return false;
       webViewRef.current?.goBack();
       return true;
+    });
+    return () => subscription.remove();
+  }, []);
+
+  useEffect(() => {
+    const subscription = AppState.addEventListener("change", (nextState) => {
+      if (nextState !== "active") return;
+      // Android WebView는 복귀할 때 `visibilitychange`를 항상 보내지 않는다. 웹이 SecureStore의
+      // 진행 중 job을 다시 읽도록 네이티브 lifecycle 신호를 직접 전달한다.
+      webViewRef.current?.injectJavaScript(
+        "window.dispatchEvent(new Event('akkimo:app-active')); true;",
+      );
     });
     return () => subscription.remove();
   }, []);

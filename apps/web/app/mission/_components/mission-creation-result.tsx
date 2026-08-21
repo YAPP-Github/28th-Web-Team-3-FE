@@ -8,7 +8,6 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { MissionListSkeleton } from "@/app/_components/mission-list.skeleton";
 import { MISSION_CATEGORY_LABELS } from "@/app/(tabs)/mission/constants/mission";
-import { stopMissionGenerationWorkerPolling } from "@/app/mission/new/utils/mission-generation-polling";
 import { clearPendingMissionGeneration } from "@/app/mission/new/utils/pending-mission-generation";
 import {
   confirmGenerationJobOptions,
@@ -58,7 +57,6 @@ export function MissionCreationResult({ jobId }: MissionCreationResultProps) {
 
   useEffect(() => {
     void clearPendingMissionGeneration();
-    stopMissionGenerationWorkerPolling(jobId);
   }, [jobId]);
 
   function toggleDraft(id: string, pressed: boolean) {
