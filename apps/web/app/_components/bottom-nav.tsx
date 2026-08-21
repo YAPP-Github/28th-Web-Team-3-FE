@@ -1,13 +1,13 @@
 "use client";
 
 import { cn } from "@repo/ui";
+import BenefitIcon from "@repo/ui/svg/bottom-nav-benefit.svg";
+import HomeIcon from "@repo/ui/svg/bottom-nav-home.svg";
+import MissionIcon from "@repo/ui/svg/bottom-nav-mission.svg";
+import MyIcon from "@repo/ui/svg/bottom-nav-my.svg";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { FC, SVGProps } from "react";
-import BenefitIcon from "./icons/benefit.svg";
-import HomeIcon from "./icons/home.svg";
-import MissionIcon from "./icons/mission.svg";
-import MyIcon from "./icons/my.svg";
 
 const TABS: { label: string; href: string; Icon: FC<SVGProps<SVGSVGElement>> }[] = [
   { label: "홈", href: "/", Icon: HomeIcon },
