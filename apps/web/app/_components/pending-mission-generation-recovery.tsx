@@ -53,8 +53,8 @@ export function PendingMissionGenerationRecovery() {
 
     let cancelled = false;
     const recoverPendingJob = () => {
-      void bridge
-        .getPendingMissionGeneration()
+      void Promise.resolve()
+        .then(() => bridge.getPendingMissionGeneration())
         .then((job) => {
           if (cancelled) return;
           if (!job) {

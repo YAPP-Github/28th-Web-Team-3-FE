@@ -38,6 +38,18 @@ describe("pending mission generation", () => {
     expect(SecureStore.deleteItemAsync).not.toHaveBeenCalled();
   });
 
+  it("빈 문자열 job도 현재 기록과 일치하지 않으면 삭제하지 않는다", async () => {
+    await savePendingMissionGeneration({ createdAt: 1, expiresAt: null, jobId: "job-1" });
+
+    await clearPendingMissionGeneration("");
+
+    await expect(getPendingMissionGeneration()).resolves.toEqual({
+      createdAt: 1,
+      expiresAt: null,
+      jobId: "job-1",
+    });
+  });
+
   it("대상 job이 현재 기록과 같으면 삭제한다", async () => {
     await savePendingMissionGeneration({ createdAt: 1, expiresAt: null, jobId: "job-1" });
 

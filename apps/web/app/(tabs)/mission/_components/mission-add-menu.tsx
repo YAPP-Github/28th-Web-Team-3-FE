@@ -19,8 +19,8 @@ export function MissionAddMenu({ isOpen, onToggle }: MissionAddMenuProps) {
     if (!isNativeApp()) return;
 
     event.preventDefault();
-    void bridge
-      .getPendingMissionGeneration()
+    void Promise.resolve()
+      .then(() => bridge.getPendingMissionGeneration())
       .then((job) => {
         if (job && (!job.expiresAt || Date.parse(job.expiresAt) > Date.now())) {
           router.push(buildMissionLoadingHref(job.jobId));

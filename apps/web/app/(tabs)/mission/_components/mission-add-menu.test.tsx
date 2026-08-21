@@ -41,7 +41,9 @@ describe("MissionAddMenu", () => {
   });
 
   it("구 버전 네이티브 브릿지에서는 기존 채팅 화면으로 이동한다", async () => {
-    mocks.getPendingMissionGeneration.mockRejectedValue(new Error("Method is not defined"));
+    mocks.getPendingMissionGeneration.mockImplementation(() => {
+      throw new Error("Method is not defined");
+    });
     render(<MissionAddMenu isOpen onToggle={vi.fn()} />);
 
     fireEvent.click(screen.getByRole("link", { name: "추천받기" }));

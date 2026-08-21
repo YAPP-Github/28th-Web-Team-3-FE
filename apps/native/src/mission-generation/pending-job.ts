@@ -43,7 +43,7 @@ export function getPendingMissionGeneration(): Promise<PendingMissionGeneration 
 
 export function clearPendingMissionGeneration(jobId?: string): Promise<void> {
   return serializePendingOperation(async () => {
-    if (jobId) {
+    if (jobId !== undefined) {
       const pendingJob = await readPendingMissionGeneration();
       if (pendingJob?.jobId !== jobId) return;
     }

@@ -26,5 +26,17 @@ export async function clearPendingMissionGeneration(jobId?: string) {
     await bridge.clearPendingMissionGeneration(jobId).catch(() => {});
     return;
   }
-  localStorage.removeItem(STORAGE_KEY);
+  if (jobId === undefined) {
+    localStorage.removeItem(STORAGE_KEY);
+    return;
+  }
+  const storedJob = localStorage.getItem(STORAGE_KEY);
+  if (!storedJob) return;
+  try {
+    if ((JSON.parse(storedJob) as PendingMissionGeneration).jobId === jobId) {
+      localStorage.removeItem(STORAGE_KEY);
+    }
+  } catch {
+    localStorage.removeItem(STORAGE_KEY);
+  }
 }
