@@ -37,7 +37,7 @@ function MissionDraftCard({
       variant="onboarding"
       onPressedChange={onPressedChange}
     >
-      <span className="text-body-b1-700 text-gray-900">{title}</span>
+      <span className="w-full text-left text-body-b1-700 text-gray-900">{title}</span>
       <span className="flex items-start gap-2 text-left text-body-b2-400 text-gray-700">
         <span className="shrink-0 rounded bg-gray-50 px-1.5 py-1 text-caption-c1-700 text-gray-600">
           달성 시

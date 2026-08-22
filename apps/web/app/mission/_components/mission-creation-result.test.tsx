@@ -67,6 +67,15 @@ describe("MissionCreationResult", () => {
     expect(await screen.findAllByText("약 5,000원 절약 예상")).toHaveLength(5);
   });
 
+  it("여러 줄 제목을 왼쪽 정렬한다", async () => {
+    render(<MissionCreationResult jobId="job-1" />);
+
+    expect(await screen.findByText("이번 주 배달음식 2회 이하로 주문")).toHaveClass(
+      "w-full",
+      "text-left",
+    );
+  });
+
   it("미션 선택 개수를 4개로 제한하지 않는다", async () => {
     render(<MissionCreationResult jobId="job-1" />);
 
