@@ -49,10 +49,12 @@ const PENDING_JOB = {
 describe("MissionLoading", () => {
   beforeEach(() => {
     vi.useFakeTimers();
+    vi.spyOn(Math, "random").mockReturnValue(0);
   });
 
   afterEach(() => {
     vi.useRealTimers();
+    vi.restoreAllMocks();
     vi.clearAllMocks();
   });
 
@@ -113,6 +115,11 @@ describe("MissionLoading", () => {
     });
 
     renderWithClient();
+
+    await vi.waitFor(() => expect(fetchGenerationJobStatus).toHaveBeenCalledTimes(1));
+    expect(replaceMock).not.toHaveBeenCalled();
+
+    await vi.advanceTimersByTimeAsync(8_000);
 
     await vi.waitFor(() =>
       expect(replaceMock).toHaveBeenCalledWith("/mission/new/result?jobId=job-1"),
