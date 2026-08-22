@@ -49,12 +49,10 @@ const PENDING_JOB = {
 describe("MissionLoading", () => {
   beforeEach(() => {
     vi.useFakeTimers();
-    vi.spyOn(Math, "random").mockReturnValue(0);
   });
 
   afterEach(() => {
     vi.useRealTimers();
-    vi.restoreAllMocks();
     vi.clearAllMocks();
   });
 
@@ -66,22 +64,22 @@ describe("MissionLoading", () => {
     expect(redirectMock).toHaveBeenCalledWith("/mission/new");
   });
 
-  it("jobId로 5초 간격 상태를 반복 조회한다", async () => {
+  it("jobId로 서버가 지정한 간격마다 상태를 반복 조회한다", async () => {
     fetchGenerationJobStatus.mockResolvedValue(PENDING_JOB);
 
     renderWithClient();
 
     await vi.waitFor(() => expect(fetchGenerationJobStatus).toHaveBeenCalledTimes(1));
 
-    await vi.advanceTimersByTimeAsync(5000);
+    await vi.advanceTimersByTimeAsync(2_000);
     await vi.waitFor(() => expect(fetchGenerationJobStatus).toHaveBeenCalledTimes(2));
 
-    await vi.advanceTimersByTimeAsync(5000);
+    await vi.advanceTimersByTimeAsync(2_000);
     await vi.waitFor(() => expect(fetchGenerationJobStatus).toHaveBeenCalledTimes(3));
   });
 
   it("폴링 중 일시적인 조회 실패를 생성 실패로 표시하지 않는다", async () => {
-    // 5초마다 조회하므로 네트워크가 한 번 끊긴 것으로 "미션 생성에 실패했어요"를 띄우면
+    // 서버가 지정한 간격마다 재조회하므로 네트워크가 한 번 끊긴 것으로 "미션 생성에 실패했어요"를 띄우면
     // 사용자는 멀쩡히 진행 중인 생성을 포기한다.
     fetchGenerationJobStatus
       .mockResolvedValueOnce(PENDING_JOB)
@@ -92,7 +90,7 @@ describe("MissionLoading", () => {
 
     await vi.waitFor(() => expect(screen.getByText(/맞춤 미션을 만들고 있어요/)).toBeTruthy());
 
-    await vi.advanceTimersByTimeAsync(5000);
+    await vi.advanceTimersByTimeAsync(2_000);
     await vi.waitFor(() => expect(fetchGenerationJobStatus).toHaveBeenCalledTimes(2));
 
     expect(screen.queryByText(/미션 생성에 실패했어요/)).toBeNull();
@@ -119,7 +117,7 @@ describe("MissionLoading", () => {
     await vi.waitFor(() => expect(fetchGenerationJobStatus).toHaveBeenCalledTimes(1));
     expect(replaceMock).not.toHaveBeenCalled();
 
-    await vi.advanceTimersByTimeAsync(8_000);
+    await vi.advanceTimersByTimeAsync(7_000);
 
     await vi.waitFor(() =>
       expect(replaceMock).toHaveBeenCalledWith("/mission/new/result?jobId=job-1"),
