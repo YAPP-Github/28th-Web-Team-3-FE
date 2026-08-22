@@ -32,7 +32,7 @@ function MissionDraftCard({
   return (
     <Toggle
       aria-label={title}
-      className="flex-col items-start gap-3 p-3"
+      className="flex-col items-start gap-3 p-3 text-left"
       pressed={pressed}
       variant="onboarding"
       onPressedChange={onPressedChange}
