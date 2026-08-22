@@ -46,7 +46,9 @@ export function generationJobStatusOptions(jobId: string | undefined) {
       const job = query.state.data;
       if (job?.status === "FAILED") return false;
       if (job?.status === "SUCCEEDED" && job.draftsAvailable) return false;
-      return job?.pollingIntervalMillis ?? DEFAULT_MISSION_GENERATION_POLLING_INTERVAL_MS;
+      return job && job.pollingIntervalMillis > 0
+        ? job.pollingIntervalMillis
+        : DEFAULT_MISSION_GENERATION_POLLING_INTERVAL_MS;
     },
   });
 }

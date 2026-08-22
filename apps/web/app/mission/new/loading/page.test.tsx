@@ -78,6 +78,17 @@ describe("MissionLoading", () => {
     await vi.waitFor(() => expect(fetchGenerationJobStatus).toHaveBeenCalledTimes(3));
   });
 
+  it("서버 폴링 간격이 유효하지 않으면 5초 간격으로 상태를 재조회한다", async () => {
+    fetchGenerationJobStatus.mockResolvedValue({ ...PENDING_JOB, pollingIntervalMillis: 0 });
+
+    renderWithClient();
+
+    await vi.waitFor(() => expect(fetchGenerationJobStatus).toHaveBeenCalledTimes(1));
+
+    await vi.advanceTimersByTimeAsync(5_000);
+    await vi.waitFor(() => expect(fetchGenerationJobStatus).toHaveBeenCalledTimes(2));
+  });
+
   it("폴링 중 일시적인 조회 실패를 생성 실패로 표시하지 않는다", async () => {
     // 서버가 지정한 간격마다 재조회하므로 네트워크가 한 번 끊긴 것으로 "미션 생성에 실패했어요"를 띄우면
     // 사용자는 멀쩡히 진행 중인 생성을 포기한다.
