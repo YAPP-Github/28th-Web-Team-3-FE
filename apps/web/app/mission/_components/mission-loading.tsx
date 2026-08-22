@@ -4,10 +4,20 @@ import { Button } from "@repo/ui";
 import MissionLoadingCoin from "@repo/ui/svg/mission-loading-coin.svg";
 import { useQuery } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { buildMissionCreationResultHref } from "@/app/mission/constants/mission-creation";
 import { generationJobStatusOptions } from "@/lib/queries/mission-generation";
 import styles from "./mission-loading.module.css";
+
+const MIN_LOADING_DURATION_MS = 8_000;
+const MAX_LOADING_DURATION_MS = 12_000;
+
+function getLoadingDuration() {
+  return (
+    MIN_LOADING_DURATION_MS +
+    Math.floor(Math.random() * (MAX_LOADING_DURATION_MS - MIN_LOADING_DURATION_MS + 1))
+  );
+}
 
 /**
  * AI 미션 초안 생성 job이 끝날 때까지 polling한다. jobId는 설문 제출 단계에서 만들어
@@ -16,7 +26,17 @@ import styles from "./mission-loading.module.css";
  */
 export function MissionLoading({ jobId }: { jobId: string }) {
   const router = useRouter();
+  const [loadingDuration] = useState(getLoadingDuration);
+  const [hasMinimumLoadingTimeElapsed, setHasMinimumLoadingTimeElapsed] = useState(false);
   const { data: job, isError, refetch } = useQuery(generationJobStatusOptions(jobId));
+
+  useEffect(() => {
+    const timeoutId = window.setTimeout(
+      () => setHasMinimumLoadingTimeElapsed(true),
+      loadingDuration,
+    );
+    return () => window.clearTimeout(timeoutId);
+  }, [loadingDuration]);
 
   useEffect(() => {
     const refetchOnAppActive = () => {
@@ -27,10 +47,10 @@ export function MissionLoading({ jobId }: { jobId: string }) {
   }, [refetch]);
 
   useEffect(() => {
-    if (job?.status === "SUCCEEDED" && job.draftsAvailable) {
+    if (hasMinimumLoadingTimeElapsed && job?.status === "SUCCEEDED" && job.draftsAvailable) {
       router.replace(buildMissionCreationResultHref(jobId));
     }
-  }, [job, jobId, router]);
+  }, [hasMinimumLoadingTimeElapsed, job, jobId, router]);
 
   // 5초마다 폴링하므로 일시적인 조회 실패로 "생성 실패"를 띄우면 안 된다 — 다음 폴링이
   // 성공할 수 있다. 서버가 FAILED를 주거나, 첫 조회부터 실패해 상태를 아예 못 받은 경우만 실패다.
