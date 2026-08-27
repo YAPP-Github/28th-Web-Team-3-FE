@@ -69,8 +69,8 @@ export default function ProfilePage() {
         >
           {PROFILE_FIELDS.map(([label]) => (
             <div className="flex flex-col gap-1" key={label}>
-              <span className="h-5 w-24 animate-pulse rounded bg-gray-50" />
-              <span className="h-12 w-full animate-pulse rounded-xl bg-gray-50" />
+              <span className="h-5 w-24 animate-pulse rounded bg-gray-50 motion-reduce:animate-none" />
+              <span className="h-12 w-full animate-pulse rounded-xl bg-gray-50 motion-reduce:animate-none" />
             </div>
           ))}
         </div>

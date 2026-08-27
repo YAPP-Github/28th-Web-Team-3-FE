@@ -243,7 +243,7 @@ describe("NewMissionPage", () => {
     expect(screen.queryByRole("alert")).not.toBeInTheDocument();
     fireEvent.change(frequencyInput, { target: { value: "11" } });
 
-    const error = await screen.findByText("횟수는 최소 1회 이상 최대 10회 이하로 입력해주세요.");
+    const error = await screen.findByText("횟수는 1~10회로 입력해 주세요.");
     expect(error).toHaveAttribute("role", "alert");
     expect(frequencyInput).toHaveAttribute("aria-describedby", error.id);
     expect(screen.getByRole("button", { name: "답변 보내기" })).toBeDisabled();

@@ -102,7 +102,7 @@ describe("AgeOnboardingPage", () => {
     const input = screen.getByRole("textbox", { name: "생년월일" });
     fireEvent.change(input, { target: { value: "19990229" } });
 
-    expect(screen.getByText("올바른 날짜를 입력해주세요.")).toBeInTheDocument();
+    expect(screen.getByText("올바른 날짜를 입력해 주세요.")).toBeInTheDocument();
     expect(input).toHaveAttribute("aria-invalid", "true");
     expect(screen.getByRole("button", { name: "다음" })).toBeDisabled();
     expect(patchOnboardingProfile).not.toHaveBeenCalled();
@@ -118,7 +118,7 @@ describe("AgeOnboardingPage", () => {
     const input = screen.getByRole("textbox", { name: "생년월일" });
     fireEvent.change(input, { target: { value: "20991231" } });
 
-    expect(screen.getByText("오늘 이전 날짜로 입력해주세요.")).toBeInTheDocument();
+    expect(screen.getByText("오늘 이전 날짜로 입력해 주세요.")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "다음" })).toBeDisabled();
     expect(patchOnboardingProfile).not.toHaveBeenCalled();
   });
@@ -140,7 +140,7 @@ describe("AgeOnboardingPage", () => {
       target: { value: todayDigits },
     });
 
-    expect(screen.getByText("오늘 이전 날짜로 입력해주세요.")).toBeInTheDocument();
+    expect(screen.getByText("오늘 이전 날짜로 입력해 주세요.")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "다음" })).toBeDisabled();
   });
 });

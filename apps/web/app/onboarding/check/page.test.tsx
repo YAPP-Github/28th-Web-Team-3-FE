@@ -40,7 +40,7 @@ describe("OnboardingCheckPage", () => {
     expect(screen.getByLabelText("월 저축액은 어느 정도인가요?")).toHaveValue("100만원");
     expect(screen.getByLabelText("현재 순자산은 어느 정도 인가요?")).toHaveValue("2,000만원");
     expect(
-      screen.getByLabelText("서비스를 사용하여 자산을 모으고 싶은 기간을 입력해주세요."),
+      screen.getByLabelText("서비스를 사용해 자산을 모으고 싶은 기간을 입력해 주세요."),
     ).toHaveValue("3년");
     expect(screen.getAllByRole("textbox")).toHaveLength(6);
     for (const input of screen.getAllByRole("textbox")) {

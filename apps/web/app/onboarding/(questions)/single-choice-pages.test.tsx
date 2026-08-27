@@ -20,7 +20,7 @@ describe("period onboarding page", () => {
         <InvestmentPeriodOnboardingPage />
       </OnboardingFormProvider>,
     );
-    const slider = screen.getByRole("slider", { name: "목표기간" });
+    const slider = screen.getByRole("slider", { name: "목표 기간" });
     for (let index = 0; index < 4; index += 1) {
       fireEvent.keyDown(slider, { key: "ArrowRight" });
     }
@@ -32,20 +32,20 @@ describe("period onboarding page", () => {
     });
   });
 
-  it("0년부터 3년까지 6개월 단위로 목표기간을 선택한다", () => {
+  it("0년부터 3년까지 6개월 단위로 목표 기간을 선택한다", () => {
     render(
       <OnboardingFormProvider>
         <InvestmentPeriodOnboardingPage />
       </OnboardingFormProvider>,
     );
 
-    const slider = screen.getByRole("slider", { name: "목표기간" });
+    const slider = screen.getByRole("slider", { name: "목표 기간" });
     expect(slider).toHaveAttribute("aria-valuemin", "0");
     expect(slider).toHaveAttribute("aria-valuemax", "36");
-    expect(screen.getByText("목표기간 0년")).toBeInTheDocument();
+    expect(screen.getByText("목표 기간 0년")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "다음" })).toBeDisabled();
     fireEvent.keyDown(slider, { key: "ArrowRight" });
     expect(slider).toHaveAttribute("aria-valuenow", "6");
-    expect(screen.getByText("목표기간 6개월")).toBeInTheDocument();
+    expect(screen.getByText("목표 기간 6개월")).toBeInTheDocument();
   });
 });
