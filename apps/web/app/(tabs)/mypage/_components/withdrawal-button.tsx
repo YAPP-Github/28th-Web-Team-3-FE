@@ -7,7 +7,7 @@ import { useState } from "react";
 import { withdrawGuestOptions } from "@/lib/queries/auth";
 import { SettingButtonRow } from "./setting-row";
 
-const WITHDRAWAL_ERROR_MESSAGE = "탈퇴하지 못했어요. 잠시 후 다시 시도해주세요.";
+const WITHDRAWAL_ERROR_MESSAGE = "탈퇴하지 못했어요. 잠시 후 다시 시도해 주세요.";
 
 async function moveToNewGuestOnboarding() {
   // BE는 탈퇴와 함께 현재 access/refresh token을 무효화하지만, 네이티브 메모리·SecureStore에는

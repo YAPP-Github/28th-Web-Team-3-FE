@@ -256,7 +256,7 @@ describe("WithdrawalButton", () => {
 
     openAndConfirm();
 
-    await screen.findByText("탈퇴하지 못했어요. 잠시 후 다시 시도해주세요.");
+    await screen.findByText("탈퇴하지 못했어요. 잠시 후 다시 시도해 주세요.");
     expect(replace).not.toHaveBeenCalled();
   });
 
@@ -267,7 +267,7 @@ describe("WithdrawalButton", () => {
     openAndConfirm();
 
     expect(
-      await screen.findByText("탈퇴하지 못했어요. 잠시 후 다시 시도해주세요."),
+      await screen.findByText("탈퇴하지 못했어요. 잠시 후 다시 시도해 주세요."),
     ).toBeInTheDocument();
     expect(screen.getByRole("dialog", { name: DIALOG_NAME })).toBeInTheDocument();
   });
