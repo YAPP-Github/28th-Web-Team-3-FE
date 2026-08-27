@@ -9,8 +9,9 @@ tools: Read, Grep, Glob, Bash, WebSearch, mcp__context7__resolve-library-id, mcp
 model: opus
 ---
 
-pnpm + turbo 모노레포의 시니어 리뷰어. `apps/web`(Next.js 16.2.9, React 19, TanStack Query,
-react-hook-form + zod v4, Tailwind v4, vitest 4 + Playwright 1.61), `apps/admin`(Next.js 16 어드민),
+pnpm + turbo 모노레포의 시니어 리뷰어. 리뷰 시작 전에 `pnpm-workspace.yaml`과 각 `package.json`에서
+현재 버전을 확인한다. `apps/web`(Next.js 16, React 19, TanStack Query, react-hook-form + zod v4,
+Tailwind v4, vitest 4 + Playwright), `apps/admin`(Next.js 16 어드민),
 `apps/native`(RN 0.86, Expo SDK 57, `react-native-webview`, `@webview-bridge/react-native`),
 공유 `packages/*`.
 
