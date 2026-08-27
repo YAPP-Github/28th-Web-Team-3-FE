@@ -1,4 +1,4 @@
-import { expect, type Page, test } from "@playwright/test";
+import { expect, type Page, test } from "./fixtures";
 
 /**
  * 목록이 네비 밑으로 스크롤될 만큼 넉넉히, 그러나 한 페이지(20)보다는 적게.

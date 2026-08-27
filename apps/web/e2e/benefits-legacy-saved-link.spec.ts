@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, test } from "./fixtures";
 
 /**
  * 저장 목록이 필터 칩에서 별도 화면으로 빠지기 전의 링크. 페이지에서 `searchParams`로

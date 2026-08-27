@@ -13,8 +13,12 @@ export default defineConfig({
   projects: [{ name: "chromium", use: { ...devices["Desktop Chrome"] } }],
   webServer: {
     command: `pnpm build && pnpm start --port ${PORT}`,
+    env: {
+      BACKEND_API_URL: process.env.BACKEND_API_URL ?? "http://localhost:8080",
+      NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL ?? "/api/",
+    },
     url: baseURL,
     reuseExistingServer: !process.env.CI,
-    timeout: 120_000,
+    timeout: 300_000,
   },
 });

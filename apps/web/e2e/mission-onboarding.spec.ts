@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, test } from "./fixtures";
 
 test.beforeEach(async ({ page }) => {
   await page.route("**/api/auth/me", (route) =>
@@ -46,6 +46,22 @@ test("채팅 질문에 답하고 미션 생성을 시작한다", async ({ page }
       }),
     });
   });
+  await page.route("**/api/missions/generation-jobs/job-1", (route) =>
+    route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({
+        jobId: "job-1",
+        status: "PENDING",
+        failureCode: null,
+        generationSource: null,
+        draftsAvailable: false,
+        expiresAt: null,
+        confirmed: false,
+        pollingIntervalMillis: 2000,
+      }),
+    }),
+  );
 
   await page.goto("/mission/new");
   await page.getByRole("button", { name: "식비" }).click();
