@@ -61,11 +61,7 @@ catalog:
   # WebView 브릿지
   "@webview-bridge/web": ^1.7.9
   "@webview-bridge/react-native": ^1.7.9
-  "@webview-bridge/react": ^1.7.9
   "@webview-bridge/types": ^1.7.9
-
-  # 상태 관리
-  zustand: ^5.0.14
 
   # 오류 모니터링
   "@sentry/nextjs": ^10.61.0

@@ -6,10 +6,8 @@ import type {
 import { mutationOptions, type QueryClient, queryOptions } from "@tanstack/react-query";
 import {
   confirmOnboardingGoal,
-  getOnboardingGoalPlans,
   getOnboardingGoalPreview,
   getOnboardingProfile,
-  getOnboardingReport,
   isOnboardingAlreadyCompletedError,
   patchOnboardingProfile,
   updateOnboardingProfile,
@@ -26,7 +24,6 @@ export const ONBOARDING_QUERY_KEY = ["onboarding"] as const;
 /** 프로필 캐시 키. 밖에서는 `onboardingProfileOptions().queryKey`로 꺼낸다. */
 const ONBOARDING_PROFILE_QUERY_KEY = [...ONBOARDING_QUERY_KEY, "profile"] as const;
 const ONBOARDING_REPORT_QUERY_KEY = [...ONBOARDING_QUERY_KEY, "report"] as const;
-const ONBOARDING_GOAL_PLANS_QUERY_KEY = [...ONBOARDING_QUERY_KEY, "goal-plans"] as const;
 const ONBOARDING_GOAL_PREVIEW_QUERY_KEY = [...ONBOARDING_QUERY_KEY, "goal-preview", "v2"] as const;
 
 /**
@@ -37,22 +34,6 @@ export function onboardingProfileOptions() {
   return queryOptions({
     queryKey: ONBOARDING_PROFILE_QUERY_KEY,
     queryFn: getOnboardingProfile,
-  });
-}
-
-/** 온보딩 결과 리포트 조회. */
-export function onboardingReportOptions() {
-  return queryOptions({
-    queryKey: ONBOARDING_REPORT_QUERY_KEY,
-    queryFn: getOnboardingReport,
-  });
-}
-
-/** 목표 플랜 후보 조회. */
-export function onboardingGoalPlansOptions() {
-  return queryOptions({
-    queryKey: ONBOARDING_GOAL_PLANS_QUERY_KEY,
-    queryFn: getOnboardingGoalPlans,
   });
 }
 
