@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, test } from "./fixtures";
 
 test("온보딩에서 뒤로 이동하거나 이탈 후 재진입해도 마지막 저장 응답을 복원한다", async ({
   page,

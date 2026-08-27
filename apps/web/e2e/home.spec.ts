@@ -1,4 +1,4 @@
-import { expect, type Page, test } from "@playwright/test";
+import { expect, type Page, test } from "./fixtures";
 
 async function mockCurrentUser(page: Page, onboardingCompleted: boolean) {
   await page.route("**/api/auth/me", (route) =>
@@ -110,6 +110,13 @@ test("home page renders", async ({ page }) => {
 
 test("onboarding status redirects to the allowed route", async ({ page }) => {
   await mockCurrentUser(page, false);
+  await page.route("**/api/onboarding/profile", (route) =>
+    route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({ status: "NOT_STARTED" }),
+    }),
+  );
 
   await page.goto("/");
 

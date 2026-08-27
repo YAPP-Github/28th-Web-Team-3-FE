@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, test } from "./fixtures";
 
 // 인증은 네이티브 셸(bridge) 몫이라 브라우저 e2e에는 토큰이 없다. 화면이 뜨는 데 필요한
 // 응답만 목으로 세운다.

@@ -1,4 +1,4 @@
-import { expect, type Page, test } from "@playwright/test";
+import { expect, type Page, test } from "./fixtures";
 
 /**
  * 좁은 화면에서 히어로 문구가 깨지지 않아야 한다.
