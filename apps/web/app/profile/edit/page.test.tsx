@@ -204,7 +204,7 @@ describe("ProfileEditPage", () => {
     fireEvent.change(netWorth, { target: { value: "" } });
     fireEvent.click(screen.getByRole("button", { name: "완료" }));
 
-    expect(screen.getByText("현재 순자산을 입력해주세요.")).toBeInTheDocument();
+    expect(screen.getByText("현재 순자산을 입력해 주세요.")).toBeInTheDocument();
     expect(updateOnboardingProfile).not.toHaveBeenCalled();
   });
 

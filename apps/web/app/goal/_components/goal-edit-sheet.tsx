@@ -58,7 +58,7 @@ export function GoalEditSheet({
 
     // 하한은 입력 중에 막지 않으므로 여기서 거른다 — 넘기면 서버가 400으로 되돌린다.
     if (periodMonths != null && periodMonths < MIN_GOAL_PERIOD_MONTHS) {
-      setSubmitError(`목표 기간은 ${MIN_GOAL_PERIOD_MONTHS}개월 이상으로 입력해주세요.`);
+      setSubmitError(`목표 기간은 ${MIN_GOAL_PERIOD_MONTHS}개월 이상으로 입력해 주세요.`);
       return;
     }
 

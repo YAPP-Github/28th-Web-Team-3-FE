@@ -61,7 +61,7 @@ export default function MonthlyIncomeAndSavingsOnboardingPage() {
                 <LabelSlider
                   amount={field.value}
                   amountLabel="월급"
-                  helperMessage="매월 월급이 다르다면 평균으로 설정해주세요."
+                  helperMessage="매월 월급이 다르다면 평균으로 설정해 주세요."
                   maxAmount={MAX_MONTHLY_AMOUNT_SLIDER_VALUE}
                   onAmountChange={field.onChange}
                 />
@@ -75,7 +75,7 @@ export default function MonthlyIncomeAndSavingsOnboardingPage() {
                   <LabelSlider
                     amount={field.value}
                     amountLabel="월 저축액"
-                    helperMessage="매월 저축액이 다르다면 평균으로 설정해주세요."
+                    helperMessage="매월 저축액이 다르다면 평균으로 설정해 주세요."
                     maxAmount={MAX_MONTHLY_AMOUNT_SLIDER_VALUE}
                     onAmountChange={field.onChange}
                   />

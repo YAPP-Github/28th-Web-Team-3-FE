@@ -54,8 +54,8 @@ export function InquirySheet({ open, onOpenChange }: InquirySheetProps) {
           궁금한 점이나 불편한 점이 있으신가요?
           <br />
           {openChatUrl
-            ? "카카오톡 오픈채팅으로 편하게 문의해주세요."
-            : "아래 주소로 편하게 문의해주세요."}
+            ? "카카오톡 오픈채팅으로 편하게 문의해 주세요."
+            : "아래 주소로 편하게 문의해 주세요."}
         </p>
         {/*
           이메일로 떨어진 경우에만 주소를 보여준다. `openExternal`은 실패해도 false만 돌려주므로

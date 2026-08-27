@@ -215,7 +215,7 @@ export function MissionCreationChat() {
             className="w-[287px]"
             current={1}
             helper="하나만 선택 가능해요."
-            prompt="미션을 생성하고 싶은 카테고리를 선택해주세요."
+            prompt="미션을 생성하고 싶은 카테고리를 선택해 주세요."
             promptClassName="whitespace-nowrap"
           >
             <Controller
@@ -373,7 +373,7 @@ export function MissionCreationChat() {
           <div className="flex flex-col gap-4">
             <ChatQuestion
               current={4}
-              helper="직접 입력해주세요."
+              helper="직접 입력해 주세요."
               prompt={amountQuestion(selectedItem, selectedCategory)}
             />
             {completedThrough >= 3 && amountWon ? (
@@ -406,8 +406,8 @@ export function MissionCreationChat() {
               const fieldError = isAmount ? errors.baselineAmountWon : errors.baselineFrequency;
               const visibleFieldError = field.value ? fieldError : undefined;
               const errorMessage = isAmount
-                ? "1원 이상 2,000,000원 이하로 입력해주세요."
-                : "횟수는 최소 1회 이상 최대 10회 이하로 입력해주세요.";
+                ? "1원~200만원 사이로 입력해 주세요."
+                : "횟수는 1~10회로 입력해 주세요.";
               return (
                 <div className="flex flex-col gap-1">
                   <ChatComposer

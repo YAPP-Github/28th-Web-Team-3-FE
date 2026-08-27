@@ -21,7 +21,7 @@ export default function InvestmentPeriodOnboardingPage() {
         <h1 className="text-pretty text-headline-h2-700 text-black">
           자산을 모으고 싶은
           <br />
-          목표기간을 입력해주세요
+          목표 기간을 입력해 주세요
         </h1>
         <p className="mt-1 text-body-b1-400 text-gray-700">
           목표 기간에 따라 추천 목표 금액이 달라져요
@@ -33,7 +33,7 @@ export default function InvestmentPeriodOnboardingPage() {
             <div className="mt-12 flex flex-col gap-4">
               <div className="flex h-[50px] flex-col gap-1">
                 <p className="text-title-t1-700 text-gray-900">
-                  목표기간 {formatGoalPeriod(field.value)}
+                  목표 기간 {formatGoalPeriod(field.value)}
                 </p>
                 <p className="text-caption-c1-500 text-gray-500">
                   6개월 단위로 최대 3년까지 설정할 수 있어요.
@@ -49,7 +49,7 @@ export default function InvestmentPeriodOnboardingPage() {
                   max={MAX_GOAL_PERIOD_MONTHS}
                   min={0}
                   step={6}
-                  thumbLabels={["목표기간"]}
+                  thumbLabels={["목표 기간"]}
                   value={[field.value === "" ? 0 : field.value]}
                   onValueChange={([nextPeriodMonths]) => {
                     if (nextPeriodMonths !== undefined) {
