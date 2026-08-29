@@ -75,4 +75,30 @@ describe("SavingTipList", () => {
 
     await waitFor(() => expect(bookmarkSavingTip).toHaveBeenCalledWith(1));
   });
+
+  /** 결과가 없을 때 아무것도 안 그리면 목록이 사라진 화면이 된다 — 없다고 말해야 한다. */
+  it("고른 카테고리에 팁이 없으면 없다고 알린다", async () => {
+    vi.mocked(fetchAllSavingTips).mockResolvedValue([]);
+
+    render(<SavingTipList />);
+
+    expect(await screen.findByText("해당하는 절약 팁이 없어요.")).toBeInTheDocument();
+  });
+
+  /**
+   * 카테고리를 바꾸면 캐시 키가 통째로 바뀐다. 직전 결과를 유지하지 않으면 그 사이 목록이
+   * 로딩 문구로 갈아엎였다가 새로 채워져 깜빡인다.
+   */
+  it("카테고리를 바꿔도 새 목록이 오기 전까지 이전 목록을 유지한다", async () => {
+    vi.mocked(fetchAllSavingTips)
+      .mockResolvedValueOnce(TIPS)
+      .mockImplementationOnce(() => new Promise(() => {}));
+    render(<SavingTipList />);
+    await screen.findByText("집밥 레시피 활용팁");
+
+    fireEvent.click(screen.getByRole("button", { name: "생활" }));
+
+    expect(screen.getByText("집밥 레시피 활용팁")).toBeInTheDocument();
+    expect(screen.queryByText("불러오는 중이에요.")).not.toBeInTheDocument();
+  });
 });
