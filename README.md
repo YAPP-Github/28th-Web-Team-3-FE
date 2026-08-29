@@ -1,4 +1,4 @@
-![프로젝트 배너](images/readme/banner.webp)
+![프로젝트 배너](docs/images/readme/banner.webp)
 
 # YAPP 28th Web Team 3
 
