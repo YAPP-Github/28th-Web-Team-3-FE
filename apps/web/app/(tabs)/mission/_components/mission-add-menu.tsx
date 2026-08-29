@@ -47,14 +47,14 @@ export function MissionAddMenu({ isOpen, onToggle }: MissionAddMenuProps) {
         inert={!isOpen ? true : undefined}
       >
         <Link
-          className="w-full px-4 py-1 text-left text-body-b1-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          className="flex h-11 w-full items-center px-4 text-left text-body-b1-500 transition-colors duration-100 hover:bg-gray-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset active:bg-gray-100 motion-reduce:transition-none"
           href="/mission/new"
           onClick={handleRecommendationClick}
         >
           추천받기
         </Link>
         <Link
-          className="w-full px-4 py-1 text-left text-body-b1-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          className="flex h-11 w-full items-center px-4 text-left text-body-b1-500 transition-colors duration-100 hover:bg-gray-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset active:bg-gray-100 motion-reduce:transition-none"
           href="/mission/new/manual"
         >
           직접입력
