@@ -4,6 +4,8 @@
 
 목표 금액을 정하고, 주간 절약 미션을 실천하며 저축을 이어가는 서비스의 프론트엔드 모노레포입니다.
 
+[App Store](https://apps.apple.com/kr/app/%EC%95%84%EB%81%BC%EB%AA%A8/id6798116441) · [ONE store](https://m.onestore.co.kr/v2/ko-kr/app/0001008067)
+
 ## Features
 
 - 목표 금액과 기간 설정, 월별 저축 현황 확인
