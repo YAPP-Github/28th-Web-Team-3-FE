@@ -12,7 +12,6 @@ import {
 import { z } from "zod";
 import type { MissionCreationCategory } from "@/app/mission/constants/mission-creation";
 
-export const MISSION_CHAT_QUESTION_COUNT = 4;
 export const MISSION_CHAT_TYPING_DELAY_MS = 1_100;
 
 export const MISSION_FREQUENCY_OPTIONS = [

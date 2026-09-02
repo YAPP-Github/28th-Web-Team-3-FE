@@ -2,7 +2,7 @@ name: Knip
 
 on:
   pull_request:
-    branches: [main]
+    branches: [main, develop]
 
 concurrency:
   group: knip-${{ github.ref }}
@@ -24,4 +24,3 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm knip
-        continue-on-error: true

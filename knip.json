@@ -6,14 +6,14 @@
     },
     "apps/admin": {
       "project": ["**/*.{ts,tsx}"],
-      "ignoreDependencies": ["postcss-load-config", "tailwindcss"]
+      "ignoreDependencies": ["@repo/ui", "postcss-load-config", "tailwindcss"]
     },
     "apps/web": {
       "project": ["**/*.{ts,tsx}"],
-      "ignoreDependencies": ["server-only", "postcss-load-config", "tailwindcss"]
+      "ignoreDependencies": ["@svgr/webpack", "server-only", "postcss-load-config", "tailwindcss"]
     },
     "apps/native": {
-      "entry": ["index.ts", "App.tsx"],
+      "entry": ["App.tsx"],
       "project": ["**/*.{ts,tsx}"],
       "ignoreDependencies": [
         "babel-preset-expo",
