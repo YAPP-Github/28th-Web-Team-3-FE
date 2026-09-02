@@ -41,5 +41,7 @@ jobs:
         env:
           BACKEND_API_URL: http://localhost:8080
         run: pnpm turbo run lint typecheck test build
+      - name: Install Playwright browser
+        run: pnpm --filter web exec playwright install --with-deps chromium
       - name: Playwright e2e
         run: pnpm --filter web test:e2e
