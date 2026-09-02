@@ -13,7 +13,7 @@ export function NetWorthSlider({ netWorthAmount, onNetWorthAmountChange }: NetWo
       <div className="flex flex-col gap-1">
         <p className="text-title-t1-700 text-gray-900">자산 {formatNumber(netWorthAmount)}만원</p>
         <p className="text-caption-c1-500 text-gray-500">
-          현재 투자 및 예/적금 자산 모두 총합을 입력해주세요.
+          현재 투자 및 예/적금 자산을 모두 합한 금액을 입력해 주세요.
         </p>
       </div>
       <div className="flex flex-col gap-4">

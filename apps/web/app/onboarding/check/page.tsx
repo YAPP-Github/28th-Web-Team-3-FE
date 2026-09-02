@@ -106,7 +106,7 @@ export default function OnboardingCheckPage() {
           />
           <ReviewField
             id="review-goal-period"
-            label="서비스를 사용하여 자산을 모으고 싶은 기간을 입력해주세요."
+            label="서비스를 사용해 자산을 모으고 싶은 기간을 입력해 주세요."
             value={
               profile.goalPeriodMonths === null
                 ? "입력되지 않음"

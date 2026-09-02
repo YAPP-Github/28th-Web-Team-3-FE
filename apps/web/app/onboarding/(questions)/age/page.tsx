@@ -47,9 +47,9 @@ export default function AgeOnboardingPage() {
   const birthDateError = !hasBirthDateFormat
     ? undefined
     : !isRealBirthDate(birthDate)
-      ? "올바른 날짜를 입력해주세요."
+      ? "올바른 날짜를 입력해 주세요."
       : !isPastBirthDate(birthDate)
-        ? "오늘 이전 날짜로 입력해주세요."
+        ? "오늘 이전 날짜로 입력해 주세요."
         : undefined;
   const { isSaving, saveError, saveProfile } = useSaveOnboardingProfile();
   const isSubmittingRef = useRef(false);

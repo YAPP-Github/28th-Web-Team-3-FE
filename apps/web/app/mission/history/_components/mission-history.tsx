@@ -136,13 +136,13 @@ function HistoryLoading() {
     <div aria-label="미션 내역 불러오는 중" className="flex flex-col gap-6 px-5" role="status">
       {Array.from({ length: 3 }, (_, index) => (
         <div className="flex flex-col gap-2.5" key={index}>
-          <div className="h-[21px] w-24 animate-pulse rounded bg-gray-50" />
+          <div className="h-[21px] w-24 animate-pulse rounded bg-gray-50 motion-reduce:animate-none" />
           <div className="flex h-[91px] items-center justify-between">
             <div className="flex flex-col gap-2">
-              <span className="h-[34px] w-28 animate-pulse rounded bg-gray-50" />
-              <span className="h-[21px] w-16 animate-pulse rounded bg-gray-50" />
+              <span className="h-[34px] w-28 animate-pulse rounded bg-gray-50 motion-reduce:animate-none" />
+              <span className="h-[21px] w-16 animate-pulse rounded bg-gray-50 motion-reduce:animate-none" />
             </div>
-            <span className="h-[91px] w-[117px] animate-pulse rounded-full bg-gray-50" />
+            <span className="h-[91px] w-[117px] animate-pulse rounded-full bg-gray-50 motion-reduce:animate-none" />
           </div>
         </div>
       ))}

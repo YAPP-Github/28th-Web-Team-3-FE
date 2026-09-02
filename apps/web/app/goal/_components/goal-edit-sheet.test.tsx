@@ -68,7 +68,7 @@ describe("GoalEditSheet", () => {
     });
     fireEvent.click(screen.getByRole("button", { name: "완료" }));
 
-    expect(screen.getByText("목표 기간은 3개월 이상으로 입력해주세요.")).toBeInTheDocument();
+    expect(screen.getByText("목표 기간은 3개월 이상으로 입력해 주세요.")).toBeInTheDocument();
     expect(updateGoal).not.toHaveBeenCalled();
   });
 

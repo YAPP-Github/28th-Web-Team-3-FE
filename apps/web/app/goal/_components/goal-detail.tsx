@@ -100,7 +100,7 @@ export function GoalDetail() {
       <div className="flex flex-col gap-4 px-5 pt-8">
         <section className="flex rounded-2xl bg-gray-50 p-5">
           <div className="flex flex-1 flex-col gap-0.5">
-            <p className="text-body-b2-500 text-gray-700">서비스 사용기간</p>
+            <p className="text-body-b2-500 text-gray-700">서비스 사용 기간</p>
             <p className="text-headline-h2-700 text-gray-900">{goal.usageMonths}개월째</p>
           </div>
           <div className="flex flex-1 flex-col gap-0.5">

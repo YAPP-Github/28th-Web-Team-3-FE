@@ -52,6 +52,9 @@ public/workbox-*.js.map
 
 # Certificates / keys
 *.pem
+*.jks
+*.keystore
+credentials.json
 
 # Editor / OS
 .DS_Store

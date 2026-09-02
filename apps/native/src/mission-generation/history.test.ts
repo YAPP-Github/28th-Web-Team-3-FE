@@ -3,6 +3,9 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 const storage = vi.hoisted(() => new Map<string, string>());
 
 vi.mock("expo-secure-store", () => ({
+  deleteItemAsync: vi.fn(async (key: string) => {
+    storage.delete(key);
+  }),
   getItemAsync: vi.fn(async (key: string) => storage.get(key) ?? null),
   setItemAsync: vi.fn(async (key: string, value: string) => {
     storage.set(key, value);
@@ -11,6 +14,7 @@ vi.mock("expo-secure-store", () => ({
 
 import * as SecureStore from "expo-secure-store";
 import {
+  clearMissionCreationHistory,
   getMissionCreationStartDate,
   hasStartedMissionCreation,
   markMissionCreationStarted,
@@ -46,5 +50,14 @@ describe("mission creation history", () => {
     await markMissionCreationStarted();
 
     expect(SecureStore.setItemAsync).not.toHaveBeenCalled();
+  });
+
+  it("게스트 상태를 초기화하면 생성 시작 이력을 삭제한다", async () => {
+    storage.set("mission_creation_started", "2026-08-01");
+
+    await clearMissionCreationHistory();
+
+    await expect(hasStartedMissionCreation()).resolves.toBe(false);
+    expect(SecureStore.deleteItemAsync).toHaveBeenCalledWith("mission_creation_started");
   });
 });

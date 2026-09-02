@@ -10,47 +10,23 @@ metadata:
 
 Deploy and manage projects on Vercel using the CLI with token-based authentication, without relying on `vercel login`.
 
-## Step 1: Locate the Vercel Token
+## Step 1: Verify Vercel Credentials Without Printing Secrets
 
 Before running any Vercel CLI commands, identify where the token is coming from. Work through these scenarios in order:
 
 ### A) `VERCEL_TOKEN` is already set in the environment
 
 ```bash
-printenv VERCEL_TOKEN
+test -n "${VERCEL_TOKEN:-}" && echo "VERCEL_TOKEN is set" || echo "VERCEL_TOKEN is not set"
 ```
 
 If this returns a value, you're ready. Skip to Step 2.
 
-### B) Token is in a `.env` file under `VERCEL_TOKEN`
+### B) Token is not set
 
-```bash
-grep '^VERCEL_TOKEN=' .env 2>/dev/null
-```
-
-If found, export it:
-
-```bash
-export VERCEL_TOKEN=$(grep '^VERCEL_TOKEN=' .env | cut -d= -f2-)
-```
-
-### C) Token is in a `.env` file under a different name
-
-Look for any variable that looks like a Vercel token (Vercel tokens typically start with `vca_`):
-
-```bash
-grep -i 'vercel' .env 2>/dev/null
-```
-
-Inspect the output to identify which variable holds the token, then export it as `VERCEL_TOKEN`:
-
-```bash
-export VERCEL_TOKEN=$(grep '^<VARIABLE_NAME>=' .env | cut -d= -f2-)
-```
-
-### D) No token found — ask the user
-
-If none of the above yield a token, ask the user to provide one. They can create a Vercel access token at vercel.com/account/tokens.
+Do not search `.env` files or print candidate values. Ask the user to export `VERCEL_TOKEN` in their local
+shell or secret manager, then repeat the presence check. Never ask them to paste the token into chat. They can
+create an access token at vercel.com/account/tokens.
 
 ---
 
@@ -70,12 +46,9 @@ vercel deploy
 Similarly, check for the project ID and team scope. These let the CLI target the right project without needing `vercel link`.
 
 ```bash
-# Check environment
-printenv VERCEL_PROJECT_ID
-printenv VERCEL_ORG_ID
-
-# Or check .env
-grep -i 'vercel' .env 2>/dev/null
+# Check presence without printing identifiers
+test -n "${VERCEL_PROJECT_ID:-}" && echo "VERCEL_PROJECT_ID is set" || echo "VERCEL_PROJECT_ID is not set"
+test -n "${VERCEL_ORG_ID:-}" && echo "VERCEL_ORG_ID is set" || echo "VERCEL_ORG_ID is not set"
 ```
 
 **If you have a project URL** (e.g. `https://vercel.com/my-team/my-project`), extract the team slug:
