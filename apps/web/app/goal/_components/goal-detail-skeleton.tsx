@@ -29,7 +29,7 @@ export function GoalDetailSkeleton() {
       </div>
 
       <div className="flex flex-col gap-4 px-5 pt-8">
-        {/* 서비스 사용기간 / 목표일까지 */}
+        {/* 서비스 사용 기간 / 목표일까지 */}
         <section className="flex rounded-2xl bg-gray-50 p-5">
           <div className="flex flex-1 flex-col gap-0.5">
             <Skeleton className="h-5 w-24 bg-gray-100" />

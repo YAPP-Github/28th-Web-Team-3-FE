@@ -161,15 +161,15 @@ export default function ProfileEditPage() {
     const netWorthManwon = Number(draft.netWorthManwon);
 
     if (!isValidPastDate(birthDate)) {
-      setSubmitError("올바른 생년월일을 입력해주세요.");
+      setSubmitError("올바른 생년월일을 입력해 주세요.");
       return;
     }
     if (!draft.monthlySalaryManwon || !draft.monthlySavingManwon) {
-      setSubmitError("월급과 월 저축액을 입력해주세요.");
+      setSubmitError("월급과 월 저축액을 입력해 주세요.");
       return;
     }
     if (!draft.netWorthManwon) {
-      setSubmitError("현재 순자산을 입력해주세요.");
+      setSubmitError("현재 순자산을 입력해 주세요.");
       return;
     }
     if (monthlySavingManwon > monthlySalaryManwon) {
@@ -229,7 +229,7 @@ export default function ProfileEditPage() {
 
       {isPending ? (
         <div aria-label="내 정보 불러오는 중" className="px-5 pt-4" role="status">
-          <div className="h-72 animate-pulse rounded-xl bg-gray-50" />
+          <div className="h-72 animate-pulse rounded-xl bg-gray-50 motion-reduce:animate-none" />
         </div>
       ) : null}
 

@@ -137,12 +137,16 @@ export function SavingTipList({ savedOnly = false }: { savedOnly?: boolean }) {
         </div>
       );
     }
-    if (savedOnly && tips.length === 0) {
-      return (
+    if (tips.length === 0) {
+      return savedOnly ? (
         <p className="-mt-5 py-20 text-center text-body-b2-500 text-gray-500">
           저장한 절약 팁이 없어요.
           <br />
           관심 있는 팁의 별을 눌러 저장해보세요.
+        </p>
+      ) : (
+        <p className="py-10 text-center text-body-b2-500 text-gray-500">
+          해당하는 절약 팁이 없어요.
         </p>
       );
     }

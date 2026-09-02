@@ -29,3 +29,8 @@ export async function markMissionCreationStarted(): Promise<void> {
   if (await SecureStore.getItemAsync(MISSION_CREATION_STARTED_KEY)) return;
   await SecureStore.setItemAsync(MISSION_CREATION_STARTED_KEY, getSeoulDate());
 }
+
+/** 탈퇴한 게스트의 첫 생성 안내 상태를 다음 게스트에게 넘기지 않는다. */
+export function clearMissionCreationHistory(): Promise<void> {
+  return SecureStore.deleteItemAsync(MISSION_CREATION_STARTED_KEY);
+}

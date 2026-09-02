@@ -67,9 +67,9 @@ argument-hint: [브랜치] [리뷰어] [--codex-dev "<작업 설명>"]
 
 ### Step 1.5: Codex에 구현 위임 (이 모드일 때만)
 
-1. 사용자가 준 작업 설명을 그대로 Task 도구로 **`codex:codex-rescue`** 서브에이전트에 전달한다.
-   **foreground로 실행할 것** — 이후 게이트가 Codex의 diff를 필요로 하므로 완료를 기다려야 한다
-   (백그라운드로 던지고 다음 Step으로 넘어가지 말 것).
+1. 현재 실행 주체가 Codex면 현재 에이전트가 직접 구현한다. 다른 실행기에서 Codex 위임 도구를
+   제공하면 사용자가 준 작업 설명을 그대로 **`codex:codex-rescue`**에 전달한다.
+   위임 시 **foreground로 실행할 것** — 이후 게이트가 Codex의 diff를 필요로 하므로 완료를 기다려야 한다.
 2. `--write`는 codex-rescue 기본값이라 따로 지정하지 않는다. `--effort`·`--model`은 사용자가
    명시하지 않는 한 비워 코덱스 기본값을 쓴다.
 3. Codex 작업이 끝나면 워킹트리에 diff가 생긴다. 그대로 Step 2(더티 트리 게이트)로 진행 — 그
@@ -185,7 +185,9 @@ git log origin/main..origin/develop --oneline
 1. 리뷰 두 개를 **병렬로** 디스패치(개발 위임 모드면 `next16-rn-reviewer` 하나만). diff 범위
    (lockfile 제외)는 공통:
    `git diff --merge-base origin/<base> HEAD -- ':!pnpm-lock.yaml' ':!package-lock.json' ':!yarn.lock'`
-   - Task 도구로 **`next16-rn-reviewer`** 서브에이전트. 프롬프트에 head 브랜치, 베이스, diff 범위 전달.
+   - 사용 가능한 에이전트 도구로 **`next16-rn-reviewer`**를 실행한다. 해당 에이전트가 없지만 Claude CLI가
+     있으면 `claude -p`에 같은 리뷰 프롬프트와 diff 범위를 전달한다. 둘 다 없으면 독립 리뷰를
+     수행할 수 없다고 알리고 중단한다. 프롬프트에 head 브랜치, 베이스, diff 범위 전달.
      프롬프트 끝에 **언어 규칙**을 명시한다: "리뷰는 한국어로 작성하되 코드 식별자·경로·API 이름은
      모두 백틱(``)으로 감쌀 것. 영어 개념을 축자 번역한 어색한 번역투 금지." (서브에이전트는 독립
      세션이라 이 규칙을 상속받지 못하므로 매번 프롬프트에 넣어야 한다.)
