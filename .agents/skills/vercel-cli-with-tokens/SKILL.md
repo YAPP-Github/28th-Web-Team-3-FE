@@ -22,11 +22,23 @@ test -n "${VERCEL_TOKEN:-}" && echo "VERCEL_TOKEN is set" || echo "VERCEL_TOKEN 
 
 If this returns a value, you're ready. Skip to Step 2.
 
-### B) Token is not set
+### B) Token is not set, but a local `.env` defines `VERCEL_TOKEN`
 
-Do not search `.env` files or print candidate values. Ask the user to export `VERCEL_TOKEN` in their local
-shell or secret manager, then repeat the presence check. Never ask them to paste the token into chat. They can
-create an access token at vercel.com/account/tokens.
+Load it **without printing the value** — assign, never echo, and confirm only its presence:
+
+```bash
+[ -f .env ] && export VERCEL_TOKEN="$(sed -n 's/^VERCEL_TOKEN=//p' .env | head -n1)"
+test -n "${VERCEL_TOKEN:-}" && echo "VERCEL_TOKEN is set" || echo "VERCEL_TOKEN is not set"
+```
+
+Never `cat`, `grep`, or `printenv` the token itself — the value would land in the transcript. Do not go hunting
+through `.env` for differently named variables that merely look like tokens; only the exact `VERCEL_TOKEN` key
+is read here.
+
+### C) Token is not available anywhere
+
+Ask the user to export `VERCEL_TOKEN` in their local shell or secret manager, then repeat the presence check.
+Never ask them to paste the token into chat. They can create an access token at vercel.com/account/tokens.
 
 ---
 
