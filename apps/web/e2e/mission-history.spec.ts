@@ -1,4 +1,4 @@
-import { expect, type Page, test } from "@playwright/test";
+import { expect, type Page, test } from "./fixtures";
 
 async function mockCurrentUser(page: Page) {
   await page.route("**/api/auth/me", (route) =>
@@ -28,6 +28,9 @@ test("mission history renders monthly weekly completion and blocks future months
 }) => {
   const { month, year } = currentSeoulYearMonth();
   await page.setViewportSize({ height: 812, width: 375 });
+  await page.clock.setFixedTime(
+    new Date(`${year}-${String(month).padStart(2, "0")}-25T12:00:00+09:00`),
+  );
   await mockCurrentUser(page);
   await page.route(/\/api\/missions\/histories\?.*/, (route) =>
     route.fulfill({

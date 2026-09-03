@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, test } from "./fixtures";
 
 test.beforeEach(async ({ page }) => {
   await page.addInitScript(() => {
@@ -65,6 +65,36 @@ test("온보딩 목표 확정 후 Hook 오류 없이 홈으로 이동한다", as
       }),
     });
   });
+  await page.route("**/api/v2/goal", (route) =>
+    route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({
+        targetAmountManwon: 2380,
+        periodMonths: 12,
+        totalSavedManwon: 1000,
+        progressPercent: 42,
+        usageMonths: 0,
+        deadlineDDay: 365,
+        thisMonth: { targetManwon: 115, savedManwon: 0, progressPercent: 0, dDay: 30 },
+        monthlySavings: [],
+      }),
+    }),
+  );
+  await page.route("**/api/missions**", (route) =>
+    route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({ missions: [] }),
+    }),
+  );
+  await page.route("**/api/policies**", (route) =>
+    route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify([]),
+    }),
+  );
 
   await page.goto("/onboarding/result");
   await page.getByRole("button", { name: "이 목표로 시작하기" }).click();
