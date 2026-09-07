@@ -10,23 +10,13 @@ async function mockCurrentUser(page: Page) {
   );
 }
 
-function currentSeoulYearMonth() {
-  const parts = new Intl.DateTimeFormat("en-US", {
-    month: "numeric",
-    timeZone: "Asia/Seoul",
-    year: "numeric",
-  }).formatToParts(new Date());
-
-  return {
-    month: Number(parts.find(({ type }) => type === "month")?.value),
-    year: Number(parts.find(({ type }) => type === "year")?.value),
-  };
-}
-
 test("mission history renders monthly weekly completion and blocks future months", async ({
   page,
 }) => {
-  const { month, year } = currentSeoulYearMonth();
+  const year = 2026;
+  const month = 8;
+  // 미래 주차는 화면에서 숨기므로 목 데이터의 3주차 안으로 현재 날짜를 고정한다.
+  await page.clock.setFixedTime(new Date("2026-08-20T12:00:00+09:00"));
   await page.setViewportSize({ height: 812, width: 375 });
   await mockCurrentUser(page);
   await page.route(/\/api\/missions\/histories\?.*/, (route) =>
