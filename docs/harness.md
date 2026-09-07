@@ -15,6 +15,20 @@ Codex 프로젝트 설정은 신뢰한 프로젝트에서 적용된다. CLI 인�
 
 ## 구현과 리뷰
 
+### CLI 호환성 확인
+
+앱과 별도로 설치된 Codex CLI는 지원 모델이 다를 수 있다. `codex --version`과
+`codex debug models`로 실행 환경을 확인한다. `--bundled`는 해당 바이너리에 포함된
+목록만 보여 주므로, 목록에 없다는 이유만으로 모델 ID가 잘못됐다고 판단하지 않는다.
+
+2026-09-08 로컬 CLI `0.142.5`의 Astra 6 호출은 서버에서
+`The 'gpt-6-astra' model requires a newer version of Codex.` 오류로 거부됐다.
+이 오류가 나면 CLI를 업데이트하고 호출 가능 여부를 다시 확인한 뒤 구현·리뷰를 진행한다.
+업데이트하거나 호출을 확인할 수 없으면 중단하고 사용자에게 알린다. 다른 모델로 조용히
+대체하지 않는다. 앱에서 Astra 6를 쓸 수 있어도 별도 CLI의 호환성을 보장하지는 않는다.
+
+### 교차 리뷰
+
 - Astra 6가 구현한 변경은 Opus 5의 `next16-rn-reviewer`가 리뷰한다.
 - Opus 5가 구현한 변경은 기존 PR 흐름에 따라 Claude 리뷰와 Astra 6 교차 리뷰를 수행한다.
 - 현재 Codex에서 직접 구현했다면 별도 Codex 구현 위임 없이 Claude 리뷰 단계로 진행한다.
