@@ -13,10 +13,20 @@ async function mockCurrentUser(page: Page) {
 test("mission history renders monthly weekly completion and blocks future months", async ({
   page,
 }) => {
-  const year = 2026;
-  const month = 8;
-  // 미래 주차는 화면에서 숨기므로 목 데이터의 3주차 안으로 현재 날짜를 고정한다.
-  await page.clock.setFixedTime(new Date("2026-08-20T12:00:00+09:00"));
+  const parts = new Intl.DateTimeFormat("en-US", {
+    day: "numeric",
+    month: "numeric",
+    timeZone: "Asia/Seoul",
+    year: "numeric",
+  }).formatToParts(new Date());
+  const year = Number(parts.find(({ type }) => type === "year")?.value);
+  const month = Number(parts.find(({ type }) => type === "month")?.value);
+  const day = Number(parts.find(({ type }) => type === "day")?.value);
+  // 브라우저 시계는 유지하고 목 데이터만 과거·현재 구간으로 만들어 미래 주차 필터를 피한다.
+  const dateAtOffset = (offset: number) =>
+    new Date(Date.UTC(year, month - 1, day + offset)).toISOString().slice(0, 10);
+  const pageErrors: string[] = [];
+  page.on("pageerror", (error) => pageErrors.push(error.message));
   await page.setViewportSize({ height: 812, width: 375 });
   await mockCurrentUser(page);
   await page.route(/\/api\/missions\/histories\?.*/, (route) =>
@@ -27,17 +37,17 @@ test("mission history renders monthly weekly completion and blocks future months
             completedCount: 0,
             isCurrentWeek: false,
             totalCount: 0,
-            weekEndDate: `${year}-${String(month).padStart(2, "0")}-16`,
+            weekEndDate: dateAtOffset(-4),
             weekOfMonth: 2,
-            weekStartDate: `${year}-${String(month).padStart(2, "0")}-10`,
+            weekStartDate: dateAtOffset(-10),
           },
           {
             completedCount: 1,
             isCurrentWeek: true,
             totalCount: 4,
-            weekEndDate: `${year}-${String(month).padStart(2, "0")}-23`,
+            weekEndDate: dateAtOffset(3),
             weekOfMonth: 3,
-            weekStartDate: `${year}-${String(month).padStart(2, "0")}-17`,
+            weekStartDate: dateAtOffset(-3),
           },
         ],
       }),
@@ -60,4 +70,5 @@ test("mission history renders monthly weekly completion and blocks future months
   await expect(pig).toHaveCount(1);
   await expect(pig.locator("svg")).toHaveCount(3);
   await pig.click();
+  expect(pageErrors).toEqual([]);
 });
