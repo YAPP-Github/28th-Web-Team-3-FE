@@ -1,12 +1,21 @@
 ---
 name: pr-create
 description: 코드 빌드·테스트 → AI 리뷰 → 푸시 → GitHub PR 생성까지 한번에 처리. "pr-create", "PR 만들어줘", "리뷰하고 PR", "배포 준비" 등의 요청에 사용. develop/main 브랜치로 머지하는 PR은 이 스킬로 생성할 것. "코덱스한테 구현시키고 PR", "codex dev" 등 구현 자체를 Codex에 맡기는 요청도 이 스킬(개발 위임 모드)로 처리한다.
-argument-hint: [브랜치] [리뷰어] [--codex-dev "<작업 설명>"]
+argument-hint: '[브랜치] [리뷰어] [--codex-dev "<작업 설명>"]'
 ---
 
 빌드·테스트(vitest → Playwright) → next16-rn AI 리뷰 → 푸시 → PR 생성을 한번에 처리한다.
 `develop -> main` PR은 릴리즈 모드로 처리한다.
 **셸 스크립트 없음** — 각 단계를 도구 호출로 실행한다.
+
+## 모델 선택
+
+프로젝트 기본값은 Codex `gpt-6-astra`(Astra 6), Claude `claude-opus-5`(Opus 5)다.
+effort는 별도로 지정하지 않으며 사용자가 명시한 선택이 우선한다.
+설정 원본과 적용 범위는 `docs/harness.md`를 따른다.
+현재 Codex가 직접 구현한 변경도 **Codex 구현 → Claude 리뷰** 모드로 처리한다.
+이때 Step 1.5의 구현 위임은 필요 없고, Step 5에서 Opus 5 리뷰어만 호출한다.
+모델을 선택할 수 없는 도구나 사용할 수 없는 모델은 제한을 알리고 실제 실행 모델을 기록한다.
 
 ## 인자
 
@@ -73,8 +82,9 @@ argument-hint: [브랜치] [리뷰어] [--codex-dev "<작업 설명>"]
    그 서브에이전트가 없으면(예: Codex CLI 안에서 이 스킬이 직접 도는 경우) 현재 에이전트가 직접 구현한다.
    분기 기준은 **"내가 어떤 실행기인가"가 아니라 "이 도구가 내 도구 목록에 있는가"**다 —
    자기 실행 주체를 스스로 추측하지 말 것. 그 추측은 신뢰할 수 없다.
-2. `--write`는 codex-rescue 기본값이라 따로 지정하지 않는다. `--effort`·`--model`은 사용자가
-   명시하지 않는 한 비워 코덱스 기본값을 쓴다.
+2. `--write`는 codex-rescue 기본값이라 따로 지정하지 않는다. 설치된 도구의 도움말/스킬에서
+   모델 인자 지원을 확인한 뒤 `--model gpt-6-astra`를 전달한다. 사용자가
+   명시한 모델·effort가 있으면 우선한다. 도구가 모델을 지원하지 않으면 알린다.
 3. Codex 작업이 끝나면 워킹트리에 diff가 생긴다. 그대로 Step 2(더티 트리 게이트)로 진행 — 그
    diff가 곧 Step 2가 확인할 "커밋 안 된 변경"이다.
 4. Codex가 아무 변경도 만들지 않았거나(이미 만족하는 상태 등) 실패를 보고하면 사용자에게 그대로
@@ -182,14 +192,17 @@ git log origin/main..origin/develop --oneline
 
 ### Step 5: AI 리뷰 (3·4 모두 통과한 경우에만)
 
-**개발 위임 모드(Step 1.5를 거쳤으면)에서는 Codex 교차 리뷰를 생략하고 `next16-rn-reviewer`만
+**Codex 구현 모드(Step 1.5 위임 또는 현재 Codex에서 직접 구현)에서는 Codex 교차 리뷰를 생략하고 `next16-rn-reviewer`만
 디스패치한다** — Codex가 쓴 코드를 Codex가 다시 리뷰하는 건 정보가 없다. 아래는 기본 흐름 기준이다.
 
 1. 리뷰 두 개를 **병렬로** 디스패치(개발 위임 모드면 `next16-rn-reviewer` 하나만). diff 범위
    (lockfile 제외)는 공통:
    `git diff --merge-base origin/<base> HEAD -- ':!pnpm-lock.yaml' ':!package-lock.json' ':!yarn.lock'`
    - **`next16-rn-reviewer`** 서브에이전트를 쓸 수 있으면 그걸로 실행한다.
-   - 그 서브에이전트가 없을 때만 `claude -p`에 같은 리뷰 프롬프트를 넘긴다. 이건 별도 세션이라
+     이 에이전트의 기본 모델은 `claude-opus-5`다. Codex 서브에이전트로 대체하고
+     Claude 리뷰라고 표기하지 않는다.
+   - 그 서브에이전트가 없을 때만 `claude -p --model claude-opus-5 --agent next16-rn-reviewer`에
+     같은 리뷰 프롬프트를 넘긴다. 이건 별도 세션이라
      토큰이 따로 청구되므로 **한 번만, 비대화형으로** 부르고, 프롬프트에 "리뷰만 하고 파일은
      고치지 말 것, 다른 스킬·서브에이전트를 부르지 말 것"을 명시해 중첩 실행을 막는다.
      이미 `claude -p`로 실행 중이면 재귀하지 말고 이 폴백을 건너뛴다.
@@ -207,6 +220,9 @@ git log origin/main..origin/develop --oneline
      fallback 후보도 `main`·`master`·`trunk`뿐이라 `develop`은 절대 선택되지 않는다. 그 결과
      이미 `develop`에 머지된 코드까지 diff에 들어와 이 PR과 무관한 지적이 나온다.
      (`codex-rescue` 서브에이전트는 쓰지 않는다 — 그건 조사/수정 위임용, 리뷰 게이트용 아님.)
+     companion script가 모델 인자를 지원하면 `gpt-6-astra`를 명시한다. 지원하지 않으면
+     Codex CLI로 `codex -c 'model="gpt-6-astra"' review --base origin/<base>`를
+     실행한다. 리뷰 대상 저장소에서 실행하고 완료를 기다린다.
      플러그인이나 Codex CLI가 없으면 생략하고 "Codex 교차 리뷰 생략됨"만 알림 — 실패로 취급하지 않는다.
 2. 리뷰 결과(판정 + 발견 사항) 모두 사용자에게 표시. 두 리뷰가 실행됐으면 최종 판정은 더 나쁜 쪽 채택
    (Codex 출력엔 판정 이모지가 없으므로 blocking·치명 이슈가 있으면 🔴로 취급).

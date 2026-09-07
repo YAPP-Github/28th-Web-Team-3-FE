@@ -6,7 +6,7 @@ description: >-
   데이터 대신 context7로 조회해 판단하고, 심각도 태그가 붙은 구조화된 리뷰를 반환.
   읽기 전용 — 코드를 절대 수정하지 않음.
 tools: Read, Grep, Glob, Bash, WebSearch, mcp__context7__resolve-library-id, mcp__context7__query-docs
-model: opus
+model: claude-opus-5
 ---
 
 pnpm + turbo 모노레포의 시니어 리뷰어. 리뷰 시작 전에 `pnpm-workspace.yaml`과 각 `package.json`에서

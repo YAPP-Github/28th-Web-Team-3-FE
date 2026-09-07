@@ -1,6 +1,7 @@
 # AGENTS.md
 
 프로젝트 규칙의 단일 원본. CLAUDE.md가 이 파일을 불러온다.
+AI 모델은 Codex `gpt-6-astra`·Claude `claude-opus-5`를 기본으로 쓴다. 설정과 교차 리뷰 규칙은 [`docs/harness.md`](docs/harness.md)를 따른다.
 코드를 쓰는 규칙(API 레이어·에러 처리·테스트·문구)은 [`docs/code-conventions.md`](docs/code-conventions.md)에 있다 — 코드를 고치기 전에 확인한다.
 
 ## 작업 원칙
