@@ -10,23 +10,38 @@ async function mockCurrentUser(page: Page) {
   );
 }
 
-function currentSeoulYearMonth() {
+test("mission history renders monthly weekly completion and blocks future months", async ({
+  page,
+}) => {
   const parts = new Intl.DateTimeFormat("en-US", {
+    day: "numeric",
     month: "numeric",
     timeZone: "Asia/Seoul",
     year: "numeric",
   }).formatToParts(new Date());
-
-  return {
-    month: Number(parts.find(({ type }) => type === "month")?.value),
-    year: Number(parts.find(({ type }) => type === "year")?.value),
+  const year = Number(parts.find(({ type }) => type === "year")?.value);
+  const month = Number(parts.find(({ type }) => type === "month")?.value);
+  const day = Number(parts.find(({ type }) => type === "day")?.value);
+  const today = new Date(Date.UTC(year, month - 1, day));
+  const mondayOffset = -((today.getUTCDay() + 6) % 7);
+  // 서울 날짜의 월요일~일요일을 사용하되 브라우저 시계는 변경하지 않는다.
+  const dateAtOffset = (offset: number) =>
+    new Date(Date.UTC(year, month - 1, day + mondayOffset + offset));
+  const weekAtOffset = (offset: number) => {
+    const start = dateAtOffset(offset);
+    const end = dateAtOffset(offset + 6);
+    const startsInSelectedMonth =
+      start.getUTCFullYear() === year && start.getUTCMonth() === month - 1;
+    return {
+      weekEndDate: end.toISOString().slice(0, 10),
+      weekOfMonth: Math.ceil(
+        (startsInSelectedMonth ? start.getUTCDate() + 6 : end.getUTCDate()) / 7,
+      ),
+      weekStartDate: start.toISOString().slice(0, 10),
+    };
   };
-}
-
-test("mission history renders monthly weekly completion and blocks future months", async ({
-  page,
-}) => {
-  const { month, year } = currentSeoulYearMonth();
+  const pageErrors: string[] = [];
+  page.on("pageerror", (error) => pageErrors.push(error.message));
   await page.setViewportSize({ height: 812, width: 375 });
   await mockCurrentUser(page);
   await page.route(/\/api\/missions\/histories\?.*/, (route) =>
@@ -37,17 +52,13 @@ test("mission history renders monthly weekly completion and blocks future months
             completedCount: 0,
             isCurrentWeek: false,
             totalCount: 0,
-            weekEndDate: `${year}-${String(month).padStart(2, "0")}-16`,
-            weekOfMonth: 2,
-            weekStartDate: `${year}-${String(month).padStart(2, "0")}-10`,
+            ...weekAtOffset(-7),
           },
           {
             completedCount: 1,
             isCurrentWeek: true,
             totalCount: 4,
-            weekEndDate: `${year}-${String(month).padStart(2, "0")}-23`,
-            weekOfMonth: 3,
-            weekStartDate: `${year}-${String(month).padStart(2, "0")}-17`,
+            ...weekAtOffset(0),
           },
         ],
       }),
@@ -69,5 +80,18 @@ test("mission history renders monthly weekly completion and blocks future months
   const pig = page.getByRole("button", { name: /저금통 애니메이션 재생/ });
   await expect(pig).toHaveCount(1);
   await expect(pig.locator("svg")).toHaveCount(3);
+  const body = pig.locator("[data-pigbox-fill] svg > g > g").first();
+  await expect(body).toHaveAttribute("transform", /matrix/);
+  const restingTransform = await body.getAttribute("transform");
   await pig.click();
+  // 재생 중 몸통 이동과 complete 리스너의 원위치 복귀까지 확인한다.
+  await expect.poll(() => body.getAttribute("transform")).not.toBe(restingTransform);
+  await expect.poll(() => body.getAttribute("transform")).toBe(restingTransform);
+  await page.evaluate(
+    () =>
+      new Promise<void>((resolve) =>
+        requestAnimationFrame(() => requestAnimationFrame(() => resolve())),
+      ),
+  );
+  expect(pageErrors).toEqual([]);
 });
