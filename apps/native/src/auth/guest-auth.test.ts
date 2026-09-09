@@ -269,6 +269,35 @@ describe("거부된 refreshToken 정리", () => {
 });
 
 describe("clearGuestTokens", () => {
+  it("토큰 저장 도중 탈퇴하면 저장이 끝나도 삭제한 토큰을 반환하지 않는다", async () => {
+    secureStore.set(REFRESH_TOKEN_KEY, "pre-withdrawal-refresh");
+    fetchMock.mockResolvedValue(
+      tokenResponse({ accessToken: "stale-a1", refreshToken: "stale-r1" }),
+    );
+    const { SecureStore, guestAuth } = await load();
+    let finishStore: (() => void) | undefined;
+    vi.mocked(SecureStore.setItemAsync).mockImplementationOnce(
+      (key, value) =>
+        new Promise<void>((resolve) => {
+          finishStore = () => {
+            secureStore.set(key, value);
+            resolve();
+          };
+        }),
+    );
+    const staleReissue = guestAuth.refreshAccessToken();
+    await vi.waitFor(() => expect(finishStore).toBeDefined());
+    const clearing = guestAuth.clearGuestTokens();
+    finishStore?.();
+    await clearing;
+    await expect(staleReissue).resolves.toBeNull();
+    expect(secureStore.has(REFRESH_TOKEN_KEY)).toBe(false);
+    fetchMock.mockClear();
+    fetchMock.mockResolvedValue(tokenResponse({ accessToken: "new-a2", refreshToken: "new-r2" }));
+    await expect(guestAuth.getAccessToken()).resolves.toBe("new-a2");
+    expect(fetchCall(0).url).toBe(ISSUE_URL);
+  });
+
   /**
    * 비우지 않으면: 삭제된 계정의 access token으로 첫 요청이 401 → refresh도 삭제된
    * refresh token이라 거부당하고서야 uuid로 신규 발급한다(왕복 2회 낭비). 미리 비워

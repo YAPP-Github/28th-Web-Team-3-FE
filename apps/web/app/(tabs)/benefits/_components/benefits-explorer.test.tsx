@@ -4,8 +4,8 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { fetchSavedPolicies } from "@/api/bookmark";
 import { bookmarkPolicy, fetchPolicies, fetchPolicyDetail, unbookmarkPolicy } from "@/api/policy";
 import { fetchAllSavingTips } from "@/api/tip";
-import { POLICY_PAGE_SIZE } from "@/lib/queries/policy";
-import { act, fireEvent, render, screen, waitFor } from "@/lib/test/react";
+import { POLICY_PAGE_SIZE, policiesOptions } from "@/lib/queries/policy";
+import { act, createTestQueryClient, fireEvent, render, screen, waitFor } from "@/lib/test/react";
 import { BenefitsExplorer } from "./benefits-explorer";
 
 vi.mock("@/api/policy", () => ({
@@ -276,6 +276,86 @@ describe("BenefitsExplorer", () => {
     expect(
       await screen.findByText("저장 상태를 바꾸지 못했어요. 잠시 후 다시 시도해 주세요."),
     ).toBeInTheDocument();
+  });
+
+  it("서로 다른 혜택을 동시에 저장한 뒤 첫 혜택도 다시 취소할 수 있다", async () => {
+    const finish = new Map<number, () => void>();
+    vi.mocked(fetchPolicies).mockResolvedValue([policy(1), policy(2)]);
+    vi.mocked(bookmarkPolicy).mockImplementation(
+      (id) => new Promise<void>((resolve) => finish.set(id, resolve)),
+    );
+    render(<BenefitsExplorer />);
+    await screen.findByText("혜택 1");
+    fireEvent.click(screen.getByRole("button", { name: "혜택 1 저장" }));
+    fireEvent.click(screen.getByRole("button", { name: "혜택 2 저장" }));
+    await waitFor(() => expect(bookmarkPolicy).toHaveBeenCalledTimes(2));
+    await act(async () => {
+      finish.get(2)?.();
+      finish.get(1)?.();
+    });
+    fireEvent.click(screen.getByRole("button", { name: "혜택 1 저장" }));
+    await waitFor(() => expect(unbookmarkPolicy).toHaveBeenCalledWith(1));
+    expect(screen.getByRole("button", { name: "혜택 1 저장" })).toHaveAttribute(
+      "aria-pressed",
+      "false",
+    );
+  });
+
+  it("다른 혜택 요청이 뒤따라도 먼저 보낸 저장 실패를 되돌린다", async () => {
+    let failFirst: ((error: Error) => void) | undefined;
+    vi.mocked(fetchPolicies).mockResolvedValue([policy(1), policy(2)]);
+    vi.mocked(bookmarkPolicy).mockImplementation((id) =>
+      id === 1
+        ? new Promise<void>((_, reject) => {
+            failFirst = reject;
+          })
+        : Promise.resolve(),
+    );
+    render(<BenefitsExplorer />);
+    await screen.findByText("혜택 1");
+    fireEvent.click(screen.getByRole("button", { name: "혜택 1 저장" }));
+    fireEvent.click(screen.getByRole("button", { name: "혜택 2 저장" }));
+    await waitFor(() => expect(bookmarkPolicy).toHaveBeenCalledTimes(2));
+    await act(async () => failFirst?.(new Error("network error")));
+    await waitFor(() =>
+      expect(screen.getByRole("button", { name: "혜택 1 저장" })).toHaveAttribute(
+        "aria-pressed",
+        "false",
+      ),
+    );
+    expect(screen.getByRole("button", { name: "혜택 2 저장" })).toHaveAttribute(
+      "aria-pressed",
+      "true",
+    );
+  });
+
+  it.each([
+    false,
+    true,
+  ])("화면을 떠난 뒤 저장 실패도 캐시에 반영한다 (전송 중: %s)", async (inFlight) => {
+    let fail: ((error: Error) => void) | undefined;
+    const queryClient = createTestQueryClient();
+    queryClient.setDefaultOptions({ queries: { retry: false, staleTime: 60_000 } });
+    vi.mocked(bookmarkPolicy).mockImplementation(
+      () =>
+        new Promise<void>((_, reject) => {
+          fail = reject;
+        }),
+    );
+    const { unmount } = render(<BenefitsExplorer />, { queryClient });
+    await screen.findByText("혜택 1");
+    fireEvent.click(screen.getByRole("button", { name: "혜택 1 저장" }));
+    if (inFlight) await waitFor(() => expect(bookmarkPolicy).toHaveBeenCalledTimes(1));
+    unmount();
+    await waitFor(() => expect(bookmarkPolicy).toHaveBeenCalledTimes(1));
+    await act(async () => fail?.(new Error("network error")));
+    await waitFor(() =>
+      expect(
+        queryClient.getQueryData(policiesOptions(null).queryKey)?.pages[0]?.[0]?.bookmarked,
+      ).toBe(false),
+    );
+    expect(queryClient.getQueryState(policiesOptions(null).queryKey)?.isInvalidated).toBe(true);
+    queryClient.clear();
   });
 
   it("목록 끝이 보이면 다음 페이지를 이어붙인다", async () => {
