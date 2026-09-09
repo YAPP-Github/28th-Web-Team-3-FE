@@ -1,6 +1,7 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
+import { HTTPError } from "ky";
 import { usePathname, useRouter } from "next/navigation";
 import { type ReactNode, useEffect } from "react";
 import { currentUserOptions } from "@/lib/queries/auth";
@@ -21,6 +22,10 @@ function isPublicPath(pathname: string | null): boolean {
   return pathname === "/legal" || pathname?.startsWith("/legal/") === true;
 }
 
+function isAuthRejection(error: unknown): boolean {
+  return error instanceof HTTPError && [401, 403].includes(error.response.status);
+}
+
 export function OnboardingRouteGuard({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
@@ -30,13 +35,15 @@ export function OnboardingRouteGuard({ children }: { children: ReactNode }) {
     data: currentUser,
     error,
     isPending,
+    isRefetchError,
   } = useQuery({
     ...currentUserOptions(),
     enabled: !publicRoute,
   });
+  const blockingError = error && (!isRefetchError || isAuthRejection(error)) ? error : null;
   const onboardingRoute = isOnboardingPath(pathname);
   const redirectPath =
-    !publicRoute && !isPending && !error && currentUser
+    !publicRoute && !isPending && !blockingError && currentUser
       ? currentUser.onboardingCompleted && onboardingRoute
         ? "/"
         : !currentUser.onboardingCompleted && !onboardingRoute
@@ -57,7 +64,7 @@ export function OnboardingRouteGuard({ children }: { children: ReactNode }) {
     return <InitialRouteSkeleton pathname={redirectPath ?? pathname} />;
   }
 
-  if (error) throw error;
+  if (blockingError) throw blockingError;
   if (!currentUser) throw new Error("현재 사용자 조회 결과가 없습니다.");
 
   return children;

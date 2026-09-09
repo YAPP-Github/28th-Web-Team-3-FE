@@ -50,7 +50,7 @@ export function BenefitsExplorer({
   // 언제 보낼지와 그동안 화면을 어떻게 보일지는 큐가 맡는다 — mutation 자체는 여기서 만든다.
   const { saveError, clearSaveError, toggleSaved } = useSavedToggleQueue(
     queryClient,
-    toggleBookmark.mutate,
+    toggleBookmark.mutateAsync,
   );
   const isTipTab = contentType === "tip";
 

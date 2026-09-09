@@ -37,7 +37,7 @@ export function SavedBenefits() {
   const toggleBookmark = useMutation(togglePolicyBookmarkOptions());
   const { saveError, clearSaveError, toggleSaved } = useSavedToggleQueue(
     queryClient,
-    toggleBookmark.mutate,
+    toggleBookmark.mutateAsync,
   );
   const isTipTab = contentType === "tip";
 

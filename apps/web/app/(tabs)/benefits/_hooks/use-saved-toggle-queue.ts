@@ -3,7 +3,6 @@
 import type { PolicySummary } from "@repo/schema/policy";
 import type { InfiniteData, QueryClient } from "@tanstack/react-query";
 import { useEffect, useRef, useState } from "react";
-import { bookmarkPolicy, unbookmarkPolicy } from "@/api/policy";
 import {
   applyBookmarkToPolicies,
   applyBookmarkToSavedList,
@@ -21,14 +20,11 @@ const SAVE_FAILED = "저장 상태를 바꾸지 못했어요. 잠시 후 다시 
 const SEND_DELAY_MS = 400;
 
 /**
- * `useMutation(togglePolicyBookmarkOptions()).mutate`를 그대로 받는다. 이 훅은 mutation을
+ * `useMutation(togglePolicyBookmarkOptions()).mutateAsync`를 그대로 받는다. 이 훅은 mutation을
  * 직접 만들지 않는다 — 서버 상태는 화면이 options를 주입해 쓰고(AGENTS.md), 여기서는 언제
  * 보낼지와 그동안 화면을 어떻게 보일지만 관리한다.
  */
-type ToggleBookmark = (
-  variables: { policyId: number; saved: boolean },
-  callbacks: { onSuccess: () => void; onError: () => void; onSettled: () => void },
-) => void;
+type ToggleBookmark = (variables: { policyId: number; saved: boolean }) => Promise<void>;
 
 interface ToggleCallbacks {
   onSuccess?: () => void;
@@ -36,6 +32,7 @@ interface ToggleCallbacks {
 }
 
 interface PendingToggle {
+  benefit: BenefitItem;
   /** 서버가 확정한 값. 성공 응답으로만 바뀐다. */
   serverSaved: boolean;
   /** 사용자가 마지막으로 원한 값. */
@@ -57,6 +54,7 @@ interface PendingToggle {
  */
 export function useSavedToggleQueue(queryClient: QueryClient, toggleBookmark: ToggleBookmark) {
   const pendingRef = useRef(new Map<number, PendingToggle>());
+  const mountedRef = useRef(true);
   const [saveError, setSaveError] = useState<string>();
 
   function writeCache(benefit: BenefitItem, saved: boolean) {
@@ -90,7 +88,7 @@ export function useSavedToggleQueue(queryClient: QueryClient, toggleBookmark: To
     pending.inFlight = false;
     if (pending.desired !== pending.serverSaved) {
       // 요청이 나가 있는 사이에 또 눌렸다 — 확정된 값을 기준으로 이어 보낸다.
-      flush(benefit);
+      void flush(benefit);
       return;
     }
     cancelOngoingFetches();
@@ -100,9 +98,10 @@ export function useSavedToggleQueue(queryClient: QueryClient, toggleBookmark: To
     markCachesStale();
   }
 
-  function flush(benefit: BenefitItem) {
+  async function flush(benefit: BenefitItem) {
     const pending = pendingRef.current.get(benefit.id);
     if (!pending) return;
+    if (pending.timer) clearTimeout(pending.timer);
     pending.timer = null;
     // 앞선 요청이 아직 안 끝났다. 끝나는 쪽(settle)이 이어서 보낸다.
     if (pending.inFlight) return;
@@ -114,28 +113,26 @@ export function useSavedToggleQueue(queryClient: QueryClient, toggleBookmark: To
 
     const sending = pending.desired;
     pending.inFlight = true;
-    toggleBookmark(
+    try {
       // `saved`는 누르기 직전 값이다. 서버가 확정한 값을 넘겨야 반대 동작이 나간다.
-      { policyId: benefit.id, saved: pending.serverSaved },
-      {
-        onSuccess: () => {
-          pending.serverSaved = sending;
-          if (pending.desired === sending) {
-            pending.callbacks?.onSuccess?.();
-            pending.callbacks = undefined;
-          }
-        },
-        onError: () => {
-          // 되돌리고 멈춘다. 자동으로 다시 보내면 같은 실패를 반복한다.
-          pending.desired = pending.serverSaved;
-          writeCache(benefit, pending.serverSaved);
-          setSaveError(SAVE_FAILED);
-          pending.callbacks?.onError?.();
-          pending.callbacks = undefined;
-        },
-        onSettled: () => settle(benefit, pending),
-      },
-    );
+      // 호출별 콜백은 다른 카드 요청이나 unmount로 빠질 수 있으므로 직접 기다린다.
+      await toggleBookmark({ policyId: benefit.id, saved: pending.serverSaved });
+      pending.serverSaved = sending;
+      if (pending.desired === sending) {
+        if (mountedRef.current) pending.callbacks?.onSuccess?.();
+        pending.callbacks = undefined;
+      }
+    } catch {
+      pending.desired = pending.serverSaved;
+      writeCache(benefit, pending.serverSaved);
+      if (mountedRef.current) {
+        setSaveError(SAVE_FAILED);
+        pending.callbacks?.onError?.();
+      }
+      pending.callbacks = undefined;
+    } finally {
+      settle(benefit, pending);
+    }
   }
 
   function toggleSaved(benefit: BenefitItem, callbacks?: ToggleCallbacks) {
@@ -158,6 +155,7 @@ export function useSavedToggleQueue(queryClient: QueryClient, toggleBookmark: To
     const desired = !benefit.saved;
     writeCache(benefit, desired);
     pendingRef.current.set(benefit.id, {
+      benefit,
       serverSaved: benefit.saved,
       desired,
       inFlight: false,
@@ -167,18 +165,15 @@ export function useSavedToggleQueue(queryClient: QueryClient, toggleBookmark: To
   }
 
   useEffect(() => {
+    mountedRef.current = true;
     const pending = pendingRef.current;
     return () => {
-      for (const [policyId, toggle] of pending) {
+      mountedRef.current = false;
+      for (const toggle of pending.values()) {
         if (toggle.timer) clearTimeout(toggle.timer);
-        // 이미 나간 요청은 그대로 두고, 아직 안 보낸 것만 보낸다.
-        if (toggle.inFlight || toggle.desired === toggle.serverSaved) continue;
-        // 화면을 떠나도 누른 것은 보낸다. 되돌릴 화면이 없으므로 mutate 대신 API를 직접
-        // 부르고, 결과는 다음 진입의 재조회가 정한다.
-        const request = toggle.desired ? bookmarkPolicy(policyId) : unbookmarkPolicy(policyId);
-        void request.catch(() => {});
+        // 화면 밖에서도 실패 롤백과 이어 보낼 취소를 처리할 수 있도록 큐를 보존한다.
+        if (!toggle.inFlight) void flush(toggle.benefit);
       }
-      pending.clear();
     };
   }, []);
 

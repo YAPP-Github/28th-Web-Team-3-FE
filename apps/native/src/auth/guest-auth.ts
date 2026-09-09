@@ -26,6 +26,17 @@ let inflight: Promise<string | null> | null = null;
 // 뒤에야 응답을 받으면, 그 결과로 방금 지운 토큰을 되살릴 수 있다 — 세대가 바뀌었으면
 // reissue 결과를 버려 이 되살아남을 막는다.
 let tokenGeneration = 0;
+let pendingTokenStorage = Promise.resolve();
+
+// 저장과 탈퇴 삭제가 겹쳐도 마지막 삭제를 추월하지 못하게 한다. 네트워크 요청은 기다리지 않는다.
+function serializeTokenStorage<T>(operation: () => Promise<T>): Promise<T> {
+  const result = pendingTokenStorage.then(operation, operation);
+  pendingTokenStorage = result.then(
+    () => undefined,
+    () => undefined,
+  );
+  return result;
+}
 
 async function getOrCreateDeviceUuid(): Promise<string> {
   const stored = await SecureStore.getItemAsync(UUID_KEY);
@@ -73,7 +84,9 @@ async function postAuth(
 
 async function reissue(): Promise<string | null> {
   const generation = tokenGeneration;
-  const refreshToken = await SecureStore.getItemAsync(REFRESH_TOKEN_KEY);
+  const refreshToken = await serializeTokenStorage(() =>
+    SecureStore.getItemAsync(REFRESH_TOKEN_KEY),
+  );
   const refreshResult = refreshToken
     ? await postAuth("auth/guest/refresh", { refreshToken })
     : ("rejected" as const);
@@ -94,7 +107,9 @@ async function reissue(): Promise<string | null> {
     // 일시 장애(null: 5xx·네트워크·타임아웃·429·408)는 토큰이 무효라는 근거가 아니므로
     // 절대 지우지 않는다 — 서버 장애 한 번에 모든 기기가 refresh 토큰을 잃는다.
     if (refreshToken && refreshResult === "rejected") {
-      await SecureStore.deleteItemAsync(REFRESH_TOKEN_KEY);
+      await serializeTokenStorage(async () => {
+        if (generation === tokenGeneration) await SecureStore.deleteItemAsync(REFRESH_TOKEN_KEY);
+      });
     }
     return null;
   }
@@ -102,15 +117,17 @@ async function reissue(): Promise<string | null> {
 
   // clearGuestTokens가 이 reissue보다 먼저 도착했다 — 이미 지운 계정의 토큰을
   // 되살리지 않는다. 다음 getAccessToken은 비워진 상태에서 새로 시작한다.
-  if (generation !== tokenGeneration) return null;
-
-  // 새 accessToken을 내주기 전에 rotation된 refreshToken 저장을 반드시 끝낸다 —
-  // 저장 전에 앱이 죽으면 폐기된 구 refreshToken만 남아 다음 부트가 신규 발급으로 빠진다.
-  await SecureStore.setItemAsync(REFRESH_TOKEN_KEY, tokens.refreshToken, {
-    keychainAccessible: SecureStore.WHEN_UNLOCKED,
+  return serializeTokenStorage(async () => {
+    if (generation !== tokenGeneration) return null;
+    // rotation된 refreshToken을 보관한 뒤에만 accessToken을 내준다.
+    await SecureStore.setItemAsync(REFRESH_TOKEN_KEY, tokens.refreshToken, {
+      keychainAccessible: SecureStore.WHEN_UNLOCKED,
+    });
+    // 저장 중 탈퇴했으면 뒤에 대기 중인 삭제에 맡기고, 지워질 토큰을 반환하지 않는다.
+    if (generation !== tokenGeneration) return null;
+    accessToken = tokens.accessToken;
+    return accessToken;
   });
-  accessToken = tokens.accessToken;
-  return accessToken;
 }
 
 function reissueSingleFlight(): Promise<string | null> {
@@ -148,5 +165,5 @@ export function refreshAccessToken(): Promise<string | null> {
 export async function clearGuestTokens(): Promise<void> {
   tokenGeneration++;
   accessToken = null;
-  await SecureStore.deleteItemAsync(REFRESH_TOKEN_KEY);
+  await serializeTokenStorage(() => SecureStore.deleteItemAsync(REFRESH_TOKEN_KEY));
 }
