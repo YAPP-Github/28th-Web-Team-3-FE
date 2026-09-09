@@ -1,5 +1,3 @@
-"use client";
-
 import type { PolicySummary } from "@repo/schema/policy";
 import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
@@ -7,9 +5,6 @@ import { useLayoutEffect, useRef, useState } from "react";
 import { HOME_POLICY_COUNT, homePoliciesOptions } from "@/lib/queries/policy";
 import { FinancialTipListSkeleton } from "./financial-tip-list.skeleton";
 import { SectionHeader } from "./section-header";
-
-const CARD_CLASS =
-  "flex h-[143px] w-50 flex-col items-start gap-1.5 rounded-2xl border-[1.5px] border-gray-200 bg-gray-0 p-4";
 
 export function FinancialTipList() {
   const { data: policies, isPending, isError } = useQuery(homePoliciesOptions());
@@ -64,7 +59,10 @@ function PolicyTipCard({ policy }: { policy: PolicySummary }) {
   }, []);
 
   return (
-    <Link className={CARD_CLASS} href="/benefits">
+    <Link
+      className="flex h-[143px] w-50 flex-col items-start gap-1.5 rounded-2xl border-[1.5px] border-gray-200 bg-gray-0 p-4"
+      href="/benefits"
+    >
       <span className="max-w-full truncate rounded bg-blue-100 px-1.5 py-1 text-caption-c1-700 text-blue-600">
         {categoryLabel}
       </span>

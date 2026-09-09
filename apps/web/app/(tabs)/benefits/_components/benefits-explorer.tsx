@@ -27,18 +27,12 @@ import { SavingTipList } from "./saving-tip-list";
  * 저장 목록은 여기 없다 — 별도 화면(`/benefits/saved`)이다.
  */
 interface BenefitsExplorerProps {
-  contentType?: BenefitContentType;
-  onContentTypeChange?: (contentType: BenefitContentType) => void;
+  contentType: BenefitContentType;
+  onContentTypeChange: (contentType: BenefitContentType) => void;
 }
 
-export function BenefitsExplorer({
-  contentType: controlledContentType,
-  onContentTypeChange,
-}: BenefitsExplorerProps) {
+export function BenefitsExplorer({ contentType, onContentTypeChange }: BenefitsExplorerProps) {
   const searchParams = useSearchParams();
-  const [uncontrolledContentType, setUncontrolledContentType] =
-    useState<BenefitContentType>("policy");
-  const contentType = controlledContentType ?? uncontrolledContentType;
   const [filter, setFilter] = useState<BenefitFilter>(() => {
     const categories = searchParams.getAll("category");
     return parseBenefitFilter(categories.length === 1 ? categories[0] : undefined);
@@ -53,11 +47,6 @@ export function BenefitsExplorer({
     toggleBookmark.mutateAsync,
   );
   const isTipTab = contentType === "tip";
-
-  function selectContentType(next: BenefitContentType) {
-    setUncontrolledContentType(next);
-    onContentTypeChange?.(next);
-  }
 
   const policies = useInfiniteQuery({
     ...policiesOptions(getBenefitFilterCategory(filter)),
@@ -117,7 +106,7 @@ export function BenefitsExplorer({
   if (isTipTab) {
     return (
       <>
-        <ContentTypeTabs className="pt-2.5" selected={contentType} onSelect={selectContentType} />
+        <ContentTypeTabs className="pt-2.5" selected={contentType} onSelect={onContentTypeChange} />
         <div id="benefit-content-panel" role="tabpanel" aria-labelledby="benefit-content-tab-tip">
           <SavingTipList />
         </div>
@@ -127,7 +116,7 @@ export function BenefitsExplorer({
 
   return (
     <>
-      <ContentTypeTabs className="pt-2.5" selected={contentType} onSelect={selectContentType} />
+      <ContentTypeTabs className="pt-2.5" selected={contentType} onSelect={onContentTypeChange} />
       <div id="benefit-content-panel" role="tabpanel" aria-labelledby="benefit-content-tab-policy">
         <div className="mt-[23px]">
           <BenefitFilters selected={filter} onSelect={selectFilter} />

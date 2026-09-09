@@ -85,11 +85,7 @@ export function WithdrawalButton({
         */}
         <p
           aria-live="polite"
-          className={
-            error
-              ? "text-center text-body-b2-500 text-error"
-              : "sr-only text-center text-body-b2-500 text-error"
-          }
+          className={`${error ? "" : "sr-only "}text-center text-body-b2-500 text-error`}
         >
           {error}
         </p>
