@@ -1,12 +1,21 @@
 import type { SavedContent } from "@repo/schema/bookmark";
 import type { PolicyDetail, PolicySummary } from "@repo/schema/policy";
+import { useState } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { fetchSavedPolicies } from "@/api/bookmark";
 import { bookmarkPolicy, fetchPolicies, fetchPolicyDetail, unbookmarkPolicy } from "@/api/policy";
 import { fetchAllSavingTips } from "@/api/tip";
+import type { BenefitContentType } from "@/app/(tabs)/benefits/types";
 import { POLICY_PAGE_SIZE, policiesOptions } from "@/lib/queries/policy";
 import { act, createTestQueryClient, fireEvent, render, screen, waitFor } from "@/lib/test/react";
-import { BenefitsExplorer } from "./benefits-explorer";
+import { BenefitsExplorer as ControlledBenefitsExplorer } from "./benefits-explorer";
+
+function BenefitsExplorer() {
+  const [contentType, setContentType] = useState<BenefitContentType>("policy");
+  return (
+    <ControlledBenefitsExplorer contentType={contentType} onContentTypeChange={setContentType} />
+  );
+}
 
 vi.mock("@/api/policy", () => ({
   bookmarkPolicy: vi.fn(),

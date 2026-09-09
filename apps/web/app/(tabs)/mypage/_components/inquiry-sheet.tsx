@@ -43,10 +43,6 @@ export function InquirySheet({ open, onOpenChange }: InquirySheetProps) {
   const openChatUrl = resolveOpenChatUrl(process.env.NEXT_PUBLIC_KAKAO_OPENCHAT_URL);
   const inquiryUrl = openChatUrl ?? `mailto:${PRIVACY_CONTACT_EMAIL}`;
 
-  function openInquiryChannel() {
-    openExternalLink(inquiryUrl);
-  }
-
   return (
     <BottomSheet open={open} title="문의하기" onOpenChange={onOpenChange}>
       <div className="flex flex-col gap-6 px-5 pt-4 pb-8">
@@ -65,7 +61,7 @@ export function InquirySheet({ open, onOpenChange }: InquirySheetProps) {
         {openChatUrl ? null : (
           <p className="text-body-b1-700 text-gray-900">{PRIVACY_CONTACT_EMAIL}</p>
         )}
-        <Button size="cta" onClick={openInquiryChannel}>
+        <Button size="cta" onClick={() => openExternalLink(inquiryUrl)}>
           {openChatUrl ? "카카오톡으로 문의하기" : "이메일로 문의하기"}
         </Button>
       </div>
