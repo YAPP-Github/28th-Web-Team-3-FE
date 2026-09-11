@@ -6,37 +6,12 @@ import { useRouter } from "next/navigation";
 import { type FormEvent, useEffect, useRef } from "react";
 import { Controller, useFormContext, useWatch } from "react-hook-form";
 import { useSaveOnboardingProfile } from "@/app/onboarding/_hooks/use-save-onboarding-profile";
-import { onlyDigits } from "@/lib/number";
-
-function formatBirthDateInput(value: string) {
-  const digits = onlyDigits(value).slice(0, 8);
-  return [digits.slice(0, 4), digits.slice(4, 6), digits.slice(6, 8)].filter(Boolean).join(".");
-}
-
-function toBirthDate(value: string) {
-  return /^\d{4}\.\d{2}\.\d{2}$/.test(value) ? value.replaceAll(".", "-") : value;
-}
-
-function isRealBirthDate(value: string) {
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
-
-  const parts = value.split("-");
-  const year = Number(parts[0]);
-  const month = Number(parts[1]);
-  const day = Number(parts[2]);
-  const date = new Date(Date.UTC(year, month - 1, day));
-  return (
-    date.getUTCFullYear() === year && date.getUTCMonth() === month - 1 && date.getUTCDate() === day
-  );
-}
-
-/** 서버는 생년월일을 과거 날짜로만 받는다(오늘도 거부) — 보내기 전에 같은 기준으로 거른다. */
-function isPastBirthDate(value: string) {
-  const today = new Date();
-  const todayUtc = Date.UTC(today.getFullYear(), today.getMonth(), today.getDate());
-  const parts = value.split("-");
-  return Date.UTC(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2])) < todayUtc;
-}
+import {
+  formatBirthDateInput,
+  isPastBirthDate,
+  isRealBirthDate,
+  toIsoBirthDate,
+} from "@/lib/birth-date";
 
 export default function AgeOnboardingPage() {
   const router = useRouter();
@@ -107,7 +82,7 @@ export default function AgeOnboardingPage() {
                 placeholder="YYYY.MM.DD"
                 value={field.value.replaceAll("-", ".")}
                 onChange={(event) =>
-                  field.onChange(toBirthDate(formatBirthDateInput(event.target.value)))
+                  field.onChange(toIsoBirthDate(formatBirthDateInput(event.target.value)))
                 }
                 onKeyDown={(event) => {
                   // 한글 등 IME 조합을 확정하는 Enter는 다음 단계로 넘기지 않는다.
