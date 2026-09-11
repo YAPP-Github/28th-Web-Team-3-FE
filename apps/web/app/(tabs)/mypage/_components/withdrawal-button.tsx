@@ -18,15 +18,8 @@ async function moveToNewGuestOnboarding() {
   window.location.replace("/onboarding/intro");
 }
 
-interface WithdrawalButtonProps {
-  /** 탈퇴 성공 후 동작. 테스트에서는 문서 이동 없이 성공 여부를 확인하는 데 사용한다. */
-  onWithdrawn?: () => void;
-}
-
 /** 탈퇴하기 — 다른 설정 항목과 같은 행이고, 삭제는 확인 다이얼로그를 거쳐야 일어난다. */
-export function WithdrawalButton({
-  onWithdrawn = moveToNewGuestOnboarding,
-}: WithdrawalButtonProps) {
+export function WithdrawalButton() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [error, setError] = useState<string>();
   const queryClient = useQueryClient();
@@ -62,7 +55,7 @@ export function WithdrawalButton({
       onSuccess: () => {
         setIsLeaving(true);
         queryClient.clear();
-        return onWithdrawn();
+        return moveToNewGuestOnboarding();
       },
     });
   }

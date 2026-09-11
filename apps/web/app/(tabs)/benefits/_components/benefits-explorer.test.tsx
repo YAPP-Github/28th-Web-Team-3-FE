@@ -1,5 +1,5 @@
 import type { SavedContent } from "@repo/schema/bookmark";
-import type { PolicyDetail, PolicySummary } from "@repo/schema/policy";
+import type { PolicySummary } from "@repo/schema/policy";
 import { useState } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { fetchSavedPolicies } from "@/api/bookmark";
@@ -7,6 +7,7 @@ import { bookmarkPolicy, fetchPolicies, fetchPolicyDetail, unbookmarkPolicy } fr
 import { fetchAllSavingTips } from "@/api/tip";
 import type { BenefitContentType } from "@/app/(tabs)/benefits/types";
 import { POLICY_PAGE_SIZE, policiesOptions } from "@/lib/queries/policy";
+import { policy, policyDetail } from "@/lib/test/fixtures/policy";
 import { act, createTestQueryClient, fireEvent, render, screen, waitFor } from "@/lib/test/react";
 import { BenefitsExplorer as ControlledBenefitsExplorer } from "./benefits-explorer";
 
@@ -35,41 +36,6 @@ vi.mock("@/api/tip", () => ({
 vi.mock("next/navigation", () => ({
   useSearchParams: () => new URLSearchParams(window.location.search),
 }));
-
-function policy(id: number, overrides: Partial<PolicySummary> = {}): PolicySummary {
-  return {
-    id,
-    title: `혜택 ${id}`,
-    category: "금융",
-    largeCategory: "금융",
-    description: "설명",
-    bookmarked: false,
-    ...overrides,
-  };
-}
-
-function policyDetail(id: number, overrides: Partial<PolicyDetail> = {}): PolicyDetail {
-  return {
-    id,
-    title: `혜택 ${id}`,
-    description: "설명",
-    supportContent: null,
-    category: "금융",
-    largeCategory: "금융",
-    mediumCategory: null,
-    supervisingOrg: null,
-    applyUrl: null,
-    applyPeriodText: null,
-    applyMethod: null,
-    submitDocuments: null,
-    targetMinAge: null,
-    targetMaxAge: null,
-    earnCondition: null,
-    additionalQualification: null,
-    bookmarked: true,
-    ...overrides,
-  };
-}
 
 const SAVED: SavedContent[] = [
   { contentType: "POLICY", id: 7, title: "저장한 혜택", category: "주거", description: "설명" },
