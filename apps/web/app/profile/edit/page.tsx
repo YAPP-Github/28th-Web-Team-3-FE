@@ -7,6 +7,12 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ChevronLeft } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { type FormEvent, useEffect, useState } from "react";
+import {
+  formatBirthDateInput,
+  isPastBirthDate,
+  isRealBirthDate,
+  toIsoBirthDate,
+} from "@/lib/birth-date";
 import { SAVE_FAILED_TEXT } from "@/lib/messages";
 import { onlyDigits } from "@/lib/number";
 import { updateGoalOptions } from "@/lib/queries/goal";
@@ -32,29 +38,6 @@ const PERIOD_OPTIONS = [
   { label: "2년 미만", months: 24 },
   { label: "3년 미만", months: 36 },
 ] as const;
-
-function formatBirthDateInput(value: string) {
-  const digits = onlyDigits(value).slice(0, 8);
-  return [digits.slice(0, 4), digits.slice(4, 6), digits.slice(6, 8)].filter(Boolean).join(".");
-}
-
-function toIsoBirthDate(value: string) {
-  return /^\d{4}\.\d{2}\.\d{2}$/.test(value) ? value.replaceAll(".", "-") : value;
-}
-
-function isValidPastDate(value: string) {
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
-
-  const [year, month, day] = value.split("-").map(Number);
-  if (year === undefined || month === undefined || day === undefined) return false;
-
-  const date = new Date(Date.UTC(year, month - 1, day));
-  const isRealDate =
-    date.getUTCFullYear() === year && date.getUTCMonth() === month - 1 && date.getUTCDate() === day;
-  const today = new Date();
-  const todayUtc = Date.UTC(today.getFullYear(), today.getMonth(), today.getDate());
-  return isRealDate && date.getTime() < todayUtc;
-}
 
 function selectedPeriodOption(periodMonths: number) {
   if (periodMonths <= 12) return 12;
@@ -160,7 +143,7 @@ export default function ProfileEditPage() {
     const monthlySavingManwon = Number(draft.monthlySavingManwon);
     const netWorthManwon = Number(draft.netWorthManwon);
 
-    if (!isValidPastDate(birthDate)) {
+    if (!isRealBirthDate(birthDate) || !isPastBirthDate(birthDate)) {
       setSubmitError("올바른 생년월일을 입력해 주세요.");
       return;
     }
