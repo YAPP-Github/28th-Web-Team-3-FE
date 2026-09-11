@@ -130,7 +130,8 @@ describe("WithdrawalButton", () => {
         finishWithdraw = resolve;
       }),
     );
-    render(<WithdrawalButton onWithdrawn={vi.fn()} />);
+    const replace = stubLocationReplace();
+    render(<WithdrawalButton />);
     fireEvent.click(screen.getByRole("button", { name: "탈퇴하기" }));
     const dialog = screen.getByRole("dialog", { name: DIALOG_NAME });
     const confirm = within(dialog).getByRole("button", { name: "탈퇴하기" });
@@ -147,41 +148,23 @@ describe("WithdrawalButton", () => {
     await act(async () => {
       finishWithdraw();
     });
-  });
-
-  it("확인하면 탈퇴 API를 호출하고 성공 동작을 실행한다", async () => {
-    const onWithdrawn = vi.fn();
-    render(<WithdrawalButton onWithdrawn={onWithdrawn} />);
-
-    openAndConfirm();
-
-    await waitFor(() => expect(withdrawGuest).toHaveBeenCalledOnce());
-    expect(onWithdrawn).toHaveBeenCalledOnce();
+    expect(replace).toHaveBeenCalledWith("/onboarding/intro");
   });
 
   it("탈퇴에 성공하면 새 게스트로 이동하기 전에 쿼리 캐시를 비운다", async () => {
     const queryClient = createTestQueryClient();
-    const onWithdrawn = vi.fn();
-    queryClient.setQueryData(["goal"], { targetAmount: 1_000_000 });
-    render(<WithdrawalButton onWithdrawn={onWithdrawn} />, { queryClient });
-
-    openAndConfirm();
-
-    await waitFor(() => expect(onWithdrawn).toHaveBeenCalledOnce());
-    expect(queryClient.getQueryData(["goal"])).toBeUndefined();
-  });
-
-  /**
-   * 기본 동작은 문서를 새로 여는 것이다 — 그래야 웹의 토큰·쿼리 캐시가 비워지고 네이티브가
-   * 새 게스트를 발급한다. 위 테스트는 `onWithdrawn`을 주입해 이 경로를 타지 않는다.
-   */
-  it("성공하면 온보딩 첫 화면으로 문서를 새로 연다", async () => {
     const replace = stubLocationReplace();
-    render(<WithdrawalButton />);
+    queryClient.setQueryData(["goal"], { targetAmount: 1_000_000 });
+    replace.mockImplementation(() => {
+      expect(queryClient.getQueryData(["goal"])).toBeUndefined();
+    });
+    render(<WithdrawalButton />, { queryClient });
 
     openAndConfirm();
 
     await waitFor(() => expect(replace).toHaveBeenCalledWith("/onboarding/intro"));
+    expect(withdrawGuest).toHaveBeenCalledOnce();
+    expect(queryClient.getQueryData(["goal"])).toBeUndefined();
   });
 
   /**
@@ -189,15 +172,21 @@ describe("WithdrawalButton", () => {
    * refresh도 같은 이유로 거부당하고서야 신규 발급으로 넘어간다 — 왕복 두 번이 헛돈다.
    * 네이티브 셸 안에서만 의미가 있으므로 `isNativeApp()`으로 게이팅한다.
    */
-  it("네이티브 셸 안이면 문서를 새로 열기 전에 네이티브 토큰을 비운다", async () => {
-    vi.mocked(isNativeApp).mockReturnValue(true);
+  it.each([
+    { native: true, clearCount: 1 },
+    { native: false, clearCount: 0 },
+  ])("네이티브 여부($native)에 따라 토큰을 정리하고 온보딩으로 이동한다", async ({
+    native,
+    clearCount,
+  }) => {
+    vi.mocked(isNativeApp).mockReturnValue(native);
     const replace = stubLocationReplace();
     render(<WithdrawalButton />);
 
     openAndConfirm();
 
     await waitFor(() => expect(replace).toHaveBeenCalledWith("/onboarding/intro"));
-    expect(clearGuestTokens).toHaveBeenCalledOnce();
+    expect(clearGuestTokens).toHaveBeenCalledTimes(clearCount);
   });
 
   /**
@@ -238,18 +227,8 @@ describe("WithdrawalButton", () => {
     expect(replace).toHaveBeenCalledWith("/onboarding/intro");
   });
 
-  it("네이티브 셸 밖이면 네이티브 토큰을 비우지 않는다", async () => {
-    const replace = stubLocationReplace();
-    render(<WithdrawalButton />);
-
-    openAndConfirm();
-
-    await waitFor(() => expect(replace).toHaveBeenCalledWith("/onboarding/intro"));
-    expect(clearGuestTokens).not.toHaveBeenCalled();
-  });
-
   // 실패했는데 화면을 옮기면 사용자는 탈퇴된 줄 안다.
-  it("실패하면 화면을 옮기지 않는다", async () => {
+  it("탈퇴 실패를 안내하고 화면과 다이얼로그를 유지한다", async () => {
     vi.mocked(withdrawGuest).mockRejectedValue(new Error("network error"));
     const replace = stubLocationReplace();
     render(<WithdrawalButton />);
@@ -258,17 +237,6 @@ describe("WithdrawalButton", () => {
 
     await screen.findByText("탈퇴하지 못했어요. 잠시 후 다시 시도해 주세요.");
     expect(replace).not.toHaveBeenCalled();
-  });
-
-  it("탈퇴 실패를 안내하고 다이얼로그를 열어 둔다", async () => {
-    vi.mocked(withdrawGuest).mockRejectedValue(new Error("network error"));
-    render(<WithdrawalButton />);
-
-    openAndConfirm();
-
-    expect(
-      await screen.findByText("탈퇴하지 못했어요. 잠시 후 다시 시도해 주세요."),
-    ).toBeInTheDocument();
     expect(screen.getByRole("dialog", { name: DIALOG_NAME })).toBeInTheDocument();
   });
 });

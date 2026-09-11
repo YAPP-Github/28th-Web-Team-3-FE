@@ -7,6 +7,7 @@ import { bookmarkPolicy, fetchPolicyDetail, unbookmarkPolicy } from "@/api/polic
 import { fetchAllSavingTips } from "@/api/tip";
 import { savedPoliciesOptions } from "@/lib/queries/bookmark";
 import { policiesOptions } from "@/lib/queries/policy";
+import { policyDetail } from "@/lib/test/fixtures/policy";
 import { act, createTestQueryClient, fireEvent, render, screen, waitFor } from "@/lib/test/react";
 import { SavedBenefits } from "./saved-benefits";
 
@@ -24,29 +25,6 @@ vi.mock("@/api/tip", () => ({
   fetchSavingTips: vi.fn(),
   unbookmarkSavingTip: vi.fn(),
 }));
-
-function policyDetail(id: number, overrides: Partial<PolicyDetail> = {}): PolicyDetail {
-  return {
-    id,
-    title: `혜택 ${id}`,
-    description: "설명",
-    supportContent: null,
-    category: "금융",
-    largeCategory: "금융",
-    mediumCategory: null,
-    supervisingOrg: null,
-    applyUrl: null,
-    applyPeriodText: null,
-    applyMethod: null,
-    submitDocuments: null,
-    targetMinAge: null,
-    targetMaxAge: null,
-    earnCondition: null,
-    additionalQualification: null,
-    bookmarked: true,
-    ...overrides,
-  };
-}
 
 const SAVED: SavedContent[] = [
   { contentType: "POLICY", id: 7, title: "저장한 혜택", category: "주거", description: "설명" },
