@@ -10,7 +10,7 @@ const replace = vi.fn();
 
 vi.mock("@repo/bridge", () => ({
   bridge: {
-    clearPendingMissionGeneration: () => clearPendingMissionGeneration(),
+    clearPendingMissionGeneration: (id?: string) => clearPendingMissionGeneration(id),
     getPendingMissionGeneration: () => getPendingMissionGeneration(),
   },
   isNativeApp: () => true,
@@ -67,6 +67,7 @@ function renderRecovery() {
 
 describe("PendingMissionGenerationRecovery", () => {
   beforeEach(() => {
+    clearPendingMissionGeneration.mockResolvedValue(undefined);
     pathname.mockReturnValue("/mission");
     getPendingMissionGeneration.mockResolvedValue(PENDING_JOB);
     fetchGenerationJobStatus.mockResolvedValue(PENDING_GENERATION_JOB);
@@ -147,8 +148,26 @@ describe("PendingMissionGenerationRecovery", () => {
     });
     renderRecovery();
 
-    await vi.waitFor(() => expect(clearPendingMissionGeneration).toHaveBeenCalled());
+    await vi.waitFor(() => expect(clearPendingMissionGeneration).toHaveBeenCalledWith("job-1"));
     expect(replace).not.toHaveBeenCalled();
+  });
+
+  it("다른 화면에서 생성 실패를 알리고 실패한 작업만 지운다", async () => {
+    fetchGenerationJobStatus.mockResolvedValue({ ...PENDING_GENERATION_JOB, status: "FAILED" });
+    renderRecovery();
+    expect(await screen.findByText("미션 생성에 실패했어요.")).toBeTruthy();
+    await vi.waitFor(() => expect(clearPendingMissionGeneration).toHaveBeenCalledWith("job-1"));
+    expect(replace).not.toHaveBeenCalled();
+  });
+
+  it("다른 화면의 조회 오류는 작업을 보존하고 재조회 후 완료 모달로 복구한다", async () => {
+    fetchGenerationJobStatus.mockRejectedValueOnce(new Error("offline"));
+    renderRecovery();
+    expect(await screen.findByText("진행 상태를 확인하지 못했어요.")).toBeTruthy();
+    expect(clearPendingMissionGeneration).not.toHaveBeenCalled();
+    fetchGenerationJobStatus.mockResolvedValue(SUCCEEDED_JOB);
+    fireEvent.click(screen.getByRole("button", { name: "다시 확인하기" }));
+    expect(await screen.findByText("미션이 생성됐어요.")).toBeTruthy();
   });
 
   it("구 버전 네이티브 브릿지에 복구 메서드가 없어도 전역 오류를 내지 않는다", async () => {

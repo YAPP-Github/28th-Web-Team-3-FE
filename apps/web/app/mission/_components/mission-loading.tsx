@@ -4,12 +4,12 @@ import { Button } from "@repo/ui";
 import MissionLoadingCoin from "@repo/ui/svg/mission-loading-coin.svg";
 import { useQuery } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { buildMissionCreationResultHref } from "@/app/mission/constants/mission-creation";
+import { clearPendingMissionGeneration } from "@/app/mission/new/utils/pending-mission-generation";
+import { missionGenerationFailureMessage } from "@/lib/mission-generation";
 import { generationJobStatusOptions } from "@/lib/queries/mission-generation";
 import styles from "./mission-loading.module.css";
-
-const LOADING_DURATION_MS = 7_000;
 
 /**
  * AI 미션 초안 생성 job이 끝날 때까지 polling한다. jobId는 설문 제출 단계에서 만들어
@@ -18,42 +18,48 @@ const LOADING_DURATION_MS = 7_000;
  */
 export function MissionLoading({ jobId }: { jobId: string }) {
   const router = useRouter();
-  const [hasLoadingTimeElapsed, setHasLoadingTimeElapsed] = useState(false);
-  const { data: job, isError, refetch } = useQuery(generationJobStatusOptions(jobId));
+  const { data: job, error, isFetching, refetch } = useQuery(generationJobStatusOptions(jobId));
+  const failureMessage = missionGenerationFailureMessage(job, error);
 
   useEffect(() => {
-    const timeoutId = window.setTimeout(() => setHasLoadingTimeElapsed(true), LOADING_DURATION_MS);
-    return () => window.clearTimeout(timeoutId);
-  }, []);
+    if (failureMessage) void clearPendingMissionGeneration(jobId);
+  }, [failureMessage, jobId]);
 
   useEffect(() => {
     const refetchOnAppActive = () => {
-      void refetch();
+      if (!failureMessage) void refetch();
     };
     window.addEventListener("akkimo:app-active", refetchOnAppActive);
     return () => window.removeEventListener("akkimo:app-active", refetchOnAppActive);
-  }, [refetch]);
+  }, [failureMessage, refetch]);
 
   useEffect(() => {
-    if (hasLoadingTimeElapsed && job?.status === "SUCCEEDED" && job.draftsAvailable) {
+    if (!error && job?.status === "SUCCEEDED" && job.draftsAvailable) {
       router.replace(buildMissionCreationResultHref(jobId));
     }
-  }, [hasLoadingTimeElapsed, job, jobId, router]);
-
-  // 서버가 지정한 간격마다 재조회하므로 일시적인 조회 실패로 "생성 실패"를 띄우면 안 된다 —
-  // 다음 폴링이 성공할 수 있다. 서버가 FAILED를 주거나, 첫 조회부터 실패해 상태를 아예 못 받은 경우만 실패다.
-  const failed = job?.status === "FAILED" || (isError && !job);
+  }, [error, job, jobId, router]);
 
   return (
     <main className="mx-auto flex min-h-dvh w-full max-w-md flex-col items-center justify-center bg-gray-0 px-5 text-center">
-      {failed ? (
+      {failureMessage || error ? (
         <div className="flex flex-col items-center gap-4">
-          <p className="text-body-b1-500 text-gray-700">
-            미션 생성에 실패했어요.
-            <br />
-            잠시 후 다시 시도해 주세요.
+          <p role="status" className="text-body-b1-500 text-gray-700">
+            {failureMessage ?? "진행 상태를 확인하지 못했어요."}
           </p>
-          <Button onClick={() => router.push("/mission")}>미션 홈으로</Button>
+          {failureMessage ? (
+            <Button
+              onClick={async () => {
+                await clearPendingMissionGeneration(jobId);
+                router.replace("/mission/new");
+              }}
+            >
+              다시 생성하기
+            </Button>
+          ) : (
+            <Button disabled={isFetching} onClick={() => void refetch()}>
+              다시 확인하기
+            </Button>
+          )}
         </div>
       ) : (
         <div className="flex flex-col items-center gap-3" role="status">
@@ -68,8 +74,14 @@ export function MissionLoading({ jobId }: { jobId: string }) {
             <br />
             맞춤 미션을 만들고 있어요.
           </p>
+          <p className="max-w-[280px] text-balance break-keep text-body-b2-500 text-gray-600">
+            시간이 걸릴 수 있어요. 다른 화면을 보고 있어도 완료되면 알려드릴게요.
+          </p>
         </div>
       )}
+      <Button variant="secondary" className="mt-4" onClick={() => router.push("/mission")}>
+        다른 화면 둘러보기
+      </Button>
     </main>
   );
 }
