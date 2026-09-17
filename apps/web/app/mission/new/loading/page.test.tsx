@@ -105,15 +105,17 @@ describe("MissionLoading", () => {
     await vi.waitFor(() => expect(fetchGenerationJobStatus).toHaveBeenCalledTimes(2));
 
     expect(screen.queryByText(/미션 생성에 실패했어요/)).toBeNull();
-    expect(screen.getByText(/맞춤 미션을 만들고 있어요/)).toBeTruthy();
+    expect(screen.getByText(/진행 상태를 확인하지 못했어요/)).toBeTruthy();
+    expect(screen.getByRole("button", { name: "다시 확인하기" })).toBeTruthy();
   });
 
-  it("첫 조회부터 실패하면 생성 실패로 안내한다", async () => {
+  it("첫 조회부터 실패해도 생성 실패로 단정하지 않는다", async () => {
     fetchGenerationJobStatus.mockRejectedValue(new Error("network error"));
 
     renderWithClient();
 
-    await vi.waitFor(() => expect(screen.getByText(/미션 생성에 실패했어요/)).toBeTruthy());
+    await vi.waitFor(() => expect(screen.getByText(/진행 상태를 확인하지 못했어요/)).toBeTruthy());
+    expect(screen.queryByText(/미션 생성에 실패했어요/)).toBeNull();
   });
 
   it("완료되면 확인 모달 없이 결과 화면으로 이동한다", async () => {
@@ -126,10 +128,6 @@ describe("MissionLoading", () => {
     renderWithClient();
 
     await vi.waitFor(() => expect(fetchGenerationJobStatus).toHaveBeenCalledTimes(1));
-    expect(replaceMock).not.toHaveBeenCalled();
-
-    await vi.advanceTimersByTimeAsync(7_000);
-
     await vi.waitFor(() =>
       expect(replaceMock).toHaveBeenCalledWith("/mission/new/result?jobId=job-1"),
     );

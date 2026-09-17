@@ -11,6 +11,8 @@ import {
   buildMissionCreationResultHref,
   buildMissionLoadingHref,
 } from "@/app/mission/constants/mission-creation";
+import { clearPendingMissionGeneration } from "@/app/mission/new/utils/pending-mission-generation";
+import { missionGenerationFailureMessage } from "@/lib/mission-generation";
 import { generationJobStatusOptions } from "@/lib/queries/mission-generation";
 
 function isMissionGenerationComplete(job: MissionGenerationJob | undefined) {
@@ -28,6 +30,7 @@ export function PendingMissionGenerationRecovery() {
   const router = useRouter();
   const [pendingJob, setPendingJob] = useState<PendingMissionGeneration>();
   const [resultJobId, setResultJobId] = useState<string>();
+  const [notice, setNotice] = useState<{ message: string; retryable: boolean }>();
   const completedJobId = useRef<string | undefined>(undefined);
   const dismissedJobId = useRef<string | undefined>(undefined);
   const pendingJobId = pendingJob?.jobId;
@@ -43,7 +46,12 @@ export function PendingMissionGenerationRecovery() {
   }
   const shouldPollInBackground =
     Boolean(pendingJob) && !isMissionCreationPage && completedJobId.current !== pendingJobId;
-  const { data: job, refetch } = useQuery({
+  const {
+    data: job,
+    error,
+    isFetching,
+    refetch,
+  } = useQuery({
     ...generationJobStatusOptions(pendingJobId),
     enabled: shouldPollInBackground,
   });
@@ -63,7 +71,7 @@ export function PendingMissionGenerationRecovery() {
           }
           if (job.expiresAt && Date.parse(job.expiresAt) <= Date.now()) {
             setPendingJob(undefined);
-            void bridge.clearPendingMissionGeneration();
+            void clearPendingMissionGeneration(job.jobId);
             return;
           }
           if (completedJobId.current === job.jobId) {
@@ -109,15 +117,53 @@ export function PendingMissionGenerationRecovery() {
   }, [pathname, pendingJobId]);
 
   useEffect(() => {
-    if (!shouldPollInBackground || !pendingJob || !isMissionGenerationComplete(job)) return;
+    if (!shouldPollInBackground || !pendingJob) return;
+    const failureMessage = missionGenerationFailureMessage(job, error);
+    if (failureMessage) {
+      completedJobId.current = pendingJob.jobId;
+      void clearPendingMissionGeneration(pendingJob.jobId);
+      setPendingJob(undefined);
+      setResultJobId(undefined);
+      setNotice({ message: failureMessage, retryable: false });
+    } else if (error) {
+      setNotice({ message: "진행 상태를 확인하지 못했어요.", retryable: true });
+    } else {
+      setNotice((previous) => (previous?.retryable ? undefined : previous));
+    }
+  }, [error, job, pendingJob, shouldPollInBackground]);
+
+  useEffect(() => {
+    if (error || !shouldPollInBackground || !pendingJob || !isMissionGenerationComplete(job))
+      return;
     if (dismissedJobId.current === pendingJob.jobId) return;
     setResultJobId(pendingJob.jobId);
-  }, [job, pendingJob, shouldPollInBackground]);
+  }, [error, job, pendingJob, shouldPollInBackground]);
 
   const closeResultDialog = () => {
     if (resultJobId) dismissedJobId.current = resultJobId;
     setResultJobId(undefined);
   };
+
+  if (notice) {
+    return (
+      <Dialog
+        open
+        title={notice.message}
+        onOpenChange={(open) => {
+          if (!open) setNotice(undefined);
+        }}
+      >
+        {notice.retryable ? (
+          <Button disabled={isFetching} onClick={() => void refetch()}>
+            다시 확인하기
+          </Button>
+        ) : null}
+        <Button variant="secondary" onClick={() => setNotice(undefined)}>
+          닫기
+        </Button>
+      </Dialog>
+    );
+  }
 
   return (
     <Dialog

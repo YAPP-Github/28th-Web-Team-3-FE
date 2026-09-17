@@ -1,6 +1,7 @@
 import type {
   MissionConfirmRequest,
   MissionGenerationCreateRequest,
+  MissionGenerationJob,
 } from "@repo/schema/mission-generation";
 import { mutationOptions, type QueryClient, queryOptions } from "@tanstack/react-query";
 import {
@@ -10,6 +11,7 @@ import {
   fetchMissionCatalog,
   requestGenerationJob,
 } from "@/api/mission-generation";
+import { MissionGenerationExpiredError } from "@/lib/mission-generation";
 import { missionsOptions } from "@/lib/queries/mission";
 
 const DEFAULT_MISSION_GENERATION_POLLING_INTERVAL_MS = 5_000;
@@ -40,9 +42,22 @@ export function requestGenerationJobOptions() {
 export function generationJobStatusOptions(jobId: string | undefined) {
   return queryOptions({
     queryKey: ["mission-generation-job", jobId],
-    queryFn: () => fetchGenerationJobStatus(jobId as string),
+    queryFn: async ({ client, queryKey }) => {
+      const cached = client.getQueryData<MissionGenerationJob>(queryKey);
+      if (cached?.expiresAt && Date.parse(cached.expiresAt) <= Date.now()) {
+        throw new MissionGenerationExpiredError();
+      }
+      const job = await fetchGenerationJobStatus(jobId as string);
+      if (job.expiresAt && Date.parse(job.expiresAt) <= Date.now()) {
+        throw new MissionGenerationExpiredError();
+      }
+      return job;
+    },
     enabled: Boolean(jobId),
+    retry: false,
     refetchInterval: (query) => {
+      // 통신 실패는 작업 실패가 아니다. 작업을 보존하고 수동 조회·앱 복귀로 재개한다.
+      if (query.state.status === "error") return false;
       const job = query.state.data;
       if (job?.status === "FAILED") return false;
       if (job?.status === "SUCCEEDED" && job.draftsAvailable) return false;
