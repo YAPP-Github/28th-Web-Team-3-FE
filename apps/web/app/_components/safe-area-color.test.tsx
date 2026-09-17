@@ -132,13 +132,11 @@ describe("SafeAreaColor", () => {
     expect(setSafeAreaColor).toHaveBeenLastCalledWith("#e5f6fe", "#ffffff");
   });
 
-  // 미션 탭은 데이터를 받은 뒤 히어로를 그린다. 그 사이 기본색을 보내면 히어로 색으로
-  // 맞춰 둔 로딩 화면 위에 흰 띠가 생긴다.
   it("히어로를 아직 못 찾았으면 히어로 색을 유지한다", () => {
-    mockPathname.mockReturnValue("/mission");
+    mockPathname.mockReturnValue("/benefits");
     render(<SafeAreaColor />);
 
-    expect(setSafeAreaColor).toHaveBeenLastCalledWith("#f0f3f8", "#ffffff");
+    expect(setSafeAreaColor).toHaveBeenLastCalledWith("#e5f6fe", "#ffffff");
   });
 
   it("스크롤해도 색이 그대로면 다시 부르지 않는다", () => {
@@ -165,7 +163,7 @@ describe("SafeAreaColor", () => {
   // 구버전 셸에는 이 메서드가 없어 reject된다. 삼키지 않으면 unhandled rejection이 된다.
   it("브릿지가 실패해도 던지지 않는다", async () => {
     setSafeAreaColor.mockRejectedValue(new Error("method not found"));
-    mockPathname.mockReturnValue("/mission");
+    mockPathname.mockReturnValue("/benefits");
 
     expect(() => render(<SafeAreaColor />)).not.toThrow();
     await expect(setSafeAreaColor.mock.results[0]?.value).rejects.toThrow("method not found");
