@@ -22,6 +22,4 @@ it("탈퇴 후 인증과 게스트 귀속 로컬 상태를 함께 삭제한다",
   await clearGuestState();
 
   expect(mocks.clearGuestTokens).toHaveBeenCalledOnce();
-  expect(mocks.clearMissionCreationHistory).toHaveBeenCalledOnce();
-  expect(mocks.clearPendingMissionGeneration).toHaveBeenCalledWith();
 });

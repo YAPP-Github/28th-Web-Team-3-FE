@@ -1,27 +1,10 @@
-import type { Mission } from "@repo/schema/mission";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { fetchGoalStatus } from "@/api/goal";
-import { completeMission, fetchMissions } from "@/api/mission";
+import { fetchMissions } from "@/api/mission";
 import { fetchPolicies } from "@/api/policy";
 import { MOCK_GOAL_STATUS } from "@/lib/test/fixtures/goal-status";
 import { render, screen } from "@/lib/test/react";
 import HomePage from "./page";
-
-const MOCK_MISSIONS: Mission[] = [
-  {
-    id: "meal-1",
-    source: "RECOMMENDED",
-    category: "MEAL",
-    title: "이번 주 배달음식 2회 이하로 주문",
-    targetCount: 2,
-    targetUnit: "TIMES_PER_WEEK",
-    estimatedSavingsWon: 5000,
-    savingsEstimateVersion: "V1",
-    savingsLabel: "약 5,000원 절약 예상",
-    status: "ACTIVE",
-    weekEndsAt: "2099-01-01T00:00:00Z",
-  },
-];
 
 vi.mock("@/api/goal", () => ({
   fetchGoalStatus: vi.fn(),
@@ -46,8 +29,7 @@ describe("HomePage", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.mocked(fetchGoalStatus).mockResolvedValue(MOCK_GOAL_STATUS);
-    vi.mocked(fetchMissions).mockResolvedValue(MOCK_MISSIONS);
-    vi.mocked(completeMission).mockResolvedValue(undefined);
+    vi.mocked(fetchMissions).mockResolvedValue([]);
     vi.mocked(fetchPolicies).mockResolvedValue([
       {
         id: 1,
@@ -60,7 +42,7 @@ describe("HomePage", () => {
     ]);
   });
 
-  it("Figma 홈의 목표·미션·팁 섹션을 렌더한다", async () => {
+  it("Figma 홈의 목표·팁 섹션을 렌더한다", async () => {
     render(<HomePage />);
 
     expect(screen.getByRole("heading", { name: "홈" })).toBeInTheDocument();
@@ -68,8 +50,6 @@ describe("HomePage", () => {
       "href",
       "/goal",
     );
-    expect(screen.getByRole("heading", { name: "이번 주 미션" })).toBeInTheDocument();
-    expect(screen.getByText("이번 주 배달음식 2회 이하로 주문")).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "눈여겨볼 만한 혜택/팁" })).toBeInTheDocument();
   });
 

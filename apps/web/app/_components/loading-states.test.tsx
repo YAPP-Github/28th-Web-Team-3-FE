@@ -2,9 +2,7 @@ import { Button, ButtonGroup } from "@repo/ui";
 import { describe, expect, it, vi } from "vitest";
 import { HomeGoalSectionSkeleton } from "@/app/(tabs)/_components/home-goal-section.skeleton";
 import { HomePageSkeleton } from "@/app/(tabs)/_components/home-page.skeleton";
-import { MissionPageSkeleton } from "@/app/(tabs)/mission/_components/mission-page.skeleton";
 import { fireEvent, render, screen } from "@/lib/test/react";
-import { MissionListSkeleton } from "./mission-list.skeleton";
 import { RouteLoading } from "./route-loading";
 
 /**
@@ -112,11 +110,6 @@ describe("로딩 자리표시자", () => {
       <HomeGoalSectionSkeleton key="goal" label="목표를 불러오는 중" />,
       "목표를 불러오는 중",
     ],
-    [
-      "미션",
-      <MissionListSkeleton key="mission" label="미션을 불러오는 중" />,
-      "미션을 불러오는 중",
-    ],
     ["라우트", <RouteLoading key="route" />, "불러오는 중"],
   ])("%s 자리표시자는 읽을 문장을 리전 안에 둔다", (_label, element, name) => {
     render(element);
@@ -142,47 +135,10 @@ describe("로딩 자리표시자", () => {
     expect(container.querySelector(".size-9")).toBeInTheDocument();
   });
 
-  /** 홈은 목표·미션 자리가 동시에 뜬다. 각자 알리면 두 번 읽힌다. */
-  it("라벨이 없으면 라이브 리전을 만들지 않는다", () => {
-    render(<MissionListSkeleton />);
-
-    expect(screen.queryByRole("status")).not.toBeInTheDocument();
-  });
-
-  it("회색 블록 자체는 읽히지 않는다", () => {
-    const { container } = render(<MissionListSkeleton count={2} />);
-
-    const blocks = container.querySelectorAll(".animate-pulse");
-    expect(blocks.length).toBeGreaterThan(0);
-    for (const block of blocks) {
-      expect(block).toHaveAttribute("aria-hidden", "true");
-    }
-  });
-
-  it("개수를 준 만큼 카드 자리를 깐다", () => {
-    const { container, rerender } = render(<MissionListSkeleton count={2} />);
-    const countCards = () => container.querySelectorAll(".rounded-2xl").length;
-
-    expect(countCards()).toBe(2);
-
-    rerender(<MissionListSkeleton count={4} />);
-    expect(countCards()).toBe(4);
-  });
-
-  it("홈 대기 화면은 목표·주간 미션·혜택/팁의 자리를 함께 유지한다", () => {
-    const { container } = render(<HomePageSkeleton />);
+  it("홈 대기 화면은 제목과 로딩 상태를 표시한다", () => {
+    render(<HomePageSkeleton />);
 
     expect(screen.getByRole("heading", { name: "홈" })).toBeInTheDocument();
     expect(screen.getByRole("status")).toHaveTextContent("홈을 불러오는 중");
-    expect(container.querySelectorAll(".rounded-xl")).toHaveLength(3);
-    expect(container.querySelectorAll(".w-50")).toHaveLength(2);
-  });
-
-  it("미션 대기 화면은 히어로와 접힌 카드의 자리를 함께 유지한다", () => {
-    const { container } = render(<MissionPageSkeleton />);
-
-    expect(screen.getByRole("status")).toHaveTextContent("미션을 불러오는 중");
-    expect(container.querySelector('[data-slot="mission-hero-skeleton"]')).toHaveClass("h-[225px]");
-    expect(container.querySelectorAll(".rounded-xl")).toHaveLength(4);
   });
 });
