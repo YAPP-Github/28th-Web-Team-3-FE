@@ -46,9 +46,8 @@ export function InquirySheet({ open, onOpenChange }: InquirySheetProps) {
   return (
     <BottomSheet open={open} title="문의하기" onOpenChange={onOpenChange}>
       <div className="flex flex-col gap-6 px-5 pt-4 pb-8">
-        <p className="text-body-b1-400 text-gray-700">
-          궁금한 점이나 불편한 점이 있으신가요?
-          <br />
+        <p className="text-balance break-keep text-body-b1-400 text-gray-700">
+          궁금한 점이나 불편한 점이 있으신가요?{" "}
           {openChatUrl
             ? "카카오톡 오픈채팅으로 편하게 문의해 주세요."
             : "아래 주소로 편하게 문의해 주세요."}

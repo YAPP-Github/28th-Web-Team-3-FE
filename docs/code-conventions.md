@@ -23,6 +23,16 @@ import { numberRangeOptions } from "../../lib/survey-answers"; // X — `@/`로
 
 같은 디렉터리 아래는 `./`, 그 밖은 `@/`. **`../../` 이상은 쓰지 않는다** — 파일을 옮기면 조용히 깨지고, 읽는 쪽에서 어느 기능의 모듈인지 알 수 없다. API 함수는 `@/api/<도메인>`, TanStack Query option은 `@/lib/queries/<도메인>`에서 가져온다.
 
+## 필요한 타입 별칭만 선언한다
+
+이미 이름이 있는 타입을 다른 이름으로 다시 export하지 않는다. 사용하는 곳에서 원래 타입을 직접 import한다. 불필요한 이름이 늘면 타입 정의를 찾기 어려워진다.
+
+```ts
+import type { BenefitFilter } from "@/app/(tabs)/benefits/types";
+```
+
+`z.infer<typeof schema>`로 스키마 타입을 파생하거나 리터럴 유니온·함수 시그니처·공개 API에 이름이 필요하면 `type`을 쓴다. 객체 형태를 새로 정의할 때는 기존 파일의 `interface`/`type` 스타일을 따른다.
+
 ## 컴포넌트
 
 ### `@repo/ui` primitive를 먼저 찾는다
@@ -38,6 +48,14 @@ import { numberRangeOptions } from "../../lib/survey-answers"; // X — `@/`로
 - 특정 기능의 의미를 담은 컴포넌트(미션 카드, 목표 게이지 등)는 같은 기능 안에서 반복돼도 `@repo/ui`가 아니라 그 기능의 `_components/`로 올린다. 공용 패키지가 도메인을 알기 시작하면 앱을 거꾸로 의존한다.
 
 `@repo/ui`로 올릴 때는 기존 컴포넌트의 variant로 표현되는지 먼저 본다. variant로 의미가 안 맞으면 그때 새 컴포넌트를 만든다 — 안 맞는 variant를 억지로 늘리는 것보다 낫다.
+
+### 화면 폭에 맡기는 줄바꿈
+
+문구의 시각적 줄바꿈을 위해 JSX에 `<br />`을 넣지 않는다. 고정 줄바꿈은 작은 화면에서 한 줄을 더 쪼개고 큰 화면에 빈 공간을 남긴다. 문장을 이어 쓰고 필요하면 `text-balance`, `break-keep`, 너비 제약으로 줄 길이를 조절한다. 의미가 다른 문단은 별도 `<p>`로 나눈다.
+
+```tsx
+<h1 className="text-balance break-keep">지금 바로 신청하기 좋은 혜택</h1>
+```
 
 버튼류의 포커스 링은 `focus-visible:ring-2 focus-visible:ring-ring`을 쓴다 — `--color-ring` 한 곳에서 색을 정한다.
 

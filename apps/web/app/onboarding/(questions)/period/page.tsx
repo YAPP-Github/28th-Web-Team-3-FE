@@ -18,10 +18,8 @@ export default function InvestmentPeriodOnboardingPage() {
   return (
     <div className="flex min-h-[calc(100dvh-56px)] flex-col px-5 pt-8">
       <section>
-        <h1 className="text-pretty text-headline-h2-700 text-black">
-          자산을 모으고 싶은
-          <br />
-          목표 기간을 입력해 주세요
+        <h1 className="text-balance break-keep text-headline-h2-700 text-black">
+          자산을 모으고 싶은 목표 기간을 입력해 주세요
         </h1>
         <p className="mt-1 text-body-b1-400 text-gray-700">
           목표 기간에 따라 추천 목표 금액이 달라져요

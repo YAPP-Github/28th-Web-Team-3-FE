@@ -60,10 +60,8 @@ export default function OnboardingCheckPage() {
       </header>
 
       <section className="px-5 pt-5">
-        <h1 className="text-pretty text-headline-h2-700 text-black">
-          선택하신 설문 내용을
-          <br />
-          확인해 주세요
+        <h1 className="text-balance break-keep text-headline-h2-700 text-black">
+          선택하신 설문 내용을 확인해 주세요
         </h1>
 
         <div className="mt-6 flex flex-col gap-6">

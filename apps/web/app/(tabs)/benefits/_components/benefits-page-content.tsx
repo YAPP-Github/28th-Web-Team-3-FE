@@ -60,20 +60,8 @@ export function BenefitsPageContent() {
           </Link>
         </div>
         <div className="mt-[22px] flex items-start justify-between gap-2">
-          <p className="shrink-0 text-headline-h2-700 text-gray-900">
-            {isTipTab ? (
-              <>
-                지금 바로 챙기면
-                <br />
-                좋은 절약 팁
-              </>
-            ) : (
-              <>
-                지금 바로 신청하기
-                <br />
-                좋은 혜택
-              </>
-            )}
+          <p className="w-[179px] shrink-0 text-balance break-keep text-headline-h2-700 text-gray-900">
+            {isTipTab ? "지금 바로 챙기면 좋은 절약 팁" : "지금 바로 신청하기 좋은 혜택"}
           </p>
           <BenefitHero
             aria-hidden="true"

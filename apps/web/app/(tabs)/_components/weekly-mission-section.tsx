@@ -12,9 +12,12 @@ import {
 import { Check, ChevronDown, ChevronLeft, ChevronRight, ChevronUp } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { HOME_MISSION_CATEGORIES, type HomeMissionCategory } from "@/app/(tabs)/constants/home";
+import { HOME_MISSION_CATEGORIES } from "@/app/(tabs)/constants/home";
 import { MissionCompleteDialog } from "@/app/(tabs)/mission/_components/mission-complete-dialog";
-import { MISSION_CATEGORY_VALUES } from "@/app/(tabs)/mission/constants/mission";
+import {
+  MISSION_CATEGORY_VALUES,
+  type MissionCategory,
+} from "@/app/(tabs)/mission/constants/mission";
 import {
   calculateProgressPercent,
   countCompletedMissions,
@@ -47,7 +50,7 @@ export function WeeklyMissionSection() {
   const { data: missions, isPending, isError } = useQuery(missionsOptions());
   const { data: goal } = useQuery(goalStatusOptions());
   const completeMission = useMutation(completeMissionOptions(queryClient));
-  const [category, setCategory] = useState<HomeMissionCategory>("전체");
+  const [category, setCategory] = useState<MissionCategory>("전체");
   const {
     data: categoryMissions,
     isPending: isCategoryPending,
@@ -223,10 +226,8 @@ export function WeeklyMissionSection() {
         />
       ) : (
         <div className="flex flex-col gap-12 pt-8 text-center">
-          <p className="text-body-b2-500 text-gray-600">
-            미션이 없어요.
-            <br />
-            절약 미션을 추가하고 달성해보세요.
+          <p className="text-balance break-keep text-body-b2-500 text-gray-600">
+            미션이 없어요. 절약 미션을 추가하고 달성해보세요.
           </p>
           {missionActions}
         </div>
