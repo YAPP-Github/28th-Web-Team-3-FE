@@ -78,10 +78,8 @@ export default function MissionPage() {
       />
       {missions.length === 0 ? (
         <section className="flex flex-1 items-start justify-center px-5 pt-[127px] text-center">
-          <p className="text-body-b1-500 text-gray-600">
-            미션이 없어요.
-            <br />
-            절약 미션을 추가하고 달성해보세요.
+          <p className="text-balance break-keep text-body-b1-500 text-gray-600">
+            미션이 없어요. 절약 미션을 추가하고 달성해보세요.
           </p>
         </section>
       ) : (

@@ -1,5 +1,3 @@
-import { MISSION_CATEGORIES, type MissionCategory } from "../mission/constants/mission";
-
-export type HomeMissionCategory = MissionCategory;
+import { MISSION_CATEGORIES } from "../mission/constants/mission";
 
 export const HOME_MISSION_CATEGORIES = MISSION_CATEGORIES;

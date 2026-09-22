@@ -44,10 +44,8 @@ export default function MonthlyIncomeAndSavingsOnboardingPage() {
       <div className="flex flex-col gap-12">
         <section className="flex flex-col gap-12">
           <div className="flex flex-col gap-1">
-            <h1 className="text-headline-h2-700 text-black">
-              평균 월급과 월 저축액은
-              <br />
-              어느 정도인가요?
+            <h1 className="text-balance break-keep text-headline-h2-700 text-black">
+              평균 월급과 월 저축액은 어느 정도인가요?
             </h1>
             <p className="text-body-b1-400 text-gray-700">
               소득과 저축 여력에 따라 플랜 강도가 달라져요.

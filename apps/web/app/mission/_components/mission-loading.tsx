@@ -69,10 +69,8 @@ export function MissionLoading({ jobId }: { jobId: string }) {
               <MissionLoadingCoin aria-hidden="true" className={styles.coinBack} />
             </div>
           </div>
-          <p className="text-body-b1-500 text-gray-700">
-            답변을 바탕으로
-            <br />
-            맞춤 미션을 만들고 있어요.
+          <p className="text-balance break-keep text-body-b1-500 text-gray-700">
+            답변을 바탕으로 맞춤 미션을 만들고 있어요.
           </p>
           <p className="max-w-[280px] text-balance break-keep text-body-b2-500 text-gray-600">
             시간이 걸릴 수 있어요. 다른 화면을 보고 있어도 완료되면 알려드릴게요.

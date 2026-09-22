@@ -137,19 +137,16 @@ function OnboardingGoalResult({
 
           <section className="flex items-start justify-center gap-2 rounded-[14px] bg-gradient-to-r from-[#e6ebff] to-[#e2f8ff] px-5 py-4 text-center">
             {monthlyIncrease > 0 ? (
-              <p className="text-body-b1-500 text-gray-800">
+              <p className="text-balance break-keep text-body-b1-500 text-gray-800">
                 현재 저축액에서 매달 더 모으는{" "}
                 <strong className="text-body-b1-700">
                   <AnimatedNumber format={formatManwon} value={monthlyIncrease} />
                 </strong>
-                은<br />
-                맞춤 미션으로 아끼모와 함께해요.
+                은 맞춤 미션으로 아끼모와 함께해요.
               </p>
             ) : (
-              <p className="text-body-b1-500 text-gray-800">
-                현재 저축액을 꾸준히 모을 수 있도록
-                <br />
-                맞춤 미션으로 아끼모가 함께할게요.
+              <p className="text-balance break-keep text-body-b1-500 text-gray-800">
+                현재 저축액을 꾸준히 모을 수 있도록 맞춤 미션으로 아끼모가 함께할게요.
               </p>
             )}
           </section>

@@ -96,10 +96,8 @@ export function MissionCreationResult({ jobId }: MissionCreationResultProps) {
       </Button>
 
       <div className="flex flex-1 flex-col gap-8 px-5 pt-8">
-        <h1 className="text-headline-h2-700 text-gray-900">
-          미션을 생성했어요.
-          <br />
-          시작할 미션을 골라주세요.
+        <h1 className="text-balance break-keep text-headline-h2-700 text-gray-900">
+          미션을 생성했어요. 시작할 미션을 골라주세요.
         </h1>
 
         <div className="flex flex-col gap-8">

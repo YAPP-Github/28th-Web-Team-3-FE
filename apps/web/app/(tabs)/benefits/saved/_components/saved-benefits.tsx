@@ -127,10 +127,8 @@ export function SavedBenefits() {
           ) : benefits.length === 0 ? (
             // 목록에 붙은 `mt-5`는 카드용 여백이라 문구에는 걸리지 않게 상쇄한다 —
             // 그래야 팁 탭 문구와 탭에서 같은 거리에 선다(좌우 여백은 목록 것을 쓴다).
-            <p className={`-mt-5 ${EMPTY_MESSAGE_CLASS}`}>
-              저장한 혜택이 없어요.
-              <br />
-              관심 있는 혜택의 별을 눌러 저장해보세요.
+            <p className={`-mt-5 text-balance break-keep ${EMPTY_MESSAGE_CLASS}`}>
+              저장한 혜택이 없어요. 관심 있는 혜택의 별을 눌러 저장해보세요.
             </p>
           ) : (
             benefits.map((benefit) => (
