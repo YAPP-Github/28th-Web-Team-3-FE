@@ -2,13 +2,11 @@ import {
   type ManualMissionCreateRequest,
   type Mission,
   type MissionCategory,
-  type MissionProgress,
   type MissionSource,
   type MissionStatus,
   type MissionWeeklyHistory,
   manualMissionCreateRequestSchema,
   missionHistoriesResponseSchema,
-  missionProgressSchema,
   missionSchema,
   missionsResponseSchema,
 } from "@repo/schema/mission";
@@ -35,11 +33,6 @@ export async function fetchMissions(params: MissionListParams = {}): Promise<Mis
     response: missionsResponseSchema,
   });
   return missions;
-}
-
-/** GET /api/missions/progress — 현재 주의 전체 미션 달성 현황을 조회한다. */
-export function fetchMissionProgress(): Promise<MissionProgress> {
-  return http.get("missions/progress", { response: missionProgressSchema });
 }
 
 /** GET /api/missions/histories — 선택한 달의 주차별 미션 완료 현황을 조회한다. */

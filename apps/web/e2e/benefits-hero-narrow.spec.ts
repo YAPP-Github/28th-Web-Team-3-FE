@@ -40,6 +40,8 @@ async function gotoBenefits(page: Page, width: number) {
   await page.setViewportSize({ width, height: 800 });
   await page.goto("/benefits");
   await expect(page.getByText("청년일자리 도약장려금")).toBeVisible();
+  // 폰트가 교체되기 전의 임시 줄 수를 측정하지 않는다.
+  await page.evaluate(() => document.fonts.ready);
 }
 
 function measureHero(page: Page) {
