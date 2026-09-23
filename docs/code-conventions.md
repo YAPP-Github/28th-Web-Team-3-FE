@@ -189,9 +189,9 @@ access token의 원본은 네이티브(RN) 메모리이고, 웹은 bridge로 당
 
 ## 에러 처리
 
-### mutation에는 `onError`를 반드시 붙인다
+### mutation 실패를 사용자에게 알린다
 
-없으면 실패가 조용히 사라진다. 사용자는 버튼을 눌렀는데 아무 반응이 없는 화면을 본다.
+사용자 액션으로 실행한 mutation은 실패를 조용히 삼키지 않는다. `mutate`는 `onError`, `mutateAsync`는 `try/catch`로 오류를 받아 사용자에게 알린다. 컴포넌트 대신 재사용 훅에서 처리해도 된다.
 
 ```ts
 mutate(body, {

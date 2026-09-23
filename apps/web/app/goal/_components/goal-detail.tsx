@@ -55,7 +55,7 @@ export function GoalDetail() {
             최신 정보를 불러오지 못했어요. 아래는 마지막으로 불러온 값이에요.
           </p>
           <button
-            className="shrink-0 text-body-b2-700 text-blue-500 underline disabled:text-gray-400"
+            className="min-h-11 shrink-0 rounded-sm text-body-b2-700 text-blue-500 underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:text-gray-400"
             disabled={isFetching}
             onClick={() => refetch()}
             type="button"
