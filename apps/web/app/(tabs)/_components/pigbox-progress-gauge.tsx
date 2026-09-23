@@ -36,7 +36,7 @@ function clampProgress(progress: number): number {
   return Math.min(100, Math.max(0, progress));
 }
 
-export function calculatePigboxFillTop(progress: number): number {
+function calculatePigboxFillTop(progress: number): number {
   const clampedProgress = clampProgress(progress);
   const fillTop =
     PIG_BOTTOM_PERCENT - ((PIG_BOTTOM_PERCENT - PIG_TOP_PERCENT) * clampedProgress) / 100;
