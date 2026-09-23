@@ -54,3 +54,51 @@ test("이번 달 툴팁을 화면 안에 유지한다", async ({ page }) => {
     (currentMonthBarBox?.y ?? 0) - ((tooltipBox?.y ?? 0) + (tooltipBox?.height ?? 0)),
   ).toBeGreaterThanOrEqual(10);
 });
+
+test("재조회 실패 안내의 다시 불러오기 버튼에 키보드 포커스가 보인다", async ({ page }) => {
+  const goal = {
+    targetAmountManwon: 5000,
+    periodMonths: 16,
+    totalSavedManwon: 1950,
+    progressPercent: 39,
+    usageMonths: 8,
+    deadlineDDay: 240,
+    thisMonth: { targetManwon: 190, savedManwon: 100, progressPercent: 53, dDay: 12 },
+    monthlySavings: [{ yearMonth: "2026-08", savedManwon: 100, current: true }],
+  };
+  let goalRequests = 0;
+  await page.route("**/api/auth/me", (route) =>
+    route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({ userId: 1, onboardingCompleted: true }),
+    }),
+  );
+  await page.route("**/api/v2/goal", (route) => {
+    goalRequests += 1;
+    return route.fulfill({
+      status: goalRequests === 1 ? 200 : 503,
+      contentType: "application/json",
+      body: goalRequests === 1 ? JSON.stringify(goal) : "{}",
+    });
+  });
+  await page.route("**/api/goal/savings", (route) =>
+    route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify(goal) }),
+  );
+
+  await page.goto("/goal");
+  await page.getByRole("button", { name: "현재 저축액 입력" }).click();
+  await page.getByRole("button", { name: "완료" }).click();
+
+  const retry = page.getByRole("button", { name: "다시 불러오기" });
+  await expect(retry).toBeVisible();
+  for (
+    let index = 0;
+    index < 10 && !(await retry.evaluate((el) => el === document.activeElement));
+    index += 1
+  ) {
+    await page.keyboard.press("Tab");
+  }
+  await expect(retry).toBeFocused();
+  expect(await retry.evaluate((el) => getComputedStyle(el).boxShadow)).not.toBe("none");
+});
