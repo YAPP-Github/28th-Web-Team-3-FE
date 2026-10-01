@@ -1,6 +1,6 @@
 # 릴리즈 모드 (`develop -> main`)
 
-[SKILL.md](../SKILL.md)에서 릴리즈 모드로 판정됐을 때 읽는다. 일반 흐름의 Step 0~8은 그대로 따르고, 아래는 릴리즈 모드에서만 달라지는 점이다.
+[SKILL.md](../SKILL.md)에서 릴리즈 모드로 판정됐을 때 읽는다. 일반 흐름의 Step 0~8을 따르되 Step 2.5(대형 PR 분할 판단)는 건너뛴다. 아래는 릴리즈 모드에서만 달라지는 점이다.
 
 `head=develop`, `base=main`인 PR은 릴리즈 모드다. 사용자가 "dev -> main", "develop -> main",
 "main 배포 PR", "릴리즈 PR"처럼 요청하면 이 모드로 진행한다.

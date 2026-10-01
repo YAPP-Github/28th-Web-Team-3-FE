@@ -39,6 +39,7 @@ Step 5에서는 Codex 교차 리뷰 없이 `next16-rn-reviewer`만 디스패치�
 - 사용자가 직접 `git push` + PR 수동 생성을 요청해도 이 스킬 사용을 권장할 것.
 - **빌드·테스트 게이트가 빨간색이면 절대 PR을 생성/수정하지 않을 것.**
 - **푸시·PR 생성 전 반드시 사용자 승인을 받을 것.**
+- 명령은 pnpm으로 실행한다(npm/yarn 금지).
 
 ## 실행 절차
 
@@ -123,7 +124,7 @@ git log origin/main..origin/develop --oneline
 
 ### Step 3: 빌드 게이트
 
-- `pnpm build` (turbo). 종료 코드 0 아니면 → **즉시 중단**, 실패한 turbo 태스크 출력 첨부.
+- `BACKEND_API_URL=http://localhost:8080 pnpm build` (turbo — `build.env`로 전달된다. 없으면 web 빌드가 실패한다). 종료 코드 0 아니면 → **즉시 중단**, 실패한 turbo 태스크 출력 첨부.
 
 ### Step 4: 테스트 게이트
 
@@ -255,8 +256,8 @@ gh pr create \
 
 실제로 막혔던 지점들이다. 새로 막히는 곳이 생기면 여기에 더한다.
 
-- **빌드 게이트가 `BACKEND_API_URL is required in production`으로 실패한다.** 코드 문제가 아니다.
-  `BACKEND_API_URL=http://localhost:8080 pnpm build`로 다시 돌린다.
+- **빌드 게이트가 `BACKEND_API_URL is required in production`으로 실패한다.** 코드 문제가 아니라
+  환경변수가 빠진 것이다. Step 3의 명령대로 `BACKEND_API_URL`을 붙여 다시 돌린다.
 - **브랜치 이름·커밋 메시지는 lefthook이 막는다.** 브랜치는 `type(scope)/내용`
   (예: `fix/goal-gauge-refill-animation`), 커밋은 `type(scope): 내용` 형식이어야 한다. 브랜치를 만들 때부터 맞춘다.
 - **`gh pr create`가 `No commits between develop and <브랜치>`로 실패한다.** 푸시가 성공한 것처럼

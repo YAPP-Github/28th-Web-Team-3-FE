@@ -1,8 +1,9 @@
 ---
 name: run
 description: >
-  이 프로젝트의 웹·네이티브 앱을 로컬에서 실행하거나 빌드한다.
-  "실행해줘", "앱 켜줘", "dev 서버", "ios 빌드", "android 빌드" 등의 요청에 사용.
+  이 프로젝트의 웹·네이티브 앱을 로컬에서 실행한다(dev 서버, 시뮬레이터·에뮬레이터 기동).
+  "실행해줘", "앱 켜줘", "dev 서버", "시뮬레이터 띄워줘" 등의 요청에 사용.
+  빌드 에러 해결·환경 셋업은 `local-build` 스킬을 쓴다.
 argument-hint: [web|native|ios|android|dev|build]
 ---
 
