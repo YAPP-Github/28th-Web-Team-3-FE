@@ -24,71 +24,14 @@ effort는 별도로 지정하지 않으며 사용자가 명시한 선택이 우�
 
 ## 릴리즈 모드 (`develop -> main`)
 
-`head=develop`, `base=main`인 PR은 릴리즈 모드다. 사용자가 "dev -> main", "develop -> main",
-"main 배포 PR", "릴리즈 PR"처럼 요청하면 이 모드로 진행한다.
-
-- 베이스는 `main`, 헤드는 `develop`으로 고정한다. 임의 릴리즈 브랜치를 만들지 않는다.
-- PR 제목은 `release: vX.Y.Z` 형식으로 한다.
-- `vX.Y.Z`는 현재 최신 tag를 확인한 뒤 사용자에게 제안한다. 자동 결정 기준은 다음 순서다:
-  1. breaking change 또는 마이그레이션이 있으면 major
-  2. `feat` 커밋이 있으면 minor
-  3. 그 외 `fix`/`perf`/`chore`/`docs`/`ci` 등은 patch
-- 최신 tag가 없으면 `v0.1.0`을 제안한다. 이미 `apps/native/app.config.ts`의 `version`처럼 앱 버전이
-  더 크면 그 버전을 우선 제안한다.
-- release note는 `git log origin/main..origin/develop --oneline`과 diff를 기준으로 한국어 bullet로
-  작성하고, PR 본문 `## 💬 기타 코멘트`에 아래 형식으로 넣는다.
-- merge 후 tag는 PR merge commit 또는 main의 merge 결과 커밋에 `vX.Y.Z`로 생성한다. PR 생성 단계에서는
-  tag를 만들지 않고, PR 본문에 `Merge 후 tag: vX.Y.Z`를 명시한다.
-- Expo/WebView 확인을 release note에 포함한다:
-  - `apps/native/.env.production`에 `EXPO_PUBLIC_WEB_URL`이 Vercel production URL인지 확인
-  - `apps/native/.env.production`에 `EXPO_PUBLIC_API_URL`이 `/api/`까지 포함하는지 확인
-  - EAS production 환경에 반영할 명령: `cd apps/native && eas env:push production --path .env.production`
-
-릴리즈 PR의 `## 💬 기타 코멘트` 형식:
-
-```md
-### Release Notes
-
-- <사용자 영향이 있는 변경>
-- <버그 수정 또는 내부 개선>
-
-### Release Checklist
-
-- [ ] Vercel production 배포 URL 확인: `<EXPO_PUBLIC_WEB_URL>`
-- [ ] EAS production env 반영: `cd apps/native && eas env:push production --path .env.production`
-- [ ] WebView production URL smoke test
-- [ ] Merge 후 tag 생성: `vX.Y.Z`
-```
+`head=develop`, `base=main`인 PR이거나 사용자가 "dev -> main", "릴리즈 PR"처럼 요청하면 릴리즈 모드다.
+버전 결정·release note·체크리스트는 [references/release.md](references/release.md)를 읽고 따른다.
 
 ## 개발 위임 모드 (Codex 구현 → Claude 리뷰)
 
-기본 흐름은 Claude가 이미 만든 diff를 게이트·리뷰(Claude + Codex 교차)·PR로 이어간다. 이 모드는 그
-반대다 — **Codex가 구현하고, Claude가 독립적으로 리뷰한다.** 구현 자체를 Codex에 맡기고 싶을 때 쓴다
-("코덱스한테 시켜", "코덱스로 구현해줘", "opus 말고 codex로", `--codex-dev` 인자 등).
-
-- 이 모드는 Step 1과 Step 2 사이(Step 1.5)에서만 동작한다. 브랜치를 먼저 확정해야 Codex의 변경이
-  올바른 브랜치에 쌓인다.
-- Step 5의 Codex 교차 리뷰는 이 모드에서 **생략**한다. Codex가 쓴 코드를 Codex가 다시 보는 건 정보가
-  없다 — 이 모드의 존재 이유 자체가 Claude의 독립된 눈이다. `next16-rn-reviewer`만 디스패치한다.
-- PR 본문의 `## 🤖 AI 리뷰` 제목을 `### Claude 리뷰 (Codex 구현)`으로 바꿔 구현·리뷰 주체를 명시한다.
-- 그 외 Step 2~8(더티 트리 게이트부터 PR 생성까지)은 기본 흐름과 동일하다 — Codex가 만든 diff도
-  똑같이 빌드·테스트 게이트를 통과해야 하고, 🔴 리뷰면 똑같이 멈춘다.
-
-### Step 1.5: Codex에 구현 위임 (이 모드일 때만)
-
-1. **`codex:codex-rescue`** 서브에이전트를 쓸 수 있으면 사용자가 준 작업 설명을 그대로 전달한다.
-   **foreground로 실행할 것** — 이후 게이트가 Codex의 diff를 필요로 하므로 완료를 기다려야 한다
-   (백그라운드로 던지고 다음 Step으로 넘어가지 말 것).
-   그 서브에이전트가 없으면(예: Codex CLI 안에서 이 스킬이 직접 도는 경우) 현재 에이전트가 직접 구현한다.
-   분기 기준은 **"내가 어떤 실행기인가"가 아니라 "이 도구가 내 도구 목록에 있는가"**다 —
-   자기 실행 주체를 스스로 추측하지 말 것. 그 추측은 신뢰할 수 없다.
-2. `--write`는 codex-rescue 기본값이라 따로 지정하지 않는다. 설치된 도구의 도움말/스킬에서
-   모델 인자 지원을 확인한 뒤 `--model gpt-6-astra`를 전달한다. 사용자가
-   명시한 모델·effort가 있으면 우선한다. 도구가 모델을 지원하지 않으면 알린다.
-3. Codex 작업이 끝나면 워킹트리에 diff가 생긴다. 그대로 Step 2(더티 트리 게이트)로 진행 — 그
-   diff가 곧 Step 2가 확인할 "커밋 안 된 변경"이다.
-4. Codex가 아무 변경도 만들지 않았거나(이미 만족하는 상태 등) 실패를 보고하면 사용자에게 그대로
-   알리고 중단한다 — 빈 diff로 게이트를 통과시키지 않는다.
+구현 자체를 Codex에 맡기는 요청("코덱스한테 시켜", `--codex-dev` 등)이면 개발 위임 모드다.
+Step 1 다음에 [references/codex-delegate.md](references/codex-delegate.md)의 Step 1.5를 실행하고,
+Step 5에서는 Codex 교차 리뷰 없이 `next16-rn-reviewer`만 디스패치한다.
 
 ## 강제 사용 규칙
 
@@ -129,8 +72,8 @@ effort는 별도로 지정하지 않으며 사용자가 명시한 선택이 우�
 2. `git fetch origin --prune`.
 3. 대상 브랜치로 전환(`git switch <브랜치>`, 없으면 `git switch -c <브랜치>`).
 4. 릴리즈 모드면 head가 `develop`, base가 `main`인지 확인한다. 다르면 사용자에게 알리고 중단한다.
-5. 개발 위임 모드(사용자가 구현을 Codex에 맡기라고 요청, `--codex-dev` 인자 등)면 Step 1.5로 간다.
-   아니면 바로 Step 2.
+5. 개발 위임 모드(사용자가 구현을 Codex에 맡기라고 요청, `--codex-dev` 인자 등)면
+   [references/codex-delegate.md](references/codex-delegate.md)의 Step 1.5로 간다. 아니면 바로 Step 2.
 
 ### Step 2: 변경사항 확인 (더티 트리 게이트)
 
@@ -303,18 +246,24 @@ gh pr create \
   [Step 5가 🔴이고 사용자가 draft 선택 시 --draft]
 ```
 
+   PR 제목은 커밋 컨벤션 prefix(feat/fix/chore 등, 영어) + 한글 또는 영문 subject, 50자 이내다.
+   릴리즈 모드만 `release: vX.Y.Z` 형식을 쓴다.
+
 3. PR URL과 한 줄 요약 출력(빌드 ✅ / vitest ✅ / e2e ✅ / 판정 / assignee / 리뷰어).
 
-## 주의사항
+## 함정
 
-- gh 미설치/미인증 시 절대 진행하지 않고 안내 후 중단.
-- 더티 트리(커밋 안 된 변경)면 중단.
-- 변경 규모가 크면(Step 2.5 기준) 분할 여부를 먼저 물을 것 — 말없이 진행 금지.
-- 빌드/테스트 게이트가 빨강이면 PR 생성 금지.
-- **푸시·PR 생성 전 반드시 사용자 승인.**
-- diff는 lockfile 제외(`:!pnpm-lock.yaml` `:!package-lock.json` `:!yarn.lock`).
-- assignee는 본인(`@me`), 리뷰어 목록에서 본인 제외.
-- pnpm 사용(npm/yarn 금지).
-- PR 제목은 커밋 컨벤션 prefix(feat/fix/chore 등) 영어, subject는 한글/영문 모두 가능, 50자 이내.
-  릴리즈 모드는 예외적으로 `release: vX.Y.Z` 형식을 사용한다.
-- 리뷰어 없는 PR은 생성하지 않을 것(사용자의 명시적 오버라이드가 있으면 예외, Step 7.5 참고).
+실제로 막혔던 지점들이다. 새로 막히는 곳이 생기면 여기에 더한다.
+
+- **빌드 게이트가 `BACKEND_API_URL is required in production`으로 실패한다.** 코드 문제가 아니다.
+  `BACKEND_API_URL=http://localhost:8080 pnpm build`로 다시 돌린다.
+- **브랜치 이름·커밋 메시지는 lefthook이 막는다.** 브랜치는 `type(scope)/내용`
+  (예: `fix/goal-gauge-refill-animation`), 커밋은 `type(scope): 내용` 형식이어야 한다. 브랜치를 만들 때부터 맞춘다.
+- **`gh pr create`가 `No commits between develop and <브랜치>`로 실패한다.** 푸시가 성공한 것처럼
+  보여도 원격에 브랜치가 없거나 develop보다 뒤처진 경우다. `git ls-remote --heads origin <브랜치>`로
+  확인하고, 없으면 `git fetch origin develop && git rebase origin/develop` 후
+  `git push -u origin HEAD:refs/heads/<브랜치>`로 다시 푸시한다.
+- **사용자가 테스트 생략을 요청해도 pre-push 훅이 typecheck·전체 테스트를 다시 돈다.** 생략 요청이
+  있으면 `git push --no-verify`로 푸시하고, PR 체크리스트의 테스트 항목은 체크하지 않은 채
+  `## 💬 기타 코멘트`에 생략했다고 적는다.
+- **Codex 교차 리뷰에 `--base`를 빼면 이미 develop에 머지된 코드까지 리뷰한다.** Step 5 참고.
