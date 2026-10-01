@@ -11,6 +11,9 @@ AI 모델은 Codex `gpt-6-astra`·Claude `claude-opus-5`를 기본으로 쓴다.
 - 해석이 갈리거나 결과를 바꿀 정보가 없으면 가정을 밝히고 묻는다. 추측으로 메우지 않는다.
 - 착수 전에 검증 방법을 정하고, 실제로 통과한 것을 확인한 뒤에만 완료라고 말한다.
 - 선호가 달라도 기존 코드의 구조와 스타일을 따른다.
+- 사용자 입력이 필요 없는 단계는 멈추지 않고 이어 간다. 진행 상황은 다음 작업과 같은 메시지에 적는다.
+  멈추고 묻는 건 사용자 없이는 진행할 수 없을 때, 그리고 되돌리기 어려운 작업(데이터 삭제,
+  force-push, 푸시·PR 생성) 직전뿐이다.
 
 ## 구조
 
@@ -34,11 +37,25 @@ pnpm check                                    # biome check --write . (lint+form
 
 웹 E2E: `pnpm --filter web test:e2e` (Playwright). 네이티브: `pnpm --filter native ios|android`.
 
+## 자주 밟는 함정
+
+- **`next build`는 `BACKEND_API_URL`이 없으면 실패한다**(`apps/web/next.config.ts`가 production에서
+  throw). 로컬 빌드는 `BACKEND_API_URL=http://localhost:8080 pnpm build`로 돌린다.
+- **일반 브라우저로 dev 서버를 열면 데이터가 안 뜬다.** 토큰을 줄 네이티브 셸이 없어 API가 401이다.
+  화면 확인은 Playwright + `page.route` 목으로 한다 — `verify-web` 스킬.
+- **CSS `@keyframes` 애니메이션은 마운트 때 한 번만 재생된다.** 값이 바뀔 때 다시 재생해야 하면
+  그 값을 `key`로 걸어 노드를 새로 만든다(`apps/web/app/goal/_components/semicircle-gauge.tsx`).
+- **`overflow-y-auto`가 걸린 flex 컨테이너는 끝까지 스크롤하면 자기 아래쪽 padding이 사라진다**(WebView
+  포함). padding은 안쪽 div에 둔다(`apps/web/app/profile/edit/page.tsx`).
+- 포커스 표시는 `focus-visible:ring-2 focus-visible:ring-ring` 하나로 통일한다. 테두리 색까지 같이
+  바꾸면 색이 다른 선 두 겹으로 보인다.
+
 ## 프로젝트 스킬
 
 반복 워크플로는 `.agents/skills/`에 있다. 명령을 직접 조합하기 전에 관련 스킬을 먼저 확인한다.
 
-- 실행·빌드: `run`, `local-build`
+- 실행: `run`(dev 서버·시뮬레이터 실행), `local-build`(빌드 에러·환경 문제 해결)
+- 검증: `verify-web`(화면을 모바일 뷰포트로 띄워 동작·스크린샷 확인)
 - PR: `pr-create`(빌드·리뷰·PR 생성), `pr-comment-summary`(리뷰 댓글 요약)
 - 구현 가이드: 웹은 `vercel-react-best-practices`·`web-design-guidelines`, 네이티브는
   `vercel-react-native-skills`, 공용 컴포넌트 API는 `vercel-composition-patterns`
