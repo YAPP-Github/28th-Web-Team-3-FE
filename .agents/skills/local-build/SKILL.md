@@ -1,9 +1,9 @@
 ---
 name: local-build
 description: >
-  web-team-3-fe 모노레포의 로컬 개발·빌드 워크플로 가이드.
-  Next.js(apps/web) 또는 Expo / React Native(apps/native)를 로컬에서
-  실행·빌드하거나 문제를 해결할 때 사용.
+  web-team-3-fe 모노레포의 로컬 빌드 문제 해결·환경 셋업 가이드.
+  Metro·Next.js·Expo 빌드 에러, prebuild, 포트 충돌, 새 개발 환경 셋업, 로컬 빌드와 EAS 빌드 선택에 사용.
+  단순히 앱을 띄우는 요청("실행해줘", "dev 서버")은 `run` 스킬을 쓴다.
 license: MIT
 metadata:
   author: 28th-web-team-3
