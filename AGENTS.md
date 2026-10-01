@@ -12,8 +12,8 @@ AI 모델은 Codex `gpt-6-astra`·Claude `claude-opus-5`를 기본으로 쓴다.
 - 착수 전에 검증 방법을 정하고, 실제로 통과한 것을 확인한 뒤에만 완료라고 말한다.
 - 선호가 달라도 기존 코드의 구조와 스타일을 따른다.
 - 사용자 입력이 필요 없는 단계는 멈추지 않고 이어 간다. 진행 상황은 다음 작업과 같은 메시지에 적는다.
-  멈추고 묻는 건 사용자 없이는 진행할 수 없을 때, 그리고 되돌리기 어려운 작업(데이터 삭제,
-  force-push, 푸시·PR 생성) 직전뿐이다.
+  멈추고 묻는 건 사용자 없이는 진행할 수 없을 때, 되돌리기 어려운 작업(데이터 삭제, force-push,
+  푸시·PR 생성) 직전, 그리고 스킬이 정한 승인 게이트(예: `pr-create`의 분할 판단·리뷰 결과 확인)뿐이다.
 
 ## 구조
 
@@ -47,7 +47,7 @@ pnpm check                                    # biome check --write . (lint+form
   그 값을 `key`로 걸어 노드를 새로 만든다(`apps/web/app/goal/_components/semicircle-gauge.tsx`).
 - **`overflow-y-auto`가 걸린 flex 컨테이너는 끝까지 스크롤하면 자기 아래쪽 padding이 사라진다**(WebView
   포함). padding은 안쪽 div에 둔다(`apps/web/app/profile/edit/page.tsx`).
-- 포커스 표시는 `focus-visible:ring-2 focus-visible:ring-ring` 하나로 통일한다. 테두리 색까지 같이
+- 포커스 표시는 `focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring` 하나로 통일한다. 테두리 색까지 같이
   바꾸면 색이 다른 선 두 겹으로 보인다.
 
 ## 프로젝트 스킬

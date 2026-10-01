@@ -16,14 +16,17 @@ argument-hint: '[화면 경로 예) /goal]'
    - 화면이 부르는 API를 전부 `page.route("**/api/...", ...)`로 응답한다. 응답 모양은 `@repo/schema`를 따른다.
 2. **고친 동작을 단언한다.** 눈으로만 보지 말고 바뀐 값을 assertion으로 남긴다(위치는 `boundingBox()`,
    스타일은 `toHaveCSS`, 문구는 `getByText`·`getByRole`).
-3. **스크린샷을 찍는다.** `await page.screenshot({ path: "test-results/<이름>.png" })` — `test-results/`는
-   gitignore 대상이다. 찍은 이미지를 직접 열어 보고 사용자에게 보여준다. 확인용으로만 넣은 스크린샷
-   줄은 커밋 전에 지운다.
+3. **스크린샷을 찍는다.** `await page.screenshot({ path: "test-results/<이름>.png" })` — `apps/web`에서
+   실행되므로 파일은 `apps/web/test-results/<이름>.png`에 생기고, gitignore 대상이다. 찍은 이미지를
+   직접 열어 보고 사용자에게 보여준다. 확인용으로만 넣은 스크린샷 줄은 커밋 전에 지운다.
 4. **그 spec만 돌린다.**
 
    ```bash
    pnpm --filter web exec playwright test e2e/<이름>.spec.ts
    ```
+
+   새로 만든 spec은 커밋하면 `pr-create`의 e2e 게이트와 pre-push 타입 검사에 계속 포함된다.
+   확인용으로만 만든 것이면 지우고, 남길 거면 시간·애니메이션 타이밍에 기대지 않게 만든다.
 
 5. 결과를 보고할 때 통과한 단언, 스크린샷, **확인하지 못한 것**(아래 함정의 네이티브 전용 분기 등)을 같이 적는다.
 
